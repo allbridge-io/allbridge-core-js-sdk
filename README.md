@@ -1,0 +1,1 @@
+# allbridge-core-js-sdk
