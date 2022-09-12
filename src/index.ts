@@ -2,11 +2,11 @@ import axios from "axios";
 
 import { TokenInfo, TokenInfoEntries } from "./token-info";
 
-const BASE_URL = "https://core-dev.a11bd.net";
+const DEFAULT_API_URL = "https://core-dev.a11bd.net";
 
-export async function getTokenInfo(): Promise<TokenInfo> {
+export async function getTokenInfo(apiUrl: string = DEFAULT_API_URL): Promise<TokenInfo> {
   const { data, status } = await axios.get<TokenInfoEntries>(
-    BASE_URL + "/token-info",
+      apiUrl + "/token-info",
     {
       headers: {
         Accept: "application/json",
