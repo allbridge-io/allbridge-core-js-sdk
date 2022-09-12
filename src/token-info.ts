@@ -44,8 +44,8 @@ export interface PoolInfo {
 }
 
 export enum MessengerKey {
-  ALLBRIDGE = 'allbridge',
-  WORMHOLE = 'wormhole'
+  ALLBRIDGE = "allbridge",
+  WORMHOLE = "wormhole",
 }
 
 export interface Messenger {
