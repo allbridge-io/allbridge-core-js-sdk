@@ -1,18 +1,16 @@
-export class TokenInfo {
-  private readonly _entries: TokenInfoEntries;
+export class TokensInfo {
+  private readonly _entries: TokensInfoEntries;
 
-  constructor(entries: TokenInfoEntries) {
+  constructor(entries: TokensInfoEntries) {
     this._entries = entries;
   }
 
-  get entries(): TokenInfoEntries {
+  get entries(): TokensInfoEntries {
     return this._entries;
   }
 }
 
-export type TokenInfoEntries = {
-  [chainSymbol: string]: ChainDetails;
-};
+export type TokensInfoEntries = Record<string, ChainDetails>;
 
 export interface ChainDetails {
   tokens: TokenDetails[];

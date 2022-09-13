@@ -1,19 +1,13 @@
-import axios from "axios";
+import { AllbridgeCoreClient, IClientParams } from "./client";
 
-import { TokenInfo, TokenInfoEntries } from "./token-info";
+interface IAllbridgeCoreSdkOptions {
+  api: IClientParams;
+}
 
-const DEFAULT_API_URL = "https://core-dev.a11bd.net";
+export class AllbridgeCoreSdk {
+  api: AllbridgeCoreClient;
 
-export async function getTokenInfo(
-  apiUrl: string = DEFAULT_API_URL
-): Promise<TokenInfo> {
-  const { data, status } = await axios.get<TokenInfoEntries>(
-    apiUrl + "/token-info",
-    {
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
-  return new TokenInfo(data);
+  constructor(params: IAllbridgeCoreSdkOptions) {
+    this.api = new AllbridgeCoreClient(params.api);
+  }
 }
