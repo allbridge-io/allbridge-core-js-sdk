@@ -1,13 +1,13 @@
 import nock from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
-import { AllbridgeCoreClient } from "../../client";
-import tokenInfoResponse from "../mock/api/token-info.json";
+import { AllbridgeCoreSdk } from "../index";
+import tokenInfoResponse from "./mock/api/token-info.json";
 
 describe("TokenInfo", () => {
-  let client: AllbridgeCoreClient;
+  let sdk: AllbridgeCoreSdk;
 
   beforeEach(() => {
-    client = new AllbridgeCoreClient({ apiUrl: "http://localhost" });
+    sdk = new AllbridgeCoreSdk({ apiUrl: "http://localhost" });
   });
 
   describe("given /tokenInfo endpoint", () => {
@@ -17,7 +17,7 @@ describe("TokenInfo", () => {
 
     describe("when called", () => {
       it("returns TokenInfo object", async () => {
-        const tokensInfo = await client.getTokensInfo();
+        const tokensInfo = await sdk.getTokensInfo();
         expect(tokensInfo.entries).toEqual(tokenInfoResponse);
         scope.done();
       });
