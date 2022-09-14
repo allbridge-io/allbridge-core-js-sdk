@@ -1,14 +1,25 @@
-import { describe, expect, it } from "vitest";
-import { foobar } from "../index";
+import nock from "nock";
+import { beforeEach, describe, expect, it } from "vitest";
+import { AllbridgeCoreSdk } from "../index";
+import tokenInfoResponse from "./mock/api/token-info.json";
 
-describe("foobar()", () => {
-  describe("given two positive integers", () => {
-    const first = 1;
-    const second = 2;
+describe("TokenInfo", () => {
+  let sdk: AllbridgeCoreSdk;
+
+  beforeEach(() => {
+    sdk = new AllbridgeCoreSdk({ apiUrl: "http://localhost" });
+  });
+
+  describe("given /tokenInfo endpoint", () => {
+    const scope = nock("http://localhost")
+      .get("/token-info")
+      .reply(200, tokenInfoResponse);
 
     describe("when called", () => {
-      it("returns the sum of them multiplied by 3", () => {
-        expect(foobar(first, second)).toEqual(9);
+      it("returns TokenInfo object", async () => {
+        const tokensInfo = await sdk.getTokensInfo();
+        expect(tokensInfo.entries).toEqual(tokenInfoResponse);
+        scope.done();
       });
     });
   });

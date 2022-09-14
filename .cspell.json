@@ -4,10 +4,10 @@
   "words": [
     "degit",
     "esbuild",
-    "allbridge-core-sdk",
     "octocat",
     "rmrf",
-    "socio"
+    "socio",
+    "allbridge"
   ],
   "flagWords": [],
   "ignorePaths": [

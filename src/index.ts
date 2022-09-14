@@ -1,6 +1,26 @@
-import { bar } from "./bar";
-import { foo } from "./foo";
+import axios from "axios";
+import { TokensInfo, TokensInfoEntries } from "./tokens-info";
 
-export function foobar(a: number, b: number) {
-  return foo().repeat(a).length + bar().repeat(b).length;
+interface AllbridgeCoreSdkOptions {
+  apiUrl: string;
+}
+
+export class AllbridgeCoreSdk {
+  apiUrl: string;
+
+  constructor(params: AllbridgeCoreSdkOptions) {
+    this.apiUrl = params.apiUrl;
+  }
+
+  getTokensInfo = async (): Promise<TokensInfo> => {
+    const { data } = await axios.get<TokensInfoEntries>(
+      this.apiUrl + "/token-info",
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+    return new TokensInfo(data);
+  };
 }
