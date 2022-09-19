@@ -13,14 +13,15 @@ export class TokensInfo {
 export type TokensInfoEntries = Record<string, ChainDetails>;
 
 export interface ChainDetails {
-  tokens: TokenDetails[];
+  tokens: TokenInfo[];
+  // allbridge chain id
   chainId: number;
   bridgeAddress: string;
   txTime: TxTime;
   confirmations: number;
 }
 
-export interface TokenDetails {
+export interface TokenInfo {
   symbol: string;
   name: string;
   decimals: number;
