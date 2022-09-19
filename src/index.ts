@@ -1,5 +1,7 @@
 import axios from "axios";
+import { ChainDetailsMapDTO } from "./dto/api.model";
 import { TokensInfo, TokensInfoEntries } from "./tokens-info";
+import { mapTokensInfoFromDTO } from "./tokens-info-mapper";
 
 interface AllbridgeCoreSdkOptions {
   apiUrl: string;
@@ -13,7 +15,7 @@ export class AllbridgeCoreSdk {
   }
 
   getTokensInfo = async (): Promise<TokensInfo> => {
-    const { data } = await axios.get<TokensInfoEntries>(
+    const { data } = await axios.get<ChainDetailsMapDTO>(
       this.apiUrl + "/token-info",
       {
         headers: {
@@ -21,6 +23,6 @@ export class AllbridgeCoreSdk {
         },
       }
     );
-    return new TokensInfo(data);
+    return mapTokensInfoFromDTO(data);
   };
 }
