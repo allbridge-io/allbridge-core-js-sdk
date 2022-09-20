@@ -7,9 +7,28 @@ export class TokensInfo {
     this._entries = entries;
   }
 
-  get entries(): TokensInfoEntries {
-    return this._entries;
-  }
+  tokens = (
+    groupByChain = true
+  ): TokensInfoEntries | TokenInfoWithChainDetails[] => {
+    if (groupByChain) {
+      return this._entries;
+    } else {
+      return Object.values(this._entries).flatMap((chainDetails) =>
+        chainDetails.tokens.map((tokenInfo) => {
+          return {
+            ...tokenInfo,
+            chainSymbol: chainDetails.chainSymbol,
+            chainId: chainDetails.chainId,
+            chainName: chainDetails.name,
+            allbridgeChainId: chainDetails.allbridgeChainId,
+            bridgeAddress: chainDetails.bridgeAddress,
+            txTime: chainDetails.txTime,
+            confirmations: chainDetails.confirmations,
+          };
+        })
+      );
+    }
+  };
 }
 
 export type TokensInfoEntries = Record<string, ChainDetails>;
@@ -32,6 +51,16 @@ export interface TokenInfo {
   feeShare: string;
   apr: number;
   lpRate: number;
+}
+
+export interface TokenInfoWithChainDetails extends TokenInfo {
+  chainSymbol: string;
+  chainId?: string; // A 0x-prefixed hexadecimal string
+  chainName: string;
+  allbridgeChainId: number;
+  bridgeAddress: string;
+  txTime: TxTime;
+  confirmations: number;
 }
 
 export interface PoolInfo {
