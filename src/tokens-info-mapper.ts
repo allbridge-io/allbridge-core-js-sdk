@@ -1,3 +1,4 @@
+import { chainProperties } from "./chains";
 import { ChainDetailsDTO, ChainDetailsMapDTO, TokenDTO } from "./dto/api.model";
 import {
   ChainDetails,
@@ -13,9 +14,14 @@ function mapTokenInfoFromDto(dto: TokenDTO): TokenInfo {
 function mapChainDetailsFromDto(
   chainSymbol: string,
   dto: ChainDetailsDTO
-): ChainDetails {
+): ChainDetails | null {
+  const basicChainProperties = chainProperties[chainSymbol];
+  if (!basicChainProperties) {
+    return null;
+  }
   return {
-    chainId: dto.chainId,
+    ...basicChainProperties,
+    allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
     txTime: dto.txTime,
     confirmations: dto.confirmations,
@@ -26,7 +32,10 @@ function mapChainDetailsFromDto(
 export const mapTokensInfoFromDTO = (dto: ChainDetailsMapDTO): TokensInfo => {
   return new TokensInfo(
     Object.entries(dto).reduce<TokensInfoEntries>((entries, entry) => {
-      entries[entry[0]] = mapChainDetailsFromDto(...entry);
+      const chainDetails = mapChainDetailsFromDto(...entry);
+      if (chainDetails) {
+        entries[entry[0]] = chainDetails;
+      }
       return entries;
     }, {})
   );

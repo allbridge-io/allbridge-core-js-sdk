@@ -1,3 +1,5 @@
+import { ChainProperties } from "./chains";
+
 export class TokensInfo {
   private readonly _entries: TokensInfoEntries;
 
@@ -12,10 +14,9 @@ export class TokensInfo {
 
 export type TokensInfoEntries = Record<string, ChainDetails>;
 
-export interface ChainDetails {
+export interface ChainDetails extends ChainProperties {
   tokens: TokenInfo[];
-  // allbridge chain id
-  chainId: number;
+  allbridgeChainId: number;
   bridgeAddress: string;
   txTime: TxTime;
   confirmations: number;
