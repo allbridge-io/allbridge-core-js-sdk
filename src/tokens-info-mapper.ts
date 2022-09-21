@@ -29,14 +29,14 @@ function mapChainDetailsFromDto(
   };
 }
 
-export const mapTokensInfoFromDTO = (dto: ChainDetailsMapDTO): TokensInfo => {
-  return new TokensInfo(
-    Object.entries(dto).reduce<TokensInfoEntries>((entries, entry) => {
-      const chainDetails = mapChainDetailsFromDto(...entry);
-      if (chainDetails) {
-        entries[entry[0]] = chainDetails;
-      }
-      return entries;
-    }, {})
-  );
+export const mapTokensInfoEntriesFromDTO = (
+  dto: ChainDetailsMapDTO
+): TokensInfoEntries => {
+  return Object.entries(dto).reduce<TokensInfoEntries>((entries, entry) => {
+    const chainDetails = mapChainDetailsFromDto(...entry);
+    if (chainDetails) {
+      entries[entry[0]] = chainDetails;
+    }
+    return entries;
+  }, {});
 };
