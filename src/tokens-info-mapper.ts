@@ -1,11 +1,6 @@
 import { chainProperties } from "./chains";
 import { ChainDetailsDTO, ChainDetailsMapDTO, TokenDTO } from "./dto/api.model";
-import {
-  ChainDetails,
-  TokenInfo,
-  TokensInfo,
-  TokensInfoEntries,
-} from "./tokens-info";
+import { ChainDetails, TokenInfo, TokensInfoEntries } from "./tokens-info";
 
 function mapTokenInfoFromDto(dto: TokenDTO): TokenInfo {
   return { ...dto };
