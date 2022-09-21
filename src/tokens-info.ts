@@ -1,37 +1,35 @@
 import { ChainProperties } from "./chains";
 
 export class TokensInfo {
-  private readonly _entries: TokensInfoEntries;
+  private readonly _map: ChainDetailsMap;
 
-  constructor(entries: TokensInfoEntries) {
-    this._entries = entries;
+  constructor(map: ChainDetailsMap) {
+    this._map = map;
   }
 
-  tokens = (
-    groupByChain = true
-  ): TokensInfoEntries | TokenInfoWithChainDetails[] => {
-    if (groupByChain) {
-      return this._entries;
-    } else {
-      return Object.values(this._entries).flatMap((chainDetails) =>
-        chainDetails.tokens.map((tokenInfo) => {
-          return {
-            ...tokenInfo,
-            chainSymbol: chainDetails.chainSymbol,
-            chainId: chainDetails.chainId,
-            chainName: chainDetails.name,
-            allbridgeChainId: chainDetails.allbridgeChainId,
-            bridgeAddress: chainDetails.bridgeAddress,
-            txTime: chainDetails.txTime,
-            confirmations: chainDetails.confirmations,
-          };
-        })
-      );
-    }
-  };
+  chainDetailsMap(): ChainDetailsMap {
+    return this._map;
+  }
+
+  tokens(): TokenInfoWithChainDetails[] {
+    return Object.values(this._map).flatMap((chainDetails) => {
+      const {
+        tokens: _tokens,
+        name: chainName,
+        ...chainDetailsWithoutTokensAndName
+      } = chainDetails;
+      return chainDetails.tokens.map((tokenInfo) => {
+        return {
+          ...tokenInfo,
+          ...chainDetailsWithoutTokensAndName,
+          chainName,
+        };
+      });
+    });
+  }
 }
 
-export type TokensInfoEntries = Record<string, ChainDetails>;
+export type ChainDetailsMap = Record<string, ChainDetails>;
 
 export interface ChainDetails extends ChainProperties {
   tokens: TokenInfo[];
