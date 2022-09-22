@@ -27,6 +27,18 @@ describe("TokensInfo Mapper", () => {
       });
     });
   });
+
+  describe("given ChainDetailsMapDTO with unknown chain", () => {
+    describe("mapChainDetailsMapFromDTO", () => {
+      it("returns empty ChainDetailsMap object", () => {
+        const chainDetails = chainDetailsGRL as unknown as ChainDetails;
+        const dto = { UNKNOWN: chainDetails } as unknown as ChainDetailsMapDTO;
+        const actual = mapChainDetailsMapFromDTO(dto);
+        expect(actual).toEqual({});
+      });
+    });
+  });
+
   describe("given ChainDetails", () => {
     const chainDetails = chainDetailsGRL as unknown as ChainDetails;
 
