@@ -13,7 +13,7 @@ export class AllbridgeCoreSdk {
     this.apiUrl = params.apiUrl;
   }
 
-  getTokensInfo = async (): Promise<TokensInfo> => {
+  async getTokensInfo(): Promise<TokensInfo> {
     const { data } = await axios.get<ChainDetailsMapDTO>(
       this.apiUrl + "/token-info",
       {
@@ -23,5 +23,5 @@ export class AllbridgeCoreSdk {
       }
     );
     return new TokensInfo(mapChainDetailsMapFromDTO(data));
-  };
+  }
 }
