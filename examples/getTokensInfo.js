@@ -6,7 +6,12 @@ async function runExample() {
     const sdk = new AllbridgeCoreSdk(configs.development);
 
     const tokensInfo = await sdk.getTokensInfo();
-    console.log("tokensInfo =", JSON.stringify(tokensInfo.tokens(), null, 2));
+
+    const chainDetailsMap = tokensInfo.chainDetailsMap();
+    console.log("Chain details map =", JSON.stringify(chainDetailsMap, null, 2));
+
+    const tokens = tokensInfo.tokens();
+    console.log("Tokens =", JSON.stringify(tokens, null, 2));
 }
 
 runExample();
