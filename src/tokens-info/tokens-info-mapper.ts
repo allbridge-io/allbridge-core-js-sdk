@@ -4,7 +4,12 @@ import {
   ChainDetailsMapDTO,
   TokenDTO,
 } from "../dto/api.model";
-import { ChainDetails, TokenInfo, ChainDetailsMap } from "./tokens-info.model";
+import {
+  ChainDetails,
+  TokenInfo,
+  ChainDetailsMap,
+  TokenInfoWithChainDetails,
+} from "./tokens-info.model";
 
 function mapTokenInfoFromDto(dto: TokenDTO): TokenInfo {
   return { ...dto };
@@ -28,9 +33,9 @@ function mapChainDetailsFromDto(
   };
 }
 
-export const mapTokensInfoEntriesFromDTO = (
+export function mapChainDetailsMapFromDTO(
   dto: ChainDetailsMapDTO
-): ChainDetailsMap => {
+): ChainDetailsMap {
   return Object.entries(dto).reduce<ChainDetailsMap>((map, entry) => {
     const chainDetails = mapChainDetailsFromDto(...entry);
     if (chainDetails) {
@@ -38,4 +43,21 @@ export const mapTokensInfoEntriesFromDTO = (
     }
     return map;
   }, {});
-};
+}
+
+export function mapChainDetailsToTokenInfoList(
+  chainDetails: ChainDetails
+): TokenInfoWithChainDetails[] {
+  const {
+    tokens: _tokens,
+    name: chainName,
+    ...chainDetailsWithoutTokensAndName
+  } = chainDetails;
+  return chainDetails.tokens.map((tokenInfo) => {
+    return {
+      ...tokenInfo,
+      ...chainDetailsWithoutTokensAndName,
+      chainName,
+    };
+  });
+}

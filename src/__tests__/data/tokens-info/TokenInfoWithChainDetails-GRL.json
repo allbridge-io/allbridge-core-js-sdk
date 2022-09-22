@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Yaroslav Stable Token",
+    "poolAddress": "0xEc46d2b11e68A31026673D63B345B889AB37C0Bc",
+    "tokenAddress": "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
+    "decimals": 18,
+    "symbol": "YUSD",
+    "poolInfo": {
+      "aValue": "20",
+      "dValue": "200000001",
+      "tokenBalance": "100128817",
+      "vUsdBalance": "99871189",
+      "totalLpAmount": "100000000",
+      "accRewardPerShareP": "14124743699662940915867932"
+    },
+    "feeShare": "0.003",
+    "apr": "0.1",
+    "lpRate": "1.00000003",
+    "chainSymbol": "GRL",
+    "chainId": "0x5",
+    "chainName": "Goerli",
+    "allbridgeChainId": 2,
+    "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+    "txTime": {
+      "allbridge": {
+        "in": 30000,
+        "out": 120000
+      },
+      "wormhole": {
+        "in": 30000,
+        "out": 120000
+      }
+    },
+    "confirmations": 5
+  },
+  {
+    "name": "YARO Stable",
+    "poolAddress": "0x727e10f9E750C922bf9dee7620B58033F566b34F",
+    "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
+    "decimals": 18,
+    "symbol": "YARO",
+    "poolInfo": {
+      "aValue": "20",
+      "dValue": "200000001",
+      "tokenBalance": "100109670",
+      "vUsdBalance": "99890334",
+      "totalLpAmount": "100000000",
+      "accRewardPerShareP": "11889503016258109440000000"
+    },
+    "feeShare": "0.003",
+    "apr": "0.1",
+    "lpRate": "1.00000002",
+    "chainSymbol": "GRL",
+    "chainId": "0x5",
+    "chainName": "Goerli",
+    "allbridgeChainId": 2,
+    "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+    "txTime": {
+      "allbridge": {
+        "in": 30000,
+        "out": 120000
+      },
+      "wormhole": {
+        "in": 30000,
+        "out": 120000
+      }
+    },
+    "confirmations": 5
+  }
+]
