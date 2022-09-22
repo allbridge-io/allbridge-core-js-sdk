@@ -1,26 +1,16 @@
-export class TokensInfo {
-  private readonly _entries: TokensInfoEntries;
+import { ChainProperties } from "../chains";
 
-  constructor(entries: TokensInfoEntries) {
-    this._entries = entries;
-  }
+export type ChainDetailsMap = Record<string, ChainDetails>;
 
-  get entries(): TokensInfoEntries {
-    return this._entries;
-  }
-}
-
-export type TokensInfoEntries = Record<string, ChainDetails>;
-
-export interface ChainDetails {
-  tokens: TokenDetails[];
-  chainId: number;
+export interface ChainDetails extends ChainProperties {
+  tokens: TokenInfo[];
+  allbridgeChainId: number;
   bridgeAddress: string;
   txTime: TxTime;
   confirmations: number;
 }
 
-export interface TokenDetails {
+export interface TokenInfo {
   symbol: string;
   name: string;
   decimals: number;
@@ -30,6 +20,16 @@ export interface TokenDetails {
   feeShare: string;
   apr: number;
   lpRate: number;
+}
+
+export interface TokenInfoWithChainDetails extends TokenInfo {
+  chainSymbol: string;
+  chainId?: string; // A 0x-prefixed hexadecimal string
+  chainName: string;
+  allbridgeChainId: number;
+  bridgeAddress: string;
+  txTime: TxTime;
+  confirmations: number;
 }
 
 export interface PoolInfo {
