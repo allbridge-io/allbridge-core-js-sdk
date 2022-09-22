@@ -2,8 +2,8 @@ import nock from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
 import { AllbridgeCoreSdk } from "../index";
 import { TokenInfoWithChainDetails, ChainDetailsMap } from "../tokens-info";
-import tokenInfoWithChainDetails from "./data/token-info-with-chain-details.json";
-import tokensGroupedByChain from "./data/tokens-grouped-by-chain.json";
+import tokenInfoWithChainDetails from "./data/tokens-info/token-info-with-chain-details.json";
+import tokensGroupedByChain from "./data/tokens-info/tokens-grouped-by-chain.json";
 import tokenInfoResponse from "./mock/api/token-info.json";
 
 const expectedTokenInfoWithChainDetails =

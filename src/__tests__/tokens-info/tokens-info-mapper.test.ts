@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ChainDetailsMapDTO } from "../dto/api.model";
-import { ChainDetailsMap } from "../tokens-info";
-import { mapTokensInfoEntriesFromDTO } from "../tokens-info-mapper";
-import tokensGroupedByChain from "./data/tokens-grouped-by-chain.json";
-import tokensInfo from "./mock/api/token-info.json";
+import { ChainDetailsMapDTO } from "../../dto/api.model";
+import { ChainDetailsMap , mapTokensInfoEntriesFromDTO } from "../../tokens-info";
+import tokensGroupedByChain from "../data/tokens-info/tokens-grouped-by-chain.json";
+import tokensInfo from "../mock/api/token-info.json";
 const expectedTokensGroupedByChain =
   tokensGroupedByChain as unknown as ChainDetailsMap;
 

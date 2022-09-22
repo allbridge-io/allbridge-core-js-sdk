@@ -1,7 +1,6 @@
 import axios from "axios";
 import { ChainDetailsMapDTO } from "./dto/api.model";
-import { TokensInfo } from "./tokens-info";
-import { mapTokensInfoEntriesFromDTO } from "./tokens-info-mapper";
+import { TokensInfo , mapTokensInfoEntriesFromDTO } from "./tokens-info";
 
 interface AllbridgeCoreSdkOptions {
   apiUrl: string;
