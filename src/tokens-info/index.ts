@@ -1,7 +1,6 @@
 import { ChainSymbol } from "../chains";
 import { mapChainDetailsToTokenInfoList } from "./tokens-info-mapper";
 import {
-  ChainDetails,
   ChainDetailsMap,
   TokenInfoWithChainDetails,
 } from "./tokens-info.model";
