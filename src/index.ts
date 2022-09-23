@@ -1,9 +1,18 @@
 import axios from "axios";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
+import {Big, BigSource} from "big.js";
 import { ChainDetailsMapDTO } from "./dto/api.model";
 import { ApproveData, SendParams, TransactionResponse } from "./models";
 import { TokensInfo, mapChainDetailsMapFromDTO } from "./tokens-info";
+import {mapChainDetailsMapFromDTO, TokenInfo, TokensInfo,} from "./tokens-info";
+import {
+  convertFloatAmountToInt,
+  fromSystemPrecision,
+  getSlippagePercent,
+  swapFromVUsd,
+  swapToVUsd,
+} from "./utils/calculation";
 
 interface AllbridgeCoreSdkOptions {
   apiUrl: string;
@@ -39,5 +48,39 @@ export class AllbridgeCoreSdk {
   async evmSend(web3: Web3, params: SendParams): Promise<TransactionResponse> {
     const evmBridge = new EvmBridge(web3);
     return evmBridge.send(params);
+  }
+
+  calculateSlippagePercentOnSourceChain(
+    amountFloat: BigSource,
+    sourceChainToken: TokenInfo
+  ): Big {
+    const amountInt = convertFloatAmountToInt(
+      amountFloat,
+      sourceChainToken.decimals
+    );
+    const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
+    const vUsdInSourcePrecision = fromSystemPrecision(
+      vUsdInSystemPrecision,
+      sourceChainToken.decimals
+    );
+    return getSlippagePercent(amountInt, vUsdInSourcePrecision);
+  }
+
+  calculateSlippagePercentOnDestinationChain(
+    amountFloat: BigSource,
+    sourceChainToken: TokenInfo,
+    destinationChainToken: TokenInfo
+  ): Big {
+    const amountInt = convertFloatAmountToInt(
+      amountFloat,
+      sourceChainToken.decimals
+    );
+    const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
+    const usd = swapFromVUsd(vUsdInSystemPrecision, destinationChainToken);
+    const vUsdInDestinationPrecision = fromSystemPrecision(
+      vUsdInSystemPrecision,
+      destinationChainToken.decimals
+    );
+    return getSlippagePercent(vUsdInDestinationPrecision, usd);
   }
 }
