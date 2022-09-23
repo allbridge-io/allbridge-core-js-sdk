@@ -1,8 +1,8 @@
 import nock from "nock";
-import {beforeEach, describe, expect, it} from "vitest";
-import {ChainSymbol} from "../chains";
-import {AllbridgeCoreSdk} from "../index";
-import {ChainDetailsMap, TokenInfoWithChainDetails} from "../tokens-info";
+import { beforeEach, describe, expect, it } from "vitest";
+import { ChainSymbol } from "../chains";
+import { AllbridgeCoreSdk } from "../index";
+import { ChainDetailsMap, TokenInfoWithChainDetails } from "../tokens-info";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetails from "./data/tokens-info/TokenInfoWithChainDetails.json";

@@ -1,11 +1,14 @@
 import axios from "axios";
+import { Big, BigSource } from "big.js";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
-import {Big, BigSource} from "big.js";
 import { ChainDetailsMapDTO } from "./dto/api.model";
 import { ApproveData, SendParams, TransactionResponse } from "./models";
-import { TokensInfo, mapChainDetailsMapFromDTO } from "./tokens-info";
-import {mapChainDetailsMapFromDTO, TokenInfo, TokensInfo,} from "./tokens-info";
+import {
+  mapChainDetailsMapFromDTO,
+  TokenInfo,
+  TokensInfo,
+} from "./tokens-info";
 import {
   convertFloatAmountToInt,
   fromSystemPrecision,
