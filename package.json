@@ -48,6 +48,8 @@
     "@semantic-release/github": "^8.0.6",
     "@semantic-release/npm": "^9.0.1",
     "@semantic-release/release-notes-generator": "^10.0.3",
+    "@types/big.js": "^6.1.6",
+    "@types/bn.js": "^5.1.1",
     "@types/node": "^18.7.18",
     "@types/prompts": "^2.0.14",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
@@ -55,6 +57,7 @@
     "@vitest/coverage-c8": "^0.23.2",
     "c8": "^7.12.0",
     "cspell": "^6.8.2",
+    "dotenv": "^16.0.2",
     "esbuild": "^0.15.7",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
@@ -73,6 +76,14 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
-    "axios": "^0.27.2"
+    "axios": "^0.27.2",
+    "big.js": "^6.2.1",
+    "bn.js": "^5.2.1",
+    "erc-20-abi": "^1.0.0",
+    "typechain": "^8.1.0",
+    "web3": "^1.8.0",
+    "web3-core": "^1.8.0",
+    "web3-eth-contract": "^1.8.0",
+    "web3-utils": "^1.8.0"
   }
 }
