@@ -1,17 +1,16 @@
-const {AllbridgeCoreSdk} = require('..');
-const configs = require('../build/src/configs');
+const { AllbridgeCoreSdk } = require("..");
+const configs = require("../build/src/configs");
 
 async function runExample() {
+  const sdk = new AllbridgeCoreSdk(configs.development);
 
-    const sdk = new AllbridgeCoreSdk(configs.development);
+  const tokensInfo = await sdk.getTokensInfo();
 
-    const tokensInfo = await sdk.getTokensInfo();
+  const chainDetailsMap = tokensInfo.chainDetailsMap();
+  console.log("Chain details map =", JSON.stringify(chainDetailsMap, null, 2));
 
-    const chainDetailsMap = tokensInfo.chainDetailsMap();
-    console.log("Chain details map =", JSON.stringify(chainDetailsMap, null, 2));
-
-    const tokens = tokensInfo.tokens();
-    console.log("Tokens =", JSON.stringify(tokens, null, 2));
+  const tokens = tokensInfo.tokens();
+  console.log("Tokens =", JSON.stringify(tokens, null, 2));
 }
 
 runExample();
