@@ -2,13 +2,14 @@ import { Big, BigSource } from "big.js";
 import { TokenInfo } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
-export function getSlippagePercent(input: BigSource, output: BigSource): Big {
+export function getFeePercent(input: BigSource, output: BigSource): Big {
   return Big(100).minus(Big(100).times(output).div(input));
 }
 
 export function toSystemPrecision(amount: BigSource, decimals: number): Big {
   return convertAmountPrecision(amount, decimals, SYSTEM_PRECISION);
 }
+
 export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
   return convertAmountPrecision(amount, SYSTEM_PRECISION, decimals);
 }
@@ -42,6 +43,44 @@ export function swapFromVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
   return Big(result).minus(fee);
 }
 
+export function swapToVUsdReverse(
+  amount: BigSource,
+  tokenInfo: TokenInfo
+): Big {
+  const poolInfo = tokenInfo.poolInfo;
+  const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amount);
+  const tokenBalance = getY(vUsdNewAmount, poolInfo.aValue, poolInfo.dValue);
+  const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
+  const amountWithoutFee = fromSystemPrecision(
+    inSystemPrecision,
+    tokenInfo.decimals
+  );
+  const reversedFeeShare = Big(tokenInfo.feeShare).div(
+    Big(1).minus(tokenInfo.feeShare)
+  );
+  const fee = Big(amountWithoutFee).times(reversedFeeShare);
+  return Big(amountWithoutFee).plus(fee);
+}
+
+export function swapFromVUsdReverse(
+  amount: BigSource,
+  tokenInfo: TokenInfo
+): Big {
+  const reversedFeeShare = Big(tokenInfo.feeShare).div(
+    Big(1).minus(tokenInfo.feeShare)
+  );
+  const fee = Big(amount).times(reversedFeeShare);
+  const amountWithFee = Big(amount).plus(fee);
+  const inSystemPrecision = toSystemPrecision(
+    amountWithFee,
+    tokenInfo.decimals
+  );
+  const poolInfo = tokenInfo.poolInfo;
+  const tokenBalance = Big(poolInfo.tokenBalance).minus(inSystemPrecision);
+  const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
+  return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance);
+}
+
 function convertAmountPrecision(
   amount: BigSource,
   decimalsFrom: number,
@@ -50,6 +89,7 @@ function convertAmountPrecision(
   const dif = Big(decimalsTo).minus(decimalsFrom).toNumber();
   return Big(amount).times(toPowBase10(dif));
 }
+
 function toPowBase10(decimals: number): Big {
   return Big(10).pow(decimals);
 }

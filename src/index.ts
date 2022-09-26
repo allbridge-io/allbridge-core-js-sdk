@@ -3,6 +3,7 @@ import { Big, BigSource } from "big.js";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
 import { ChainDetailsMapDTO } from "./dto/api.model";
+import { InsufficientPoolLiquidity } from "./exceptions";
 import { ApproveData, SendParams, TransactionResponse } from "./models";
 import {
   mapChainDetailsMapFromDTO,
@@ -11,10 +12,13 @@ import {
 } from "./tokens-info";
 import {
   convertFloatAmountToInt,
+  convertIntAmountToFloat,
   fromSystemPrecision,
-  getSlippagePercent,
+  getFeePercent,
   swapFromVUsd,
+  swapFromVUsdReverse,
   swapToVUsd,
+  swapToVUsdReverse,
 } from "./utils/calculation";
 
 interface AllbridgeCoreSdkOptions {
@@ -53,10 +57,10 @@ export class AllbridgeCoreSdk {
     return evmBridge.send(params);
   }
 
-  calculateSlippagePercentOnSourceChain(
+  calculateFeesPercentOnSourceChain(
     amountFloat: BigSource,
     sourceChainToken: TokenInfo
-  ): Big {
+  ): number {
     const amountInt = convertFloatAmountToInt(
       amountFloat,
       sourceChainToken.decimals
@@ -66,14 +70,14 @@ export class AllbridgeCoreSdk {
       vUsdInSystemPrecision,
       sourceChainToken.decimals
     );
-    return getSlippagePercent(amountInt, vUsdInSourcePrecision);
+    return getFeePercent(amountInt, vUsdInSourcePrecision).toNumber();
   }
 
-  calculateSlippagePercentOnDestinationChain(
+  calculateFeesPercentOnDestinationChain(
     amountFloat: BigSource,
     sourceChainToken: TokenInfo,
     destinationChainToken: TokenInfo
-  ): Big {
+  ): number {
     const amountInt = convertFloatAmountToInt(
       amountFloat,
       sourceChainToken.decimals
@@ -84,6 +88,48 @@ export class AllbridgeCoreSdk {
       vUsdInSystemPrecision,
       destinationChainToken.decimals
     );
-    return getSlippagePercent(vUsdInDestinationPrecision, usd);
+    return getFeePercent(vUsdInDestinationPrecision, usd).toNumber();
+  }
+
+  calculateAmountToBeReceived(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenInfo,
+    destinationChainToken: TokenInfo
+  ): string {
+    const amountToSend = convertFloatAmountToInt(
+      amountToSendFloat,
+      sourceChainToken.decimals
+    );
+
+    const vUsd = swapToVUsd(amountToSend, sourceChainToken);
+    const resultInt = swapFromVUsd(vUsd, destinationChainToken);
+    if (resultInt.lte(0)) {
+      throw new InsufficientPoolLiquidity();
+    }
+    return convertIntAmountToFloat(
+      resultInt,
+      sourceChainToken.decimals
+    ).toFixed();
+  }
+
+  calculateAmountToSend(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenInfo,
+    destinationChainToken: TokenInfo
+  ): string {
+    const amountToBeReceived = convertFloatAmountToInt(
+      amountToBeReceivedFloat,
+      destinationChainToken.decimals
+    );
+
+    const usd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken);
+    const resultInt = swapToVUsdReverse(usd, sourceChainToken);
+    if (resultInt.lte(0)) {
+      throw new InsufficientPoolLiquidity();
+    }
+    return convertIntAmountToFloat(
+      resultInt,
+      sourceChainToken.decimals
+    ).toFixed();
   }
 }
