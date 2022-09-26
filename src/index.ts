@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Big, BigSource } from "big.js";
+import { BigSource } from "big.js";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
 import { ChainDetailsMapDTO } from "./dto/api.model";
