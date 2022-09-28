@@ -15,7 +15,7 @@ const expectedTokenInfoWithChainDetailsGRL =
 const expectedTokensGroupedByChain =
   tokensGroupedByChain as unknown as ChainDetailsMap;
 
-describe("TokenInfo", () => {
+describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
 
   beforeEach(() => {
