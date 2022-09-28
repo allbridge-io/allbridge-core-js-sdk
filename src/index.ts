@@ -1,31 +1,22 @@
-import axios from "axios";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
-import { ChainDetailsMapDTO } from "./dto/api.model";
+import { AllbridgeCoreClient } from "./client/core-api";
 import { ApproveData, SendParams, TransactionResponse } from "./models";
-import { TokensInfo, mapChainDetailsMapFromDTO } from "./tokens-info";
+import { TokensInfo } from "./tokens-info";
 
 interface AllbridgeCoreSdkOptions {
   apiUrl: string;
 }
 
 export class AllbridgeCoreSdk {
-  apiUrl: string;
+  private api: AllbridgeCoreClient;
 
   constructor(params: AllbridgeCoreSdkOptions) {
-    this.apiUrl = params.apiUrl;
+    this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
   }
 
   async getTokensInfo(): Promise<TokensInfo> {
-    const { data } = await axios.get<ChainDetailsMapDTO>(
-      this.apiUrl + "/token-info",
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      }
-    );
-    return new TokensInfo(mapChainDetailsMapFromDTO(data));
+    return await this.api.getTokensInfo();
   }
 
   async evmApprove(
