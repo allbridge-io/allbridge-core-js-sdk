@@ -42,3 +42,18 @@ export interface MessengerDTO {
   in: number;
   out: number;
 }
+
+export enum Messenger {
+  ALLBRIDGE = 1,
+  WORMHOLE = 2,
+}
+
+export interface ReceiveTransactionCostRequest {
+  sourceChainId: number;
+  destinationChainId: number;
+  messenger: Messenger;
+}
+
+export interface ReceiveTransactionCostResponse {
+  fee: string;
+}
