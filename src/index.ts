@@ -2,6 +2,7 @@ import { Big, BigSource } from "big.js";
 import Web3 from "web3";
 import { EvmBridge } from "./chains/evm";
 import { AllbridgeCoreClient } from "./client/core-api";
+import { InsufficientPoolLiquidity } from "./exceptions";
 import {
   AmountsAndTxCost,
   ApproveData,
@@ -15,13 +16,15 @@ import {
   TokensInfo,
 } from "./tokens-info";
 import {
-  convertFloatAmountToInt, convertIntAmountToFloat,
+  convertFloatAmountToInt,
+  convertIntAmountToFloat,
   fromSystemPrecision,
   getFeePercent,
-  swapFromVUsd, swapFromVUsdReverse,
-  swapToVUsd, swapToVUsdReverse,
+  swapFromVUsd,
+  swapFromVUsdReverse,
+  swapToVUsd,
+  swapToVUsdReverse,
 } from "./utils/calculation";
-import {InsufficientPoolLiquidity} from "./exceptions";
 
 export * from "./models";
 
@@ -100,7 +103,11 @@ export class AllbridgeCoreSdk {
         sourceChainToken,
         destinationChainToken
       ),
-      txCost: await this.getTxCost(sourceChainToken, destinationChainToken, messenger),
+      txCost: await this.getTxCost(
+        sourceChainToken,
+        destinationChainToken,
+        messenger
+      ),
     };
   }
 
@@ -117,7 +124,11 @@ export class AllbridgeCoreSdk {
         destinationChainToken
       ),
       toAmount: Big(amountToBeReceivedFloat).toFixed(),
-      txCost: await this.getTxCost(sourceChainToken, destinationChainToken, messenger),
+      txCost: await this.getTxCost(
+        sourceChainToken,
+        destinationChainToken,
+        messenger
+      ),
     };
   }
 
@@ -163,12 +174,15 @@ export class AllbridgeCoreSdk {
     ).toFixed();
   }
 
-  async getTxCost(sourceChainToken: TokenInfoWithChainDetails, destinationChainToken: TokenInfoWithChainDetails, messenger: Messenger) {
+  async getTxCost(
+    sourceChainToken: TokenInfoWithChainDetails,
+    destinationChainToken: TokenInfoWithChainDetails,
+    messenger: Messenger
+  ) {
     return await this.api.getReceiveTransactionCost({
       sourceChainId: sourceChainToken.allbridgeChainId,
       destinationChainId: destinationChainToken.allbridgeChainId,
       messenger,
     });
   }
-
 }

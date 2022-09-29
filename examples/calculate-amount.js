@@ -12,7 +12,11 @@ async function runExample() {
   const destinationToken = tokens[tokens.length - 1];
   const amount = "100.5";
 
-  const txCost = await sdk.getTxCost(sourceToken, destinationToken, Messenger.ALLBRIDGE);
+  const txCost = await sdk.getTxCost(
+    sourceToken,
+    destinationToken,
+    Messenger.ALLBRIDGE
+  );
 
   const amountToBeReceived = sdk.getAmountToBeReceived(
     amount,
@@ -47,11 +51,11 @@ async function runExample() {
   );
 
   {
-    const {toAmount, txCost} = await sdk.getAmountToBeReceivedAndTxCost(
+    const { toAmount, txCost } = await sdk.getAmountToBeReceivedAndTxCost(
       amount,
       sourceToken,
       destinationToken,
-      Messenger.ALLBRIDGE,
+      Messenger.ALLBRIDGE
     );
     console.log(
       "Send %d %s with value %d on %s to receive %d %s on %s",
@@ -61,12 +65,12 @@ async function runExample() {
       sourceToken.chainSymbol,
       toAmount,
       destinationToken.symbol,
-      destinationToken.chainSymbol,
+      destinationToken.chainSymbol
     );
   }
 
   {
-    const {fromAmount, txCost} = await sdk.getAmountToSendAndTxCost(
+    const { fromAmount, txCost } = await sdk.getAmountToSendAndTxCost(
       amount,
       sourceToken,
       destinationToken,

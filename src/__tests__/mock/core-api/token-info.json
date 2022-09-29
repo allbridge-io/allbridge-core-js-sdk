@@ -10,14 +10,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200000001",
-          "tokenBalance": "100128817",
-          "vUsdBalance": "99871189",
+          "tokenBalance": "100469776",
+          "vUsdBalance": "99530279",
           "totalLpAmount": "100000000",
-          "accRewardPerShareP": "14124743699662940915867932"
+          "accRewardPerShareP": "61452639838135255812251932"
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "1.00000003"
+        "lpRate": "1.000000275"
       },
       {
         "name": "YARO Stable",
@@ -28,14 +28,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200000001",
-          "tokenBalance": "100109670",
-          "vUsdBalance": "99890334",
+          "tokenBalance": "100131102",
+          "vUsdBalance": "99868904",
           "totalLpAmount": "100000000",
-          "accRewardPerShareP": "11889503016258109440000000"
+          "accRewardPerShareP": "16785636387150217916395996"
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "1.00000002"
+        "lpRate": "1.00000003"
       }
     ],
     "chainId": 2,
@@ -63,14 +63,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200000001",
-          "tokenBalance": "99861266",
-          "vUsdBalance": "100138740",
+          "tokenBalance": "99945523",
+          "vUsdBalance": "100054479",
           "totalLpAmount": "100000000",
-          "accRewardPerShareP": "14995257376886841405"
+          "accRewardPerShareP": "36142936247920045836"
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "1.00000003"
+        "lpRate": "1.00000001"
       },
       {
         "name": "USDY",
@@ -81,14 +81,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200000001",
-          "tokenBalance": "100000000",
-          "vUsdBalance": "100000000",
+          "tokenBalance": "99996014",
+          "vUsdBalance": "100003988",
           "totalLpAmount": "100000000",
-          "accRewardPerShareP": "0"
+          "accRewardPerShareP": "430859376347"
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "0.99899999999993902439"
+        "lpRate": "1.00000001"
       }
     ],
     "chainId": 3,
@@ -116,14 +116,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200002007",
-          "tokenBalance": "99901270",
-          "vUsdBalance": "100100738",
+          "tokenBalance": "99733829",
+          "vUsdBalance": "100268196",
           "totalLpAmount": "100000999",
-          "accRewardPerShareP": "10779348467262963308596420"
+          "accRewardPerShareP": "38158654839395707688528060"
         },
         "feeShare": "0.003",
         "apr": "0",
-        "lpRate": "0.99857399217894492766"
+        "lpRate": "1.00000013499865136347"
       },
       {
         "name": "Yaro Stable",
@@ -134,14 +134,14 @@
         "poolInfo": {
           "aValue": "20",
           "dValue": "200000001",
-          "tokenBalance": "100000000",
-          "vUsdBalance": "100000000",
+          "tokenBalance": "99770715",
+          "vUsdBalance": "100229299",
           "totalLpAmount": "100000000",
-          "accRewardPerShareP": "0"
+          "accRewardPerShareP": "26941073402885591531520000"
         },
         "feeShare": "0.003",
         "apr": "0",
-        "lpRate": "0.99899999999993902439"
+        "lpRate": "1.00000007"
       }
     ],
     "chainId": 4,
