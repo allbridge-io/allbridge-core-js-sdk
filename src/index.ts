@@ -1,15 +1,10 @@
 import { Big, BigSource } from "big.js";
 import Web3 from "web3";
-import { EvmBridge } from "./chains/evm";
+import { BridgeService } from "./bridge";
+import { ApproveData, SendParams, TransactionResponse } from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
 import { InsufficientPoolLiquidity } from "./exceptions";
-import {
-  AmountsAndTxCost,
-  ApproveData,
-  Messenger,
-  SendParams,
-  TransactionResponse,
-} from "./models";
+import { AmountsAndTxCost, Messenger } from "./models";
 import {
   TokenInfo,
   TokenInfoWithChainDetails,
@@ -25,7 +20,6 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
-
 export * from "./models";
 
 interface AllbridgeCoreSdkOptions {
@@ -34,26 +28,26 @@ interface AllbridgeCoreSdkOptions {
 
 export class AllbridgeCoreSdk {
   private api: AllbridgeCoreClient;
+  private bridgeService: BridgeService;
 
   constructor(params: AllbridgeCoreSdkOptions) {
     this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
+    this.bridgeService = new BridgeService(this.api);
   }
 
   async getTokensInfo(): Promise<TokensInfo> {
-    return await this.api.getTokensInfo();
+    return this.api.getTokensInfo();
   }
 
   async evmApprove(
     web3: Web3,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    const evmBridge = new EvmBridge(web3);
-    return evmBridge.approve(approveData);
+    return this.bridgeService.evmApprove(web3, approveData);
   }
 
-  async evmSend(web3: Web3, params: SendParams): Promise<TransactionResponse> {
-    const evmBridge = new EvmBridge(web3);
-    return evmBridge.send(params);
+  async send(web3: Web3, params: SendParams): Promise<TransactionResponse> {
+    return this.bridgeService.send(web3, params);
   }
 
   calculateFeesPercentOnSourceChain(

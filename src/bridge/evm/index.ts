@@ -9,13 +9,16 @@ import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
+import { chainProperties, ChainType } from "../../chains";
+import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   ApprovalBridge,
   ApproveData,
   GetTokenBalanceData,
   SendParams,
   TransactionResponse,
-} from "../../models";
+} from "../models";
+import { formatAddress } from "../utils";
 import abi from "./abi/Abi.json";
 import { Abi as Bridge } from "./types/Abi";
 import { BaseContract } from "./types/types";
@@ -24,7 +27,7 @@ export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 export class EvmBridge extends ApprovalBridge {
-  constructor(public web3: Web3) {
+  constructor(public api: AllbridgeCoreClient, public web3: Web3) {
     super();
   }
 
@@ -36,39 +39,67 @@ export class EvmBridge extends ApprovalBridge {
 
   async send(params: SendParams): Promise<TransactionResponse> {
     const {
-      account,
-      contractAddress,
-      tokenAddress,
       amount,
-      receiverAddress,
-      destinationChainId,
-      receiveTokenAddress,
+      fromChainSymbol,
+      fromAccountAddress,
+      fromTokenAddress,
+      toChainSymbol,
+      toAccountAddress,
+      toTokenAddress,
       messenger,
-      fee,
     } = params;
-    const formattedReceiveAddress = EvmBridge.formatAddress(receiverAddress);
-    const formattedTokenAddress = EvmBridge.formatAddress(tokenAddress);
-    const formattedReceiveTokenAddress =
-      EvmBridge.formatAddress(receiveTokenAddress);
+    let { fee } = params;
+
+    const tokensInfo = await this.api.getTokensInfo();
+    const chainDetailsMap = tokensInfo.chainDetailsMap();
+    const contractAddress = chainDetailsMap[fromChainSymbol].bridgeAddress;
+    const fromChainId = chainDetailsMap[fromChainSymbol].allbridgeChainId;
+    const toChainId = chainDetailsMap[toChainSymbol].allbridgeChainId;
+
+    if (fee == null) {
+      fee = await this.api.getReceiveTransactionCost({
+        sourceChainId: fromChainId,
+        destinationChainId: toChainId,
+        messenger,
+      });
+    }
+
+    const toChainType = chainProperties[toChainSymbol].chainType;
+    const formattedFromTokenAddress = formatAddress(
+      fromTokenAddress,
+      ChainType.EVM,
+      ChainType.EVM
+    );
+    const formattedToAccountAddress = formatAddress(
+      toAccountAddress,
+      toChainType,
+      ChainType.EVM
+    );
+    const formattedToTokenAddress = formatAddress(
+      toTokenAddress,
+      toChainType,
+      ChainType.EVM
+    );
+
     const bridgeContract = this.getBridgeContract(contractAddress);
     const nonce = new BN(EvmBridge.getNonce());
 
     const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      formattedTokenAddress,
+      formattedFromTokenAddress,
       amount,
-      formattedReceiveAddress,
-      destinationChainId,
-      formattedReceiveTokenAddress,
+      formattedToAccountAddress,
+      toChainId,
+      formattedToTokenAddress,
       nonce,
       messenger
     );
     const estimateGas = await swapAndBridgeMethod.estimateGas({
-      from: account,
+      from: fromAccountAddress,
       value: fee,
     });
 
     const { transactionHash } = await swapAndBridgeMethod.send({
-      from: account,
+      from: fromAccountAddress,
       value: fee,
       gas: estimateGas,
     });
@@ -107,20 +138,6 @@ export class EvmBridge extends ApprovalBridge {
 
   private getBridgeContract(contractAddress: string): Bridge {
     return this.getContract<Bridge>(abi as AbiItem[], contractAddress);
-  }
-
-  private static formatAddress(address: string): string {
-    return "0x" + EvmBridge.evmAddressToBuffer32(address).toString("hex");
-  }
-
-  private static evmAddressToBuffer32(address: string): Buffer {
-    const length = 32;
-    const buff = EvmBridge.hexToBuffer(address);
-    return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
-  }
-
-  private static hexToBuffer(hex: string): Buffer {
-    return Buffer.from(hex.replace(/^0x/i, ""), "hex");
   }
 
   private static getNonce(): Buffer {

@@ -1,5 +1,6 @@
 {
   "chainSymbol": "GRL",
+  "chainType": "EVM",
   "chainId": "0x5",
   "name": "Goerli",
   "allbridgeChainId": 2,

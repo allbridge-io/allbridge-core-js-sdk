@@ -1,4 +1,3 @@
-export * from "./bridge.model";
 export { Messenger } from "../client/core-api/core-api.model";
 
 export interface AmountsAndTxCost {

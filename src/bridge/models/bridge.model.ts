@@ -1,4 +1,6 @@
 import { Big } from "big.js";
+import { ChainSymbol } from "../../chains";
+import { Messenger } from "../../client/core-api/core-api.model";
 
 export abstract class Bridge {
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
@@ -33,13 +35,13 @@ export interface TransactionResponse {
 }
 
 export interface SendParams {
-  account: string;
-  contractAddress: string;
-  tokenAddress: string;
   amount: string;
-  receiverAddress: string;
-  destinationChainId: number;
-  receiveTokenAddress: string;
-  messenger: number;
-  fee: string;
+  fromChainSymbol: ChainSymbol;
+  fromTokenAddress: string;
+  fromAccountAddress: string;
+  toChainSymbol: ChainSymbol;
+  toTokenAddress: string;
+  toAccountAddress: string;
+  messenger: Messenger;
+  fee?: string;
 }

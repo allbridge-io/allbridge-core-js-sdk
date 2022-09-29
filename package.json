@@ -69,6 +69,7 @@
     "prettier": "^2.7.1",
     "semantic-release": "^19.0.5",
     "source-map-support": "^0.5.21",
+    "tronweb-typings": "^1.0.1",
     "typescript": "^4.8.3",
     "vitest": "^0.23.2"
   },
@@ -80,6 +81,7 @@
     "big.js": "^6.2.1",
     "bn.js": "^5.2.1",
     "erc-20-abi": "^1.0.0",
+    "tronweb": "^4.4.0",
     "typechain": "^8.1.0",
     "web3": "^1.8.0",
     "web3-core": "^1.8.0",

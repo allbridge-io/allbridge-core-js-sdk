@@ -1,6 +1,7 @@
 {
   "GRL": {
     "chainSymbol": "GRL",
+    "chainType": "EVM",
     "chainId": "0x5",
     "name": "Goerli",
     "allbridgeChainId": 2,
@@ -35,6 +36,7 @@
         "apr": "0.1",
         "lpRate": "1.000000275",
         "chainSymbol": "GRL",
+        "chainType": "EVM",
         "chainId": "0x5",
         "allbridgeChainId": 2,
         "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
@@ -69,6 +71,7 @@
         "apr": "0.1",
         "lpRate": "1.00000003",
         "chainSymbol": "GRL",
+        "chainType": "EVM",
         "chainId": "0x5",
         "allbridgeChainId": 2,
         "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
@@ -89,6 +92,7 @@
   },
   "RPS": {
     "chainSymbol": "RPS",
+    "chainType": "EVM",
     "chainId": "0x3",
     "name": "Ropsten",
     "allbridgeChainId": 3,
@@ -123,6 +127,7 @@
         "apr": "0.1",
         "lpRate": "1.00000001",
         "chainSymbol": "RPS",
+        "chainType": "EVM",
         "chainId": "0x3",
         "allbridgeChainId": 3,
         "bridgeAddress": "0x8aD93d65FFe170d0d72F7682d6E9Caf0F1A4c03d",
@@ -157,6 +162,7 @@
         "apr": "0.1",
         "lpRate": "1.00000001",
         "chainSymbol": "RPS",
+        "chainType": "EVM",
         "chainId": "0x3",
         "allbridgeChainId": 3,
         "bridgeAddress": "0x8aD93d65FFe170d0d72F7682d6E9Caf0F1A4c03d",
@@ -177,6 +183,7 @@
   },
   "TRX": {
     "chainSymbol": "TRX",
+    "chainType": "TRX",
     "name": "Tron",
     "allbridgeChainId": 4,
     "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
@@ -206,6 +213,7 @@
         "apr": "0",
         "lpRate": "1.00000013499865136347",
         "chainSymbol": "TRX",
+        "chainType": "TRX",
         "allbridgeChainId": 4,
         "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         "txTime": {
@@ -235,6 +243,7 @@
         "apr": "0",
         "lpRate": "1.00000007",
         "chainSymbol": "TRX",
+        "chainType": "TRX",
         "allbridgeChainId": 4,
         "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         "txTime": {
