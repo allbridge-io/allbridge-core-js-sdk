@@ -46,11 +46,11 @@ export enum MessengerKey {
   WORMHOLE = "wormhole",
 }
 
-export interface Messenger {
+export interface MessengerTxTime {
   in: number;
   out: number;
 }
 
 export type TxTime = {
-  [messenger in MessengerKey]: Messenger;
+  [messenger in MessengerKey]: MessengerTxTime;
 };
