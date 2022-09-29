@@ -17,15 +17,14 @@ export class AllbridgeCoreClient {
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
       baseURL: params.apiUrl,
-    });
-  }
-
-  async getTokensInfo(): Promise<TokensInfo> {
-    const { data } = await this.api.get<ChainDetailsMapDTO>("/token-info", {
       headers: {
         Accept: "application/json",
       },
     });
+  }
+
+  async getTokensInfo(): Promise<TokensInfo> {
+    const { data } = await this.api.get<ChainDetailsMapDTO>("/token-info");
     return new TokensInfo(mapChainDetailsMapFromDTO(data));
   }
 
@@ -34,12 +33,11 @@ export class AllbridgeCoreClient {
   ): Promise<string> {
     const { data } = await this.api.post<ReceiveTransactionCostResponse>(
       "/receive-fee",
+      args,
       {
         headers: {
-          Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: args,
       }
     );
     return data.fee;

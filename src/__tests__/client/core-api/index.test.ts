@@ -1,5 +1,5 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { beforeEach, afterEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import {
   Messenger,
@@ -27,9 +27,6 @@ describe("AllbridgeCoreClient", () => {
     it("☀️ getTokensInfo() returns TokensInfo", async () => {
       const actual = await api.getTokensInfo();
       expect(actual.chainDetailsMap()).toEqual(expectedTokensGroupedByChain);
-    });
-
-    afterEach(() => {
       scope.done();
     });
   });
@@ -53,9 +50,6 @@ describe("AllbridgeCoreClient", () => {
     it("☀️ getReceiveTransactionCost returns fee", async () => {
       const actual = await api.getReceiveTransactionCost(receiveFeeRequest);
       expect(actual).toEqual(fee);
-    });
-
-    afterEach(() => {
       scope.done();
     });
   });
@@ -64,6 +58,5 @@ describe("AllbridgeCoreClient", () => {
 function getRequestBodyMatcher(
   expectedBody: ReceiveTransactionCostRequest
 ): RequestBodyMatcher {
-  return (request: { body: Body }) =>
-    JSON.stringify(request.body) === JSON.stringify(expectedBody);
+  return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
 }
