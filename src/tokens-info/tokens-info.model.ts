@@ -1,13 +1,16 @@
-import { ChainProperties } from "../chains";
+import { BasicChainProperties } from "../chains";
 
-export type ChainDetailsMap = Record<string, ChainDetails>;
+export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 
-export interface ChainDetails extends ChainProperties {
-  tokens: TokenInfo[];
+export interface ChainDetails extends BasicChainProperties {
   allbridgeChainId: number;
   bridgeAddress: string;
   txTime: TxTime;
   confirmations: number;
+}
+
+export interface ChainDetailsWithTokens extends ChainDetails {
+  tokens: TokenInfoWithChainDetails[];
 }
 
 export interface TokenInfo {
@@ -46,11 +49,11 @@ export enum MessengerKey {
   WORMHOLE = "wormhole",
 }
 
-export interface Messenger {
+export interface MessengerTxTime {
   in: number;
   out: number;
 }
 
 export type TxTime = {
-  [messenger in MessengerKey]: Messenger;
+  [messenger in MessengerKey]: MessengerTxTime;
 };

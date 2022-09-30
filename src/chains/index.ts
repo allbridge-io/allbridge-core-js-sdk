@@ -1,4 +1,4 @@
-import { ChainProperties } from "./models";
+import { BasicChainProperties } from "./models";
 
 export * from "./models";
 
@@ -12,7 +12,7 @@ export enum ChainSymbol {
   TRX = "TRX",
 }
 
-export const chainProperties: Record<string, ChainProperties> = {
+export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.KVN]: {
     chainSymbol: ChainSymbol.KVN,
     chainId: "0x2a",

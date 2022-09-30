@@ -1,12 +1,10 @@
 import { ChainSymbol } from "../chains";
-import { mapChainDetailsToTokenInfoList } from "./tokens-info-mapper";
 import {
   ChainDetailsMap,
   TokenInfoWithChainDetails,
 } from "./tokens-info.model";
 
 export * from "./tokens-info.model";
-export * from "./tokens-info-mapper";
 
 export class TokensInfo {
   private readonly _map: ChainDetailsMap;
@@ -20,12 +18,12 @@ export class TokensInfo {
   }
 
   tokens(): TokenInfoWithChainDetails[] {
-    return Object.values(this._map).flatMap((chainDetails) =>
-      mapChainDetailsToTokenInfoList(chainDetails)
+    return Object.values(this._map).flatMap(
+      (chainDetails) => chainDetails.tokens
     );
   }
 
   tokensByChain(chainSymbol: ChainSymbol): TokenInfoWithChainDetails[] {
-    return mapChainDetailsToTokenInfoList(this._map[chainSymbol]);
+    return this._map[chainSymbol].tokens;
   }
 }

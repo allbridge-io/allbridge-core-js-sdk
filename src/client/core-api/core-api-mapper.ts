@@ -1,5 +1,10 @@
 import { chainProperties } from "../../chains";
-import { ChainDetails, ChainDetailsMap, TokenInfo } from "../../tokens-info";
+import {
+  ChainDetailsWithTokens,
+  ChainDetailsMap,
+  TokenInfoWithChainDetails,
+  ChainDetails,
+} from "../../tokens-info";
 import {
   ChainDetailsDTO,
   ChainDetailsMapDTO,
@@ -18,24 +23,37 @@ export function mapChainDetailsMapFromDTO(
   }, {});
 }
 
-function mapTokenInfoFromDto(dto: TokenDTO): TokenInfo {
-  return { ...dto };
+function mapTokenInfoWithChainDetailsFromDto(
+  chainDetails: ChainDetails,
+  dto: TokenDTO
+): TokenInfoWithChainDetails {
+  const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
+  return {
+    ...dto,
+    ...chainDetailsWithoutName,
+    chainName,
+  };
 }
 
 function mapChainDetailsFromDto(
   chainSymbol: string,
   dto: ChainDetailsDTO
-): ChainDetails | null {
+): ChainDetailsWithTokens | null {
   const basicChainProperties = chainProperties[chainSymbol];
   if (!basicChainProperties) {
     return null;
   }
-  return {
+  const chainDetails: ChainDetails = {
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
     txTime: dto.txTime,
     confirmations: dto.confirmations,
-    tokens: dto.tokens.map((dto) => mapTokenInfoFromDto(dto)),
+  };
+  return {
+    ...chainDetails,
+    tokens: dto.tokens.map((tokenDto) =>
+      mapTokenInfoWithChainDetailsFromDto(chainDetails, tokenDto)
+    ),
   };
 }
