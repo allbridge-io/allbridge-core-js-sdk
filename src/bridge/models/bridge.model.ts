@@ -1,11 +1,12 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "../../chains";
+import { ChainSymbol, ChainType } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
+import { TokenInfoWithChainDetails } from "../../tokens-info";
 
 export abstract class Bridge {
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
 
-  abstract send(params: SendParams): Promise<TransactionResponse>;
+  abstract send(params: BaseSendParams): Promise<TransactionResponse>;
 }
 
 export abstract class ApprovalBridge extends Bridge {
@@ -34,14 +35,35 @@ export interface TransactionResponse {
   txId: string;
 }
 
-export interface SendParams {
+export interface BaseSendParams {
   amount: string;
-  fromChainSymbol: ChainSymbol;
-  fromTokenAddress: string;
   fromAccountAddress: string;
-  toChainSymbol: ChainSymbol;
-  toTokenAddress: string;
   toAccountAddress: string;
   messenger: Messenger;
   fee?: string;
+}
+
+export interface ChainSymbolsSendParams extends BaseSendParams {
+  fromChainSymbol: ChainSymbol;
+  fromTokenAddress: string;
+  toChainSymbol: ChainSymbol;
+  toTokenAddress: string;
+}
+
+export interface TokensInfoSendParams extends BaseSendParams {
+  sourceChainToken: TokenInfoWithChainDetails;
+  destinationChainToken: TokenInfoWithChainDetails;
+}
+
+export interface TxSendParams {
+  amount: string;
+  contractAddress: string;
+  fromAccountAddress: string;
+  fromTokenAddress: string;
+  toChainType: ChainType;
+  toChainId: number;
+  toAccountAddress: string;
+  toTokenAddress: string;
+  messenger: Messenger;
+  fee: string;
 }

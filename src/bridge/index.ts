@@ -4,7 +4,12 @@ import Web3 from "web3";
 import { chainProperties, ChainType } from "../chains";
 import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";
-import { ApproveData, SendParams, TransactionResponse } from "./models";
+import {
+  ApproveData,
+  ChainSymbolsSendParams,
+  TokensInfoSendParams,
+  TransactionResponse,
+} from "./models";
 
 export class BridgeService {
   constructor(public api: AllbridgeCoreClient) {}
@@ -17,8 +22,17 @@ export class BridgeService {
     return evmBridge.approve(approveData);
   }
 
-  async send(web3: Web3, params: SendParams): Promise<TransactionResponse> {
-    const chainType = chainProperties[params.fromChainSymbol].chainType;
+  async send(
+    web3: Web3,
+    params: ChainSymbolsSendParams | TokensInfoSendParams
+  ): Promise<TransactionResponse> {
+    let chainType;
+    if (BridgeService.isSendParamsWithChainSymbol(params)) {
+      chainType = chainProperties[params.fromChainSymbol].chainType;
+    } else {
+      chainType =
+        chainProperties[params.sourceChainToken.chainSymbol].chainType;
+    }
     switch (chainType) {
       case ChainType.EVM: {
         const evmBridge = new EvmBridge(this.api, web3);
@@ -38,5 +52,11 @@ export class BridgeService {
         );
       }
     }
+  }
+
+  static isSendParamsWithChainSymbol(
+    params: ChainSymbolsSendParams | TokensInfoSendParams
+  ): params is ChainSymbolsSendParams {
+    return (params as ChainSymbolsSendParams).fromChainSymbol !== undefined;
   }
 }

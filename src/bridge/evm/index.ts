@@ -11,11 +11,14 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { chainProperties, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { BridgeService } from "../index";
 import {
   ApprovalBridge,
   ApproveData,
   GetTokenBalanceData,
-  SendParams,
+  TxSendParams,
+  ChainSymbolsSendParams,
+  TokensInfoSendParams,
   TransactionResponse,
 } from "../models";
 import { formatAddress } from "../utils";
@@ -37,24 +40,37 @@ export class EvmBridge extends ApprovalBridge {
       .call();
   }
 
-  async send(params: SendParams): Promise<TransactionResponse> {
-    const {
-      amount,
-      fromChainSymbol,
-      fromAccountAddress,
-      fromTokenAddress,
-      toChainSymbol,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-    } = params;
-    let { fee } = params;
+  async send(
+    params: ChainSymbolsSendParams | TokensInfoSendParams
+  ): Promise<TransactionResponse> {
+    let contractAddress;
+    let fromChainId;
+    let fromTokenAddress;
+    let toChainType;
+    let toChainId;
+    let toTokenAddress;
+    if (BridgeService.isSendParamsWithChainSymbol(params)) {
+      const tokensInfo = await this.api.getTokensInfo();
+      const chainDetailsMap = tokensInfo.chainDetailsMap();
 
-    const tokensInfo = await this.api.getTokensInfo();
-    const chainDetailsMap = tokensInfo.chainDetailsMap();
-    const contractAddress = chainDetailsMap[fromChainSymbol].bridgeAddress;
-    const fromChainId = chainDetailsMap[fromChainSymbol].allbridgeChainId;
-    const toChainId = chainDetailsMap[toChainSymbol].allbridgeChainId;
+      contractAddress = chainDetailsMap[params.fromChainSymbol].bridgeAddress;
+      fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
+      fromTokenAddress = params.fromTokenAddress;
+      toChainType = chainProperties[params.toChainSymbol].chainType;
+      toChainId = chainDetailsMap[params.toChainSymbol].allbridgeChainId;
+      toTokenAddress = params.toTokenAddress;
+    } else {
+      contractAddress = params.sourceChainToken.bridgeAddress;
+      fromChainId = params.sourceChainToken.allbridgeChainId;
+      fromTokenAddress = params.sourceChainToken.tokenAddress;
+      toChainType =
+        chainProperties[params.destinationChainToken.chainSymbol].chainType;
+      toChainId = params.destinationChainToken.allbridgeChainId;
+      toTokenAddress = params.destinationChainToken.tokenAddress;
+    }
+
+    const { amount, fromAccountAddress, toAccountAddress, messenger } = params;
+    let { fee } = params;
 
     if (fee == null) {
       fee = await this.api.getReceiveTransactionCost({
@@ -64,7 +80,34 @@ export class EvmBridge extends ApprovalBridge {
       });
     }
 
-    const toChainType = chainProperties[toChainSymbol].chainType;
+    return this.sendTx({
+      amount,
+      contractAddress,
+      fromAccountAddress,
+      fromTokenAddress,
+      toChainType,
+      toChainId,
+      toAccountAddress,
+      toTokenAddress,
+      messenger,
+      fee,
+    });
+  }
+
+  async sendTx(params: TxSendParams): Promise<TransactionResponse> {
+    const {
+      amount,
+      contractAddress,
+      fromAccountAddress,
+      fromTokenAddress,
+      toChainType,
+      toChainId,
+      toAccountAddress,
+      toTokenAddress,
+      messenger,
+      fee,
+    } = params;
+
     const formattedFromTokenAddress = formatAddress(
       fromTokenAddress,
       ChainType.EVM,

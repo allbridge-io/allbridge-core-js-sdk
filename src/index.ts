@@ -1,7 +1,12 @@
 import { Big, BigSource } from "big.js";
 import Web3 from "web3";
 import { BridgeService } from "./bridge";
-import { ApproveData, SendParams, TransactionResponse } from "./bridge/models";
+import {
+  ApproveData,
+  ChainSymbolsSendParams,
+  TokensInfoSendParams,
+  TransactionResponse,
+} from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
@@ -39,6 +44,11 @@ export class AllbridgeCoreSdk {
     return this.api.getTokensInfo();
   }
 
+  /**
+   * Method to approve tokens on evm chains
+   * @param web3
+   * @param approveData
+   */
   async evmApprove(
     web3: Web3,
     approveData: ApproveData
@@ -46,7 +56,15 @@ export class AllbridgeCoreSdk {
     return this.bridgeService.evmApprove(web3, approveData);
   }
 
-  async send(web3: Web3, params: SendParams): Promise<TransactionResponse> {
+  /**
+   * Method to send tokens through the Bridge
+   * @param web3
+   * @param params
+   */
+  async send(
+    web3: Web3,
+    params: ChainSymbolsSendParams | TokensInfoSendParams
+  ): Promise<TransactionResponse> {
     return this.bridgeService.send(web3, params);
   }
 
