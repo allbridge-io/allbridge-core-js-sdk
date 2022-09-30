@@ -57,6 +57,7 @@ export class BridgeService {
   static isSendParamsWithChainSymbol(
     params: ChainSymbolsSendParams | TokensInfoSendParams
   ): params is ChainSymbolsSendParams {
+    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
     return (params as ChainSymbolsSendParams).fromChainSymbol !== undefined;
   }
 }

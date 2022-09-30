@@ -45,8 +45,8 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Method to approve tokens on evm chains
-   * @param web3
+   * Approve tokens usage by another address on evm chains
+   * @param web3 - Web3 Provider
    * @param approveData
    */
   async evmApprove(
@@ -57,8 +57,8 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Method to send tokens through the Bridge
-   * @param web3
+   * Send tokens through the Bridge
+   * @param web3 - Web3 Provider
    * @param params
    */
   async send(
@@ -191,7 +191,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
   ) {
-    return await this.api.getReceiveTransactionCost({
+    return this.api.getReceiveTransactionCost({
       sourceChainId: sourceChainToken.allbridgeChainId,
       destinationChainId: destinationChainToken.allbridgeChainId,
       messenger,

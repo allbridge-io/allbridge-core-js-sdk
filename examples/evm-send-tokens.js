@@ -13,7 +13,7 @@ async function runExample() {
   const privateKey = process.env.PRIVATE_KEY;
 
   const sendParams = {
-    amount: "0x10A741A462780000", //amount: 1200000000000000000 // 1.2 in 18 decimals dimension converted to hex
+    amount: "0x10A741A462780000", // 1.2 in 18 decimals dimension converted to hex OR you can use: // amount: "1200000000000000000" //
 
     fromChainSymbol: ChainSymbol.GRL,
     fromTokenAddress: tokenAddress,
@@ -24,8 +24,8 @@ async function runExample() {
     toAccountAddress: accountAddress,
 
     messenger: Messenger.ALLBRIDGE,
-    // fee: 2000000000000000, //TODO //0.002 Ether
-    // fee: 20000000000000000, //TODO //0.02 Ether
+    // fee: 2000000000000000,  //0.002 Ether - optional param
+    // fee: 20000000000000000, //0.02 Ether - optional param
   };
 
   const web3 = new Web3(web3ProviderUrl);
