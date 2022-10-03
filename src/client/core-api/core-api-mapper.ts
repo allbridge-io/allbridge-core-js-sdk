@@ -40,6 +40,7 @@ function mapChainDetailsFromDto(
   dto: ChainDetailsDTO
 ): ChainDetailsWithTokens | null {
   const basicChainProperties = chainProperties[chainSymbol];
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
     return null;
   }
