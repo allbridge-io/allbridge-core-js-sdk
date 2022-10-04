@@ -7,6 +7,9 @@ import {
 export * from "./tokens-info.model";
 
 export class TokensInfo {
+  /**
+   * @internal
+   */
   private readonly _map: ChainDetailsMap;
 
   /**

@@ -34,7 +34,7 @@
     "cz": "cz",
     "semantic-release": "semantic-release",
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
-    "tsdoc": "typedoc src/index.ts"
+    "tsdoc": "typedoc --excludeInternal src/index.ts"
   },
   "repository": {
     "type": "git",
