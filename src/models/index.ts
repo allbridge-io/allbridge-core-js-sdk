@@ -2,8 +2,8 @@ export {
   ApproveData,
   TransactionResponse,
   BaseSendParams,
-  ChainSymbolsSendParams,
-  TokensInfoSendParams,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
 } from "../bridge/models/bridge.model";
 export { Messenger } from "../client/core-api/core-api.model";
 export { ChainSymbol } from "../chains/index";
@@ -21,7 +21,7 @@ export interface AmountsAndTxCost {
   toAmount: string;
 
   /**
-   * The amount to pay for the swap in the smallest denomination of the source chain currency.
+   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
    */
   txCost: string;
 }

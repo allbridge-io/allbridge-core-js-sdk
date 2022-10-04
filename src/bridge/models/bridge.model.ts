@@ -35,23 +35,56 @@ export interface TransactionResponse {
   txId: string;
 }
 
+/**
+ * @internal
+ */
 export interface BaseSendParams {
+  /**
+   * The integer amount of tokens to transfer.
+   */
   amount: string;
+  /**
+   * The account address to transfer tokens from.
+   */
   fromAccountAddress: string;
+  /**
+   * The account address to transfer tokens to.
+   */
   toAccountAddress: string;
   messenger: Messenger;
+  /**
+   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
+   */
   fee?: string;
 }
 
-export interface ChainSymbolsSendParams extends BaseSendParams {
+export interface SendParamsWithChainSymbols extends BaseSendParams {
+  /**
+   * The chain symbol to transfer tokens from.
+   */
   fromChainSymbol: ChainSymbol;
+  /**
+   * The token contract address on the source chain.
+   */
   fromTokenAddress: string;
+  /**
+   * The chain symbol to transfer tokens to.
+   */
   toChainSymbol: ChainSymbol;
+  /**
+   * The token contract address on the destination chain.
+   */
   toTokenAddress: string;
 }
 
-export interface TokensInfoSendParams extends BaseSendParams {
+export interface SendParamsWithTokenInfos extends BaseSendParams {
+  /**
+   * {@link TokenInfoWithChainDetails |The token info object} on the source chain.
+   */
   sourceChainToken: TokenInfoWithChainDetails;
+  /**
+   * {@link TokenInfoWithChainDetails |The token info object} on the destination chain.
+   */
   destinationChainToken: TokenInfoWithChainDetails;
 }
 

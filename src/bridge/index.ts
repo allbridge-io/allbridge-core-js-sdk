@@ -6,8 +6,8 @@ import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";
 import {
   ApproveData,
-  ChainSymbolsSendParams,
-  TokensInfoSendParams,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./models";
 
@@ -24,7 +24,7 @@ export class BridgeService {
 
   async send(
     web3: Web3,
-    params: ChainSymbolsSendParams | TokensInfoSendParams
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
     let chainType;
     if (BridgeService.isSendParamsWithChainSymbol(params)) {
@@ -55,9 +55,9 @@ export class BridgeService {
   }
 
   static isSendParamsWithChainSymbol(
-    params: ChainSymbolsSendParams | TokensInfoSendParams
-  ): params is ChainSymbolsSendParams {
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+  ): params is SendParamsWithChainSymbols {
     /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-    return (params as ChainSymbolsSendParams).fromChainSymbol !== undefined;
+    return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
   }
 }

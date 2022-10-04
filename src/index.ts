@@ -3,8 +3,8 @@ import Web3 from "web3";
 import { BridgeService } from "./bridge";
 import {
   ApproveData,
-  ChainSymbolsSendParams,
-  TokensInfoSendParams,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
@@ -84,7 +84,7 @@ export class AllbridgeCoreSdk {
    */
   async send(
     web3: Web3,
-    params: ChainSymbolsSendParams | TokensInfoSendParams
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
     return this.bridgeService.send(web3, params);
   }
@@ -260,7 +260,7 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
-   * @returns Amount to pay in the smallest denomination of the source chain currency.
+   * @returns The amount of gas fee to pay for transfer in the smallest denomination of the source chain currency.
    */
   async getTxCost(
     sourceChainToken: TokenInfoWithChainDetails,
