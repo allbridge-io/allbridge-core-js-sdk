@@ -1,5 +1,8 @@
 import { BasicChainProperties } from "../chains";
 
+/**
+ * Contains mapping of {@link ChainSymbol} and chain details.
+ */
 export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 
 export interface ChainDetails extends BasicChainProperties {
@@ -54,6 +57,9 @@ export interface MessengerTxTime {
   out: number;
 }
 
+/**
+ * Contains average transaction times per messenger.
+ */
 export type TxTime = {
   [messenger in MessengerKey]: MessengerTxTime;
 };

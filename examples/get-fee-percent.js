@@ -2,7 +2,7 @@ const { AllbridgeCoreSdk } = require("..");
 const configs = require("../build/src/configs");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(configs.development);
+  const sdk = new AllbridgeCoreSdk(configs.production);
 
   const tokensInfo = await sdk.getTokensInfo();
 
@@ -20,20 +20,20 @@ async function runExample() {
     destinationToken.chainSymbol
   );
 
-  const sourceFeePercent = sdk.calculateFeesPercentOnSourceChain(
+  const sourceFeePercent = sdk.calculateFeePercentOnSourceChain(
     amount,
     sourceToken
   );
-  console.log("Fees on the source chain = %s%", sourceFeePercent.toFixed(2));
+  console.log("Fee on the source chain = %s%", sourceFeePercent.toFixed(2));
 
-  const destinationFeesPercent = sdk.calculateFeesPercentOnDestinationChain(
+  const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
     amount,
     sourceToken,
     destinationToken
   );
   console.log(
-    "Fees on the destination chain = %s%",
-    destinationFeesPercent.toFixed(2)
+    "Fee on the destination chain = %s%",
+    destinationFeePercent.toFixed(2)
   );
 }
 

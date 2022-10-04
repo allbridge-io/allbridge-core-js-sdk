@@ -3,7 +3,7 @@ import { TokenInfo } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
 export function getFeePercent(input: BigSource, output: BigSource): number {
-  return Big(100).minus(Big(100).times(output).div(input)).round(2).toNumber();
+  return Big(100).minus(Big(100).times(output).div(input)).toNumber();
 }
 
 export function toSystemPrecision(amount: BigSource, decimals: number): Big {
