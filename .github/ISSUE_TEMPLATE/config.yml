@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: GitHub Discussions
-    url: https://github.com/m-cote/allbridge-core-sdk/discussions
+    url: https://github.com/allbridge-io/allbridge-core-js-sdk/discussions
     about: Please discuss non bug-related topics there

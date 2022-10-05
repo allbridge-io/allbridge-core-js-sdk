@@ -1,0 +1,157 @@
+{
+  "GRL": {
+    "tokens": [
+      {
+        "name": "Yaroslav Stable Token",
+        "poolAddress": "0xEc46d2b11e68A31026673D63B345B889AB37C0Bc",
+        "tokenAddress": "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
+        "decimals": 18,
+        "symbol": "YUSD",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200000001",
+          "tokenBalance": "100469776",
+          "vUsdBalance": "99530279",
+          "totalLpAmount": "100000000",
+          "accRewardPerShareP": "61452639838135255812251932"
+        },
+        "feeShare": "0.003",
+        "apr": "0.1",
+        "lpRate": "1.000000275"
+      },
+      {
+        "name": "YARO Stable",
+        "poolAddress": "0x727e10f9E750C922bf9dee7620B58033F566b34F",
+        "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
+        "decimals": 18,
+        "symbol": "YARO",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200000001",
+          "tokenBalance": "100131102",
+          "vUsdBalance": "99868904",
+          "totalLpAmount": "100000000",
+          "accRewardPerShareP": "16785636387150217916395996"
+        },
+        "feeShare": "0.003",
+        "apr": "0.1",
+        "lpRate": "1.00000003"
+      }
+    ],
+    "chainId": 2,
+    "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+    "txTime": {
+      "allbridge": {
+        "in": 30000,
+        "out": 120000
+      },
+      "wormhole": {
+        "in": 30000,
+        "out": 120000
+      }
+    },
+    "confirmations": 5
+  },
+  "RPS": {
+    "tokens": [
+      {
+        "name": "YARO",
+        "poolAddress": "0x585C4E3B67f4AfaE1B433FcFffE66dEE93567b9f",
+        "tokenAddress": "0x54B79d73d514224379107703C6102D53E321aEFa",
+        "decimals": 12,
+        "symbol": "YARO",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200000001",
+          "tokenBalance": "99945523",
+          "vUsdBalance": "100054479",
+          "totalLpAmount": "100000000",
+          "accRewardPerShareP": "36142936247920045836"
+        },
+        "feeShare": "0.003",
+        "apr": "0.1",
+        "lpRate": "1.00000001"
+      },
+      {
+        "name": "USDY",
+        "poolAddress": "0x3df3E795fd18e533512A2a15C36Afa53929eE330",
+        "tokenAddress": "0xbB3E4a21BC11A21A01d3692b916cc80cC14d4529",
+        "decimals": 6,
+        "symbol": "USDY",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200000001",
+          "tokenBalance": "99996014",
+          "vUsdBalance": "100003988",
+          "totalLpAmount": "100000000",
+          "accRewardPerShareP": "430859376347"
+        },
+        "feeShare": "0.003",
+        "apr": "0.1",
+        "lpRate": "1.00000001"
+      }
+    ],
+    "chainId": 3,
+    "bridgeAddress": "0x8aD93d65FFe170d0d72F7682d6E9Caf0F1A4c03d",
+    "txTime": {
+      "allbridge": {
+        "in": 30000,
+        "out": 120000
+      },
+      "wormhole": {
+        "in": 30000,
+        "out": 120000
+      }
+    },
+    "confirmations": 5
+  },
+  "TRX": {
+    "tokens": [
+      {
+        "name": "Yaroslav Stable Token",
+        "poolAddress": "TYZmD6XgFNRNkDthZ8y7o2D9wPTqex7eRD",
+        "tokenAddress": "TYjmrhFaFMNKE8RheRUCQUWJHpRbY8Q9zy",
+        "decimals": 18,
+        "symbol": "USDY",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200002007",
+          "tokenBalance": "99733829",
+          "vUsdBalance": "100268196",
+          "totalLpAmount": "100000999",
+          "accRewardPerShareP": "38158654839395707688528060"
+        },
+        "feeShare": "0.003",
+        "apr": "0",
+        "lpRate": "1.00000013499865136347"
+      },
+      {
+        "name": "Yaro Stable",
+        "poolAddress": "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd",
+        "tokenAddress": "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
+        "decimals": 18,
+        "symbol": "YARO",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "200000001",
+          "tokenBalance": "99770715",
+          "vUsdBalance": "100229299",
+          "totalLpAmount": "100000000",
+          "accRewardPerShareP": "26941073402885591531520000"
+        },
+        "feeShare": "0.003",
+        "apr": "0",
+        "lpRate": "1.00000007"
+      }
+    ],
+    "chainId": 4,
+    "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
+    "txTime": {
+      "allbridge": {
+        "in": 30000,
+        "out": 180000
+      }
+    },
+    "confirmations": 20
+  }
+}

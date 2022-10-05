@@ -14,30 +14,56 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: volta-cli/action@v1
-      - run: npm ci
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Dependencies audit
-        run: npm audit
+        run: pnpm audit
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Format check
-        run: npm run format:check
+        run: pnpm run format:check
 
       - name: Lint check
-        run: npm run lint:check
+        run: pnpm run lint:check
 
       - name: Spell check
-        run: npm run spell:check
+        run: pnpm run spell:check
 
       - name: Test
-        run: npm run test
+        run: pnpm run test
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm run semantic-release
+        run: pnpm run semantic-release

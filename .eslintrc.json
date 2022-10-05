@@ -40,6 +40,10 @@
     ],
     "import/no-extraneous-dependencies": "error",
     "import/no-mutable-exports": "error",
-    "import/no-unused-modules": "error"
+    "import/no-unused-modules": "error",
+    "@typescript-eslint/no-unused-vars": ["warn", { "varsIgnorePattern": "^_" }],
+    "eslint-comments/no-unlimited-disable": "off",
+    "eslint-comments/disable-enable-pair": "off",
+    "@typescript-eslint/ban-tslint-comment": "off"
   }
 }
