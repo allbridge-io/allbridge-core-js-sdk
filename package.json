@@ -1,5 +1,5 @@
 {
-  "name": "allbridge-core-sdk",
+  "name": "@allbridge/allbridge-core-sdk",
   "version": "0.0.0-development",
   "main": "./build/cjs/index.js",
   "module": "./build/esm/index.js",
