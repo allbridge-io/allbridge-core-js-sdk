@@ -273,4 +273,28 @@ export class AllbridgeCoreSdk {
       messenger,
     });
   }
+
+  /**
+   * Gets the average time in ms to complete a transfer for given tokens and messenger.
+   * @param sourceChainToken selected token on the source chain.
+   * @param destinationChainToken selected token on the destination chain.
+   * @param messenger
+   * @returns Average transfer time in milliseconds or null if given combination of tokens and messenger is not supported.
+   */
+  getAverageTransferTime(
+    sourceChainToken: TokenInfoWithChainDetails,
+    destinationChainToken: TokenInfoWithChainDetails,
+    messenger: Messenger
+  ): number | null {
+    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+    if (!sourceChainToken || !destinationChainToken || !messenger) {
+      return null;
+    }
+    const sourceTxTime = sourceChainToken.txTime[messenger]?.in;
+    const destinationTxTime = destinationChainToken.txTime[messenger]?.out;
+    if (!sourceTxTime || !destinationTxTime) {
+      return null;
+    }
+    return sourceTxTime + destinationTxTime;
+  }
 }

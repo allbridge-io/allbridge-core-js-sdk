@@ -1,4 +1,5 @@
 import { BasicChainProperties } from "../chains";
+import { Messenger } from "../client/core-api/core-api.model";
 
 /**
  * Contains mapping of {@link ChainSymbol} and chain details.
@@ -47,11 +48,6 @@ export interface PoolInfo {
   accRewardPerShareP: string;
 }
 
-export enum MessengerKey {
-  ALLBRIDGE = "allbridge",
-  WORMHOLE = "wormhole",
-}
-
 export interface MessengerTxTime {
   in: number;
   out: number;
@@ -61,5 +57,5 @@ export interface MessengerTxTime {
  * Contains average transaction times per messenger.
  */
 export type TxTime = {
-  [messenger in MessengerKey]: MessengerTxTime;
+  [messenger in Messenger]?: MessengerTxTime;
 };

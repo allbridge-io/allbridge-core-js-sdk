@@ -1,5 +1,11 @@
-import { beforeEach, describe, expect, test, it } from "vitest";
-import { AllbridgeCoreSdk } from "../index";
+import { beforeEach, describe, expect, it, test } from "vitest";
+import { ChainType } from "../chains";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+  TokenInfoWithChainDetails,
+} from "../index";
 import { TokenInfo } from "../tokens-info";
 
 const basicTokenInfo = {
@@ -89,6 +95,93 @@ describe("SDK", () => {
           destinationChainToken
         );
         expect(actual).toEqual(0);
+      });
+    });
+  });
+
+  describe("Given transfer parameters", () => {
+    const sourceChainDetails = {
+      chainSymbol: ChainSymbol.GRL,
+      chainId: "0x5",
+      chainName: "Goerli",
+      chainType: ChainType.EVM,
+      allbridgeChainId: 2,
+      bridgeAddress: "bridgeAddress",
+      confirmations: 5,
+      txTime: {
+        [Messenger.ALLBRIDGE]: {
+          in: 30000,
+          out: 120000,
+        },
+      },
+    };
+    const destinationChainDetails = {
+      chainSymbol: ChainSymbol.RPS,
+      chainId: "0x3",
+      chainName: "Ropsten",
+      chainType: ChainType.EVM,
+      allbridgeChainId: 3,
+      bridgeAddress: "bridgeAddress",
+      confirmations: 5,
+      txTime: {
+        [Messenger.ALLBRIDGE]: {
+          in: 30000,
+          out: 120000,
+        },
+      },
+    };
+
+    const sourceChainToken: TokenInfoWithChainDetails = {
+      ...basicTokenInfo,
+      ...sourceChainDetails,
+      decimals: 18,
+      feeShare: "0",
+      poolInfo: {
+        aValue: "20",
+        dValue: "20000000",
+        vUsdBalance: "10000000",
+        tokenBalance: "10000000",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
+      },
+    };
+
+    const destinationChainToken: TokenInfoWithChainDetails = {
+      ...basicTokenInfo,
+      ...destinationChainDetails,
+      decimals: 18,
+      feeShare: "0",
+      poolInfo: {
+        aValue: "20",
+        dValue: "20000000",
+        vUsdBalance: "10000000",
+        tokenBalance: "10000000",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
+      },
+    };
+
+    describe("getAverageTransferTime", () => {
+      it("☀ should return 150 sec -> 150000", () => {
+        const actual = sdk.getAverageTransferTime(
+          sourceChainToken,
+          destinationChainToken,
+          Messenger.ALLBRIDGE
+        );
+        expect(actual).toEqual(150_000);
+      });
+
+      describe("given unsupported messenger", () => {
+        const unsupportedMessenger = 999;
+
+        it("☁ should return null -> null", () => {
+          const actual = sdk.getAverageTransferTime(
+            sourceChainToken,
+            destinationChainToken,
+            unsupportedMessenger
+          );
+          expect(actual).toBeNull();
+        });
       });
     });
   });

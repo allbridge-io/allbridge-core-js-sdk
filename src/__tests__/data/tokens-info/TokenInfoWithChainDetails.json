@@ -22,11 +22,11 @@
     "allbridgeChainId": 2,
     "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 120000
       },
-      "wormhole": {
+      "2": {
         "in": 30000,
         "out": 120000
       }
@@ -57,11 +57,11 @@
     "allbridgeChainId": 2,
     "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 120000
       },
-      "wormhole": {
+      "2": {
         "in": 30000,
         "out": 120000
       }
@@ -92,11 +92,11 @@
     "allbridgeChainId": 3,
     "bridgeAddress": "0x8aD93d65FFe170d0d72F7682d6E9Caf0F1A4c03d",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 120000
       },
-      "wormhole": {
+      "2": {
         "in": 30000,
         "out": 120000
       }
@@ -127,11 +127,11 @@
     "allbridgeChainId": 3,
     "bridgeAddress": "0x8aD93d65FFe170d0d72F7682d6E9Caf0F1A4c03d",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 120000
       },
-      "wormhole": {
+      "2": {
         "in": 30000,
         "out": 120000
       }
@@ -161,7 +161,7 @@
     "allbridgeChainId": 4,
     "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 180000
       }
@@ -191,7 +191,7 @@
     "allbridgeChainId": 4,
     "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
     "txTime": {
-      "allbridge": {
+      "1": {
         "in": 30000,
         "out": 180000
       }
