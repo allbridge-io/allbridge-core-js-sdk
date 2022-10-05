@@ -6,11 +6,11 @@
   "allbridgeChainId": 2,
   "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
   "txTime": {
-    "allbridge": {
+    "1": {
       "in": 30000,
       "out": 120000
     },
-    "wormhole": {
+    "2": {
       "in": 30000,
       "out": 120000
     }
@@ -39,11 +39,11 @@
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       "txTime": {
-        "allbridge": {
+        "1": {
           "in": 30000,
           "out": 120000
         },
-        "wormhole": {
+        "2": {
           "in": 30000,
           "out": 120000
         }
@@ -73,11 +73,11 @@
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       "txTime": {
-        "allbridge": {
+        "1": {
           "in": 30000,
           "out": 120000
         },
-        "wormhole": {
+        "2": {
           "in": 30000,
           "out": 120000
         }
