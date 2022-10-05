@@ -40,13 +40,13 @@ function mapTokenInfoWithChainDetailsFromDto(
 }
 
 function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
-  if (dto === MessengerKeyDTO.ALLBRIDGE) {
-    return Messenger.ALLBRIDGE;
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-  } else if (dto === MessengerKeyDTO.WORMHOLE) {
-    return Messenger.WORMHOLE;
-  } else {
-    return null;
+  switch (dto) {
+    case MessengerKeyDTO.ALLBRIDGE:
+      return Messenger.ALLBRIDGE;
+    case MessengerKeyDTO.WORMHOLE:
+      return Messenger.WORMHOLE;
+    default:
+      return null;
   }
 }
 

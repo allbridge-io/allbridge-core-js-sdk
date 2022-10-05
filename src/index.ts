@@ -286,10 +286,6 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
   ): number | null {
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-    if (!sourceChainToken || !destinationChainToken || !messenger) {
-      return null;
-    }
     const sourceTxTime = sourceChainToken.txTime[messenger]?.in;
     const destinationTxTime = destinationChainToken.txTime[messenger]?.out;
     if (!sourceTxTime || !destinationTxTime) {
