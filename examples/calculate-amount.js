@@ -3,7 +3,7 @@ const configs = require("../build/src/configs");
 const { Messenger } = require("../build/cjs");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(configs.development);
+  const sdk = new AllbridgeCoreSdk(configs.production);
 
   const tokensInfo = await sdk.getTokensInfo();
 

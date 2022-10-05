@@ -1,10 +1,10 @@
-import { Big, BigSource } from "big.js";
+import { Big } from "big.js";
 import Web3 from "web3";
 import { BridgeService } from "./bridge";
 import {
   ApproveData,
-  ChainSymbolsSendParams,
-  TokensInfoSendParams,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
@@ -25,21 +25,42 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
-export * from "./models";
 
-interface AllbridgeCoreSdkOptions {
+export * from "./configs/production";
+export * from "./models";
+export {
+  TokenInfo,
+  TokensInfo,
+  ChainDetailsMap,
+  ChainDetailsWithTokens,
+} from "./tokens-info";
+
+export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
 }
 
 export class AllbridgeCoreSdk {
-  private api: AllbridgeCoreClient;
+  /**
+   * @internal
+   */
+  private readonly api: AllbridgeCoreClient;
+  /**
+   * @internal
+   */
   private bridgeService: BridgeService;
 
+  /**
+   * Initializes the SDK object.
+   * @param params Preset parameters can be used. See {@link production | production preset}
+   */
   constructor(params: AllbridgeCoreSdkOptions) {
     this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
     this.bridgeService = new BridgeService(this.api);
   }
 
+  /**
+   * Fetches information about the supported tokens from the Allbridge Core API.
+   */
   async getTokensInfo(): Promise<TokensInfo> {
     return this.api.getTokensInfo();
   }
@@ -63,19 +84,28 @@ export class AllbridgeCoreSdk {
    */
   async send(
     web3: Web3,
-    params: ChainSymbolsSendParams | TokensInfoSendParams
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
     return this.bridgeService.send(web3, params);
   }
 
-  calculateFeesPercentOnSourceChain(
-    amountFloat: BigSource,
+  /**
+   * Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
+   * @param amountFloat initial amount of tokens to swap
+   * @param sourceChainToken selected token on the source chain
+   * @returns fee percent
+   */
+  calculateFeePercentOnSourceChain(
+    amountFloat: number | string | Big,
     sourceChainToken: TokenInfo
   ): number {
     const amountInt = convertFloatAmountToInt(
       amountFloat,
       sourceChainToken.decimals
     );
+    if (amountInt.eq(0)) {
+      return 0;
+    }
     const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
     const vUsdInSourcePrecision = fromSystemPrecision(
       vUsdInSystemPrecision,
@@ -84,8 +114,16 @@ export class AllbridgeCoreSdk {
     return getFeePercent(amountInt, vUsdInSourcePrecision);
   }
 
-  calculateFeesPercentOnDestinationChain(
-    amountFloat: BigSource,
+  /**
+   * Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain fee percent applies to the amount after the source chain fee.
+   * @see {@link calculateFeePercentOnSourceChain}
+   * @param amountFloat initial amount of tokens to swap
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @returns fee percent
+   */
+  calculateFeePercentOnDestinationChain(
+    amountFloat: number | string | Big,
     sourceChainToken: TokenInfo,
     destinationChainToken: TokenInfo
   ): number {
@@ -93,6 +131,9 @@ export class AllbridgeCoreSdk {
       amountFloat,
       sourceChainToken.decimals
     );
+    if (amountInt.eq(0)) {
+      return 0;
+    }
     const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
     const usd = swapFromVUsd(vUsdInSystemPrecision, destinationChainToken);
     const vUsdInDestinationPrecision = fromSystemPrecision(
@@ -102,8 +143,16 @@ export class AllbridgeCoreSdk {
     return getFeePercent(vUsdInDestinationPrecision, usd);
   }
 
+  /**
+   * Calculates the amount of tokens the receiving party will get as a result of the swap
+   * and fetches the amount of units in source chain currency to pay for the swap.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger
+   */
   async getAmountToBeReceivedAndTxCost(
-    amountToSendFloat: BigSource,
+    amountToSendFloat: number | string | Big,
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
@@ -123,8 +172,16 @@ export class AllbridgeCoreSdk {
     };
   }
 
+  /**
+   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap
+   * and fetches the amount of units in source chain currency to pay for the swap.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger
+   */
   async getAmountToSendAndTxCost(
-    amountToBeReceivedFloat: BigSource,
+    amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
@@ -144,8 +201,14 @@ export class AllbridgeCoreSdk {
     };
   }
 
+  /**
+   * Calculates the amount of tokens the receiving party will get as a result of the swap.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   */
   getAmountToBeReceived(
-    amountToSendFloat: BigSource,
+    amountToSendFloat: number | string | Big,
     sourceChainToken: TokenInfo,
     destinationChainToken: TokenInfo
   ): string {
@@ -165,8 +228,14 @@ export class AllbridgeCoreSdk {
     ).toFixed();
   }
 
+  /**
+   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   */
   getAmountToSend(
-    amountToBeReceivedFloat: BigSource,
+    amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenInfo,
     destinationChainToken: TokenInfo
   ): string {
@@ -186,11 +255,18 @@ export class AllbridgeCoreSdk {
     ).toFixed();
   }
 
+  /**
+   * Fetches the amount of units in source chain currency to pay for the swap.
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger
+   * @returns The amount of gas fee to pay for transfer in the smallest denomination of the source chain currency.
+   */
   async getTxCost(
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
-  ) {
+  ): Promise<string> {
     return this.api.getReceiveTransactionCost({
       sourceChainId: sourceChainToken.allbridgeChainId,
       destinationChainId: destinationChainToken.allbridgeChainId,

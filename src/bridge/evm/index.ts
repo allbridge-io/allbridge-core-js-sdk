@@ -17,8 +17,8 @@ import {
   ApproveData,
   GetTokenBalanceData,
   TxSendParams,
-  ChainSymbolsSendParams,
-  TokensInfoSendParams,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   TransactionResponse,
 } from "../models";
 import { formatAddress } from "../utils";
@@ -41,7 +41,7 @@ export class EvmBridge extends ApprovalBridge {
   }
 
   async send(
-    params: ChainSymbolsSendParams | TokensInfoSendParams
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
     let contractAddress;
     let fromChainId;

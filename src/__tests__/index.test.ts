@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, it } from "vitest";
 import { AllbridgeCoreSdk } from "../index";
 import { TokenInfo } from "../tokens-info";
 
@@ -47,30 +47,49 @@ describe("SDK", () => {
       },
     };
 
-    test.each([
-      [10, 0.01],
-      [10_000, 10],
-    ])(
-      "☀️ calculateFeesPercentOnSourceChain amount: %d -> %d%%",
-      (amountFloat, expectedPercent) => {
-        const actual = sdk.calculateFeesPercentOnSourceChain(
-          amountFloat,
+    describe("calculateFeesPercentOnSourceChain", () => {
+      test.each([
+        [10, 0.01],
+        [10_000, 10],
+      ])(
+        "☀️ should return fee percent for amount: %d -> %d%%",
+        (amountFloat, expectedPercent) => {
+          const actual = sdk.calculateFeePercentOnSourceChain(
+            amountFloat,
+            sourceChainToken
+          );
+          expect(actual).toEqual(expectedPercent);
+        }
+      );
+      it("☁ should return for amount: 0 -> 0%", () => {
+        const actual = sdk.calculateFeePercentOnSourceChain(
+          0,
           sourceChainToken
         );
-        expect(actual).toEqual(expectedPercent);
-      }
-    );
+        expect(actual).toEqual(0);
+      });
+    });
 
-    test.each([[2000, 0.5]])(
-      "☀️ calculateFeesPercentOnDestinationChain amount: %d -> %d%%",
-      (amountFloat, expectedPercent) => {
-        const actual = sdk.calculateFeesPercentOnDestinationChain(
-          amountFloat,
+    describe("calculateFeePercentOnDestinationChain", () => {
+      test.each([[2_000, 0.5017049502344747]])(
+        "☀️ should return fee percent for amount: %d -> %d%%",
+        (amountFloat, expectedPercent) => {
+          const actual = sdk.calculateFeePercentOnDestinationChain(
+            amountFloat,
+            sourceChainToken,
+            destinationChainToken
+          );
+          expect(actual).toBeCloseTo(expectedPercent, 16);
+        }
+      );
+      it("☁ should return for amount: 0 -> 0%", () => {
+        const actual = sdk.calculateFeePercentOnDestinationChain(
+          0,
           sourceChainToken,
           destinationChainToken
         );
-        expect(actual).toEqual(expectedPercent);
-      }
-    );
+        expect(actual).toEqual(0);
+      });
+    });
   });
 });

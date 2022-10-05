@@ -3,12 +3,39 @@ import { BasicChainProperties } from "./models";
 export * from "./models";
 
 export enum ChainSymbol {
+  /**
+   * The Kovan testnet.
+   */
   KVN = "KVN",
+
+  /**
+   * The Ropsten testnet.
+   */
   RPS = "RPS",
+
+  /**
+   * The Goerli testnet.
+   */
   GRL = "GRL",
+
+  /**
+   * The BNB Smart Chain main network.
+   */
   BSC = "BSC",
+
+  /**
+   * The Ethereum main network.
+   */
   ETH = "ETH",
+
+  /**
+   * The Solana network.
+   */
   SOL = "SOL",
+
+  /**
+   * The TRON network.
+   */
   TRX = "TRX",
 }
 

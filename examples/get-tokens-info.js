@@ -2,7 +2,7 @@ const { AllbridgeCoreSdk } = require("..");
 const configs = require("../build/src/configs");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(configs.development);
+  const sdk = new AllbridgeCoreSdk(configs.production);
 
   const tokensInfo = await sdk.getTokensInfo();
 
