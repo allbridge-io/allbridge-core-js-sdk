@@ -1,9 +1,11 @@
-const { AllbridgeCoreSdk } = require("..");
-const configs = require("../build/src/configs");
-const { Messenger } = require("../build/cjs");
+const {
+  AllbridgeCoreSdk,
+  production,
+  Messenger,
+} = require("@allbridge/allbridge-core-sdk");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(configs.production);
+  const sdk = new AllbridgeCoreSdk(production);
 
   const tokensInfo = await sdk.getTokensInfo();
 

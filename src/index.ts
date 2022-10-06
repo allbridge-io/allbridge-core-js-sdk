@@ -27,6 +27,7 @@ import {
 } from "./utils/calculation";
 
 export * from "./configs/production";
+export * from "./configs/development";
 export * from "./models";
 export {
   TokenInfo,
