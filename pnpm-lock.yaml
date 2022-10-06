@@ -45,6 +45,7 @@ specifiers:
   web3-utils: ^1.8.0
 
 dependencies:
+  '@types/big.js': 6.1.6
   axios: 1.0.0
   big.js: 6.2.1
   bn.js: 5.2.1
@@ -63,7 +64,6 @@ devDependencies:
   '@semantic-release/github': 8.0.6_semantic-release@19.0.5
   '@semantic-release/npm': 9.0.1_semantic-release@19.0.5
   '@semantic-release/release-notes-generator': 10.0.3_semantic-release@19.0.5
-  '@types/big.js': 6.1.6
   '@types/bn.js': 5.1.1
   '@types/node': 18.8.2
   '@types/prompts': 2.4.1
@@ -1402,7 +1402,7 @@ packages:
 
   /@types/big.js/6.1.6:
     resolution: {integrity: sha512-0r9J+Zz9rYm2hOTwiMAVkm3XFQ4u5uTK37xrQMhc9bysn/sf/okzovWMYYIBMFTn/yrEZ11pusgLEaoarTlQbA==}
-    dev: true
+    dev: false
 
   /@types/bn.js/5.1.1:
     resolution: {integrity: sha512-qNrYbZqMx0uJAfKnKclPh+dTwK33KfLHYqtyODwd5HnXOjnkhc4qgn3BrK6RWyGZm5+sIFE7Q7Vz6QQtJB7w7g==}
