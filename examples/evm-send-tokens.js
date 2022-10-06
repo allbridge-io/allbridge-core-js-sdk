@@ -1,8 +1,10 @@
-const { AllbridgeCoreSdk } = require("..");
-const configs = require("../build/src/configs");
+const {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  development,
+  Messenger,
+} = require("@allbridge/allbridge-core-sdk");
 const Web3 = require("web3");
-const { Messenger } = require("../build/src/client/core-api/core-api.model");
-const { ChainSymbol } = require("../build/src/chains");
 require("dotenv").config();
 
 async function runExample() {
@@ -32,7 +34,7 @@ async function runExample() {
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk(configs.development);
+  const sdk = new AllbridgeCoreSdk(development);
 
   const response = await sdk.send(web3, sendParams);
   console.log("evmSend response: ", response);

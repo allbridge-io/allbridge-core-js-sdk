@@ -1,3 +1,13 @@
-node_modules/
-.nyc_output/
-coverage/
+.github/
+.vscode/
+examples/
+scripts/
+.cspell.json
+.czrc
+.editorconfig
+.eslintrc.json
+.releaserc.json
+CHANGELOG.md
+esbuild-hook.js
+tsconfig.json
+tsconfig.lint.json
