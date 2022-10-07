@@ -4,7 +4,11 @@
   "main": "./build/cjs/index.js",
   "module": "./build/esm/index.js",
   "types": "./build/src/index.d.ts",
+  "browser": "./build/browser/index.js",
   "license": "MIT",
+  "files": [
+    "/build"
+  ],
   "engines": {
     "node": "^18.7.0 || >= 16",
     "npm": "^8.16.0 || >= 8"
@@ -52,6 +56,7 @@
     "@types/bn.js": "^5.1.1",
     "@types/node": "^18.8.2",
     "@types/prompts": "^2.4.1",
+    "@types/randombytes": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
     "@vitest/coverage-c8": "^0.23.4",
@@ -84,6 +89,8 @@
     "big.js": "^6.2.1",
     "bn.js": "^5.2.1",
     "erc-20-abi": "^1.0.0",
+    "querystring": "^0.2.1",
+    "randombytes": "^2.1.0",
     "tronweb": "^4.4.0",
     "web3": "^1.8.0",
     "web3-core": "^1.8.0",
