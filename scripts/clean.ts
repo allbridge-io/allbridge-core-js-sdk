@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 
 async function main() {
-  await Promise.all([rmrf("build"), rmrf("coverage"), rmrf(".nyc_output")]);
+  await Promise.all([rmrf("dist"), rmrf("coverage"), rmrf(".nyc_output")]);
 }
 
 async function rmrf(pathFromRoot: string): Promise<void> {
