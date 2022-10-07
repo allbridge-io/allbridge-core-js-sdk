@@ -2,7 +2,7 @@ const {
   AllbridgeCoreSdk,
   production,
   Messenger,
-} = require("@allbridge/allbridge-core-sdk");
+} = require("@allbridge/bridge-core-sdk");
 
 async function runExample() {
   const sdk = new AllbridgeCoreSdk(production);

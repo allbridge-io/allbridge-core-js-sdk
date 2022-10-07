@@ -1,7 +1,4 @@
-const {
-  AllbridgeCoreSdk,
-  production,
-} = require("@allbridge/allbridge-core-sdk");
+const { AllbridgeCoreSdk, production } = require("@allbridge/bridge-core-sdk");
 
 async function runExample() {
   const sdk = new AllbridgeCoreSdk(production);

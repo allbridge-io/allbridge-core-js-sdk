@@ -6,6 +6,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@allbridge/allbridge-core-sdk": "file:../"
+    "@allbridge/bridge-core-sdk": "file:../"
   }
 }
