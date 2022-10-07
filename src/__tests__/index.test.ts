@@ -116,17 +116,16 @@ describe("SDK", () => {
       },
     };
     const destinationChainDetails = {
-      chainSymbol: ChainSymbol.RPS,
-      chainId: "0x3",
-      chainName: "Ropsten",
-      chainType: ChainType.EVM,
-      allbridgeChainId: 3,
+      chainSymbol: ChainSymbol.TRX,
+      chainName: "Tron",
+      chainType: ChainType.TRX,
+      allbridgeChainId: 4,
       bridgeAddress: "bridgeAddress",
-      confirmations: 5,
+      confirmations: 20,
       txTime: {
         [Messenger.ALLBRIDGE]: {
           in: 30000,
-          out: 120000,
+          out: 180000,
         },
       },
     };
@@ -162,13 +161,13 @@ describe("SDK", () => {
     };
 
     describe("getAverageTransferTime", () => {
-      it("☀ should return 150 sec -> 150000", () => {
+      it("☀ should return 210 sec -> 210000", () => {
         const actual = sdk.getAverageTransferTime(
           sourceChainToken,
           destinationChainToken,
           Messenger.ALLBRIDGE
         );
-        expect(actual).toEqual(150_000);
+        expect(actual).toEqual(210_000);
       });
 
       describe("given unsupported messenger", () => {
