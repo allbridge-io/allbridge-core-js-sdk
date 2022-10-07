@@ -14,7 +14,7 @@ async function main() {
     platform: "node",
     target: "esnext",
     format: "cjs",
-    outdir: path.join(__dirname, "../build/cjs"),
+    outdir: path.join(__dirname, "../dist/cjs"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
   });
 
@@ -23,7 +23,7 @@ async function main() {
     platform: "node",
     target: "esnext",
     format: "esm",
-    outdir: path.join(__dirname, "../build/esm"),
+    outdir: path.join(__dirname, "../dist/esm"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
   });
 
@@ -31,7 +31,7 @@ async function main() {
   await esbuild({
     ...baseConfig,
     format: "esm",
-    outdir: path.join(__dirname, "../build/browser"),
+    outdir: path.join(__dirname, "../dist/browser"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
   });
 }
