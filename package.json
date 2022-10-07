@@ -40,10 +40,6 @@
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
     "tsdoc": "typedoc --excludeInternal src/index.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/allbridge-io/allbridge-core-js-sdk"
-  },
   "keywords": [],
   "devDependencies": {
     "@ryansonshine/commitizen": "^4.2.8",
