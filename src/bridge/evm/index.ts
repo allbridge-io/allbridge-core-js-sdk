@@ -4,9 +4,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import crypto from "crypto";
 import BN from "bn.js";
 import erc20abi from "erc-20-abi";
+import randomBytes from "randombytes";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { chainProperties, ChainType } from "../../chains";
@@ -184,6 +184,6 @@ export class EvmBridge extends ApprovalBridge {
   }
 
   private static getNonce(): Buffer {
-    return crypto.randomBytes(32);
+    return randomBytes(32);
   }
 }

@@ -2,9 +2,6 @@ import path from "path";
 import { build as esbuild, BuildOptions } from "esbuild";
 
 const baseConfig: BuildOptions = {
-  platform: "node",
-  target: "esnext",
-  format: "cjs",
   nodePaths: [path.join(__dirname, "../src")],
   sourcemap: true,
   external: [],
@@ -14,14 +11,27 @@ const baseConfig: BuildOptions = {
 async function main() {
   await esbuild({
     ...baseConfig,
-    outdir: path.join(__dirname, "../build/cjs"),
+    platform: "node",
+    target: "esnext",
+    format: "cjs",
+    outdir: path.join(__dirname, "../dist/cjs"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
   });
 
   await esbuild({
     ...baseConfig,
+    platform: "node",
+    target: "esnext",
     format: "esm",
-    outdir: path.join(__dirname, "../build/esm"),
+    outdir: path.join(__dirname, "../dist/esm"),
+    entryPoints: [path.join(__dirname, "../src/index.ts")],
+  });
+
+  // browser
+  await esbuild({
+    ...baseConfig,
+    format: "esm",
+    outdir: path.join(__dirname, "../dist/browser"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
   });
 }
