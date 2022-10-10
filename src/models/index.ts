@@ -13,12 +13,12 @@ export interface AmountsAndTxCost {
   /**
    * The amount of tokens to be sent.
    */
-  fromAmount: string;
+  amountToSendFloat: string;
 
   /**
    * The amount of tokens to be received.
    */
-  toAmount: string;
+  amountToBeReceivedFloat: string;
 
   /**
    * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
