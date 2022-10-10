@@ -9,8 +9,9 @@ import erc20abi from "erc-20-abi";
 import randomBytes from "randombytes";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { chainProperties, ChainType } from "../../chains";
+import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { ChainDetailsMap } from "../../tokens-info";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { BridgeService } from "../index";
 import {
@@ -44,75 +45,73 @@ export class EvmBridge extends ApprovalBridge {
   async send(
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
-    let amount;
-    let contractAddress;
+    const txSendParams = {} as TxSendParams;
     let fromChainId;
-    let fromTokenAddress: string;
     let toChainType;
-    let toChainId;
-    let toTokenAddress;
 
     if (BridgeService.isSendParamsWithChainSymbol(params)) {
-      const tokensInfo = await this.api.getTokensInfo();
-
-      const chainDetailsMap = tokensInfo.chainDetailsMap();
-      contractAddress = chainDetailsMap[params.fromChainSymbol].bridgeAddress;
+      const chainDetailsMap = (
+        await this.api.getTokensInfo()
+      ).chainDetailsMap();
       fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
-      fromTokenAddress = params.fromTokenAddress;
       toChainType = chainProperties[params.toChainSymbol].chainType;
-      toChainId = chainDetailsMap[params.toChainSymbol].allbridgeChainId;
-      toTokenAddress = params.toTokenAddress;
-
-      const sourceTokenInfoWithChainDetails = chainDetailsMap[
-        params.fromChainSymbol
-      ].tokens.find(
-        (value) =>
-          value.tokenAddress.toUpperCase() === fromTokenAddress.toUpperCase()
-      );
-      if (!sourceTokenInfoWithChainDetails) {
-        throw new Error("Cannot find source token info");
-      }
-      amount = convertFloatAmountToInt(
+      txSendParams.contractAddress =
+        chainDetailsMap[params.fromChainSymbol].bridgeAddress;
+      txSendParams.fromTokenAddress = params.fromTokenAddress;
+      txSendParams.toChainId =
+        chainDetailsMap[params.toChainSymbol].allbridgeChainId;
+      txSendParams.toTokenAddress = params.toTokenAddress;
+      txSendParams.amount = convertFloatAmountToInt(
         params.amount,
-        sourceTokenInfoWithChainDetails.decimals
+        this.getDecimalsByContractAddress(
+          chainDetailsMap,
+          params.fromChainSymbol,
+          txSendParams.fromTokenAddress
+        )
       ).toFixed();
     } else {
-      contractAddress = params.sourceChainToken.bridgeAddress;
       fromChainId = params.sourceChainToken.allbridgeChainId;
-      fromTokenAddress = params.sourceChainToken.tokenAddress;
       toChainType =
         chainProperties[params.destinationChainToken.chainSymbol].chainType;
-      toChainId = params.destinationChainToken.allbridgeChainId;
-      toTokenAddress = params.destinationChainToken.tokenAddress;
-      amount = convertFloatAmountToInt(
+      txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
+      txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
+      txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
+      txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
+      txSendParams.amount = convertFloatAmountToInt(
         params.amount,
         params.sourceChainToken.decimals
       ).toFixed();
     }
+    txSendParams.messenger = params.messenger;
+    txSendParams.fromAccountAddress = params.fromAccountAddress;
 
-    const { fromAccountAddress, toAccountAddress, messenger } = params;
     let { fee } = params;
-
     if (fee == null) {
       fee = await this.api.getReceiveTransactionCost({
         sourceChainId: fromChainId,
-        destinationChainId: toChainId,
-        messenger,
+        destinationChainId: txSendParams.toChainId,
+        messenger: txSendParams.messenger,
       });
     }
+    txSendParams.fee = fee;
 
-    return this.sendTx({
-      amount,
-      contractAddress,
-      fromAccountAddress,
-      fromTokenAddress,
+    txSendParams.fromTokenAddress = formatAddress(
+      txSendParams.fromTokenAddress,
+      ChainType.EVM,
+      ChainType.EVM
+    );
+    txSendParams.toAccountAddress = formatAddress(
+      params.toAccountAddress,
       toChainType,
-      toChainId,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-      fee,
-    });
+      ChainType.EVM
+    );
+    txSendParams.toTokenAddress = formatAddress(
+      txSendParams.toTokenAddress,
+      toChainType,
+      ChainType.EVM
+    );
+
+    return this.sendTx(txSendParams);
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
@@ -121,7 +120,6 @@ export class EvmBridge extends ApprovalBridge {
       contractAddress,
       fromAccountAddress,
       fromTokenAddress,
-      toChainType,
       toChainId,
       toAccountAddress,
       toTokenAddress,
@@ -129,31 +127,15 @@ export class EvmBridge extends ApprovalBridge {
       fee,
     } = params;
 
-    const formattedFromTokenAddress = formatAddress(
-      fromTokenAddress,
-      ChainType.EVM,
-      ChainType.EVM
-    );
-    const formattedToAccountAddress = formatAddress(
-      toAccountAddress,
-      toChainType,
-      ChainType.EVM
-    );
-    const formattedToTokenAddress = formatAddress(
-      toTokenAddress,
-      toChainType,
-      ChainType.EVM
-    );
-
     const bridgeContract = this.getBridgeContract(contractAddress);
     const nonce = new BN(EvmBridge.getNonce());
 
     const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      formattedFromTokenAddress,
+      fromTokenAddress,
       amount,
-      formattedToAccountAddress,
+      toAccountAddress,
       toChainId,
-      formattedToTokenAddress,
+      toTokenAddress,
       nonce,
       messenger
     );
@@ -206,5 +188,22 @@ export class EvmBridge extends ApprovalBridge {
 
   private static getNonce(): Buffer {
     return randomBytes(32);
+  }
+
+  private getDecimalsByContractAddress(
+    chainDetailsMap: ChainDetailsMap,
+    chainSymbol: ChainSymbol,
+    contractAddress: string
+  ): number {
+    const sourceTokenInfoWithChainDetails = chainDetailsMap[
+      chainSymbol
+    ].tokens.find(
+      (value) =>
+        value.tokenAddress.toUpperCase() === contractAddress.toUpperCase()
+    );
+    if (!sourceTokenInfoWithChainDetails) {
+      throw new Error("Cannot find source token info");
+    }
+    return sourceTokenInfoWithChainDetails.decimals;
   }
 }
