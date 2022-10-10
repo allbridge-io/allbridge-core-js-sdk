@@ -8,6 +8,7 @@ import {
   TransactionResponse,
 } from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
+import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
 import {
@@ -53,8 +54,12 @@ export class AllbridgeCoreSdk {
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
-  constructor(params: AllbridgeCoreSdkOptions) {
-    this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
+  constructor(params?: AllbridgeCoreSdkOptions) {
+    if (params) {
+      this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
+    } else {
+      this.api = new AllbridgeCoreClient(production);
+    }
     this.bridgeService = new BridgeService(this.api);
   }
 
