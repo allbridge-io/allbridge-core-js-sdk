@@ -4,16 +4,6 @@ export * from "./models";
 
 export enum ChainSymbol {
   /**
-   * The Kovan testnet.
-   */
-  KVN = "KVN",
-
-  /**
-   * The Ropsten testnet.
-   */
-  RPS = "RPS",
-
-  /**
    * The Goerli testnet.
    */
   GRL = "GRL",
@@ -46,18 +36,6 @@ export enum ChainType {
 }
 
 export const chainProperties: Record<string, BasicChainProperties> = {
-  [ChainSymbol.KVN]: {
-    chainSymbol: ChainSymbol.KVN,
-    chainId: "0x2a",
-    name: "Kovan",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.RPS]: {
-    chainSymbol: ChainSymbol.RPS,
-    chainId: "0x3",
-    name: "Ropsten",
-    chainType: ChainType.EVM,
-  },
   [ChainSymbol.GRL]: {
     chainSymbol: ChainSymbol.GRL,
     chainId: "0x5",

@@ -1,11 +1,7 @@
-const {
-  AllbridgeCoreSdk,
-  production,
-  Messenger,
-} = require("@allbridge/allbridge-core-sdk");
+const { AllbridgeCoreSdk, Messenger } = require("@allbridge/bridge-core-sdk");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(production);
+  const sdk = new AllbridgeCoreSdk();
 
   const tokensInfo = await sdk.getTokensInfo();
 
@@ -53,38 +49,40 @@ async function runExample() {
   );
 
   {
-    const { toAmount, txCost } = await sdk.getAmountToBeReceivedAndTxCost(
-      amount,
-      sourceToken,
-      destinationToken,
-      Messenger.ALLBRIDGE
-    );
+    const { amountToSendFloat, amountToBeReceivedFloat, txCost } =
+      await sdk.getAmountToBeReceivedAndTxCost(
+        amount,
+        sourceToken,
+        destinationToken,
+        Messenger.ALLBRIDGE
+      );
     console.log(
       "Send %d %s with value %d on %s to receive %d %s on %s",
-      amount,
+      amountToSendFloat,
       sourceToken.symbol,
       txCost,
       sourceToken.chainSymbol,
-      toAmount,
+      amountToBeReceivedFloat,
       destinationToken.symbol,
       destinationToken.chainSymbol
     );
   }
 
   {
-    const { fromAmount, txCost } = await sdk.getAmountToSendAndTxCost(
-      amount,
-      sourceToken,
-      destinationToken,
-      Messenger.ALLBRIDGE
-    );
+    const { amountToSendFloat, amountToBeReceivedFloat, txCost } =
+      await sdk.getAmountToSendAndTxCost(
+        amount,
+        sourceToken,
+        destinationToken,
+        Messenger.ALLBRIDGE
+      );
     console.log(
       "Send %d %s with value %d on %s to receive %d %s on %s",
-      fromAmount,
+      amountToSendFloat,
       sourceToken.symbol,
       txCost,
       sourceToken.chainSymbol,
-      amount,
+      amountToBeReceivedFloat,
       destinationToken.symbol,
       destinationToken.chainSymbol
     );

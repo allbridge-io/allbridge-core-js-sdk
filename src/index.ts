@@ -8,6 +8,7 @@ import {
   TransactionResponse,
 } from "./bridge/models";
 import { AllbridgeCoreClient } from "./client/core-api";
+import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
 import {
@@ -27,7 +28,6 @@ import {
 } from "./utils/calculation";
 
 export * from "./configs/production";
-export * from "./configs/development";
 export * from "./models";
 export {
   TokenInfo,
@@ -54,7 +54,7 @@ export class AllbridgeCoreSdk {
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
-  constructor(params: AllbridgeCoreSdkOptions) {
+  constructor(params: AllbridgeCoreSdkOptions = production) {
     this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
     this.bridgeService = new BridgeService(this.api);
   }
@@ -159,8 +159,8 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      fromAmount: Big(amountToSendFloat).toFixed(),
-      toAmount: this.getAmountToBeReceived(
+      amountToSendFloat: Big(amountToSendFloat).toFixed(),
+      amountToBeReceivedFloat: this.getAmountToBeReceived(
         amountToSendFloat,
         sourceChainToken,
         destinationChainToken
@@ -188,12 +188,12 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      fromAmount: this.getAmountToSend(
+      amountToSendFloat: this.getAmountToSend(
         amountToBeReceivedFloat,
         sourceChainToken,
         destinationChainToken
       ),
-      toAmount: Big(amountToBeReceivedFloat).toFixed(),
+      amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
       txCost: await this.getTxCost(
         sourceChainToken,
         destinationChainToken,
