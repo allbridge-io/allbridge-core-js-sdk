@@ -225,7 +225,7 @@ export class AllbridgeCoreSdk {
     }
     return convertIntAmountToFloat(
       resultInt,
-      sourceChainToken.decimals
+      destinationChainToken.decimals
     ).toFixed();
   }
 
