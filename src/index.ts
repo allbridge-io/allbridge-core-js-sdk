@@ -159,8 +159,8 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      fromAmount: Big(amountToSendFloat).toFixed(),
-      toAmount: this.getAmountToBeReceived(
+      amountToSendFloat: Big(amountToSendFloat).toFixed(),
+      amountToBeReceivedFloat: this.getAmountToBeReceived(
         amountToSendFloat,
         sourceChainToken,
         destinationChainToken
@@ -188,12 +188,12 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      fromAmount: this.getAmountToSend(
+      amountToSendFloat: this.getAmountToSend(
         amountToBeReceivedFloat,
         sourceChainToken,
         destinationChainToken
       ),
-      toAmount: Big(amountToBeReceivedFloat).toFixed(),
+      amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
       txCost: await this.getTxCost(
         sourceChainToken,
         destinationChainToken,
