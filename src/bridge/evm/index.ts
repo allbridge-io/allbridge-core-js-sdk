@@ -11,6 +11,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { chainProperties, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { convertFloatAmountToInt } from "../../utils/calculation";
 import { BridgeService } from "../index";
 import {
   ApprovalBridge,
@@ -43,22 +44,38 @@ export class EvmBridge extends ApprovalBridge {
   async send(
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
+    let amount;
     let contractAddress;
     let fromChainId;
-    let fromTokenAddress;
+    let fromTokenAddress: string;
     let toChainType;
     let toChainId;
     let toTokenAddress;
+
     if (BridgeService.isSendParamsWithChainSymbol(params)) {
       const tokensInfo = await this.api.getTokensInfo();
-      const chainDetailsMap = tokensInfo.chainDetailsMap();
 
+      const chainDetailsMap = tokensInfo.chainDetailsMap();
       contractAddress = chainDetailsMap[params.fromChainSymbol].bridgeAddress;
       fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
       fromTokenAddress = params.fromTokenAddress;
       toChainType = chainProperties[params.toChainSymbol].chainType;
       toChainId = chainDetailsMap[params.toChainSymbol].allbridgeChainId;
       toTokenAddress = params.toTokenAddress;
+
+      const sourceTokenInfoWithChainDetails = chainDetailsMap[
+        params.fromChainSymbol
+      ].tokens.find(
+        (value) =>
+          value.tokenAddress.toUpperCase() === fromTokenAddress.toUpperCase()
+      );
+      if (!sourceTokenInfoWithChainDetails) {
+        throw new Error("Cannot find source token info");
+      }
+      amount = convertFloatAmountToInt(
+        params.amount,
+        sourceTokenInfoWithChainDetails.decimals
+      ).toFixed();
     } else {
       contractAddress = params.sourceChainToken.bridgeAddress;
       fromChainId = params.sourceChainToken.allbridgeChainId;
@@ -67,9 +84,13 @@ export class EvmBridge extends ApprovalBridge {
         chainProperties[params.destinationChainToken.chainSymbol].chainType;
       toChainId = params.destinationChainToken.allbridgeChainId;
       toTokenAddress = params.destinationChainToken.tokenAddress;
+      amount = convertFloatAmountToInt(
+        params.amount,
+        params.sourceChainToken.decimals
+      ).toFixed();
     }
 
-    const { amount, fromAccountAddress, toAccountAddress, messenger } = params;
+    const { fromAccountAddress, toAccountAddress, messenger } = params;
     let { fee } = params;
 
     if (fee == null) {

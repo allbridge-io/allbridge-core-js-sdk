@@ -40,7 +40,7 @@ export interface TransactionResponse {
  */
 export interface BaseSendParams {
   /**
-   * The integer amount of tokens to transfer.
+   * The float amount of tokens to transfer.
    */
   amount: string;
   /**
