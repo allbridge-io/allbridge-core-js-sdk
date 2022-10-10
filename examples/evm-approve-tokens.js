@@ -1,4 +1,4 @@
-const { AllbridgeCoreSdk, production } = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
 require("dotenv").config();
 
@@ -12,7 +12,7 @@ async function runExample() {
   const web3 = new Web3(web3ProviderUrl);
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
-  const sdk = new AllbridgeCoreSdk(production);
+  const sdk = new AllbridgeCoreSdk();
   const approveData = {
     tokenAddress: tokenAddress,
     owner: accountAddress,

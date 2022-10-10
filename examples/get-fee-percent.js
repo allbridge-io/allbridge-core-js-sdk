@@ -1,7 +1,7 @@
-const { AllbridgeCoreSdk, production } = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 
 async function runExample() {
-  const sdk = new AllbridgeCoreSdk(production);
+  const sdk = new AllbridgeCoreSdk();
 
   const tokensInfo = await sdk.getTokensInfo();
 

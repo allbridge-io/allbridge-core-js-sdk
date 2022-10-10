@@ -54,12 +54,8 @@ export class AllbridgeCoreSdk {
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
-  constructor(params?: AllbridgeCoreSdkOptions) {
-    if (params) {
-      this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
-    } else {
-      this.api = new AllbridgeCoreClient(production);
-    }
+  constructor(params: AllbridgeCoreSdkOptions = production) {
+    this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
     this.bridgeService = new BridgeService(this.api);
   }
 
