@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbol, ChainType } from "../../chains";
+import { ChainSymbol } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
 
@@ -40,7 +40,7 @@ export interface TransactionResponse {
  */
 export interface BaseSendParams {
   /**
-   * The integer amount of tokens to transfer.
+   * The float amount of tokens to transfer.
    */
   amount: string;
   /**
@@ -93,7 +93,6 @@ export interface TxSendParams {
   contractAddress: string;
   fromAccountAddress: string;
   fromTokenAddress: string;
-  toChainType: ChainType;
   toChainId: number;
   toAccountAddress: string;
   toTokenAddress: string;

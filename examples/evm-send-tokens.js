@@ -1,7 +1,6 @@
 const {
   AllbridgeCoreSdk,
   ChainSymbol,
-  development,
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
@@ -16,8 +15,7 @@ async function runExample() {
   const privateKey = process.env.PRIVATE_KEY;
 
   const sendParams = {
-    // amount: "0x10A741A462780000", // 1.2 in 18 decimals dimension converted to hex
-    amount: "1200000000000000000", // 1.2 in 18 decimals
+    amount: "1.33",
 
     fromChainSymbol: ChainSymbol.GRL,
     fromTokenAddress: tokenAddress,
@@ -36,7 +34,7 @@ async function runExample() {
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk(development);
+  const sdk = new AllbridgeCoreSdk();
 
   const response = await sdk.send(web3, sendParams);
   console.log("evmSend response: ", response);
