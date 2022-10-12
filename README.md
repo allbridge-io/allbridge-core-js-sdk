@@ -26,7 +26,7 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [Calculate fee percent](#calculate-fee-percent)
   - [Get amount to be received](#get-amount-to-be-received)
   - [Get amount to send](#get-amount-to-send)
-  - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)-
+  - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)
   - [Get amount to send and tx cost](#get-amount-to-send-and-tx-cost)
   - [Get average transfer time](#get-average-transfer-time)
   - [Get tx cost](#get-tx-cost)
