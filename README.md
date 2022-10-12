@@ -235,11 +235,13 @@ const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
 ```
 
 TokenInfoWithChainDetails:
-
 ```js
 {
+  // token symbol, e.g. "USDT"
   symbol: string;
+  // token name, e.g. "Tether USD"
   name: string;
+  // token decimals, e.g. 18
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
@@ -247,14 +249,17 @@ TokenInfoWithChainDetails:
   feeShare: string;
   apr: number;
   lpRate: number;
-  // Chain symbol
+  // Chain symbol, e.g. "ETH"
   chainSymbol: string;
-  // Chain ID according to EIP-155 
-  chainId ?: string; // A 0x-prefixed hexadecimal string
-  // Chain name
+  // Chain ID according to EIP-155 as a 0x-prefixed hexadecimal string, e.g. "0x1". Nullable.
+  chainId?: string;
+  // Chain type, one of the following: "EVM", "SOLANA", "TRX"
+  chainType: string;
+  // Chain name, e.g. "Ethereum"
   chainName: string;
-
+  // Unique chain identifier
   allbridgeChainId: number;
+  // Bridge address on chain
   bridgeAddress: string;
   txTime: TxTime;
   confirmations: number;
