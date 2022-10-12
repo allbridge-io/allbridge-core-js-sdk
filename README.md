@@ -23,9 +23,8 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [Send Tokens](#send-tokens)
   - [Get Tokens Info](#get-tokens-info)
     - [TokensInfo methods](#tokensinfo-methods)
-  - [Calculate Fee percent](#calculate-fee-percent)
-    - [On Destination Chain](#on-destination-chain)
-    - [On Source Chain](#on-source-chain)
+  - [Calculate Fee percent on source chain](#calculate-fee-percent-on-source-chain)
+  - [Calculate Fee percent on destination chain](#calculate-fee-percent-on-destination-chain)
   - [Get amount to be received](#get-amount-to-be-received)
   - [Get amount to send](#get-amount-to-send)
   - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)-
@@ -220,9 +219,10 @@ const tokens = tokensInfo.tokens();
 ```
 
 ###### tokensByChain(chainSymbol: ChainSymbol)
+
 Params:
- 
-* chainSymbol: ChainSymbol 
+
+* chainSymbol: ChainSymbol
 
 Returns:
 
@@ -235,6 +235,7 @@ const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
 ```
 
 TokenInfoWithChainDetails:
+
 ```js
 {
   symbol: string;
@@ -249,10 +250,10 @@ TokenInfoWithChainDetails:
   // Chain symbol
   chainSymbol: string;
   // Chain ID according to EIP-155 
-  chainId?: string; // A 0x-prefixed hexadecimal string
+  chainId ?: string; // A 0x-prefixed hexadecimal string
   // Chain name
   chainName: string;
-  
+
   allbridgeChainId: number;
   bridgeAddress: string;
   txTime: TxTime;
@@ -260,41 +261,14 @@ TokenInfoWithChainDetails:
 }
 ```
 
-#### Calculate Fee percent
-
-##### Calculate Fee percent on destination chain
-
-Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain
-fee percent applies to the amount after the source chain fee.
-
-Params:
-
-* amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - selected token on the source chain
-* destinationChainToken: TokenInfo - selected token on the destination chain
-
-Returns:
-
-* number - The percentage of fee
-
-Example:
-
-```js
-const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
-    amount,
-    sourceToken,
-    destinationToken
-  );
-```
-
-##### Calculate Fee percent on source chain
+#### Calculate Fee percent on source chain
 
 Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
 
 Params:
 
 * amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - selected token on the source chain
+* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 
 Returns:
 
@@ -306,6 +280,31 @@ Example:
  const sourceFeePercent = sdk.calculateFeePercentOnSourceChain(
   amount,
   sourceToken
+);
+```
+
+#### Calculate Fee percent on destination chain
+
+Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain
+fee percent applies to the amount after the source chain fee.
+
+Params:
+
+* amountFloat: string | number | Big - initial amount of tokens to swap
+* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfo - the destination chain token info
+
+Returns:
+
+* number - The percentage of fee
+
+Example:
+
+```js
+const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
+  amount,
+  sourceToken,
+  destinationToken
 );
 ```
 
