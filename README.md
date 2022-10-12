@@ -14,7 +14,7 @@
 
 Provides an easy integration with the Allbridge Core Bridge for DApps in the browser or Node.js
 
-## Table of Contents
+### Table of Contents
 
 - [Installing](#installing)
 - [Creating an Instance](#creating-an-instance)
@@ -32,7 +32,7 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [Get tx cost](#get-tx-cost)
 - [Semver](#semver)
 
-## Installing
+### Installing
 
 Using npm:
 
