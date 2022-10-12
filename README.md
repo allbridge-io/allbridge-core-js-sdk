@@ -207,33 +207,11 @@ const tokensInfo = await sdk.getTokensInfo();
 
 _Method_: tokens
 
-Gets a list of all supported tokens
+Gets a list of all supported tokens.
 
 _Returns_:
 
 * TokenInfoWithChainDetails[]
-
-_Example_:
-
-```js
-const tokens = tokensInfo.tokens();
-```
-
-_Method_: tokensByChain
-
-_Params_:
-
-* chainSymbol: ChainSymbol
-
-_Returns_:
-
-* TokenInfoWithChainDetails[] - a list of supported tokens on the given chain
-
-_Example_:
-
-```js
-const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
-```
 
 TokenInfoWithChainDetails:
 ```js
@@ -265,6 +243,79 @@ TokenInfoWithChainDetails:
   txTime: TxTime;
   confirmations: number;
 }
+```
+
+_Example_:
+
+```js
+const tokens = tokensInfo.tokens();
+```
+
+_Method_: tokensByChain
+
+Gets a list of all supported tokens on a given chain.
+
+_Params_:
+
+* chainSymbol: ChainSymbol
+
+_Returns_:
+
+* TokenInfoWithChainDetails[] - a list of supported tokens on the given chain
+
+_Example_:
+
+```js
+const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
+```
+
+_Method_: chainDetailsMap
+
+Gets a map of all supported chains. 
+
+_Returns_:
+
+* ChainDetailsMap - an object where key is the Chain Symbol and value is the corresponding chain details
+
+ChainDetailsMap 
+```js
+const chainDetailsMapExample = {
+  "BSC": {
+    "chainSymbol": "BSC",
+      "chainId": "0x38",
+      "name": "BNB Chain",
+      "chainType": "EVM",
+      "allbridgeChainId": 2,
+      "bridgeAddress": bridgeAddressOnBSC,
+      "txTime": averageTransactionTimeOnBSC,
+      "confirmations": 15,
+      "tokens": tokensOnBSC
+  },
+  "ETH": {
+    "chainSymbol": "ETH",
+      "chainId": "0x1",
+      "name": "Ethereum",
+      "chainType": "EVM",
+      "allbridgeChainId": 1,
+      "bridgeAddress": bridgeAddressOnETH,
+      "txTime": averageTransactionTimeOnETH,
+      "confirmations": 5,
+      "tokens": tokensOnETH
+  },
+  //...
+}
+```
+
+_Example_:
+
+```js
+const chainDetailsMap = tokensInfo.chainDetailsMap();
+// get details about chain ETH
+const ethChainDetails = chainDetailsMap[ChainSymbol.ETH];
+const chainName = ethChainDetails.name;
+const bridgeAddress = ethChainDetails.bridgeAddress;
+// get tokens on chain ETH
+const tokensOnETH = ethChainDetails.tokens;
 ```
 
 #### Calculate fee percent
