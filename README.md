@@ -77,7 +77,7 @@ const sdk = new AllbridgeCoreSdk();
 
 Approve tokens usage by bridge on EVM blockchains for completing transfer
 
-Params:
+_Params_:
 
 * web3: Web3 - Web3 provider
 * approveData: ApproveData - required data for approving
@@ -102,7 +102,7 @@ ApproveData:
 }
 ```
 
-Returns:
+_Returns_:
 
 * TransactionResponse - response with completed transaction id
 
@@ -114,7 +114,7 @@ TransactionResponse:
 }
 ```
 
-Example:
+_Example_:
 
 ```js
 const approveData = {
@@ -129,7 +129,7 @@ const response = await sdk.evmApprove(web3, approveData);
 
 Send tokens through the bridge
 
-Params:
+_Params_:
 
 * web3 - Web3 provider
 * sendParams - SendParamsWithChainSymbols | SendParamsWithTokenInfos
@@ -170,7 +170,7 @@ const sendParams = {
 };
 ```
 
-Returns:
+_Returns_:
 
 * TransactionResponse - response with completed transaction id
 
@@ -182,7 +182,7 @@ TransactionResponse:
 }
 ```
 
-Example:
+_Example_:
 
 ```js
 const response = await sdk.send(web3, sendParams);
@@ -192,11 +192,11 @@ const response = await sdk.send(web3, sendParams);
 
 Fetching information about supported tokens.
 
-Returns:
+_Returns_:
 
 * TokensInfo - object that contains fetched information about supported tokens.
 
-Example:
+_Example_:
 
 ```js
 const tokensInfo = await sdk.getTokensInfo();
@@ -208,11 +208,11 @@ const tokensInfo = await sdk.getTokensInfo();
 
 Get a list of all supported tokens
 
-Returns:
+_Returns_:
 
 * TokenInfoWithChainDetails[]
 
-Example:
+_Example_:
 
 ```js
 const tokens = tokensInfo.tokens();
@@ -220,15 +220,15 @@ const tokens = tokensInfo.tokens();
 
 ###### tokensByChain(chainSymbol: ChainSymbol)
 
-Params:
+_Params_:
 
 * chainSymbol: ChainSymbol
 
-Returns:
+_Returns_:
 
 * TokenInfoWithChainDetails[] - a list of supported tokens on the given blockchain
 
-Example:
+_Example_:
 
 ```js
 const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
@@ -265,16 +265,16 @@ TokenInfoWithChainDetails:
 
 Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
 
-Params:
+_Params_:
 
 * amountFloat: string | number | Big - initial amount of tokens to swap
 * sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 
-Returns:
+_Returns_:
 
 * number - The percentage of fee
 
-Example:
+_Example_:
 
 ```js
  const sourceFeePercent = sdk.calculateFeePercentOnSourceChain(
@@ -288,17 +288,17 @@ Example:
 Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain
 fee percent applies to the amount after the source chain fee.
 
-Params:
+_Params_:
 
 * amountFloat: string | number | Big - initial amount of tokens to swap
 * sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 * destinationChainToken: TokenInfo - the destination chain token info
 
-Returns:
+_Returns_:
 
 * number - The percentage of fee
 
-Example:
+_Example_:
 
 ```js
 const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
@@ -312,18 +312,18 @@ const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
 
 Calculates the amount of tokens the receiving party will get as a result of the swap.
 
-Params:
+_Params_:
 
 * amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 * destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
-Returns:
+_Returns_:
 
 * string - The amount to send
 
-Example:
+_Example_:
 
 ```js
 const amountToBeReceived = sdk.getAmountToBeReceived(
@@ -338,18 +338,18 @@ const amountToBeReceived = sdk.getAmountToBeReceived(
 Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a
 result of the swap.
 
-Params:
+_Params_:
 
 * amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 * destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
-Returns:
+_Returns_:
 
 * string - The amount to send
 
-Example:
+_Example_:
 
 ```js
 const amountToSend = sdk.getAmountToSend(
@@ -363,7 +363,7 @@ const amountToSend = sdk.getAmountToSend(
 
 See [Get amount to be received](#get-amount-to-be-received), [Get tx cost](#get-tx-cost)
 
-Params:
+_Params_:
 
 * amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
@@ -371,7 +371,7 @@ Params:
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
-Returns:
+_Returns_:
 
 * AmountsAndTxCost:
 
@@ -394,7 +394,7 @@ Returns:
 }
 ``` 
 
-Example:
+_Example_:
 
 ```js
 const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
@@ -410,7 +410,7 @@ const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
 
 See [Get amount to send](#get-amount-to-send), [Get tx cost](#get-tx-cost)
 
-Params:
+_Params_:
 
 * amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
@@ -418,7 +418,7 @@ Params:
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
-Returns:
+_Returns_:
 
 * AmountsAndTxCost:
 
@@ -441,7 +441,7 @@ Returns:
 }
 ``` 
 
-Example:
+_Example_:
 
 ```js
 const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
@@ -457,19 +457,19 @@ const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
 
 Gets the average time in ms to complete a transfer for given tokens and messenger.
 
-Params:
+_Params_:
 
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 * destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
-Returns:
+_Returns_:
 
 * null | number - Average transfer time in milliseconds or null if given combination of tokens and messenger is not
   supported.
 
-Example:
+_Example_:
 
 ```js
 const transferTimeMs = sdk.getAverageTransferTime(
@@ -483,18 +483,18 @@ const transferTimeMs = sdk.getAverageTransferTime(
 
 Fetches the amount of units in source chain currency to pay for the transfer.
 
-Params:
+_Params_:
 
 * sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
 * destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
-Returns:
+_Returns_:
 
 * string - The amount of gas fee to pay for transfer in the smallest denomination of the source chain currency.
 
-Example:
+_Example_:
 
 ```js
 const txCost = await sdk.getTxCost(
