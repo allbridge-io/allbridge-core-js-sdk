@@ -23,11 +23,10 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [Send Tokens](#send-tokens)
   - [Get Tokens Info](#get-tokens-info)
     - [TokensInfo methods](#tokensinfo-methods)
-  - [Calculate Fee percent on source chain](#calculate-fee-percent-on-source-chain)
-  - [Calculate Fee percent on destination chain](#calculate-fee-percent-on-destination-chain)
+  - [Calculate fee percent](#calculate-fee-percent)
   - [Get amount to be received](#get-amount-to-be-received)
   - [Get amount to send](#get-amount-to-send)
-  - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)-
+  - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)
   - [Get amount to send and tx cost](#get-amount-to-send-and-tx-cost)
   - [Get average transfer time](#get-average-transfer-time)
   - [Get tx cost](#get-tx-cost)
@@ -126,8 +125,9 @@ const response = await sdk.evmApprove(web3, approveData);
 ```
 
 #### Send Tokens
+_Method_: send
 
-Send tokens through the bridge
+Sends tokens through the bridge
 
 _Params_:
 
@@ -189,8 +189,9 @@ const response = await sdk.send(web3, sendParams);
 ```
 
 #### Get Tokens Info
+_Method_: getTokensInfo
 
-Fetching information about supported tokens.
+Fetches information about supported tokens.
 
 _Returns_:
 
@@ -204,9 +205,9 @@ const tokensInfo = await sdk.getTokensInfo();
 
 ##### TokensInfo methods
 
-###### tokens()
+_Method_: tokens
 
-Get a list of all supported tokens
+Gets a list of all supported tokens
 
 _Returns_:
 
@@ -218,7 +219,7 @@ _Example_:
 const tokens = tokensInfo.tokens();
 ```
 
-###### tokensByChain(chainSymbol: ChainSymbol)
+_Method_: tokensByChain
 
 _Params_:
 
@@ -226,7 +227,7 @@ _Params_:
 
 _Returns_:
 
-* TokenInfoWithChainDetails[] - a list of supported tokens on the given blockchain
+* TokenInfoWithChainDetails[] - a list of supported tokens on the given chain
 
 _Example_:
 
@@ -266,9 +267,11 @@ TokenInfoWithChainDetails:
 }
 ```
 
-#### Calculate Fee percent on source chain
+#### Calculate fee percent
 
-Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
+_Method_: calculateFeePercentOnSourceChain
+
+Calculates the percentage of fee from the initial amount that is charged when transferring from the given source chain.
 
 _Params_:
 
@@ -288,10 +291,9 @@ _Example_:
 );
 ```
 
-#### Calculate Fee percent on destination chain
+_Method_: calculateFeePercentOnDestinationChain
 
-Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain
-fee percent applies to the amount after the source chain fee.
+Calculates the percentage of fee that is charged when transferring to the given destination chain. The destination chain fee percent applies to the amount after the source chain fee.
 
 _Params_:
 
@@ -314,6 +316,7 @@ const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
 ```
 
 #### Get amount to be received
+_Method_: getAmountToBeReceived
 
 Calculates the amount of tokens the receiving party will get as a result of the swap.
 
@@ -339,6 +342,7 @@ const amountToBeReceived = sdk.getAmountToBeReceived(
 ```
 
 #### Get amount to send
+_Method_: getAmountToSend
 
 Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a
 result of the swap.
@@ -365,6 +369,7 @@ const amountToSend = sdk.getAmountToSend(
 ```
 
 #### Get amount to be received and tx cost
+_Method_: getAmountToBeReceivedAndTxCost
 
 See [Get amount to be received](#get-amount-to-be-received), [Get tx cost](#get-tx-cost)
 
@@ -412,6 +417,7 @@ const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
 ```
 
 #### Get amount to send and tx cost
+_Method_: getAmountToSendAndTxCost
 
 See [Get amount to send](#get-amount-to-send), [Get tx cost](#get-tx-cost)
 
@@ -459,6 +465,7 @@ const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
 ```
 
 #### Get average transfer time
+_Method_: getAverageTransferTime
 
 Gets the average time in ms to complete a transfer for given tokens and messenger.
 
@@ -485,6 +492,7 @@ const transferTimeMs = sdk.getAverageTransferTime(
 ```
 
 #### Get tx cost
+_Method_: getTxCost
 
 Fetches the amount of units in source chain currency to pay for the transfer.
 
