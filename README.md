@@ -14,561 +14,181 @@
 
 Provides an easy integration with the Allbridge Core Bridge for DApps in the browser or Node.js
 
-### Table of Contents
+## Table of Contents
 
 - [Installing](#installing)
-- [Creating an Instance](#creating-an-instance)
-- [SDK API](#sdk-api)
-  - [Approve Tokens](#approve-tokens)
-  - [Send Tokens](#send-tokens)
-  - [Get Tokens Info](#get-tokens-info)
-    - [TokensInfo methods](#tokensinfo-methods)
-  - [Calculate fee percent](#calculate-fee-percent)
-  - [Get amount to be received](#get-amount-to-be-received)
-  - [Get amount to send](#get-amount-to-send)
-  - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)
-  - [Get amount to send and tx cost](#get-amount-to-send-and-tx-cost)
-  - [Get average transfer time](#get-average-transfer-time)
-  - [Get tx cost](#get-tx-cost)
+- [How to use](#how-to-use)
+  - [1. Initialize SDK instance](#1-initialize-sdk-instance)
+  - [2. Get the list of supported tokens](#2-get-the-list-of-supported-tokens)
+  - [3.1 Approve the transfer of tokens](#31-approve-the-transfer-of-tokens)
+  - [3.2 Send Tokens](#32-send-tokens)
+  - [Full example](#full-example)
+- [Other operations](#other-operations)
+  - [Calculating amount of tokens to be received after fee](#calculating-amount-of-tokens-to-be-received-after-fee)
+  - [Calculating amount of tokens to send](#calculating-amount-of-tokens-to-send)
+  - [Getting the amount of gas fee](#getting-the-amount-of-gas-fee)
+  - [Getting the average transfer time](#getting-the-average-transfer-time)
 - [Semver](#semver)
 
-### Installing
-
-Using npm:
+## Installing
 
 ```bash
 $ npm install @allbridge/bridge-core-sdk
 ```
+## How to use
 
-Using yarn:
-
-```bash
-$ yarn add @allbridge/bridge-core-sdk
-```
-
-Using pnpm:
-
-```bash
-$ pnpm add @allbridge/bridge-core-sdk
-```
-
-### Creating an Instance
-
-Import, examples:
+### 1. Initialize SDK instance
 
 ```js
-const AllbridgeCoreSdk = require("@allbridge/allbridge-core-sdk");
-```
-
-```js
-import {AllbridgeCoreSdk} from '@allbridge/allbridge-core-sdk';
-```
-
-Initialize the SDK instance:
-
-```js
+const AllbridgeCoreSdk = require('@allbridge/allbridge-core-sdk');
 const sdk = new AllbridgeCoreSdk();
 ```
 
-### SDK API
-
-#### Approve Tokens
-
-Approve tokens usage by bridge on EVM blockchains for completing transfer
-
-_Params_:
-
-* web3: Web3 - Web3 provider
-* approveData: ApproveData - required data for approving
-
-ApproveData:
-
-```js
-{
-  /**
-   * The token address itself
-   */
-  tokenAddress: string;
-  /**
-   *  The address of the owner of the tokens allowing the use of their tokens
-   *
-   */
-  owner: string;
-  /**
-   *  The address of the contract that we allow to use tokens
-   */
-  spender: string;
-}
-```
-
-_Returns_:
-
-* TransactionResponse - response with completed transaction id
-
-TransactionResponse:
-
-```js
-{
-  txId: string;
-}
-```
-
-_Example_:
-
-```js
-const approveData = {
-  tokenAddress: tokenAddress,
-  owner: accountAddress,
-  spender: contractAddress,
-};
-const response = await sdk.evmApprove(web3, approveData);
-```
-
-#### Send Tokens
-_Method_: send
-
-Sends tokens through the bridge
-
-_Params_:
-
-* web3 - Web3 provider
-* sendParams - SendParamsWithChainSymbols | SendParamsWithTokenInfos
-
-##### sendParams init details:
-
-* SendParamsWithChainSymbols:
-
-```js
-const sendParams = {
-  amount: "1.33",
-
-  fromChainSymbol: ChainSymbol.ETH,
-  fromTokenAddress: tokenAddress,
-  fromAccountAddress: accountAddress,
-
-  toChainSymbol: ChainSymbol.TRX,
-  toTokenAddress: receiveTokenAddress,
-  toAccountAddress: accountAddress,
-
-  messenger: Messenger.ALLBRIDGE,
-};
-```
-
-* SendParamsWithTokenInfos, see [Get Tokens Info](#get-tokens-info):
-
-```js
-const sendParams = {
-  amount: "1.33",
-
-  fromAccountAddress: fromAccountAddress,
-  toAccountAddress: toAccountAddress,
-
-  sourceChainToken: sourceTokenInfoWithChainDetails, // see [Get Tokens Info]
-  destinationChainToken: destinationTokenInfoWithChainDetails, // see [Get Tokens Info]
-
-  messenger: Messenger.ALLBRIDGE,
-};
-```
-
-_Returns_:
-
-* TransactionResponse - response with completed transaction id
-
-TransactionResponse:
-
-```js
-{
-  txId: string;
-}
-```
-
-_Example_:
-
-```js
-const response = await sdk.send(web3, sendParams);
-```
-
-#### Get Tokens Info
-_Method_: getTokensInfo
-
-Fetches information about supported tokens.
-
-_Returns_:
-
-* TokensInfo - object that contains fetched information about supported tokens.
-
-_Example_:
+### 2. Get the list of supported tokens
 
 ```js
 const tokensInfo = await sdk.getTokensInfo();
+const supportedChains = tokensInfo.chainDetailsMap();
+// extract information about ETH chain
+const {bridgeAddress, tokens, ..._} = supportedChains[ChainSymbol.ETH];
+// Choose one of the tokens supported on ETH
+const usdtOnEthTokenInfo = tokens.find(tokensInfo => tokensInfo.symbol === 'USDT');
 ```
 
-##### TokensInfo methods
+### 3.1 Approve the transfer of tokens 
 
-_Method_: tokens
+Before sending tokens the bridge has to be authorized to use user's tokens. This is done by calling the `evmApprove` method on SDK instance.
 
-Gets a list of all supported tokens.
-
-_Returns_:
-
-* TokenInfoWithChainDetails[]
-
-TokenInfoWithChainDetails:
 ```js
-{
-  // token symbol, e.g. "USDT"
-  symbol: string;
-  // token name, e.g. "Tether USD"
-  name: string;
-  // token decimals, e.g. 18
-  decimals: number;
-  poolAddress: string;
-  tokenAddress: string;
-  poolInfo: PoolInfo;
-  feeShare: string;
-  apr: number;
-  lpRate: number;
-  // Chain symbol, e.g. "ETH"
-  chainSymbol: string;
-  // Chain ID according to EIP-155 as a 0x-prefixed hexadecimal string, e.g. "0x1". Nullable.
-  chainId?: string;
-  // Chain type, one of the following: "EVM", "SOLANA", "TRX"
-  chainType: string;
-  // Chain name, e.g. "Ethereum"
-  chainName: string;
-  // Unique chain identifier
-  allbridgeChainId: number;
-  // Bridge address on chain
-  bridgeAddress: string;
-  txTime: TxTime;
-  confirmations: number;
+const response = await sdk.evmApprove(web3, {
+  tokenAddress: tokenAddress,
+  owner: senderAddress,
+  spender: bridgeAddress,
+});
+```
+
+### 3.2 Send Tokens
+
+Initiate the transfer of tokens with `send` method on SDK instance.
+
+```js
+await sdk.send(web3, {
+  amount: '1.01',
+  fromAccountAddress: senderAddress,
+  sourceChainToken: usdtOnEthTokenInfo,
+  toAccountAddress: recipientAddress,
+  destinationChainToken: usdtOnTrxTokenInfo,
+  messenger: Messenger.ALLBRIDGE,
+});
+```
+
+### Full example
+Swap BUSD on BSC chain to USDT on TRX chain
+
+```js
+const {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+} = require("@allbridge/bridge-core-sdk");
+const Web3 = require("web3");
+require("dotenv").config();
+
+async function runExample() {
+  // sender address
+  const fromAddress = '0x01234567890abcdef01234567890abcdef012345';
+  // recipient address
+  const toAddress = 'AbcDefGHIJklmNoPQRStuvwXyz1aBcDefG';
+
+  // configure web3
+  const web3 = new Web3('https://bsc-dataseed1.binance.org:443');
+  const account = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
+  web3.eth.accounts.wallet.add(account);
+
+  const sdk = new AllbridgeCoreSdk();
+
+  // fetch information about supported chains
+  const tokensInfo = await sdk.getTokensInfo();
+  const chains = tokensInfo.chainDetailsMap();
+
+  const bscChain = chains[ChainSymbol.BSC];
+  const busdTokenInfo = bscChain.tokens.find(tokenInfo => tokenInfo.symbol === 'BUSD');
+
+  const trxChain = chains[ChainSymbol.TRX];
+  const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
+
+  // authorize the bridge to transfer tokens from sender's address
+  await sdk.evmApprove(web3, {
+    tokenAddress: busdTokenInfo.tokenAddress,
+    owner: fromAddress,
+    spender: bscChain.bridgeAddress,
+  });
+
+  // initiate transfer
+  const response = await sdk.send(web3, {
+    amount: "1.01",
+    fromAccountAddress: fromAddress,
+    toAccountAddress: toAddress,
+    sourceChainToken: busdTokenInfo,
+    destinationChainToken: usdtTokenInfo,
+    messenger: Messenger.ALLBRIDGE,
+  });
+  console.log("Tokens sent:", response.txId);
 }
+
+runExample();
 ```
 
-_Example_:
+## Other operations
 
-```js
-const tokens = tokensInfo.tokens();
-```
+### Calculating amount of tokens to be received after fee 
 
-_Method_: tokensByChain
-
-Gets a list of all supported tokens on a given chain.
-
-_Params_:
-
-* chainSymbol: ChainSymbol
-
-_Returns_:
-
-* TokenInfoWithChainDetails[] - a list of supported tokens on the given chain
-
-_Example_:
-
-```js
-const tokensOnTRX = tokensInfo.tokensByChain(ChainSymbol.TRX);
-```
-
-_Method_: chainDetailsMap
-
-Gets a map of all supported chains. 
-
-_Returns_:
-
-* ChainDetailsMap - an object where key is the Chain Symbol and value is the corresponding chain details
-
-ChainDetailsMap 
-```js
-const chainDetailsMapExample = {
-  "BSC": {
-    "chainSymbol": "BSC",
-      "chainId": "0x38",
-      "name": "BNB Chain",
-      "chainType": "EVM",
-      "allbridgeChainId": 2,
-      "bridgeAddress": bridgeAddressOnBSC,
-      "txTime": averageTransactionTimeOnBSC,
-      "confirmations": 15,
-      "tokens": tokensOnBSC
-  },
-  "ETH": {
-    "chainSymbol": "ETH",
-      "chainId": "0x1",
-      "name": "Ethereum",
-      "chainType": "EVM",
-      "allbridgeChainId": 1,
-      "bridgeAddress": bridgeAddressOnETH,
-      "txTime": averageTransactionTimeOnETH,
-      "confirmations": 5,
-      "tokens": tokensOnETH
-  },
-  //...
-}
-```
-
-_Example_:
-
-```js
-const chainDetailsMap = tokensInfo.chainDetailsMap();
-// get details about chain ETH
-const ethChainDetails = chainDetailsMap[ChainSymbol.ETH];
-const chainName = ethChainDetails.name;
-const bridgeAddress = ethChainDetails.bridgeAddress;
-// get tokens on chain ETH
-const tokensOnETH = ethChainDetails.tokens;
-```
-
-#### Calculate fee percent
-
-_Method_: calculateFeePercentOnSourceChain
-
-Calculates the percentage of fee from the initial amount that is charged when transferring from the given source chain.
-
-_Params_:
-
-* amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-
-_Returns_:
-
-* number - The percentage of fee
-
-_Example_:
-
-```js
- const sourceFeePercent = sdk.calculateFeePercentOnSourceChain(
-  amount,
-  sourceToken
-);
-```
-
-_Method_: calculateFeePercentOnDestinationChain
-
-Calculates the percentage of fee that is charged when transferring to the given destination chain. The destination chain fee percent applies to the amount after the source chain fee.
-
-_Params_:
-
-* amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfo - the destination chain token info
-
-_Returns_:
-
-* number - The percentage of fee
-
-_Example_:
-
-```js
-const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
-  amount,
-  sourceToken,
-  destinationToken
-);
-```
-
-#### Get amount to be received
-_Method_: getAmountToBeReceived
-
-Calculates the amount of tokens the receiving party will get as a result of the swap.
-
-_Params_:
-
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-
-_Returns_:
-
-* string - The amount to send
-
-_Example_:
+SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens the receiving party will get after applying the bridging fee.
 
 ```js
 const amountToBeReceived = sdk.getAmountToBeReceived(
-  amount,
-  sourceToken,
-  destinationToken
+  amountToSend,
+  sourceTokenInfo,
+  destinationTokenInfo
 );
 ```
 
-#### Get amount to send
-_Method_: getAmountToSend
+### Calculating amount of tokens to send
 
-Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a
-result of the swap.
-
-_Params_:
-
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-
-_Returns_:
-
-* string - The amount to send
-
-_Example_:
+SDK method `getAmountToSend` can be used to calculate the amount of tokens to send based on the required amount of tokens the receiving party should get.
 
 ```js
 const amountToSend = sdk.getAmountToSend(
-  amount,
-  sourceToken,
-  destinationToken
+  amountToBeReceived,
+  sourceTokenInfo,
+  destinationTokenInfo
 );
 ```
 
-#### Get amount to be received and tx cost
-_Method_: getAmountToBeReceivedAndTxCost
+### Getting the amount of gas fee
 
-See [Get amount to be received](#get-amount-to-be-received), [Get tx cost](#get-tx-cost)
-
-_Params_:
-
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-* messenger: Messenger
-
-_Returns_:
-
-* AmountsAndTxCost:
+SDK method `getTxCost` can be used to fetch information about the amount of gas fee required to complete the transfer on the destination chain. Gas fee is paid during the [send](#32-send-tokens) operation in the source chain currency.
 
 ```js
-{
-  /**
-   * The amount of tokens to be sent.
-   */
-  amountToSendFloat: string;
-
-  /**
-   * The amount of tokens to be received.
-   */
-  amountToBeReceivedFloat: string;
-
-  /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
-   */
-  txCost: string;
-}
-``` 
-
-_Example_:
-
-```js
-const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
-  await sdk.getAmountToBeReceivedAndTxCost(
-    amount,
-    sourceToken,
-    destinationToken,
-    Messenger.ALLBRIDGE
-  );
-```
-
-#### Get amount to send and tx cost
-_Method_: getAmountToSendAndTxCost
-
-See [Get amount to send](#get-amount-to-send), [Get tx cost](#get-tx-cost)
-
-_Params_:
-
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-* messenger: Messenger
-
-_Returns_:
-
-* AmountsAndTxCost:
-
-```js
-{
-  /**
-   * The amount of tokens to be sent.
-   */
-  amountToSendFloat: string;
-
-  /**
-   * The amount of tokens to be received.
-   */
-  amountToBeReceivedFloat: string;
-
-  /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
-   */
-  txCost: string;
-}
-``` 
-
-_Example_:
-
-```js
-const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
-  await sdk.getAmountToSendAndTxCost(
-    amount,
-    sourceToken,
-    destinationToken,
-    Messenger.ALLBRIDGE
-  );
-```
-
-#### Get average transfer time
-_Method_: getAverageTransferTime
-
-Gets the average time in ms to complete a transfer for given tokens and messenger.
-
-_Params_:
-
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-* messenger: Messenger
-
-_Returns_:
-
-* null | number - Average transfer time in milliseconds or null if given combination of tokens and messenger is not
-  supported.
-
-_Example_:
-
-```js
-const transferTimeMs = sdk.getAverageTransferTime(
-  sourceToken,
-  destinationToken,
+const weiValue = await sdk.getTxCost(
+  usdtOnEthTokenInfo, // from ETH
+  usdtOnTrxTokenInfo, // to TRX
   Messenger.ALLBRIDGE
 );
 ```
 
-#### Get tx cost
-_Method_: getTxCost
+### Getting the average transfer time
 
-Fetches the amount of units in source chain currency to pay for the transfer.
-
-_Params_:
-
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
-* messenger: Messenger
-
-_Returns_:
-
-* string - The amount of gas fee to pay for transfer in the smallest denomination of the source chain currency.
-
-_Example_:
+SDK method `getAverageTransferTime` can be used to get the average time in ms it takes to complete a transfer for a given combination of tokens and messenger.
 
 ```js
-const txCost = await sdk.getTxCost(
-  sourceTokenInfoWithChainDetails,
-  destinationTokenInfoWithChainDetails,
+const transferTimeMs = sdk.getAverageTransferTime(
+  sourceTokenInfo,
+  destinationTokenInfo,
   Messenger.ALLBRIDGE
 );
 ```
 
 ## Semver
 
-Until bridge-core-sdk reaches a `1.0.0` release, breaking changes will be released with a new minor version. For
-example `0.3.1`, and `0.3.4` will have the same API, but `0.4.0` will have breaking changes.
+Until bridge-core-sdk reaches a `1.0.0` release, breaking changes will be released with a new minor version. For example `0.3.1`, and `0.3.4` will have the same API, but `0.4.0` will have breaking changes.
