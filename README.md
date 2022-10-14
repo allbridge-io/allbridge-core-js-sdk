@@ -50,7 +50,7 @@ const sdk = new AllbridgeCoreSdk();
 const tokensInfo = await sdk.getTokensInfo();
 const supportedChains = tokensInfo.chainDetailsMap();
 // extract information about ETH chain
-const {bridgeAddress, tokens, ..._} = supportedChains[ChainSymbol.ETH];
+const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 // Choose one of the tokens supported on ETH
 const usdtOnEthTokenInfo = tokens.find(tokensInfo => tokensInfo.symbol === 'USDT');
 ```
