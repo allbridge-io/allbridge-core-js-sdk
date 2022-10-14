@@ -21,8 +21,18 @@ export abstract class ApprovalBridge extends Bridge {
 }
 
 export interface ApproveData {
+  /**
+   * The token address itself
+   */
   tokenAddress: string;
+  /**
+   *  The address of the owner of the tokens allowing the use of their tokens
+   *
+   */
   owner: string;
+  /**
+   *  The address of the contract that we allow to use tokens
+   */
   spender: string;
 }
 
