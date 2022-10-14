@@ -4,7 +4,6 @@ const {
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
-const { development } = require("../dist/src/configs/development");
 require("dotenv").config();
 
 async function runExample() {
@@ -20,19 +19,20 @@ async function runExample() {
   );
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk(development);
+  const sdk = new AllbridgeCoreSdk();
 
+  // fetch information about supported chains
   const tokensInfo = await sdk.getTokensInfo();
   const chains = tokensInfo.chainDetailsMap();
 
-  const sourceChain = chains[ChainSymbol.GRL];
+  const sourceChain = chains[ChainSymbol.BSC];
   const sourceTokenInfo = sourceChain.tokens.find(
-    (tokenInfo) => tokenInfo.symbol === "YARO"
+    (tokenInfo) => tokenInfo.symbol === "BUSD"
   );
 
   const destinationChain = chains[ChainSymbol.TRX];
   const destinationTokenInfo = destinationChain.tokens.find(
-    (tokenInfo) => tokenInfo.symbol === "YARO"
+    (tokenInfo) => tokenInfo.symbol === "USDT"
   );
 
   // authorize the bridge to transfer tokens from sender's address
