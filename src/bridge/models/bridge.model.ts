@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbol, ChainType } from "../../chains";
+import { ChainSymbol } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
 
@@ -21,8 +21,18 @@ export abstract class ApprovalBridge extends Bridge {
 }
 
 export interface ApproveData {
+  /**
+   * The token address itself
+   */
   tokenAddress: string;
+  /**
+   *  The address of the owner of the tokens allowing the use of their tokens
+   *
+   */
   owner: string;
+  /**
+   *  The address of the contract that we allow to use tokens
+   */
   spender: string;
 }
 
@@ -40,7 +50,7 @@ export interface TransactionResponse {
  */
 export interface BaseSendParams {
   /**
-   * The integer amount of tokens to transfer.
+   * The float amount of tokens to transfer.
    */
   amount: string;
   /**
@@ -93,7 +103,6 @@ export interface TxSendParams {
   contractAddress: string;
   fromAccountAddress: string;
   fromTokenAddress: string;
-  toChainType: ChainType;
   toChainId: number;
   toAccountAddress: string;
   toTokenAddress: string;
