@@ -1,10 +1,10 @@
 const {
   AllbridgeCoreSdk,
-  EvmProvider,
   ChainSymbol,
+  TronProvider,
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
-const Web3 = require("web3");
+const TronWeb = require("tronweb");
 require("dotenv").config();
 
 async function runExample() {
@@ -16,13 +16,13 @@ async function runExample() {
   const privateKey = process.env.PRIVATE_KEY;
 
   const sendParams = {
-    amount: "1.33",
+    amount: "0.7",
 
-    fromChainSymbol: ChainSymbol.GRL,
+    fromChainSymbol: ChainSymbol.TRX,
     fromTokenAddress: tokenAddress,
     fromAccountAddress: accountAddress,
 
-    toChainSymbol: ChainSymbol.TRX,
+    toChainSymbol: ChainSymbol.GRL,
     toTokenAddress: receiveTokenAddress,
     toAccountAddress: toAccountAddress,
 
@@ -31,14 +31,17 @@ async function runExample() {
     // fee: 20000000000000000, //0.02 Ether - optional param
   };
 
-  const web3 = new Web3(providerUrl);
-  const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-  web3.eth.accounts.wallet.add(account);
+  const tronWeb = new TronWeb(
+    providerUrl,
+    providerUrl,
+    providerUrl,
+    privateKey
+  );
 
   const sdk = new AllbridgeCoreSdk();
 
-  const response = await sdk.send(new EvmProvider(web3), sendParams);
-  console.log("evmSend response: ", response);
+  const response = await sdk.send(new TronProvider(tronWeb), sendParams);
+  console.log("tron send response: ", response);
 }
 
 runExample();

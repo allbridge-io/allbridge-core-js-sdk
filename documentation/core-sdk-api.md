@@ -14,13 +14,13 @@
 - [Get average transfer time](#get-average-transfer-time)
 
 ## Approve Tokens
-_Method_: evmApprove
+_Method_: approve
 
-Approve tokens usage by bridge on EVM blockchains for completing transfer
+Approve tokens usage by bridge on EVM and TRX blockchains for completing transfer
 
 _Params_:
 
-* web3: Web3 - Web3 provider
+* provider: Provider - provider
 * approveData: ApproveData - required data for approving
 
 ApproveData:
@@ -63,7 +63,7 @@ const approveData = {
   owner: accountAddress,
   spender: contractAddress,
 };
-const response = await sdk.evmApprove(web3, approveData);
+const response = await sdk.approve(new EvmProvider(web3), approveData);
 ```
 
 ## Send Tokens
@@ -73,8 +73,8 @@ Sends tokens through the bridge
 
 _Params_:
 
-* web3 - Web3 provider
-* sendParams - SendParamsWithChainSymbols | SendParamsWithTokenInfos
+* provider: Provider - provider
+* sendParams: SendParamsWithChainSymbols | SendParamsWithTokenInfos
 
 ##### sendParams init details:
 
@@ -127,7 +127,7 @@ TransactionResponse:
 _Example_:
 
 ```js
-const response = await sdk.send(web3, sendParams);
+const response = await sdk.send(new EvmProvider(web3), sendParams);
 ```
 
 ## Get Tokens Info
