@@ -15,8 +15,12 @@ export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
 }
 
 export function swapToVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
-  const fee = Big(amount).times(tokenInfo.feeShare);
-  const amountWithoutFee = Big(amount).minus(fee);
+  const amountValue = Big(amount);
+  if (amountValue.lte(0)) {
+    return Big(0);
+  }
+  const fee = amountValue.times(tokenInfo.feeShare);
+  const amountWithoutFee = amountValue.minus(fee);
   const inSystemPrecision = toSystemPrecision(
     amountWithoutFee,
     tokenInfo.decimals
@@ -28,8 +32,12 @@ export function swapToVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
 }
 
 export function swapFromVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
+  const amountValue = Big(amount);
+  if (amountValue.lte(0)) {
+    return Big(0);
+  }
   const poolInfo = tokenInfo.poolInfo;
-  const vUsdBalance = Big(amount).plus(poolInfo.vUsdBalance);
+  const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
   const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
   const result = fromSystemPrecision(
     Big(poolInfo.tokenBalance).minus(newAmount),
@@ -43,6 +51,9 @@ export function swapToVUsdReverse(
   amount: BigSource,
   tokenInfo: TokenInfo
 ): Big {
+  if (Big(amount).lte(0)) {
+    return Big(0);
+  }
   const poolInfo = tokenInfo.poolInfo;
   const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amount);
   const tokenBalance = getY(vUsdNewAmount, poolInfo.aValue, poolInfo.dValue);
@@ -54,7 +65,9 @@ export function swapToVUsdReverse(
   const reversedFeeShare = Big(tokenInfo.feeShare).div(
     Big(1).minus(tokenInfo.feeShare)
   );
-  const fee = Big(amountWithoutFee).times(reversedFeeShare);
+  const fee = Big(amountWithoutFee)
+    .times(reversedFeeShare)
+    .round(0, Big.roundUp);
   return Big(amountWithoutFee).plus(fee).round(0, 0);
 }
 
@@ -62,10 +75,13 @@ export function swapFromVUsdReverse(
   amount: BigSource,
   tokenInfo: TokenInfo
 ): Big {
+  if (Big(amount).lte(0)) {
+    return Big(0);
+  }
   const reversedFeeShare = Big(tokenInfo.feeShare).div(
     Big(1).minus(tokenInfo.feeShare)
   );
-  const fee = Big(amount).times(reversedFeeShare);
+  const fee = Big(amount).times(reversedFeeShare).round(0, Big.roundUp);
   const amountWithFee = Big(amount).plus(fee);
   const inSystemPrecision = toSystemPrecision(
     amountWithFee,
@@ -114,7 +130,13 @@ function getY(x: BigSource, a: BigSource, d: BigSource): Big {
   const commonPartSquared = commonPartBig.pow(2);
   const sqrtBig = Big(x)
     .times(Big(x).times(commonPartSquared).plus(Big(4).times(a).times(dCubed)))
-    .sqrt();
+    .sqrt()
+    .round(0, 0);
   const dividerBig = Big(8).times(a).times(x);
-  return commonPartBig.times(x).plus(sqrtBig).div(dividerBig);
+  return commonPartBig
+    .times(x)
+    .plus(sqrtBig)
+    .div(dividerBig)
+    .round(0, 0)
+    .plus(1); // +1 to offset rounding errors
 }
