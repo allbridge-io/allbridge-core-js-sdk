@@ -245,8 +245,8 @@ export class AllbridgeCoreSdk {
       destinationChainToken.decimals
     );
 
-    const usd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken);
-    const resultInt = swapToVUsdReverse(usd, sourceChainToken);
+    const vUsd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken);
+    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken);
     if (resultInt.lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
