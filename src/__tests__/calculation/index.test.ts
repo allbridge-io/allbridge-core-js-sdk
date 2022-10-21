@@ -7,9 +7,7 @@ import {
   fromSystemPrecision,
   getFeePercent,
   swapFromVUsd,
-  swapFromVUsdReverse,
   swapToVUsd,
-  swapToVUsdReverse,
   toSystemPrecision,
 } from "../../utils/calculation";
 
@@ -25,6 +23,7 @@ describe("Calculation", () => {
       ["0.05", 5, Big(5_000)],
       ["0.100000", 5, Big(10_000)],
       ["0.1000005", 5, Big(10_000.05)],
+      ["9.999999999999999999", 18, Big("9999999999999999999")],
     ])(
       "☀️ Convert %s to int with decimals %d -> %s",
       (amountFloat, decimals, expectedAmountInt) => {
@@ -100,7 +99,7 @@ describe("Calculation", () => {
     );
   });
 
-  describe("VUsd calculation", () => {
+  describe("Swap calculation", () => {
     const basicTokenInfo = {
       symbol: "symbol",
       name: "name",
@@ -110,103 +109,130 @@ describe("Calculation", () => {
       lpRate: 0,
     };
 
-    test.each([
-      [100, 0, "100000", "100000", 0.00009],
-      [10_000, 2, "100000", "100000", 0.00009],
-    ])(
-      "☀️ swapToVUsd amount: %d decimals: %d tokenBalance: %d, vUsdBalance: %d -> %d",
-      (amount, decimals: number, tokenBalance, vUsdBalance, expectedAmount) => {
-        const token: TokenInfo = {
-          ...basicTokenInfo,
-          decimals: decimals,
-          feeShare: "0",
-          poolInfo: {
-            dValue: "200000",
-            aValue: "20",
-            vUsdBalance: vUsdBalance,
-            tokenBalance: tokenBalance,
-            totalLpAmount: "",
-            accRewardPerShareP: "",
-          },
-        };
-        expect(swapToVUsd(amount, token).div(1e9)).toBeCloseTo(
-          expectedAmount,
-          1e-3
-        );
-      }
-    );
+    describe("Given token with a balanced pool", () => {
+      const token: TokenInfo = {
+        ...basicTokenInfo,
+        decimals: 18,
+        feeShare: "0",
+        poolInfo: {
+          aValue: "20",
+          dValue: "2000000000001",
+          tokenBalance: "1000000000000",
+          vUsdBalance: "1000000000000",
+          totalLpAmount: "",
+          accRewardPerShareP: "",
+        },
+      };
 
-    test.each([
-      [100_000, 0, "100000", "100000", 90],
-      [100_000, 2, "100000", "100000", 9000],
-    ])(
-      "☀️ swapFromVUsd amount: %d decimals: %d tokenBalance: %d, vUsdBalance: %d -> %d",
-      (amount, decimals: number, tokenBalance, vUsdBalance, expectedAmount) => {
-        const token: TokenInfo = {
-          ...basicTokenInfo,
-          decimals: decimals,
-          feeShare: "0",
-          poolInfo: {
-            dValue: "200000",
-            aValue: "20",
-            vUsdBalance: vUsdBalance,
-            tokenBalance: tokenBalance,
-            totalLpAmount: "",
-            accRewardPerShareP: "",
-          },
-        };
-        expect(swapFromVUsd(amount, token)).toStrictEqual(Big(expectedAmount));
-      }
-    );
+      test.each([
+        [30000000000000000, 28],
+        [1000000000000000000000, 999998],
+      ])("☀️ swapToVUsd amount: %s -> %d", (amount, expectedAmount) => {
+        expect(swapToVUsd(amount, token)).toEqual(Big(expectedAmount));
+      });
 
-    test.each([
-      [90_000, 0, "100000", "100000", 100],
-      [90_000, 2, "100000", "100000", 10_000],
-    ])(
-      "☀️ swapToVUsdReverse amount: %d decimals: %d tokenBalance: %d, vUsdBalance: %d -> %d",
-      (amount, decimals: number, tokenBalance, vUsdBalance, expectedAmount) => {
-        const token: TokenInfo = {
-          ...basicTokenInfo,
-          decimals: decimals,
-          feeShare: "0",
-          poolInfo: {
-            dValue: "200000",
-            aValue: "20",
-            vUsdBalance: vUsdBalance,
-            tokenBalance: tokenBalance,
-            totalLpAmount: "",
-            accRewardPerShareP: "",
-          },
-        };
-        expect(swapToVUsdReverse(amount, token)).toStrictEqual(
-          Big(expectedAmount)
-        );
-      }
-    );
+      test.each([
+        [28, 26000000000000000],
+        [999998, 999996000000000000000],
+      ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
+        expect(swapFromVUsd(amount, token)).toEqual(Big(expectedAmount));
+      });
+    });
 
-    test.each([
-      [90, 0, "100000", "100000", 100_000],
-      [9000, 2, "100000", "100000", 100_000],
-    ])(
-      "☀️ swapFromVUsdReverse amount: %d decimals: %d tokenBalance: %d, vUsdBalance: %d -> %d",
-      (amount, decimals: number, tokenBalance, vUsdBalance, expectedAmount) => {
-        const token: TokenInfo = {
-          ...basicTokenInfo,
-          decimals: decimals,
-          feeShare: "0",
-          poolInfo: {
-            dValue: "200000",
-            aValue: "20",
-            vUsdBalance: vUsdBalance,
-            tokenBalance: tokenBalance,
-            totalLpAmount: "",
-            accRewardPerShareP: "",
-          },
-        };
-        expect(swapFromVUsdReverse(amount, token)).toStrictEqual(
-          Big(expectedAmount)
+    describe("Given token with more vUsd in the pool", () => {
+      const token: TokenInfo = {
+        ...basicTokenInfo,
+        decimals: 18,
+        feeShare: "0",
+        poolInfo: {
+          aValue: "20",
+          dValue: "2000000000001",
+          tokenBalance: "100000000001",
+          vUsdBalance: "2000000000000",
+          totalLpAmount: "",
+          accRewardPerShareP: "",
+        },
+      };
+
+      test("☀️ swapToVUsd near-zero amount", () => {
+        expect(swapToVUsd(10000000000000000, token)).toEqual(Big(22));
+      });
+
+      test("☀️ swapFromVUsd near-zero amount", () => {
+        expect(swapFromVUsd(22, token)).toEqual(Big(10000000000000000));
+      });
+    });
+
+    describe("Given token with more tokens in the pool", () => {
+      const token: TokenInfo = {
+        ...basicTokenInfo,
+        decimals: 18,
+        feeShare: "0",
+        poolInfo: {
+          aValue: "20",
+          dValue: "2000000000001",
+          tokenBalance: "2000000000000",
+          vUsdBalance: "100000000001",
+          totalLpAmount: "",
+          accRewardPerShareP: "",
+        },
+      };
+
+      test.each([
+        [1, 0],
+        [10000000000000000, 5],
+      ])("☀️ swapToVUsd amount: %d -> %d", (amount, expectedAmount) => {
+        expect(swapToVUsd(amount, token)).toEqual(Big(expectedAmount));
+      });
+
+      test.each([
+        [0, 0],
+        [5, 11000000000000000],
+      ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
+        expect(swapFromVUsd(amount, token)).toEqual(Big(expectedAmount));
+      });
+    });
+
+    describe("Given tokens with fee", () => {
+      const sourceToken: TokenInfo = {
+        ...basicTokenInfo,
+        decimals: 18,
+        feeShare: "0.003",
+        poolInfo: {
+          aValue: "20",
+          dValue: "200000001",
+          tokenBalance: "100166280",
+          vUsdBalance: "99833728",
+          totalLpAmount: "",
+          accRewardPerShareP: "",
+        },
+      };
+
+      const destinationToken: TokenInfo = {
+        ...basicTokenInfo,
+        decimals: 18,
+        feeShare: "0.003",
+        poolInfo: {
+          aValue: "20",
+          dValue: "200000001",
+          tokenBalance: "99738849",
+          vUsdBalance: "100261169",
+          totalLpAmount: "",
+          accRewardPerShareP: "",
+        },
+      };
+
+      test("☀️ swapToVUsd 10 tokens", () => {
+        expect(swapToVUsd(10000000000000000000, sourceToken)).toEqual(
+          Big(9969)
         );
-      }
-    );
+      });
+
+      test("☀️ swapFromVUsd almost 10 tokens", () => {
+        expect(swapFromVUsd(9969, destinationToken)).toEqual(
+          Big(9938096000000000000)
+        );
+      });
+    });
   });
 });
