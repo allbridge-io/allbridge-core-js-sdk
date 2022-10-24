@@ -1,6 +1,5 @@
 const {
   AllbridgeCoreSdk,
-  EvmProvider,
   ChainSymbol,
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
@@ -37,7 +36,7 @@ async function runExample() {
 
   const sdk = new AllbridgeCoreSdk();
 
-  const response = await sdk.send(new EvmProvider(web3), sendParams);
+  const response = await sdk.send(web3, sendParams);
   console.log("evmSend response: ", response);
 }
 

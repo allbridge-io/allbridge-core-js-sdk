@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { TronWeb } from "tronweb-typings";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import { ChainType } from "../../chains";
 import {
   ApprovalBridge,
   ApproveData,
@@ -19,7 +19,9 @@ export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 export class TronBridge extends ApprovalBridge {
-  constructor(public api: AllbridgeCoreClient, public tronWeb: TronWeb) {
+  chainType: ChainType.TRX = ChainType.TRX;
+
+  constructor(public tronWeb: TronWeb) {
     super();
   }
 

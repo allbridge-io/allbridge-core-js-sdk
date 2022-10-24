@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
+import Web3 from "web3";
 import { AllbridgeCoreClient } from "../client/core-api";
+import { EvmBridge } from "./evm";
 import {
+  ApprovalBridge,
   ApproveData,
   Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./models";
+import { TronBridge } from "./trx";
 import { prepareTxSendParams } from "./utils";
 
 export class BridgeService {
@@ -17,25 +21,27 @@ export class BridgeService {
     provider: Provider,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    return provider.getBridge(this.api).approve(approveData);
+    return this.getBridge(provider).approve(approveData);
   }
 
   async send(
     provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
+    const bridge = this.getBridge(provider);
     const txSendParams = await prepareTxSendParams(
-      provider.chainType,
+      bridge.chainType,
       params,
       this.api
     );
-    return provider.getBridge(this.api).sendTx(txSendParams);
+    return bridge.sendTx(txSendParams);
   }
 
-  static isSendParamsWithChainSymbol(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): params is SendParamsWithChainSymbols {
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-    return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
+  private getBridge(provider: Provider): ApprovalBridge {
+    if (provider instanceof Web3) {
+      return new EvmBridge(provider);
+    } else {
+      return new TronBridge(provider);
+    }
   }
 }

@@ -14,7 +14,6 @@ import {
   SendParamsWithTokenInfos,
   TxSendParams,
 } from "./models";
-import { BridgeService } from "./index";
 
 export function formatAddress(
   address: string,
@@ -124,7 +123,7 @@ export async function prepareTxSendParams(
   let fromChainId;
   let toChainType;
 
-  if (BridgeService.isSendParamsWithChainSymbol(params)) {
+  if (isSendParamsWithChainSymbol(params)) {
     const chainDetailsMap = (await api.getTokensInfo()).chainDetailsMap();
     fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
     toChainType = chainProperties[params.toChainSymbol].chainType;
@@ -184,6 +183,13 @@ export async function prepareTxSendParams(
     bridgeChainType
   );
   return txSendParams;
+}
+
+export function isSendParamsWithChainSymbol(
+  params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+): params is SendParamsWithChainSymbols {
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+  return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
 }
 
 export function sleep(ms: number): Promise<void> {

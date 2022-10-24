@@ -1,10 +1,10 @@
 const {
   AllbridgeCoreSdk,
   ChainSymbol,
-  TronProvider,
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
+const Web3 = require("web3");
 require("dotenv").config();
 
 async function runExample() {
@@ -40,7 +40,7 @@ async function runExample() {
 
   const sdk = new AllbridgeCoreSdk();
 
-  const response = await sdk.send(new TronProvider(tronWeb), sendParams);
+  const response = await sdk.send(tronWeb, sendParams);
   console.log("tron send response: ", response);
 }
 

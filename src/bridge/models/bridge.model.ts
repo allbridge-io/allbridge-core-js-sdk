@@ -1,12 +1,12 @@
 import { Big } from "big.js";
+import { TronWeb } from "tronweb-typings";
+import Web3 from "web3";
 import { ChainSymbol, ChainType } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
-import { EvmProvider } from "../evm/models";
-import { TronProvider } from "../trx/models";
 
 export abstract class Bridge {
+  abstract chainType: ChainType;
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
 
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
@@ -113,13 +113,7 @@ export interface TxSendParams {
   fee: string;
 }
 
-export abstract class BaseProvider {
-  abstract chainType: ChainType;
-
-  abstract getBridge(api: AllbridgeCoreClient): ApprovalBridge;
-}
-
 /**
  * The provider is type that combines connection implementations for different chains.
  */
-export type Provider = EvmProvider | TronProvider;
+export type Provider = Web3 | TronWeb;

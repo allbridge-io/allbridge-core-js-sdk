@@ -16,11 +16,9 @@ import {
 import {
   AllbridgeCoreSdk,
   ChainSymbol,
-  EvmProvider,
   Messenger,
   SendParamsWithChainSymbols,
   TokenInfoWithChainDetails,
-  TronProvider,
 } from "../index";
 
 import { getFeePercent } from "../utils/calculation";
@@ -367,10 +365,7 @@ describe("SDK", () => {
         return bridgeMocked;
       });
 
-      const transactionResponse = await sdk.send(
-        new EvmProvider(new Web3()),
-        sendParams
-      );
+      const transactionResponse = await sdk.send(new Web3(), sendParams);
 
       expect(swapAndBridgeMocked).toBeCalledTimes(1);
       expect(estimateGasMocked).toBeCalledTimes(1);
@@ -459,7 +454,7 @@ describe("SDK", () => {
       });
 
       const transactionResponse = await sdk.send(
-        new TronProvider(new TronWeb("mock", "mock")),
+        new TronWeb("mock", "mock"),
         sendParams
       );
 

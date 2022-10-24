@@ -62,7 +62,7 @@ Before sending tokens the bridge has to be authorized to use user's tokens. This
 on SDK instance.
 
 ```js
-const response = await sdk.approve(new EvmProvider(web3), {
+const response = await sdk.approve(web3, {
   tokenAddress: tokenAddress,
   owner: senderAddress,
   spender: poolAddress,
@@ -70,14 +70,14 @@ const response = await sdk.approve(new EvmProvider(web3), {
 ```
 
 **TIP:** To interact with the Tron just use: </br>
-```new TronProvider(tronWeb)``` instead of ```new EvmProvider(web3)```
+```TronWeb``` instead of ```Web3```
 
 ### 3.2 Send Tokens
 
 Initiate the transfer of tokens with `send` method on SDK instance.
 
 ```js
-await sdk.send(new EvmProvider(web3), {
+await sdk.send(web3, {
   amount: '1.01',
   fromAccountAddress: senderAddress,
   sourceChainToken: usdtOnEthTokenInfo,
@@ -124,14 +124,14 @@ async function runExample() {
   const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
 
   // authorize a transfer of tokens from sender's address
-  await sdk.approve(new EvmProvider(web3), {
+  await sdk.approve(web3, {
     tokenAddress: busdTokenInfo.tokenAddress,
     owner: fromAddress,
     spender: busdTokenInfo.poolAddress,
   });
 
   // initiate transfer
-  const response = await sdk.send(new EvmProvider(web3), {
+  const response = await sdk.send(web3, {
     amount: "1.01",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,

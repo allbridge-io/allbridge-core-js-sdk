@@ -8,7 +8,7 @@ import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import { ChainType } from "../../chains";
 import {
   ApprovalBridge,
   ApproveData,
@@ -25,7 +25,9 @@ export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 export class EvmBridge extends ApprovalBridge {
-  constructor(public api: AllbridgeCoreClient, public web3: Web3) {
+  chainType: ChainType.EVM = ChainType.EVM;
+
+  constructor(public web3: Web3) {
     super();
   }
 

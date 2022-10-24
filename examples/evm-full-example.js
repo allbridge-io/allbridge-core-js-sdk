@@ -1,7 +1,6 @@
 const {
   AllbridgeCoreSdk,
   ChainSymbol,
-  EvmProvider,
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
@@ -37,14 +36,14 @@ async function runExample() {
   );
 
   // authorize a transfer of tokens from sender's address
-  await sdk.approve(new EvmProvider(web3), {
+  await sdk.approve(web3, {
     tokenAddress: sourceTokenInfo.tokenAddress,
     owner: fromAddress,
     spender: sourceTokenInfo.poolAddress,
   });
 
   // initiate transfer
-  const response = await sdk.send(new EvmProvider(web3), {
+  const response = await sdk.send(web3, {
     amount: "1.01",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
