@@ -63,7 +63,7 @@ Before sending tokens the bridge has to be authorized to use user's tokens. This
 const response = await sdk.evmApprove(web3, {
   tokenAddress: tokenAddress,
   owner: senderAddress,
-  spender: bridgeAddress,
+  spender: poolAddress,
 });
 ```
 
@@ -117,11 +117,11 @@ async function runExample() {
   const trxChain = chains[ChainSymbol.TRX];
   const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
 
-  // authorize the bridge to transfer tokens from sender's address
+  // authorize a transfer of tokens from sender's address
   await sdk.evmApprove(web3, {
     tokenAddress: busdTokenInfo.tokenAddress,
     owner: fromAddress,
-    spender: bscChain.bridgeAddress,
+    spender: busdTokenInfo.poolAddress,
   });
 
   // initiate transfer
