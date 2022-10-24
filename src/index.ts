@@ -1,8 +1,8 @@
 import { Big } from "big.js";
-import Web3 from "web3";
 import { BridgeService } from "./bridge";
 import {
   ApproveData,
+  Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
@@ -67,27 +67,27 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Approve tokens usage by another address on evm chains
-   * @param web3 - Web3 Provider
+   * Approve tokens usage by another address on chains
+   * @param provider
    * @param approveData
    */
-  async evmApprove(
-    web3: Web3,
+  async approve(
+    provider: Provider,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    return this.bridgeService.evmApprove(web3, approveData);
+    return await this.bridgeService.approve(provider, approveData);
   }
 
   /**
    * Send tokens through the Bridge
-   * @param web3 - Web3 Provider
+   * @param provider
    * @param params
    */
   async send(
-    web3: Web3,
+    provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
-    return this.bridgeService.send(web3, params);
+    return this.bridgeService.send(provider, params);
   }
 
   /**

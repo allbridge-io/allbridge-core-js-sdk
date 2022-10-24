@@ -1,5 +1,8 @@
-const { AllbridgeCoreSdk, EvmProvider } = require("@allbridge/bridge-core-sdk");
-const Web3 = require("web3");
+const {
+  AllbridgeCoreSdk,
+  TronProvider,
+} = require("@allbridge/bridge-core-sdk");
+const TronWeb = require("tronweb");
 require("dotenv").config();
 
 async function runExample() {
@@ -9,9 +12,12 @@ async function runExample() {
   const accountAddress = process.env.ACCOUNT_ADDRESS;
   const poolAddress = process.env.POOL_ADDRESS;
 
-  const web3 = new Web3(providerUrl);
-  const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-  web3.eth.accounts.wallet.add(account);
+  const tronWeb = new TronWeb(
+    providerUrl,
+    providerUrl,
+    providerUrl,
+    privateKey
+  );
 
   const sdk = new AllbridgeCoreSdk();
   const approveData = {
@@ -19,7 +25,10 @@ async function runExample() {
     owner: accountAddress,
     spender: poolAddress,
   };
-  const approveResponse = await sdk.approve(new EvmProvider(web3), approveData);
+  const approveResponse = await sdk.approve(
+    new TronProvider(tronWeb),
+    approveData
+  );
   console.log("approve response: ", approveResponse);
 }
 

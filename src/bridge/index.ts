@@ -1,57 +1,35 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
-import Web3 from "web3";
-import { chainProperties, ChainType } from "../chains";
 import { AllbridgeCoreClient } from "../client/core-api";
-import { EvmBridge } from "./evm";
 import {
   ApproveData,
+  Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./models";
+import { prepareTxSendParams } from "./utils";
 
 export class BridgeService {
   constructor(public api: AllbridgeCoreClient) {}
 
-  async evmApprove(
-    web3: Web3,
+  async approve(
+    provider: Provider,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    const evmBridge = new EvmBridge(this.api, web3);
-    return evmBridge.approve(approveData);
+    return provider.getBridge(this.api).approve(approveData);
   }
 
   async send(
-    web3: Web3,
+    provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
-    let chainType;
-    if (BridgeService.isSendParamsWithChainSymbol(params)) {
-      chainType = chainProperties[params.fromChainSymbol].chainType;
-    } else {
-      chainType =
-        chainProperties[params.sourceChainToken.chainSymbol].chainType;
-    }
-    switch (chainType) {
-      case ChainType.EVM: {
-        const evmBridge = new EvmBridge(this.api, web3);
-        return evmBridge.send(params);
-      }
-      case ChainType.SOLANA: {
-        throw new Error(
-          `Error in send method: method not implemented for SOLANA`
-        );
-      }
-      case ChainType.TRX: {
-        throw new Error(`Error in send method: method not implemented for TRX`);
-      }
-      default: {
-        throw new Error(
-          `Error in send method: unknown chain type ${chainType}, or method not implemented`
-        );
-      }
-    }
+    const txSendParams = await prepareTxSendParams(
+      provider.chainType,
+      params,
+      this.api
+    );
+    return provider.getBridge(this.api).sendTx(txSendParams);
   }
 
   static isSendParamsWithChainSymbol(
