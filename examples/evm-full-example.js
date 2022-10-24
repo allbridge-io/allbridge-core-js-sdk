@@ -35,11 +35,11 @@ async function runExample() {
     (tokenInfo) => tokenInfo.symbol === "USDT"
   );
 
-  // authorize the bridge to transfer tokens from sender's address
+  // authorize a transfer of tokens from sender's address
   await sdk.evmApprove(web3, {
     tokenAddress: sourceTokenInfo.tokenAddress,
     owner: fromAddress,
-    spender: sourceChain.bridgeAddress,
+    spender: sourceTokenInfo.poolAddress,
   });
 
   // initiate transfer
