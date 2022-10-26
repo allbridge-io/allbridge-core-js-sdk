@@ -63,7 +63,7 @@ const approveData = {
   owner: accountAddress,
   spender: contractAddress,
 };
-const response = await sdk.approve(new EvmProvider(web3), approveData);
+const response = await sdk.approve(web3, approveData);
 ```
 
 ## Send Tokens
@@ -127,7 +127,7 @@ TransactionResponse:
 _Example_:
 
 ```js
-const response = await sdk.send(new EvmProvider(web3), sendParams);
+const response = await sdk.send(web3, sendParams);
 ```
 
 ## Get Tokens Info

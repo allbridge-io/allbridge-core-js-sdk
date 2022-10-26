@@ -1,7 +1,4 @@
-const {
-  AllbridgeCoreSdk,
-  TronProvider,
-} = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
 require("dotenv").config();
 
@@ -25,10 +22,7 @@ async function runExample() {
     owner: accountAddress,
     spender: poolAddress,
   };
-  const approveResponse = await sdk.approve(
-    new TronProvider(tronWeb),
-    approveData
-  );
+  const approveResponse = await sdk.approve(tronWeb, approveData);
   console.log("approve response: ", approveResponse);
 }
 

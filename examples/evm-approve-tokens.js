@@ -1,4 +1,4 @@
-const { AllbridgeCoreSdk, EvmProvider } = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
 require("dotenv").config();
 
@@ -19,7 +19,7 @@ async function runExample() {
     owner: accountAddress,
     spender: poolAddress,
   };
-  const approveResponse = await sdk.approve(new EvmProvider(web3), approveData);
+  const approveResponse = await sdk.approve(web3, approveData);
   console.log("approve response: ", approveResponse);
 }
 

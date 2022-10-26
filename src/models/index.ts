@@ -4,11 +4,8 @@ export {
   BaseSendParams,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
-  BaseProvider,
   Provider,
 } from "../bridge/models/bridge.model";
-export { EvmProvider } from "../bridge/evm/models/index";
-export { TronProvider } from "../bridge/trx/models/index";
 export { Messenger } from "../client/core-api/core-api.model";
 export { ChainSymbol } from "../chains/index";
 export { TokenInfoWithChainDetails } from "../tokens-info/tokens-info.model";
