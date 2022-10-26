@@ -1,12 +1,15 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "../../chains";
+import { TronWeb } from "tronweb-typings";
+import Web3 from "web3";
+import { ChainSymbol, ChainType } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
 
 export abstract class Bridge {
+  abstract chainType: ChainType;
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
 
-  abstract send(params: BaseSendParams): Promise<TransactionResponse>;
+  abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
 }
 
 export abstract class ApprovalBridge extends Bridge {
@@ -102,10 +105,15 @@ export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromAccountAddress: string;
-  fromTokenAddress: string;
+  fromTokenAddress: string | number[];
   toChainId: number;
-  toAccountAddress: string;
-  toTokenAddress: string;
+  toAccountAddress: string | number[];
+  toTokenAddress: string | number[];
   messenger: Messenger;
   fee: string;
 }
+
+/**
+ * The provider is type that combines connection implementations for different chains.
+ */
+export type Provider = Web3 | TronWeb;

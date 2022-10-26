@@ -13,7 +13,7 @@ async function runExample() {
   const toAddress = process.env.TO_ACCOUNT_ADDRESS;
 
   // configure web3
-  const web3 = new Web3(process.env.WEB3_PROVIDER_URL);
+  const web3 = new Web3(process.env.PROVIDER_URL);
   const account = web3.eth.accounts.privateKeyToAccount(
     process.env.PRIVATE_KEY
   );
@@ -35,11 +35,11 @@ async function runExample() {
     (tokenInfo) => tokenInfo.symbol === "USDT"
   );
 
-  // authorize the bridge to transfer tokens from sender's address
-  await sdk.evmApprove(web3, {
+  // authorize a transfer of tokens from sender's address
+  await sdk.approve(web3, {
     tokenAddress: sourceTokenInfo.tokenAddress,
     owner: fromAddress,
-    spender: sourceChain.bridgeAddress,
+    spender: sourceTokenInfo.poolAddress,
   });
 
   // initiate transfer

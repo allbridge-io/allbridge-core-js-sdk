@@ -35,6 +35,7 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
 ```bash
 $ npm install @allbridge/bridge-core-sdk
 ```
+
 ## How to use
 
 ### 1. Initialize SDK instance
@@ -55,17 +56,21 @@ const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 const usdtOnEthTokenInfo = tokens.find(tokensInfo => tokensInfo.symbol === 'USDT');
 ```
 
-### 3.1 Approve the transfer of tokens 
+### 3.1 Approve the transfer of tokens
 
-Before sending tokens the bridge has to be authorized to use user's tokens. This is done by calling the `evmApprove` method on SDK instance.
+Before sending tokens the bridge has to be authorized to use user's tokens. This is done by calling the `approve` method
+on SDK instance.
 
 ```js
-const response = await sdk.evmApprove(web3, {
+const response = await sdk.approve(web3, {
   tokenAddress: tokenAddress,
   owner: senderAddress,
-  spender: bridgeAddress,
+  spender: poolAddress,
 });
 ```
+
+**TIP:** To interact with the Tron just use: </br>
+```TronWeb``` instead of ```Web3```
 
 ### 3.2 Send Tokens
 
@@ -83,6 +88,7 @@ await sdk.send(web3, {
 ```
 
 ### Full example
+
 Swap BUSD on BSC chain to USDT on TRX chain
 
 ```js
@@ -117,11 +123,11 @@ async function runExample() {
   const trxChain = chains[ChainSymbol.TRX];
   const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
 
-  // authorize the bridge to transfer tokens from sender's address
-  await sdk.evmApprove(web3, {
+  // authorize a transfer of tokens from sender's address
+  await sdk.approve(web3, {
     tokenAddress: busdTokenInfo.tokenAddress,
     owner: fromAddress,
-    spender: bscChain.bridgeAddress,
+    spender: busdTokenInfo.poolAddress,
   });
 
   // initiate transfer
@@ -141,9 +147,10 @@ runExample();
 
 ## Other operations
 
-### Calculating amount of tokens to be received after fee 
+### Calculating amount of tokens to be received after fee
 
-SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens the receiving party will get after applying the bridging fee.
+SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens the receiving party will get after
+applying the bridging fee.
 
 ```js
 const amountToBeReceived = sdk.getAmountToBeReceived(
@@ -155,7 +162,8 @@ const amountToBeReceived = sdk.getAmountToBeReceived(
 
 ### Calculating amount of tokens to send
 
-SDK method `getAmountToSend` can be used to calculate the amount of tokens to send based on the required amount of tokens the receiving party should get.
+SDK method `getAmountToSend` can be used to calculate the amount of tokens to send based on the required amount of
+tokens the receiving party should get.
 
 ```js
 const amountToSend = sdk.getAmountToSend(
@@ -167,7 +175,8 @@ const amountToSend = sdk.getAmountToSend(
 
 ### Getting the amount of gas fee
 
-SDK method `getTxCost` can be used to fetch information about the amount of gas fee required to complete the transfer on the destination chain. Gas fee is paid during the [send](#32-send-tokens) operation in the source chain currency.
+SDK method `getTxCost` can be used to fetch information about the amount of gas fee required to complete the transfer on
+the destination chain. Gas fee is paid during the [send](#32-send-tokens) operation in the source chain currency.
 
 ```js
 const weiValue = await sdk.getTxCost(
@@ -179,7 +188,8 @@ const weiValue = await sdk.getTxCost(
 
 ### Getting the average transfer time
 
-SDK method `getAverageTransferTime` can be used to get the average time in ms it takes to complete a transfer for a given combination of tokens and messenger.
+SDK method `getAverageTransferTime` can be used to get the average time in ms it takes to complete a transfer for a
+given combination of tokens and messenger.
 
 ```js
 const transferTimeMs = sdk.getAverageTransferTime(
@@ -191,4 +201,5 @@ const transferTimeMs = sdk.getAverageTransferTime(
 
 ## Semver
 
-Until bridge-core-sdk reaches a `1.0.0` release, breaking changes will be released with a new minor version. For example `0.3.1`, and `0.3.4` will have the same API, but `0.4.0` will have breaking changes.
+Until bridge-core-sdk reaches a `1.0.0` release, breaking changes will be released with a new minor version. For
+example `0.3.1`, and `0.3.4` will have the same API, but `0.4.0` will have breaking changes.

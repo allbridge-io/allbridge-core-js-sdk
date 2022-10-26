@@ -1,12 +1,29 @@
-import { beforeEach, describe, expect, test } from "vitest";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import BN from "bn.js";
+import nock, { Body, RequestBodyMatcher } from "nock";
+import { TronWeb } from "tronweb-typings";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+
+import Web3 from "web3";
+import { EvmBridge } from "../bridge/evm";
+import { TronBridge } from "../bridge/trx";
+import * as UtilsModule from "../bridge/utils";
+import {
+  ReceiveTransactionCostRequest,
+  ReceiveTransactionCostResponse,
+} from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
+  ChainSymbol,
   Messenger,
+  SendParamsWithChainSymbols,
   TokenInfoWithChainDetails,
 } from "../index";
 
 import { getFeePercent } from "../utils/calculation";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
+import tokenInfoResponse from "./mock/core-api/token-info.json";
 
 const basicTokenInfoWithChainDetails =
   tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
@@ -277,4 +294,203 @@ describe("SDK", () => {
       });
     });
   });
+
+  describe("send", () => {
+    const fee = "20000000000000000";
+    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
+    let scope: nock.Scope = nock("http://localhost")
+      .get("/token-info")
+      .reply(200, tokenInfoResponse)
+      .persist();
+
+    const nonceSpy = vi.spyOn(UtilsModule, "getNonce");
+    // prettier-ignore
+    // @ts-expect-error mock nonce
+    const nonceBuffer = Buffer.from(["59", "18", "4e", "21", "62", "17", "8a", "2b", "b2", "27", "1a", "97", "50", "6d", "e9", "a9", "a3", "b8", "c7", "9e", "fa", "0c", "54", "38", "9d", "97", "30", "e0", "c7", "8e", "07", "12"]);
+    nonceSpy.mockImplementation(() => nonceBuffer);
+
+    test("Should return txId after sending GRL to TRX", async () => {
+      const receiveFeeRequest: ReceiveTransactionCostRequest = {
+        sourceChainId: 2,
+        destinationChainId: 4,
+        messenger: Messenger.ALLBRIDGE,
+      };
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
+        .reply(201, receiveFeeResponse)
+        .persist();
+      const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
+      const fromTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+      const toTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U"; // cspell:disable-line
+      const toAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cspell:disable-line
+      const sendParams: SendParamsWithChainSymbols = {
+        amount: "1.33",
+
+        fromChainSymbol: ChainSymbol.GRL,
+        fromTokenAddress: fromTokenAddress,
+        fromAccountAddress: fromAccountAddress,
+
+        toChainSymbol: ChainSymbol.TRX,
+        toTokenAddress: toTokenAddress,
+        toAccountAddress: toAccountAddress,
+
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      const gas = 100000;
+      const estimateGasMocked = vi.fn(() => {
+        return gas;
+      });
+      const transactionHash = 1234567890;
+      const sendMocked = vi.fn(() => {
+        return { transactionHash: transactionHash };
+      });
+      const swapAndBridgeMocked = vi.fn(() => {
+        return {
+          estimateGas: estimateGasMocked,
+          send: sendMocked,
+        };
+      });
+      const bridgeMocked = {
+        methods: {
+          swapAndBridge: swapAndBridgeMocked,
+        },
+      };
+
+      const getBridgeContract = vi.spyOn(
+        EvmBridge.prototype as any,
+        "getBridgeContract"
+      );
+      getBridgeContract.mockImplementation(() => {
+        return bridgeMocked;
+      });
+
+      const transactionResponse = await sdk.send(new Web3(), sendParams);
+
+      expect(swapAndBridgeMocked).toBeCalledTimes(1);
+      expect(estimateGasMocked).toBeCalledTimes(1);
+      expect(sendMocked).toBeCalledTimes(1);
+
+      expect(swapAndBridgeMocked).lastCalledWith(
+        "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
+        "1330000000000000000",
+        "0x000000000000000000000000b83811067ab3a275ece28d3f8ec6875105ef9bae",
+        4,
+        "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
+        new BN(nonceBuffer),
+        1
+      );
+      expect(estimateGasMocked).lastCalledWith({
+        from: fromAccountAddress,
+        value: fee,
+      });
+      expect(sendMocked).lastCalledWith({
+        from: fromAccountAddress,
+        gas: gas,
+        value: fee,
+      });
+      expect(transactionResponse).toEqual({ txId: transactionHash });
+      scope.done();
+    });
+
+    test("Should return txId after sending TRX to GRL", async () => {
+      const receiveFeeRequest: ReceiveTransactionCostRequest = {
+        sourceChainId: 4,
+        destinationChainId: 2,
+        messenger: Messenger.ALLBRIDGE,
+      };
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
+        .reply(201, receiveFeeResponse)
+        .persist();
+      /* cSpell:disable */
+      const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
+      const fromTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
+      const toTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+      const toAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
+      /* cSpell:enable */
+      const sendParams: SendParamsWithChainSymbols = {
+        amount: "1.33",
+
+        fromChainSymbol: ChainSymbol.TRX,
+        fromTokenAddress: fromTokenAddress,
+        fromAccountAddress: fromAccountAddress,
+
+        toChainSymbol: ChainSymbol.GRL,
+        toTokenAddress: toTokenAddress,
+        toAccountAddress: toAccountAddress,
+
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      const gas = 100000;
+      const estimateGasMocked = vi.fn(() => {
+        return gas;
+      });
+      const transactionHash = 1234567890;
+      const sendMocked = vi.fn(() => {
+        return transactionHash;
+      });
+      const swapAndBridgeMocked = vi.fn(() => {
+        return {
+          estimateGas: estimateGasMocked,
+          send: sendMocked,
+        };
+      });
+      const bridgeMocked = {
+        methods: {
+          swapAndBridge: swapAndBridgeMocked,
+        },
+      };
+
+      const getContract = vi.spyOn(TronBridge.prototype as any, "getContract");
+      getContract.mockImplementation(() => {
+        return bridgeMocked;
+      });
+
+      const verifyTxMocked = vi.spyOn(TronBridge.prototype as any, "verifyTx");
+      verifyTxMocked.mockImplementation(() => {
+        return;
+      });
+
+      const transactionResponse = await sdk.send(
+        new TronWeb("mock", "mock"),
+        sendParams
+      );
+
+      expect(swapAndBridgeMocked).toBeCalledTimes(1);
+      expect(verifyTxMocked).toBeCalledTimes(1);
+      expect(sendMocked).toBeCalledTimes(1);
+
+      expect(swapAndBridgeMocked).lastCalledWith(
+        [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 177, 3, 136, 240, 79, 131, 49,
+          181, 154, 2, 115, 44, 193, 182, 172, 13, 112, 69, 87, 75,
+        ],
+        "1330000000000000000",
+        [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 215, 237, 156, 249, 136, 20,
+          39, 241, 219, 41, 155, 144, 253, 99, 239, 128, 93, 209, 13,
+        ],
+        2,
+        [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 199, 219, 196, 168, 150, 179, 75,
+          122, 16, 221, 162, 239, 114, 5, 33, 69, 169, 18, 47, 67,
+        ],
+        nonceBuffer.toJSON().data,
+        1
+      );
+      expect(sendMocked).lastCalledWith({
+        callValue: fee,
+      });
+      expect(transactionResponse).toEqual({ txId: transactionHash });
+      scope.done();
+    });
+  });
 });
+
+function getRequestBodyMatcher(
+  expectedBody: ReceiveTransactionCostRequest
+): RequestBodyMatcher {
+  return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
+}

@@ -4,6 +4,7 @@ export {
   BaseSendParams,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
+  Provider,
 } from "../bridge/models/bridge.model";
 export { Messenger } from "../client/core-api/core-api.model";
 export { ChainSymbol } from "../chains/index";
