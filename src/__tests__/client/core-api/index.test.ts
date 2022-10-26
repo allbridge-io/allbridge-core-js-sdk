@@ -1,16 +1,22 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
+import { ChainSymbol } from "../../../../dist/src";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
+  TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
 import { ChainDetailsMap } from "../../../tokens-info";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
+import transferStatus from "../../data/transfer-status/TransferStatus.json";
+import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 const expectedTokensGroupedByChain =
   tokensGroupedByChain as unknown as ChainDetailsMap;
+const expectedTransferStatus =
+  transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
   const api = new AllbridgeCoreClient({ apiUrl: "http://localhost" });
@@ -27,6 +33,25 @@ describe("AllbridgeCoreClient", () => {
     it("☀️ getTokensInfo() returns TokensInfo", async () => {
       const actual = await api.getTokensInfo();
       expect(actual.chainDetailsMap()).toEqual(expectedTokensGroupedByChain);
+      scope.done();
+    });
+  });
+
+  describe("given /chain/ChainSymbol/txId endpoint", () => {
+    const chainSymbol = ChainSymbol.TRX;
+    const txId =
+      "0417a44b76793d32c316c1e8d05de99f5929e07415a4a87e4e858cf371ef467a";
+    let scope: nock.Scope;
+
+    beforeEach(() => {
+      scope = nock("http://localhost")
+        .get(`/chain/${chainSymbol}/${txId}`)
+        .reply(200, transferStatusResponse);
+    });
+
+    it("☀️ getTransferStatus returns TransferStatusResponse", async () => {
+      const actual = await api.getTransferStatus(chainSymbol, txId);
+      expect(actual).toEqual(expectedTransferStatus);
       scope.done();
     });
   });

@@ -1,3 +1,5 @@
+import { ChainSymbol } from "../../chains";
+
 export type ChainDetailsMapDTO = Record<string, ChainDetailsDTO>;
 
 export interface ChainDetailsDTO {
@@ -56,4 +58,51 @@ export interface ReceiveTransactionCostRequest {
 
 export interface ReceiveTransactionCostResponse {
   fee: string;
+}
+
+export interface TransferStatusResponse {
+  txId: string;
+
+  sourceChainSymbol: ChainSymbol;
+  destinationChainSymbol: ChainSymbol;
+
+  sendAmount: string;
+
+  sourceTokenAddress: string;
+  destinationTokenAddress: string;
+
+  senderAddress: string;
+  recipientAddress: string;
+
+  signaturesCount: number;
+  signaturesNeeded: number;
+
+  send: BridgeTransaction;
+  receive?: BridgeTransaction;
+}
+
+export interface BridgeTransaction {
+  txId: string;
+
+  sourceChainId: number;
+  destinationChainId: number;
+
+  fee: string;
+  amount: string;
+  virtualAmount: string;
+
+  bridgeContract: string;
+  sender: string;
+  recipient: string;
+
+  sourceTokenAddress: string;
+  destinationTokenAddress: string;
+
+  messenger: Messenger;
+
+  blockTime: number;
+  blockId: number;
+
+  confirmations: number;
+  confirmationsNeeded: number;
 }
