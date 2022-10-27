@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
-import Web3 from "web3";
+import { TronWeb } from "tronweb-typings";
 import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";
 import {
@@ -38,10 +38,15 @@ export class BridgeService {
   }
 
   private getBridge(provider: Provider): ApprovalBridge {
-    if (provider instanceof Web3) {
-      return new EvmBridge(provider);
-    } else {
+    if (this.isTronWeb(provider)) {
       return new TronBridge(provider);
+    } else {
+      return new EvmBridge(provider);
     }
+  }
+
+  private isTronWeb(params: Provider): params is TronWeb {
+    // @ts-expect-error get existing trx property
+    return (params as TronWeb).trx !== undefined;
   }
 }

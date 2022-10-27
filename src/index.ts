@@ -7,7 +7,9 @@ import {
   SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./bridge/models";
+import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClient } from "./client/core-api";
+import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
@@ -88,6 +90,18 @@ export class AllbridgeCoreSdk {
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
     return this.bridgeService.send(provider, params);
+  }
+
+  /**
+   * Fetches information about tokens transfer by chosen chainSymbol and transaction Id from the Allbridge Core API.
+   * @param chainSymbol
+   * @param txId
+   */
+  async getTransferStatus(
+    chainSymbol: ChainSymbol,
+    txId: string
+  ): Promise<TransferStatusResponse> {
+    return this.api.getTransferStatus(chainSymbol, txId);
   }
 
   /**

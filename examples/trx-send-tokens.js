@@ -4,7 +4,6 @@ const {
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
-const Web3 = require("web3");
 require("dotenv").config();
 
 async function runExample() {

@@ -69,8 +69,8 @@ const response = await sdk.approve(web3, {
 });
 ```
 
-**TIP:** To interact with the Tron just use: </br>
-```TronWeb``` instead of ```Web3```
+**TIP:** To interact with the **Tron** blockchain, use: </br>
+```tronWeb``` instead of ```web3```
 
 ### 3.2 Send Tokens
 
@@ -146,6 +146,14 @@ runExample();
 ```
 
 ## Other operations
+
+### Get information about sent transaction
+
+SDK method `getTransferStatus` can be used to get information about tokens transfer.
+
+```js
+const transferStatus = await sdk.getTransferStatus(chainSymbol, txId);
+```
 
 ### Calculating amount of tokens to be received after fee
 
