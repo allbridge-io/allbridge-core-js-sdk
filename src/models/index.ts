@@ -6,9 +6,18 @@ export {
   SendParamsWithTokenInfos,
   Provider,
 } from "../bridge/models/bridge.model";
-export { Messenger } from "../client/core-api/core-api.model";
-export { ChainSymbol } from "../chains/index";
-export { TokenInfoWithChainDetails } from "../tokens-info/tokens-info.model";
+export {
+  Messenger,
+  TransferStatusResponse,
+  BridgeTransaction,
+} from "../client/core-api/core-api.model";
+export { ChainSymbol, ChainType } from "../chains/index";
+export {
+  TokenInfoWithChainDetails,
+  TxTime,
+  MessengerTxTime,
+  PoolInfo,
+} from "../tokens-info/tokens-info.model";
 
 export interface AmountsAndTxCost {
   /**
