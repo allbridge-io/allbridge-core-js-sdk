@@ -2,7 +2,6 @@
 
 import BN from "bn.js";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { TronWeb } from "tronweb-typings";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";
@@ -24,6 +23,8 @@ import {
 import { getFeePercent } from "../utils/calculation";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
+/* eslint-disable-next-line */
+const TronWeb = require("tronweb");
 
 const basicTokenInfoWithChainDetails =
   tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
@@ -452,12 +453,9 @@ describe("SDK", () => {
       verifyTxMocked.mockImplementation(() => {
         return;
       });
-
-      const transactionResponse = await sdk.send(
-        new TronWeb("mock", "mock"),
-        sendParams
-      );
-
+      // prettier-ignore
+      /* eslint-disable-next-line */
+      const transactionResponse = await sdk.send(new TronWeb("mock", "mock"), sendParams);
       expect(swapAndBridgeMocked).toBeCalledTimes(1);
       expect(verifyTxMocked).toBeCalledTimes(1);
       expect(sendMocked).toBeCalledTimes(1);
