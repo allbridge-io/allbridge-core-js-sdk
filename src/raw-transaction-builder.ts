@@ -1,6 +1,11 @@
-import {BridgeService} from "./bridge";
-import {ApproveData, Provider, SendParamsWithChainSymbols, SendParamsWithTokenInfos} from "./bridge/models";
-import {TokenInfo, TokensInfo} from "./tokens-info";
+import { BridgeService } from "./bridge";
+import {
+  ApproveData,
+  Provider,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
+} from "./bridge/models";
+import { TokenInfo, TokensInfo } from "./tokens-info";
 
 export * from "./configs/production";
 export * from "./models";
