@@ -2,6 +2,7 @@ import { Big } from "big.js";
 import { TronWeb } from "tronweb-typings";
 import Web3 from "web3";
 import { ChainSymbol, ChainType } from "../../chains";
+import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
 
@@ -10,15 +11,19 @@ export abstract class Bridge {
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
 
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
-}
 
-export abstract class ApprovalBridge extends Bridge {
+  abstract buildRawTransactionSend(params: TxSendParams): Promise<Object>;
+
   async isNeededApprove(approveData: ApproveData): Promise<boolean> {
     const allowance = await this.getAllowance(approveData);
     return Big(allowance).eq(0);
   }
 
   abstract approve(approveData: ApproveData): Promise<TransactionResponse>;
+
+  abstract buildRawTransactionApprove(
+    approveData: ApproveData
+  ): Promise<Object>;
 
   abstract getAllowance(approveData: ApproveData): Promise<string>;
 }
@@ -101,16 +106,24 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
+type AccountAddress = string | number[];
+
 export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromAccountAddress: string;
-  fromTokenAddress: string | number[];
+  fromTokenAddress: AccountAddress;
   toChainId: number;
-  toAccountAddress: string | number[];
-  toTokenAddress: string | number[];
+  toAccountAddress: AccountAddress;
+  toTokenAddress: AccountAddress;
   messenger: Messenger;
   fee: string;
+}
+
+export abstract class BaseProvider {
+  abstract chainType: ChainType;
+
+  abstract getBridge(api: AllbridgeCoreClient): Bridge;
 }
 
 /**

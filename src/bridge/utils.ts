@@ -78,7 +78,7 @@ function tronAddressToBuffer32(address: string): Buffer {
   return bufferToSize(buffer, 32);
 }
 
-function tronAddressToEthAddress(address: string): string {
+export function tronAddressToEthAddress(address: string): string {
   return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address))
     .toString("hex")
     .replace(/^41/, "0x");

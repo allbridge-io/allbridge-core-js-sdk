@@ -7,24 +7,25 @@
 import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
+import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../chains";
 import {
-  ApprovalBridge,
   ApproveData,
+  Bridge,
   GetTokenBalanceData,
-  TxSendParams,
   TransactionResponse,
+  TxSendParams,
 } from "../models";
 import { getNonce } from "../utils";
 import abi from "./abi/Abi.json";
-import { Abi as Bridge } from "./types/Abi";
+import { Abi as BridgeContract } from "./types/Abi";
 import { BaseContract } from "./types/types";
 
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
-export class EvmBridge extends ApprovalBridge {
+export class EvmBridge extends Bridge {
   chainType: ChainType.EVM = ChainType.EVM;
 
   constructor(public web3: Web3) {
@@ -75,6 +76,46 @@ export class EvmBridge extends ApprovalBridge {
     return { txId: transactionHash };
   }
 
+  async buildRawTransactionSend(
+    params: TxSendParams
+  ): Promise<TransactionConfig> {
+    const {
+      amount,
+      contractAddress,
+      fromAccountAddress,
+      fromTokenAddress,
+      toChainId,
+      toAccountAddress,
+      toTokenAddress,
+      messenger,
+      fee,
+    } = params;
+
+    const bridgeContract = this.getBridgeContract(contractAddress);
+    const nonce = new BN(getNonce());
+
+    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
+      fromTokenAddress,
+      amount,
+      toAccountAddress,
+      toChainId,
+      toTokenAddress,
+      nonce,
+      messenger
+    );
+
+    return new Promise((resolve) =>
+      resolve({
+        from: fromAccountAddress,
+        to: contractAddress,
+        value: fee,
+        data: swapAndBridgeMethod.encodeABI(),
+        maxFeePerGas: 100000000000,
+        maxPriorityFeePerGas: 3000000000,
+      })
+    );
+  }
+
   async approve(approveData: ApproveData): Promise<TransactionResponse> {
     const { tokenAddress, spender, owner } = approveData;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
@@ -92,6 +133,25 @@ export class EvmBridge extends ApprovalBridge {
     return { txId: transactionHash };
   }
 
+  async buildRawTransactionApprove(
+    approveData: ApproveData
+  ): Promise<TransactionConfig> {
+    const { tokenAddress, spender, owner } = approveData;
+    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+    const approveMethod = await tokenContract.methods.approve(
+      spender,
+      MAX_AMOUNT
+    );
+    return {
+      from: owner,
+      to: tokenAddress,
+      value: "0",
+      data: approveMethod.encodeABI(),
+      maxFeePerGas: 100000000000,
+      maxPriorityFeePerGas: 3000000000,
+    };
+  }
+
   getAllowance(approveData: ApproveData): Promise<string> {
     const { tokenAddress, spender, owner } = approveData;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
@@ -105,7 +165,7 @@ export class EvmBridge extends ApprovalBridge {
     return new this.web3.eth.Contract(abiItem, contractAddress) as any;
   }
 
-  private getBridgeContract(contractAddress: string): Bridge {
-    return this.getContract<Bridge>(abi as AbiItem[], contractAddress);
+  private getBridgeContract(contractAddress: string): BridgeContract {
+    return this.getContract<BridgeContract>(abi as AbiItem[], contractAddress);
   }
 }

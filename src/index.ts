@@ -13,6 +13,7 @@ import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
+import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   TokenInfo,
   TokenInfoWithChainDetails,
@@ -52,13 +53,17 @@ export class AllbridgeCoreSdk {
    */
   private bridgeService: BridgeService;
 
+  rawTransactionBuilder: RawTransactionBuilder;
+
   /**
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
   constructor(params: AllbridgeCoreSdkOptions = production) {
     this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
-    this.bridgeService = new BridgeService(this.api);
+    const bridgeService = new BridgeService(this.api);
+    this.bridgeService = bridgeService;
+    this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
   }
 
   /**
@@ -80,6 +85,18 @@ export class AllbridgeCoreSdk {
     return await this.bridgeService.approve(provider, approveData);
   }
 
+  // /**
+  //  * Creates a Raw Transaction for approving tokens usage by the bridge
+  //  * @param provider
+  //  * @param approveData
+  //  */
+  // async buildRawTransactionApprove(
+  //   provider: Provider,
+  //   approveData: ApproveData
+  // ): Promise<Object> {
+  //   return this.bridgeService.buildRawTransactionApprove(provider, approveData);
+  // }
+
   /**
    * Send tokens through the Bridge
    * @param provider
@@ -91,6 +108,18 @@ export class AllbridgeCoreSdk {
   ): Promise<TransactionResponse> {
     return this.bridgeService.send(provider, params);
   }
+
+  // /**
+  //  * Creates a Raw Transaction for initiating the transfer of tokens
+  //  * @param provider
+  //  * @param params
+  //  */
+  // async buildRawTransactionSend(
+  //   provider: Provider,
+  //   params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+  // ): Promise<Object> {
+  //   return this.bridgeService.buildRawTransactionSend(provider, params);
+  // }
 
   /**
    * Fetches information about tokens transfer by chosen chainSymbol and transaction Id from the Allbridge Core API.

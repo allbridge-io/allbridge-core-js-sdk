@@ -4,7 +4,7 @@ import { TronWeb } from "tronweb-typings";
 import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";
 import {
-  ApprovalBridge,
+  Bridge,
   ApproveData,
   Provider,
   SendParamsWithChainSymbols,
@@ -24,6 +24,13 @@ export class BridgeService {
     return this.getBridge(provider).approve(approveData);
   }
 
+  async buildRawTransactionApprove(
+    provider: Provider,
+    approveData: ApproveData
+  ): Promise<Object> {
+    return this.getBridge(provider).buildRawTransactionApprove(approveData);
+  }
+
   async send(
     provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
@@ -37,7 +44,20 @@ export class BridgeService {
     return bridge.sendTx(txSendParams);
   }
 
-  private getBridge(provider: Provider): ApprovalBridge {
+  async buildRawTransactionSend(
+    provider: Provider,
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+  ): Promise<Object> {
+    const bridge = this.getBridge(provider);
+    const txSendParams = await prepareTxSendParams(
+      bridge.chainType,
+      params,
+      this.api
+    );
+    return bridge.buildRawTransactionSend(txSendParams);
+  }
+
+  private getBridge(provider: Provider): Bridge {
     if (this.isTronWeb(provider)) {
       return new TronBridge(provider);
     } else {
