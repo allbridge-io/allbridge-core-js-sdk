@@ -44,6 +44,14 @@
     "@typescript-eslint/no-unused-vars": ["warn", { "varsIgnorePattern": "^_" }],
     "eslint-comments/no-unlimited-disable": "off",
     "eslint-comments/disable-enable-pair": "off",
-    "@typescript-eslint/ban-tslint-comment": "off"
+    "@typescript-eslint/ban-tslint-comment": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "Object": false
+        }
+      }
+    ]
   }
 }

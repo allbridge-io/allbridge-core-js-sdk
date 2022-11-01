@@ -2,7 +2,6 @@ import { Big } from "big.js";
 import { TronWeb } from "tronweb-typings";
 import Web3 from "web3";
 import { ChainSymbol, ChainType } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
 
@@ -12,7 +11,9 @@ export abstract class Bridge {
 
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
 
-  abstract buildRawTransactionSend(params: TxSendParams): Promise<Object>;
+  abstract buildRawTransactionSend(
+    params: TxSendParams
+  ): Promise<RawTransaction>;
 
   async isNeededApprove(approveData: ApproveData): Promise<boolean> {
     const allowance = await this.getAllowance(approveData);
@@ -23,7 +24,7 @@ export abstract class Bridge {
 
   abstract buildRawTransactionApprove(
     approveData: ApproveData
-  ): Promise<Object>;
+  ): Promise<RawTransaction>;
 
   abstract getAllowance(approveData: ApproveData): Promise<string>;
 }
@@ -120,13 +121,14 @@ export interface TxSendParams {
   fee: string;
 }
 
-export abstract class BaseProvider {
-  abstract chainType: ChainType;
-
-  abstract getBridge(api: AllbridgeCoreClient): Bridge;
-}
-
 /**
  * The provider is type that combines connection implementations for different chains.
  */
 export type Provider = Web3 | TronWeb;
+
+export type RawTransaction = Object;
+
+export interface SmartContractMethodParameter {
+  type: string;
+  value: string | number | number[];
+}

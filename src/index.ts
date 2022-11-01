@@ -85,18 +85,6 @@ export class AllbridgeCoreSdk {
     return await this.bridgeService.approve(provider, approveData);
   }
 
-  // /**
-  //  * Creates a Raw Transaction for approving tokens usage by the bridge
-  //  * @param provider
-  //  * @param approveData
-  //  */
-  // async buildRawTransactionApprove(
-  //   provider: Provider,
-  //   approveData: ApproveData
-  // ): Promise<Object> {
-  //   return this.bridgeService.buildRawTransactionApprove(provider, approveData);
-  // }
-
   /**
    * Send tokens through the Bridge
    * @param provider
@@ -108,18 +96,6 @@ export class AllbridgeCoreSdk {
   ): Promise<TransactionResponse> {
     return this.bridgeService.send(provider, params);
   }
-
-  // /**
-  //  * Creates a Raw Transaction for initiating the transfer of tokens
-  //  * @param provider
-  //  * @param params
-  //  */
-  // async buildRawTransactionSend(
-  //   provider: Provider,
-  //   params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  // ): Promise<Object> {
-  //   return this.bridgeService.buildRawTransactionSend(provider, params);
-  // }
 
   /**
    * Fetches information about tokens transfer by chosen chainSymbol and transaction Id from the Allbridge Core API.

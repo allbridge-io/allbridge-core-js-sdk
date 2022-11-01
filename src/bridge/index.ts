@@ -10,6 +10,7 @@ import {
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
+  RawTransaction,
 } from "./models";
 import { TronBridge } from "./trx";
 import { prepareTxSendParams } from "./utils";
@@ -27,7 +28,7 @@ export class BridgeService {
   async buildRawTransactionApprove(
     provider: Provider,
     approveData: ApproveData
-  ): Promise<Object> {
+  ): Promise<RawTransaction> {
     return this.getBridge(provider).buildRawTransactionApprove(approveData);
   }
 
@@ -47,7 +48,7 @@ export class BridgeService {
   async buildRawTransactionSend(
     provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<Object> {
+  ): Promise<RawTransaction> {
     const bridge = this.getBridge(provider);
     const txSendParams = await prepareTxSendParams(
       bridge.chainType,

@@ -10,6 +10,8 @@ import {
   ApproveData,
   Bridge,
   GetTokenBalanceData,
+  RawTransaction,
+  SmartContractMethodParameter,
   TransactionResponse,
   TxSendParams,
 } from "../models";
@@ -64,7 +66,7 @@ export class TronBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  async buildRawTransactionSend(params: TxSendParams): Promise<Object> {
+  async buildRawTransactionSend(params: TxSendParams): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -111,7 +113,9 @@ export class TronBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  async buildRawTransactionApprove(approveData: ApproveData): Promise<Object> {
+  async buildRawTransactionApprove(
+    approveData: ApproveData
+  ): Promise<RawTransaction> {
     const { tokenAddress, spender, owner } = approveData;
 
     const parameter = [
@@ -166,21 +170,21 @@ export class TronBridge extends Bridge {
   private async buildRawTransaction(
     contractAddress: string,
     methodSignature: string,
-    parameter: any,
+    parameter: SmartContractMethodParameter[],
     value: string,
     fromAddress: string
-  ): Promise<Object> {
-    const transactionObject =
-      // @ts-expect-error
-      await this.tronWeb.transactionBuilder.triggerSmartContract(
-        contractAddress,
-        methodSignature,
-        {
-          callValue: value,
-        },
-        parameter,
-        fromAddress
-      );
+  ): Promise<RawTransaction> {
+    const transactionObject = await (
+      this.tronWeb as any
+    ).transactionBuilder.triggerSmartContract(
+      contractAddress,
+      methodSignature,
+      {
+        callValue: value,
+      },
+      parameter,
+      fromAddress
+    );
     if (!transactionObject.result || !transactionObject.result.result) {
       throw Error(
         "Unknown error: " + JSON.stringify(transactionObject, null, 2)

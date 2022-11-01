@@ -2,23 +2,10 @@ import { BridgeService } from "./bridge";
 import {
   ApproveData,
   Provider,
+  RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "./bridge/models";
-import { TokenInfo, TokensInfo } from "./tokens-info";
-
-export * from "./configs/production";
-export * from "./models";
-export {
-  TokenInfo,
-  TokensInfo,
-  ChainDetailsMap,
-  ChainDetailsWithTokens,
-} from "./tokens-info";
-
-export interface AllbridgeCoreSdkOptions {
-  apiUrl: string;
-}
 
 export class RawTransactionBuilder {
   /**
@@ -39,7 +26,10 @@ export class RawTransactionBuilder {
    * @param provider
    * @param approveData
    */
-  async approve(provider: Provider, approveData: ApproveData): Promise<Object> {
+  async approve(
+    provider: Provider,
+    approveData: ApproveData
+  ): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionApprove(provider, approveData);
   }
 
@@ -51,7 +41,7 @@ export class RawTransactionBuilder {
   async send(
     provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<Object> {
+  ): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionSend(provider, params);
   }
 }
