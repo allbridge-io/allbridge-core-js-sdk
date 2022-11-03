@@ -1,0 +1,30 @@
+{
+  "result": {
+    "result": true
+  },
+  "transaction": {
+    "visible": false,
+    "txID": "7b0f5ba33c8984cee2068de5b5d2d94a6c1c3a70f702f578e8ab5aaf172aa483",
+    "raw_data": {
+      "contract": [
+        {
+          "parameter": {
+            "value": {
+              "data": "095ea7b3000000000000000000000000bb58c8a419276287518cfb4c4c2347e25fa76dadffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              "owner_address": "410bef513090bf616bc1a8bdfe81bb8726e2096edf",
+              "contract_address": "41b10388f04f8331b59a02732cc1b6ac0d7045574b"
+            },
+            "type_url": "type.googleapis.com/protocol.TriggerSmartContract"
+          },
+          "type": "TriggerSmartContract"
+        }
+      ],
+      "ref_block_bytes": "920b",
+      "ref_block_hash": "c19f7616ec9f09e6",
+      "expiration": 1667475183000,
+      "fee_limit": 150000000,
+      "timestamp": 1667475123693
+    },
+    "raw_data_hex": "0a02920b2208c19f7616ec9f09e64098ab90eac3305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a15410bef513090bf616bc1a8bdfe81bb8726e2096edf121541b10388f04f8331b59a02732cc1b6ac0d7045574b2244095ea7b3000000000000000000000000bb58c8a419276287518cfb4c4c2347e25fa76dadffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff70eddb8ceac330900180a3c347"
+  }
+}
