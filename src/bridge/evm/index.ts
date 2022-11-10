@@ -7,13 +7,13 @@
 import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
-import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../chains";
 import {
   ApproveData,
   Bridge,
   GetTokenBalanceData,
+  RawTransaction,
   TransactionResponse,
   TxSendParams,
 } from "../models";
@@ -76,9 +76,7 @@ export class EvmBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  async buildRawTransactionSend(
-    params: TxSendParams
-  ): Promise<TransactionConfig> {
+  async buildRawTransactionSend(params: TxSendParams): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -110,8 +108,7 @@ export class EvmBridge extends Bridge {
         to: contractAddress,
         value: fee,
         data: swapAndBridgeMethod.encodeABI(),
-        maxFeePerGas: 100000000000,
-        maxPriorityFeePerGas: 3000000000,
+        type: 2,
       })
     );
   }
@@ -135,7 +132,7 @@ export class EvmBridge extends Bridge {
 
   async buildRawTransactionApprove(
     approveData: ApproveData
-  ): Promise<TransactionConfig> {
+  ): Promise<RawTransaction> {
     const { tokenAddress, spender, owner } = approveData;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
     const approveMethod = await tokenContract.methods.approve(
@@ -147,8 +144,7 @@ export class EvmBridge extends Bridge {
       to: tokenAddress,
       value: "0",
       data: approveMethod.encodeABI(),
-      maxFeePerGas: 100000000000,
-      maxPriorityFeePerGas: 3000000000,
+      type: 2,
     };
   }
 
