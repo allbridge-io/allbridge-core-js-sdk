@@ -35,12 +35,22 @@ async function runExample() {
     (tokenInfo) => tokenInfo.symbol === "USDT"
   );
 
-  // authorize a transfer of tokens from sender's address
-  await sdk.approve(web3, {
-    tokenAddress: sourceTokenInfo.tokenAddress,
-    owner: fromAddress,
-    spender: sourceTokenInfo.poolAddress,
-  });
+  if (
+    //check if sending tokens already approved
+    !(await sdk.checkAllowance(web3, {
+      chainSymbol: ChainSymbol.BSC,
+      tokenAddress: sourceTokenInfo.tokenAddress,
+      owner: fromAddress,
+      amount: "1.01",
+    }))
+  ) {
+    // authorize a transfer of tokens from sender's address
+    await sdk.approve(web3, {
+      tokenAddress: sourceTokenInfo.tokenAddress,
+      owner: fromAddress,
+      spender: sourceTokenInfo.poolAddress,
+    });
+  }
 
   // initiate transfer
   const response = await sdk.send(web3, {

@@ -6,6 +6,10 @@ import {
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
+  CheckAllowanceParamsWithTokenAddress,
+  CheckAllowanceParamsWithTokenInfo,
+  GetAllowanceParamsWithTokenAddress,
+  GetAllowanceParamsWithTokenInfo,
 } from "./bridge/models";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClient } from "./client/core-api";
@@ -71,6 +75,34 @@ export class AllbridgeCoreSdk {
    */
   async getTokensInfo(): Promise<TokensInfo> {
     return this.api.getTokensInfo();
+  }
+
+  /**
+   * Get amount of tokens approved to be sent by the bridge
+   * @param provider
+   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @returns the amount of approved tokens
+   */
+  async getAllowance(
+    provider: Provider,
+    params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
+  ): Promise<string> {
+    return await this.bridgeService.getAllowance(provider, params);
+  }
+
+  /**
+   * Check if the amount of approved tokens is enough to make a transfer
+   * @param provider
+   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @returns true if the amount of approved tokens is enough to make a transfer
+   */
+  async checkAllowance(
+    provider: Provider,
+    params:
+      | CheckAllowanceParamsWithTokenAddress
+      | CheckAllowanceParamsWithTokenInfo
+  ): Promise<boolean> {
+    return await this.bridgeService.checkAllowance(provider, params);
   }
 
   /**

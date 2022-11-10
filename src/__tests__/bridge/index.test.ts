@@ -3,8 +3,8 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { describe, it, expect, beforeEach } from "vitest";
 import { ChainSymbol, Messenger } from "../../../dist/src";
+import { BridgeService } from "../../bridge";
 import { SendParamsWithChainSymbols, TxSendParams } from "../../bridge/models";
-import { prepareTxSendParams } from "../../bridge/utils";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
@@ -13,12 +13,14 @@ import {
 } from "../../client/core-api/core-api.model";
 import tokenInfoResponse from "../mock/core-api/token-info.json";
 
-describe("Utils", () => {
+describe("BridgeService", () => {
   let api: AllbridgeCoreClient;
+  let bridgeService: BridgeService;
   let scope: nock.Scope;
 
   beforeEach(() => {
     api = new AllbridgeCoreClient({ apiUrl: "http://localhost" });
+    bridgeService = new BridgeService(api);
     scope = nock("http://localhost")
       .get("/token-info")
       .reply(200, tokenInfoResponse)
@@ -64,10 +66,9 @@ describe("Utils", () => {
         messenger: Messenger.ALLBRIDGE,
       };
 
-      const txSendParams = await prepareTxSendParams(
+      const txSendParams = await bridgeService.prepareTxSendParams(
         ChainType.EVM,
-        sendParams,
-        api
+        sendParams
       );
 
       const expectedTxSendParams: TxSendParams = {
@@ -102,10 +103,9 @@ describe("Utils", () => {
         messenger: Messenger.ALLBRIDGE,
       };
 
-      const txSendParams = await prepareTxSendParams(
+      const txSendParams = await bridgeService.prepareTxSendParams(
         ChainType.EVM,
-        sendParams,
-        api
+        sendParams
       );
 
       const expectedTxSendParams: TxSendParams = {
