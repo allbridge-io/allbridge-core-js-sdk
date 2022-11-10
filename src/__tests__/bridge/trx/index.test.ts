@@ -1,4 +1,5 @@
-import { TronWeb } from "tronweb-typings";
+// @ts-expect-error import tron
+import * as TronWeb from "tronweb";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ApproveData } from "../../../bridge/models";
 import { MAX_AMOUNT, TronBridge } from "../../../bridge/trx";
@@ -25,7 +26,7 @@ describe("TrxBridge", () => {
         triggerSmartContract: vi.fn(),
       },
     };
-    trxBridge = new TronBridge(tronWebMock as TronWeb);
+    trxBridge = new TronBridge(tronWebMock as typeof TronWeb);
   });
 
   afterEach(() => {

@@ -37,7 +37,6 @@ specifiers:
   semantic-release: ^19.0.5
   source-map-support: ^0.5.21
   tronweb: ^4.4.0
-  tronweb-typings: ^1.0.1
   typechain: ^8.1.0
   typedoc: ^0.23.15
   typescript: ^4.8.4
@@ -91,7 +90,6 @@ devDependencies:
   prettier: 2.7.1
   semantic-release: 19.0.5
   source-map-support: 0.5.21
-  tronweb-typings: 1.0.1
   typechain: 8.1.0_typescript@4.8.4
   typedoc: 0.23.15_typescript@4.8.4
   typescript: 4.8.4
@@ -7208,10 +7206,6 @@ packages:
   /trim-newlines/3.0.1:
     resolution: {integrity: sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==}
     engines: {node: '>=8'}
-    dev: true
-
-  /tronweb-typings/1.0.1:
-    resolution: {integrity: sha512-Ajs6dsFo9gbOd96Q8UinyqapdqlKC8/bRQWQSQbFynnV40e1Uk5h/IRV+IuShoLhGZB33YCqIVNRUKjo/vU+5Q==}
     dev: true
 
   /tronweb/4.4.0:

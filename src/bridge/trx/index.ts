@@ -1,4 +1,5 @@
-import { TronWeb } from "tronweb-typings";
+// @ts-expect-error import tron
+import * as TronWeb from "tronweb";
 import { ChainType } from "../../chains";
 import {
   ApproveData,
@@ -17,7 +18,7 @@ export const MAX_AMOUNT =
 export class TronBridge extends Bridge {
   chainType: ChainType.TRX = ChainType.TRX;
 
-  constructor(public tronWeb: TronWeb) {
+  constructor(public tronWeb: typeof TronWeb) {
     super();
   }
 
@@ -146,7 +147,6 @@ export class TronBridge extends Bridge {
       if (Date.now() - start > timeout) {
         throw new Error("Transaction not found");
       }
-      // @ts-expect-error get existing trx property
       const result = await this.tronWeb.trx.getUnconfirmedTransactionInfo(txId);
       if (!result?.receipt) {
         await sleep(2000);
@@ -168,17 +168,16 @@ export class TronBridge extends Bridge {
     value: string,
     fromAddress: string
   ): Promise<RawTransaction> {
-    const transactionObject = await (
-      this.tronWeb as any
-    ).transactionBuilder.triggerSmartContract(
-      contractAddress,
-      methodSignature,
-      {
-        callValue: value,
-      },
-      parameter,
-      fromAddress
-    );
+    const transactionObject =
+      await this.tronWeb.transactionBuilder.triggerSmartContract(
+        contractAddress,
+        methodSignature,
+        {
+          callValue: value,
+        },
+        parameter,
+        fromAddress
+      );
     if (!transactionObject.result || !transactionObject.result.result) {
       throw Error(
         "Unknown error: " + JSON.stringify(transactionObject, null, 2)

@@ -1,4 +1,4 @@
-import { TronWeb } from "tronweb-typings";
+import Web3 from "web3";
 import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";
 import {
@@ -60,11 +60,12 @@ export class BridgeService {
     if (this.isTronWeb(provider)) {
       return new TronBridge(provider);
     } else {
-      return new EvmBridge(provider);
+      // Web3
+      return new EvmBridge(provider as Web3);
     }
   }
 
-  private isTronWeb(params: Provider): params is TronWeb {
+  private isTronWeb(params: Provider): boolean {
     // @ts-expect-error get existing trx property
     return (params as TronWeb).trx !== undefined;
   }

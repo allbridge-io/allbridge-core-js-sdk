@@ -1,5 +1,6 @@
 import { Big } from "big.js";
-import { TronWeb } from "tronweb-typings";
+// @ts-expect-error import tron
+import * as TronWeb from "tronweb";
 import Web3 from "web3";
 import { ChainSymbol, ChainType } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
@@ -124,7 +125,7 @@ export interface TxSendParams {
 /**
  * The provider is type that combines connection implementations for different chains.
  */
-export type Provider = Web3 | TronWeb;
+export type Provider = Web3 | typeof TronWeb;
 
 export type RawTransaction = Object;
 
