@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";

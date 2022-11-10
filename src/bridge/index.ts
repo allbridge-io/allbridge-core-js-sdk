@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-
 import { TronWeb } from "tronweb-typings";
 import { AllbridgeCoreClient } from "../client/core-api";
 import { EvmBridge } from "./evm";

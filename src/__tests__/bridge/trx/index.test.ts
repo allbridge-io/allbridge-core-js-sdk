@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import { TronWeb } from "tronweb-typings";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ApproveData } from "../../../bridge/models";
