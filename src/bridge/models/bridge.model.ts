@@ -1,5 +1,6 @@
 import { Big } from "big.js";
-import { TronWeb } from "tronweb-typings";
+// @ts-expect-error import tron
+import * as TronWeb from "tronweb";
 import Web3 from "web3";
 import { ChainSymbol, ChainType } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
@@ -10,15 +11,21 @@ export abstract class Bridge {
   abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
 
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
-}
 
-export abstract class ApprovalBridge extends Bridge {
+  abstract buildRawTransactionSend(
+    params: TxSendParams
+  ): Promise<RawTransaction>;
+
   async isNeededApprove(approveData: ApproveData): Promise<boolean> {
     const allowance = await this.getAllowance(approveData);
     return Big(allowance).eq(0);
   }
 
   abstract approve(approveData: ApproveData): Promise<TransactionResponse>;
+
+  abstract buildRawTransactionApprove(
+    approveData: ApproveData
+  ): Promise<RawTransaction>;
 
   abstract getAllowance(approveData: ApproveData): Promise<string>;
 }
@@ -101,14 +108,16 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
+type AccountAddress = string | number[];
+
 export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromAccountAddress: string;
-  fromTokenAddress: string | number[];
+  fromTokenAddress: AccountAddress;
   toChainId: number;
-  toAccountAddress: string | number[];
-  toTokenAddress: string | number[];
+  toAccountAddress: AccountAddress;
+  toTokenAddress: AccountAddress;
   messenger: Messenger;
   fee: string;
 }
@@ -116,4 +125,11 @@ export interface TxSendParams {
 /**
  * The provider is type that combines connection implementations for different chains.
  */
-export type Provider = Web3 | TronWeb;
+export type Provider = Web3 | typeof TronWeb;
+
+export type RawTransaction = Object;
+
+export interface SmartContractMethodParameter {
+  type: string;
+  value: string | number | number[];
+}

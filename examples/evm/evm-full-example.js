@@ -4,18 +4,18 @@ const {
   Messenger,
 } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 
 async function runExample() {
   // sender address
-  const fromAddress = process.env.ACCOUNT_ADDRESS;
+  const fromAddress = process.env.ETH_ACCOUNT_ADDRESS;
   // recipient address
-  const toAddress = process.env.TO_ACCOUNT_ADDRESS;
+  const toAddress = process.env.TRX_ACCOUNT_ADDRESS;
 
   // configure web3
-  const web3 = new Web3(process.env.PROVIDER_URL);
+  const web3 = new Web3(process.env.WEB3_PROVIDER_URL);
   const account = web3.eth.accounts.privateKeyToAccount(
-    process.env.PRIVATE_KEY
+    process.env.ETH_PRIVATE_KEY
   );
   web3.eth.accounts.wallet.add(account);
 

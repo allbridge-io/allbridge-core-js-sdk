@@ -1,13 +1,13 @@
 const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 
 async function runExample() {
-  const providerUrl = process.env.PROVIDER_URL;
-  const privateKey = process.env.PRIVATE_KEY;
-  const tokenAddress = process.env.TOKEN_ADDRESS;
-  const accountAddress = process.env.ACCOUNT_ADDRESS;
-  const poolAddress = process.env.POOL_ADDRESS;
+  const providerUrl = process.env.TRONWEB_PROVIDER_URL;
+  const privateKey = process.env.TRX_PRIVATE_KEY;
+  const tokenAddress = process.env.TRX_TOKEN_ADDRESS;
+  const accountAddress = process.env.TRX_ACCOUNT_ADDRESS;
+  const poolAddress = process.env.TRX_POOL_ADDRESS;
 
   const tronWeb = new TronWeb(
     providerUrl,

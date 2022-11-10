@@ -13,6 +13,7 @@ import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
+import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   TokenInfo,
   TokenInfoWithChainDetails,
@@ -52,13 +53,17 @@ export class AllbridgeCoreSdk {
    */
   private bridgeService: BridgeService;
 
+  rawTransactionBuilder: RawTransactionBuilder;
+
   /**
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
   constructor(params: AllbridgeCoreSdkOptions = production) {
     this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
-    this.bridgeService = new BridgeService(this.api);
+    const bridgeService = new BridgeService(this.api);
+    this.bridgeService = bridgeService;
+    this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
   }
 
   /**

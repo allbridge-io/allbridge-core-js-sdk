@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import BN from "bn.js";
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { beforeEach, describe, expect, test, vi } from "vitest";

@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable  @typescript-eslint/no-unsafe-call */
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
@@ -37,6 +33,7 @@ export function formatAddress(
     }
     default: {
       throw new Error(
+        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
         `Error in formatAddress method: unknown chain type ${from}, or method not implemented`
       );
     }
@@ -56,6 +53,7 @@ export function formatAddress(
     }
     default: {
       throw new Error(
+        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
         `Error in formatAddress method: unknown chain type ${to}, or method not implemented`
       );
     }
@@ -78,7 +76,8 @@ function tronAddressToBuffer32(address: string): Buffer {
   return bufferToSize(buffer, 32);
 }
 
-function tronAddressToEthAddress(address: string): string {
+export function tronAddressToEthAddress(address: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address))
     .toString("hex")
     .replace(/^41/, "0x");
