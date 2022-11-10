@@ -2,33 +2,9 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
 import Web3 from "web3";
-import { ChainSymbol, ChainType } from "../../chains";
+import { ChainSymbol } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../tokens-info";
-
-export abstract class Bridge {
-  abstract chainType: ChainType;
-  abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
-
-  abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
-
-  abstract buildRawTransactionSend(
-    params: TxSendParams
-  ): Promise<RawTransaction>;
-
-  async isNeededApprove(approveData: ApproveData): Promise<boolean> {
-    const allowance = await this.getAllowance(approveData);
-    return Big(allowance).eq(0);
-  }
-
-  abstract approve(approveData: ApproveData): Promise<TransactionResponse>;
-
-  abstract buildRawTransactionApprove(
-    approveData: ApproveData
-  ): Promise<RawTransaction>;
-
-  abstract getAllowance(approveData: ApproveData): Promise<string>;
-}
 
 export interface ApproveData {
   /**
@@ -108,8 +84,35 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
+export interface CheckAllowanceParamsWithTokenAddress
+  extends GetAllowanceParamsWithTokenAddress {
+  /**
+   * The float amount of tokens to check allowance.
+   */
+  amount: string | number | Big;
+}
+export interface CheckAllowanceParamsWithTokenInfo
+  extends GetAllowanceParamsWithTokenInfo {
+  /**
+   * The float amount of tokens to check allowance.
+   */
+  amount: string | number | Big;
+}
+export interface GetAllowanceParamsWithTokenAddress {
+  chainSymbol: ChainSymbol;
+  tokenAddress: string;
+  owner: string;
+}
+export interface GetAllowanceParamsWithTokenInfo {
+  tokenInfo: TokenInfoWithChainDetails;
+  owner: string;
+}
+
 type AccountAddress = string | number[];
 
+/**
+ * @internal
+ */
 export interface TxSendParams {
   amount: string;
   contractAddress: string;
@@ -120,6 +123,18 @@ export interface TxSendParams {
   toTokenAddress: AccountAddress;
   messenger: Messenger;
   fee: string;
+}
+
+export type GetAllowanceParamsDto = GetAllowanceParamsWithTokenInfo;
+
+/**
+ * @internal
+ */
+export interface CheckAllowanceParamsDto extends GetAllowanceParamsDto {
+  /**
+   * The float amount of tokens to check allowance.
+   */
+  amount: string | number | Big;
 }
 
 /**

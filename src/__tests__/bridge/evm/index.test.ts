@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 
 import Web3 from "web3";
 import { EvmBridge } from "../../../bridge/evm";
 import { ApproveData, TxSendParams } from "../../../bridge/models";
-import * as UtilsModule from "../../../bridge/utils";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { mockNonce } from "../../mock/bridge/utils";
 
 describe("EvmBridge", () => {
   let evmBridge: EvmBridge;
@@ -19,12 +19,6 @@ describe("EvmBridge", () => {
     const tokenAddress = "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117";
     const poolAddress = "0xEc46d2b11e68A31026673D63B345B889AB37C0Bc";
     const gasFee = "20000000000000000";
-
-    const nonceSpy = vi.spyOn(UtilsModule, "getNonce");
-    // prettier-ignore
-    // @ts-expect-error mock nonce
-    const nonceBuffer = Buffer.from(["59", "18", "4e", "21", "62", "17", "8a", "2b", "b2", "27", "1a", "97", "50", "6d", "e9", "a9", "a3", "b8", "c7", "9e", "fa", "0c", "54", "38", "9d", "97", "30", "e0", "c7", "8e", "07", "12"]);
-    nonceSpy.mockImplementation(() => nonceBuffer);
 
     test("buildRawTransactionApprove should return RawTransaction", async () => {
       const approveData: ApproveData = {
@@ -45,6 +39,8 @@ describe("EvmBridge", () => {
     });
 
     test("buildRawTransactionSend should return RawTransaction", async () => {
+      mockNonce();
+
       const params: TxSendParams = {
         amount: "1330000000000000000",
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",

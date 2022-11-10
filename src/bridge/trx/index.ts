@@ -4,6 +4,7 @@ import { ChainType } from "../../chains";
 import {
   ApproveData,
   Bridge,
+  GetAllowanceParamsDto,
   GetTokenBalanceData,
   RawTransaction,
   SmartContractMethodParameter,
@@ -20,6 +21,18 @@ export class TronBridge extends Bridge {
 
   constructor(public tronWeb: typeof TronWeb) {
     super();
+  }
+
+  async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
+    const {
+      tokenInfo: { tokenAddress, poolAddress: spender },
+      owner,
+    } = params;
+    const tokenContract = await this.getContract(tokenAddress);
+    const allowance = await tokenContract.methods
+      .allowance(owner, spender)
+      .call();
+    return allowance.toString();
   }
 
   async getTokenBalance(data: GetTokenBalanceData): Promise<string> {
@@ -127,13 +140,6 @@ export class TronBridge extends Bridge {
       value,
       owner
     );
-  }
-
-  async getAllowance(approveData: ApproveData): Promise<string> {
-    const { tokenAddress, spender, owner } = approveData;
-    const tokenContract = await this.getContract(tokenAddress);
-    const allowance = await tokenContract.allowance(owner, spender).call();
-    return allowance.toString();
   }
 
   private getContract(contractAddress: string): Promise<any> {

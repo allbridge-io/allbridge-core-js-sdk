@@ -4,9 +4,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ApproveData } from "../../../bridge/models";
 import { MAX_AMOUNT, TronBridge } from "../../../bridge/trx";
 import { formatAddress } from "../../../bridge/utils";
-import * as UtilsModule from "../../../bridge/utils";
 import { ChainType } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { mockNonce } from "../../mock/bridge/utils";
 import triggerSmartContractApproveResponse from "../../mock/tron-web/trigger-smart-contract-approve.json";
 import triggerSmartContractSendResponse from "../../mock/tron-web/trigger-smart-contract-send.json";
 
@@ -14,11 +14,7 @@ describe("TrxBridge", () => {
   let trxBridge: TronBridge;
   let tronWebMock: any;
 
-  const nonceSpy = vi.spyOn(UtilsModule, "getNonce");
-  // prettier-ignore
-  // @ts-expect-error mock nonce
-  const nonceBuffer = Buffer.from(["59", "18", "4e", "21", "62", "17", "8a", "2b", "b2", "27", "1a", "97", "50", "6d", "e9", "a9", "a3", "b8", "c7", "9e", "fa", "0c", "54", "38", "9d", "97", "30", "e0", "c7", "8e", "07", "12"]);
-  nonceSpy.mockImplementation(() => nonceBuffer);
+  const nonceBuffer = mockNonce();
 
   beforeEach(() => {
     tronWebMock = {

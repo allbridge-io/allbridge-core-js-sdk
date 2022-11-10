@@ -1,14 +1,13 @@
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { chainProperties, ChainSymbol, ChainType } from "../chains";
-import { AllbridgeCoreClient } from "../client/core-api";
-import { ChainDetailsMap } from "../tokens-info";
-import { convertFloatAmountToInt } from "../utils/calculation";
+import { ChainSymbol, ChainType } from "../chains";
+import { ChainDetailsMap, TokenInfoWithChainDetails } from "../tokens-info";
 import {
+  GetAllowanceParamsWithTokenAddress,
+  GetAllowanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
-  TxSendParams,
 } from "./models";
 
 export function formatAddress(
@@ -92,96 +91,43 @@ function bufferToSize(buffer: Buffer, size: number): Buffer {
   return result;
 }
 
-function getDecimalsByContractAddress(
+export function getDecimalsByContractAddress(
   chainDetailsMap: ChainDetailsMap,
   chainSymbol: ChainSymbol,
   contractAddress: string
 ): number {
-  const sourceTokenInfoWithChainDetails = chainDetailsMap[
-    chainSymbol
-  ].tokens.find(
-    (value) =>
-      value.tokenAddress.toUpperCase() === contractAddress.toUpperCase()
+  return getTokenInfoByTokenAddress(
+    chainDetailsMap,
+    chainSymbol,
+    contractAddress
+  ).decimals;
+}
+
+export function getTokenInfoByTokenAddress(
+  chainDetailsMap: ChainDetailsMap,
+  chainSymbol: ChainSymbol,
+  tokenAddress: string
+): TokenInfoWithChainDetails {
+  const tokenInfo = chainDetailsMap[chainSymbol].tokens.find(
+    (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
   );
-  if (!sourceTokenInfoWithChainDetails) {
-    throw new Error("Cannot find source token info");
+  if (!tokenInfo) {
+    throw new Error(
+      "Cannot find token info about token " +
+        tokenAddress +
+        " on chain " +
+        chainSymbol
+    );
   }
-  return sourceTokenInfoWithChainDetails.decimals;
+  return tokenInfo;
 }
 
 export function getNonce(): Buffer {
   return randomBytes(32);
 }
 
-export async function prepareTxSendParams(
-  bridgeChainType: ChainType,
-  params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
-  api: AllbridgeCoreClient
-): Promise<TxSendParams> {
-  const txSendParams = {} as TxSendParams;
-  let fromChainId;
-  let toChainType;
-
-  if (isSendParamsWithChainSymbol(params)) {
-    const chainDetailsMap = (await api.getTokensInfo()).chainDetailsMap();
-    fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
-    toChainType = chainProperties[params.toChainSymbol].chainType;
-    txSendParams.contractAddress =
-      chainDetailsMap[params.fromChainSymbol].bridgeAddress;
-    txSendParams.fromTokenAddress = params.fromTokenAddress;
-    txSendParams.toChainId =
-      chainDetailsMap[params.toChainSymbol].allbridgeChainId;
-    txSendParams.toTokenAddress = params.toTokenAddress;
-    txSendParams.amount = convertFloatAmountToInt(
-      params.amount,
-      getDecimalsByContractAddress(
-        chainDetailsMap,
-        params.fromChainSymbol,
-        txSendParams.fromTokenAddress
-      )
-    ).toFixed();
-  } else {
-    fromChainId = params.sourceChainToken.allbridgeChainId;
-    toChainType =
-      chainProperties[params.destinationChainToken.chainSymbol].chainType;
-    txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
-    txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
-    txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
-    txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
-    txSendParams.amount = convertFloatAmountToInt(
-      params.amount,
-      params.sourceChainToken.decimals
-    ).toFixed();
-  }
-  txSendParams.messenger = params.messenger;
-  txSendParams.fromAccountAddress = params.fromAccountAddress;
-
-  let { fee } = params;
-  if (fee == null) {
-    fee = await api.getReceiveTransactionCost({
-      sourceChainId: fromChainId,
-      destinationChainId: txSendParams.toChainId,
-      messenger: txSendParams.messenger,
-    });
-  }
-  txSendParams.fee = fee;
-
-  txSendParams.fromTokenAddress = formatAddress(
-    txSendParams.fromTokenAddress,
-    bridgeChainType,
-    bridgeChainType
-  );
-  txSendParams.toAccountAddress = formatAddress(
-    params.toAccountAddress,
-    toChainType,
-    bridgeChainType
-  );
-  txSendParams.toTokenAddress = formatAddress(
-    txSendParams.toTokenAddress,
-    toChainType,
-    bridgeChainType
-  );
-  return txSendParams;
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(() => resolve(), ms));
 }
 
 export function isSendParamsWithChainSymbol(
@@ -191,6 +137,9 @@ export function isSendParamsWithChainSymbol(
   return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
 }
 
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(() => resolve(), ms));
+export function isGetAllowanceParamsWithTokenInfo(
+  params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
+): boolean {
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+  return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
 }

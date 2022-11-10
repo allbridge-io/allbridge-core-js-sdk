@@ -6,6 +6,7 @@ import { ChainType } from "../../chains";
 import {
   ApproveData,
   Bridge,
+  GetAllowanceParamsDto,
   GetTokenBalanceData,
   RawTransaction,
   TransactionResponse,
@@ -24,6 +25,15 @@ export class EvmBridge extends Bridge {
 
   constructor(public web3: Web3) {
     super();
+  }
+
+  getAllowance(params: GetAllowanceParamsDto): Promise<string> {
+    const {
+      tokenInfo: { tokenAddress, poolAddress: spender },
+      owner,
+    } = params;
+    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+    return tokenContract.methods.allowance(owner, spender).call();
   }
 
   async getTokenBalance(data: GetTokenBalanceData): Promise<string> {
@@ -140,12 +150,6 @@ export class EvmBridge extends Bridge {
       data: approveMethod.encodeABI(),
       type: 2,
     };
-  }
-
-  getAllowance(approveData: ApproveData): Promise<string> {
-    const { tokenAddress, spender, owner } = approveData;
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
-    return tokenContract.methods.allowance(owner, spender).call();
   }
 
   private getContract<T extends BaseContract>(
