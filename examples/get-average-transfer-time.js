@@ -13,9 +13,7 @@ function msToTime(ms) {
 async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
-  const tokensInfo = await sdk.getTokensInfo();
-
-  const tokens = tokensInfo.tokens();
+  const tokens = await sdk.tokens();
   const sourceToken = tokens[0];
   const destinationToken = tokens[tokens.length - 1];
 

@@ -1,6 +1,6 @@
 import axios, { Axios } from "axios";
 import { ChainSymbol } from "../../chains";
-import { TokensInfo } from "../../tokens-info";
+import { ChainDetailsMap } from "../../tokens-info";
 import { mapChainDetailsMapFromDTO } from "./core-api-mapper";
 import {
   ChainDetailsMapDTO,
@@ -13,7 +13,20 @@ export interface AllbridgeCoreClientParams {
   apiUrl: string;
 }
 
-export class AllbridgeCoreClient {
+export interface AllbridgeCoreClient {
+  getChainDetailsMap(): Promise<ChainDetailsMap>;
+
+  getTransferStatus(
+    chainSymbol: ChainSymbol,
+    txId: string
+  ): Promise<TransferStatusResponse>;
+
+  getReceiveTransactionCost(
+    args: ReceiveTransactionCostRequest
+  ): Promise<string>;
+}
+
+export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   private api: Axios;
 
   constructor(params: AllbridgeCoreClientParams) {
@@ -25,9 +38,9 @@ export class AllbridgeCoreClient {
     });
   }
 
-  async getTokensInfo(): Promise<TokensInfo> {
+  async getChainDetailsMap(): Promise<ChainDetailsMap> {
     const { data } = await this.api.get<ChainDetailsMapDTO>("/token-info");
-    return new TokensInfo(mapChainDetailsMapFromDTO(data));
+    return mapChainDetailsMapFromDTO(data);
   }
 
   async getTransferStatus(

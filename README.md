@@ -48,12 +48,11 @@ const sdk = new AllbridgeCoreSdk();
 ### 2. Get the list of supported tokens
 
 ```js
-const tokensInfo = await sdk.getTokensInfo();
-const supportedChains = tokensInfo.chainDetailsMap();
+const supportedChains = await sdk.chainDetailsMap();
 // extract information about ETH chain
 const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 // Choose one of the tokens supported on ETH
-const usdtOnEthTokenInfo = tokens.find(tokensInfo => tokensInfo.symbol === 'USDT');
+const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
 ```
 
 ### 3.1 Approve the transfer of tokens
@@ -114,8 +113,7 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   // fetch information about supported chains
-  const tokensInfo = await sdk.getTokensInfo();
-  const chains = tokensInfo.chainDetailsMap();
+  const chains = await sdk.chainDetailsMap();
 
   const bscChain = chains[ChainSymbol.BSC];
   const busdTokenInfo = bscChain.tokens.find(tokenInfo => tokenInfo.symbol === 'BUSD');
