@@ -21,8 +21,7 @@ async function runExample() {
   );
   const sdk = new AllbridgeCoreSdk();
 
-  const tokensInfo = await sdk.getTokensInfo();
-  const chains = tokensInfo.chainDetailsMap();
+  const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.TRX];
   const sourceTokenInfo = sourceChain.tokens.find(

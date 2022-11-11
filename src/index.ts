@@ -2,23 +2,25 @@ import { Big } from "big.js";
 import { BridgeService } from "./bridge";
 import {
   ApproveData,
-  Provider,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
   CheckAllowanceParamsWithTokenAddress,
   CheckAllowanceParamsWithTokenInfo,
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
+  Provider,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
+  TransactionResponse,
 } from "./bridge/models";
 import { ChainSymbol } from "./chains";
-import { AllbridgeCoreClient } from "./client/core-api";
+import { AllbridgeCoreClientImpl } from "./client/core-api";
+import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
+  ChainDetailsMap,
   TokenInfo,
   TokenInfoWithChainDetails,
   TokensInfo,
@@ -51,7 +53,7 @@ export class AllbridgeCoreSdk {
   /**
    * @internal
    */
-  private readonly api: AllbridgeCoreClient;
+  private readonly api: AllbridgeCachingCoreClient;
   /**
    * @internal
    */
@@ -64,17 +66,44 @@ export class AllbridgeCoreSdk {
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
   constructor(params: AllbridgeCoreSdkOptions = production) {
-    this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
+    const apiClient = new AllbridgeCoreClientImpl({ apiUrl: params.apiUrl });
+    this.api = new AllbridgeCachingCoreClient(apiClient);
     const bridgeService = new BridgeService(this.api);
     this.bridgeService = bridgeService;
     this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
   }
 
   /**
+   * @deprecated Use one of the following methods instead: chainDetailsMap, tokens, tokensByChain.
    * Fetches information about the supported tokens from the Allbridge Core API.
    */
   async getTokensInfo(): Promise<TokensInfo> {
-    return this.api.getTokensInfo();
+    return new TokensInfo(await this.api.getChainDetailsMap());
+  }
+
+  /**
+   * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
+   */
+  async chainDetailsMap(): Promise<ChainDetailsMap> {
+    return this.api.getChainDetailsMap();
+  }
+
+  /**
+   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens}.
+   */
+  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap();
+    return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
+  }
+
+  /**
+   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens} on the selected chain.
+   */
+  async tokensByChain(
+    chainSymbol: ChainSymbol
+  ): Promise<TokenInfoWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap();
+    return map[chainSymbol].tokens;
   }
 
   /**

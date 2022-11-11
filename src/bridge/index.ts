@@ -1,7 +1,6 @@
 import Web3 from "web3";
 import { chainProperties, ChainType } from "../chains";
 import { AllbridgeCoreClient } from "../client/core-api";
-import { ChainDetailsMap } from "../tokens-info";
 import {
   convertFloatAmountToInt,
   convertIntAmountToFloat,
@@ -33,8 +32,6 @@ import {
 } from "./utils";
 
 export class BridgeService {
-  private chainDetailsMap: ChainDetailsMap | undefined;
-
   constructor(public api: AllbridgeCoreClient) {}
 
   async getAllowance(
@@ -114,13 +111,6 @@ export class BridgeService {
     return (params as TronWeb).trx !== undefined;
   }
 
-  public async getChainDetailsMap(): Promise<ChainDetailsMap> {
-    if (this.chainDetailsMap === undefined) {
-      this.chainDetailsMap = (await this.api.getTokensInfo()).chainDetailsMap();
-    }
-    return this.chainDetailsMap;
-  }
-
   async prepareTxSendParams(
     bridgeChainType: ChainType,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
@@ -130,7 +120,7 @@ export class BridgeService {
     let toChainType;
 
     if (isSendParamsWithChainSymbol(params)) {
-      const chainDetailsMap = await this.getChainDetailsMap();
+      const chainDetailsMap = await this.api.getChainDetailsMap();
       fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
       toChainType = chainProperties[params.toChainSymbol].chainType;
       txSendParams.contractAddress =
@@ -198,7 +188,7 @@ export class BridgeService {
       return params as GetAllowanceParamsDto;
     } else {
       const tokenInfo = getTokenInfoByTokenAddress(
-        await this.getChainDetailsMap(),
+        await this.api.getChainDetailsMap(),
         (params as GetAllowanceParamsWithTokenAddress).chainSymbol,
         (params as GetAllowanceParamsWithTokenAddress).tokenAddress
       );

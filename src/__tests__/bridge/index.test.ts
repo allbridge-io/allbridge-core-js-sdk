@@ -5,7 +5,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { BridgeService } from "../../bridge";
 import { SendParamsWithChainSymbols, TxSendParams } from "../../bridge/models";
 import { ChainSymbol, ChainType } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import {
+  AllbridgeCoreClient,
+  AllbridgeCoreClientImpl,
+} from "../../client/core-api";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
@@ -19,7 +22,7 @@ describe("BridgeService", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClient({ apiUrl: "http://localhost" });
+    api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost" });
     bridgeService = new BridgeService(api);
     scope = nock("http://localhost")
       .get("/token-info")

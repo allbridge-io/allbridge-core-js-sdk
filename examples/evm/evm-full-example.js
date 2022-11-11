@@ -22,8 +22,7 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   // fetch information about supported chains
-  const tokensInfo = await sdk.getTokensInfo();
-  const chains = tokensInfo.chainDetailsMap();
+  const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.BSC];
   const sourceTokenInfo = sourceChain.tokens.find(

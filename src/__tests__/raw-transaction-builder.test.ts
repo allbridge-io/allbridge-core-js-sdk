@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";
 import { BridgeService } from "../bridge";
-import { AllbridgeCoreClient } from "../client/core-api";
+import { AllbridgeCoreClientImpl } from "../client/core-api";
 import {
   ApproveData,
   ChainSymbol,
@@ -21,7 +21,7 @@ describe("RawTransactionBuilder", () => {
     BridgeServiceMock.prototype.buildRawTransactionApprove = vi.fn();
     BridgeServiceMock.prototype.buildRawTransactionSend = vi.fn();
     bridgeServiceMock = new BridgeServiceMock(
-      new AllbridgeCoreClient({ apiUrl: "apiUrl" })
+      new AllbridgeCoreClientImpl({ apiUrl: "apiUrl" })
     );
     rawTransactionBuilder = new RawTransactionBuilder(
       bridgeServiceMock as BridgeService

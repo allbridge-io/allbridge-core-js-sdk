@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 import BN from "bn.js";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import Web3 from "web3";
 import { formatAddress } from "../bridge/utils";
@@ -11,6 +11,7 @@ import {
 } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
+  ChainDetailsMap,
   ChainSymbol,
   ChainType,
   Messenger,
@@ -19,6 +20,8 @@ import {
 } from "../index";
 
 import { getFeePercent } from "../utils/calculation";
+import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
+import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
 import { mockEvmContract } from "./mock/bridge/evm/evm-bridge";
 import {
@@ -304,6 +307,28 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
 
     scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+
+    describe("Get tokens info", () => {
+      test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
+        const chainDetailsMap =
+          tokensGroupedByChain as unknown as ChainDetailsMap;
+        expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
+      });
+
+      it("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
+        const expectedTokenInfoWithChainDetails =
+          tokenInfoList as unknown as TokenInfoWithChainDetails[];
+        expect(await sdk.tokens()).toEqual(expectedTokenInfoWithChainDetails);
+      });
+
+      it("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
+        const expectedTokenInfoWithChainDetailsGRL =
+          tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
+        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(
+          expectedTokenInfoWithChainDetailsGRL
+        );
+      });
+    });
 
     describe("send", () => {
       const fee = "20000000000000000";
