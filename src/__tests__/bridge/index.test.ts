@@ -2,12 +2,12 @@
 
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { describe, it, expect, beforeEach } from "vitest";
-import { ChainSymbol, Messenger } from "../../../dist/src";
 import { BridgeService } from "../../bridge";
 import { SendParamsWithChainSymbols, TxSendParams } from "../../bridge/models";
-import { ChainType } from "../../chains";
+import { ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
+  Messenger,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../client/core-api/core-api.model";

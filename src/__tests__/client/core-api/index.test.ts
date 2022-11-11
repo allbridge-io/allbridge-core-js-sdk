@@ -1,6 +1,6 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
-import { ChainSymbol } from "../../../../dist/src";
+import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import {
   Messenger,
