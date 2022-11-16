@@ -1,9 +1,14 @@
 import axios, { Axios } from "axios";
 import { ChainSymbol } from "../../chains";
-import { ChainDetailsMap } from "../../tokens-info";
-import { mapChainDetailsMapFromDTO } from "./core-api-mapper";
+import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import {
-  ChainDetailsMapDTO,
+  mapChainDetailsResponseToChainDetailsMap,
+  mapChainDetailsResponseToPoolInfoMap,
+  mapPoolInfoResponseToPoolInfoMap,
+} from "./core-api-mapper";
+import {
+  ChainDetailsResponse,
+  PoolInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -24,6 +29,13 @@ export interface AllbridgeCoreClient {
   getReceiveTransactionCost(
     args: ReceiveTransactionCostRequest
   ): Promise<string>;
+
+  getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
+
+  getChainDetailsMapAndPoolInfoMap(): Promise<{
+    chainDetailsMap: ChainDetailsMap;
+    poolInfoMap: PoolInfoMap;
+  }>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -39,8 +51,19 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   }
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
-    const { data } = await this.api.get<ChainDetailsMapDTO>("/token-info");
-    return mapChainDetailsMapFromDTO(data);
+    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
+    return mapChainDetailsResponseToChainDetailsMap(data);
+  }
+
+  async getChainDetailsMapAndPoolInfoMap(): Promise<{
+    chainDetailsMap: ChainDetailsMap;
+    poolInfoMap: PoolInfoMap;
+  }> {
+    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
+    return {
+      chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
+      poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
+    };
   }
 
   async getTransferStatus(
@@ -66,5 +89,21 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
       }
     );
     return data.fee;
+  }
+
+  async getPoolInfoMap(
+    pools: PoolKeyObject[] | PoolKeyObject
+  ): Promise<PoolInfoMap> {
+    const poolKeys = pools instanceof Array ? pools : [pools];
+    const { data } = await this.api.post<PoolInfoResponse>(
+      "/pool-info",
+      { pools: poolKeys },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return mapPoolInfoResponseToPoolInfoMap(data);
   }
 }

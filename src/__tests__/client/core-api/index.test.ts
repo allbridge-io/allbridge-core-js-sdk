@@ -8,9 +8,15 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
-import { ChainDetailsMap } from "../../../tokens-info";
+import {
+  ChainDetailsMap,
+  PoolInfoMap,
+  PoolKeyObject,
+} from "../../../tokens-info";
+import poolInfoMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
+import poolInfoResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 
@@ -80,10 +86,32 @@ describe("AllbridgeCoreClient", () => {
       scope.done();
     });
   });
+
+  describe("given /pool-info endpoint", () => {
+    let scope: nock.Scope;
+
+    const poolKey: PoolKeyObject = {
+      chainSymbol: ChainSymbol.GRL,
+      poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
+    };
+
+    beforeEach(() => {
+      scope = nock("http://localhost")
+        .post("/pool-info", getRequestBodyMatcher({ pools: [poolKey] }))
+        .reply(201, poolInfoResponse);
+    });
+
+    it("☀️ getPoolInfoMap() returns PoolInfoMap", async () => {
+      const expectedPoolInfoMap = poolInfoMap as unknown as PoolInfoMap;
+
+      const actual = await api.getPoolInfoMap([poolKey]);
+      expect(actual).toEqual(expectedPoolInfoMap);
+
+      scope.done();
+    });
+  });
 });
 
-function getRequestBodyMatcher(
-  expectedBody: ReceiveTransactionCostRequest
-): RequestBodyMatcher {
+function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
   return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
 }

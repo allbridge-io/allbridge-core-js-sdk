@@ -21,7 +21,6 @@ import { AmountsAndTxCost, Messenger } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   ChainDetailsMap,
-  TokenInfo,
   TokenInfoWithChainDetails,
   TokensInfo,
 } from "./tokens-info";
@@ -30,6 +29,7 @@ import {
   convertIntAmountToFloat,
   fromSystemPrecision,
   getFeePercent,
+  getPoolInfoByTokenInfo,
   swapFromVUsd,
   swapFromVUsdReverse,
   swapToVUsd,
@@ -39,7 +39,6 @@ import {
 export * from "./configs/production";
 export * from "./models";
 export {
-  TokenInfo,
   TokensInfo,
   ChainDetailsMap,
   ChainDetailsWithTokens,
@@ -176,10 +175,10 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @returns fee percent
    */
-  calculateFeePercentOnSourceChain(
+  async calculateFeePercentOnSourceChain(
     amountFloat: number | string | Big,
-    sourceChainToken: TokenInfo
-  ): number {
+    sourceChainToken: TokenInfoWithChainDetails
+  ): Promise<number> {
     const amountInt = convertFloatAmountToInt(
       amountFloat,
       sourceChainToken.decimals
@@ -187,7 +186,11 @@ export class AllbridgeCoreSdk {
     if (amountInt.eq(0)) {
       return 0;
     }
-    const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
+    const vUsdInSystemPrecision = swapToVUsd(
+      amountInt,
+      sourceChainToken,
+      await getPoolInfoByTokenInfo(this.api, sourceChainToken)
+    );
     const vUsdInSourcePrecision = fromSystemPrecision(
       vUsdInSystemPrecision,
       sourceChainToken.decimals
@@ -203,11 +206,11 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @returns fee percent
    */
-  calculateFeePercentOnDestinationChain(
+  async calculateFeePercentOnDestinationChain(
     amountFloat: number | string | Big,
-    sourceChainToken: TokenInfo,
-    destinationChainToken: TokenInfo
-  ): number {
+    sourceChainToken: TokenInfoWithChainDetails,
+    destinationChainToken: TokenInfoWithChainDetails
+  ): Promise<number> {
     const amountInt = convertFloatAmountToInt(
       amountFloat,
       sourceChainToken.decimals
@@ -215,8 +218,16 @@ export class AllbridgeCoreSdk {
     if (amountInt.eq(0)) {
       return 0;
     }
-    const vUsdInSystemPrecision = swapToVUsd(amountInt, sourceChainToken);
-    const usd = swapFromVUsd(vUsdInSystemPrecision, destinationChainToken);
+    const vUsdInSystemPrecision = swapToVUsd(
+      amountInt,
+      sourceChainToken,
+      await getPoolInfoByTokenInfo(this.api, sourceChainToken)
+    );
+    const usd = swapFromVUsd(
+      vUsdInSystemPrecision,
+      destinationChainToken,
+      await getPoolInfoByTokenInfo(this.api, destinationChainToken)
+    );
     const vUsdInDestinationPrecision = fromSystemPrecision(
       vUsdInSystemPrecision,
       destinationChainToken.decimals
@@ -240,7 +251,7 @@ export class AllbridgeCoreSdk {
   ): Promise<AmountsAndTxCost> {
     return {
       amountToSendFloat: Big(amountToSendFloat).toFixed(),
-      amountToBeReceivedFloat: this.getAmountToBeReceived(
+      amountToBeReceivedFloat: await this.getAmountToBeReceived(
         amountToSendFloat,
         sourceChainToken,
         destinationChainToken
@@ -268,7 +279,7 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      amountToSendFloat: this.getAmountToSend(
+      amountToSendFloat: await this.getAmountToSend(
         amountToBeReceivedFloat,
         sourceChainToken,
         destinationChainToken
@@ -288,18 +299,26 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    */
-  getAmountToBeReceived(
+  async getAmountToBeReceived(
     amountToSendFloat: number | string | Big,
-    sourceChainToken: TokenInfo,
-    destinationChainToken: TokenInfo
-  ): string {
+    sourceChainToken: TokenInfoWithChainDetails,
+    destinationChainToken: TokenInfoWithChainDetails
+  ): Promise<string> {
     const amountToSend = convertFloatAmountToInt(
       amountToSendFloat,
       sourceChainToken.decimals
     );
 
-    const vUsd = swapToVUsd(amountToSend, sourceChainToken);
-    const resultInt = swapFromVUsd(vUsd, destinationChainToken);
+    const vUsd = swapToVUsd(
+      amountToSend,
+      sourceChainToken,
+      await getPoolInfoByTokenInfo(this.api, sourceChainToken)
+    );
+    const resultInt = swapFromVUsd(
+      vUsd,
+      destinationChainToken,
+      await getPoolInfoByTokenInfo(this.api, destinationChainToken)
+    );
     if (resultInt.lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
@@ -315,18 +334,26 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    */
-  getAmountToSend(
+  async getAmountToSend(
     amountToBeReceivedFloat: number | string | Big,
-    sourceChainToken: TokenInfo,
-    destinationChainToken: TokenInfo
-  ): string {
+    sourceChainToken: TokenInfoWithChainDetails,
+    destinationChainToken: TokenInfoWithChainDetails
+  ): Promise<string> {
     const amountToBeReceived = convertFloatAmountToInt(
       amountToBeReceivedFloat,
       destinationChainToken.decimals
     );
 
-    const vUsd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken);
-    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken);
+    const vUsd = swapFromVUsdReverse(
+      amountToBeReceived,
+      destinationChainToken,
+      await getPoolInfoByTokenInfo(this.api, destinationChainToken)
+    );
+    const resultInt = swapToVUsdReverse(
+      vUsd,
+      sourceChainToken,
+      await getPoolInfoByTokenInfo(this.api, sourceChainToken)
+    );
     if (resultInt.lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
@@ -373,5 +400,9 @@ export class AllbridgeCoreSdk {
       return null;
     }
     return sourceTxTime + destinationTxTime;
+  }
+
+  async refreshPoolInfo(): Promise<void> {
+    return this.api.refreshPoolInfo();
   }
 }

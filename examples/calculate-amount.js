@@ -4,8 +4,12 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   const tokens = await sdk.tokens();
-  const sourceToken = tokens[0];
-  const destinationToken = tokens[tokens.length - 1];
+  const sourceToken = tokens.find(
+    (token) => token.chainSymbol === "ETH" && token.symbol === "USDT"
+  );
+  const destinationToken = tokens.find(
+    (token) => token.chainSymbol === "TRX" && token.symbol === "USDT"
+  );
   const amount = "100.5";
 
   const txCost = await sdk.getTxCost(
@@ -14,7 +18,7 @@ async function runExample() {
     Messenger.ALLBRIDGE
   );
 
-  const amountToBeReceived = sdk.getAmountToBeReceived(
+  const amountToBeReceived = await sdk.getAmountToBeReceived(
     amount,
     sourceToken,
     destinationToken
@@ -30,7 +34,7 @@ async function runExample() {
     destinationToken.chainSymbol
   );
 
-  const amountToSend = sdk.getAmountToSend(
+  const amountToSend = await sdk.getAmountToSend(
     amount,
     sourceToken,
     destinationToken

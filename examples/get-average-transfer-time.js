@@ -14,8 +14,12 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   const tokens = await sdk.tokens();
-  const sourceToken = tokens[0];
-  const destinationToken = tokens[tokens.length - 1];
+  const sourceToken = tokens.find(
+    (token) => token.chainSymbol === "ETH" && token.symbol === "USDT"
+  );
+  const destinationToken = tokens.find(
+    (token) => token.chainSymbol === "TRX" && token.symbol === "USDT"
+  );
 
   const transferTimeMs = sdk.getAverageTransferTime(
     sourceToken,
