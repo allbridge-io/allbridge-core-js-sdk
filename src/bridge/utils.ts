@@ -1,13 +1,17 @@
+import { PublicKey } from "@solana/web3.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { ChainSymbol, ChainType } from "../chains";
+import { chainProperties, ChainSymbol, ChainType } from "../chains";
+import { AllbridgeCoreClient } from "../client/core-api";
 import { ChainDetailsMap, TokenInfoWithChainDetails } from "../tokens-info";
+import { convertFloatAmountToInt } from "../utils/calculation";
 import {
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
+  TxSendParams,
 } from "./models";
 
 export function formatAddress(
@@ -22,9 +26,8 @@ export function formatAddress(
       break;
     }
     case ChainType.SOLANA: {
-      throw new Error(
-        `Error in formatAddress method: method not implemented for SOLANA`
-      );
+      buffer = new PublicKey(address).toBuffer();
+      break;
     }
     case ChainType.TRX: {
       buffer = tronAddressToBuffer32(address);
@@ -43,9 +46,7 @@ export function formatAddress(
       return "0x" + buffer.toString("hex");
     }
     case ChainType.SOLANA: {
-      throw new Error(
-        `Error in formatAddress method: method not implemented for toChainType: SOLANA`
-      );
+      return Array.from(buffer);
     }
     case ChainType.TRX: {
       return buffer.toJSON().data;
@@ -124,6 +125,77 @@ export function getTokenInfoByTokenAddress(
 
 export function getNonce(): Buffer {
   return randomBytes(32);
+}
+
+export async function prepareTxSendParams(
+  bridgeChainType: ChainType,
+  params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
+  api: AllbridgeCoreClient
+): Promise<TxSendParams> {
+  const txSendParams = {} as TxSendParams;
+  let toChainType;
+
+  if (isSendParamsWithChainSymbol(params)) {
+    const chainDetailsMap = await api.getChainDetailsMap();
+    txSendParams.fromChainId =
+      chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
+    toChainType = chainProperties[params.toChainSymbol].chainType;
+    txSendParams.contractAddress =
+      chainDetailsMap[params.fromChainSymbol].bridgeAddress;
+    txSendParams.fromTokenAddress = params.fromTokenAddress;
+    txSendParams.toChainId =
+      chainDetailsMap[params.toChainSymbol].allbridgeChainId;
+    txSendParams.toTokenAddress = params.toTokenAddress;
+    txSendParams.amount = convertFloatAmountToInt(
+      params.amount,
+      getDecimalsByContractAddress(
+        chainDetailsMap,
+        params.fromChainSymbol,
+        txSendParams.fromTokenAddress
+      )
+    ).toFixed();
+  } else {
+    txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
+    toChainType =
+      chainProperties[params.destinationChainToken.chainSymbol].chainType;
+    txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
+    txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
+    txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
+    txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
+    txSendParams.amount = convertFloatAmountToInt(
+      params.amount,
+      params.sourceChainToken.decimals
+    ).toFixed();
+  }
+  txSendParams.messenger = params.messenger;
+  txSendParams.fromAccountAddress = params.fromAccountAddress;
+
+  let { fee } = params;
+  if (fee == null) {
+    fee = await api.getReceiveTransactionCost({
+      sourceChainId: txSendParams.fromChainId,
+      destinationChainId: txSendParams.toChainId,
+      messenger: txSendParams.messenger,
+    });
+  }
+  txSendParams.fee = fee;
+
+  txSendParams.fromTokenAddress = formatAddress(
+    txSendParams.fromTokenAddress,
+    bridgeChainType,
+    bridgeChainType
+  );
+  txSendParams.toAccountAddress = formatAddress(
+    params.toAccountAddress,
+    toChainType,
+    bridgeChainType
+  );
+  txSendParams.toTokenAddress = formatAddress(
+    txSendParams.toTokenAddress,
+    toChainType,
+    bridgeChainType
+  );
+  return txSendParams;
 }
 
 export function sleep(ms: number): Promise<void> {

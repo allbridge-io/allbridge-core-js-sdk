@@ -1,5 +1,4 @@
 import Web3 from "web3";
-import { chainProperties, ChainType } from "../chains";
 import { AllbridgeCoreClient } from "../client/core-api";
 import {
   convertFloatAmountToInt,
@@ -20,19 +19,19 @@ import {
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
-  TxSendParams,
 } from "./models";
+import { SolanaBridge, SolanaBridgeParams } from "./sol";
 import { TronBridge } from "./trx";
 import {
-  formatAddress,
-  getDecimalsByContractAddress,
   getTokenInfoByTokenAddress,
   isGetAllowanceParamsWithTokenInfo,
-  isSendParamsWithChainSymbol,
 } from "./utils";
 
 export class BridgeService {
-  constructor(public api: AllbridgeCoreClient) {}
+  constructor(
+    public api: AllbridgeCoreClient,
+    public solParams: SolanaBridgeParams
+  ) {}
 
   async getAllowance(
     provider: Provider,
@@ -77,108 +76,31 @@ export class BridgeService {
     provider: Provider,
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<TransactionResponse> {
-    const bridge = this.getBridge(provider);
-    const txSendParams = await this.prepareTxSendParams(
-      bridge.chainType,
-      params
-    );
-    return bridge.sendTx(txSendParams);
+    return this.getBridge(provider).send(params);
   }
 
   async buildRawTransactionSend(
-    provider: Provider,
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
+    provider?: Provider
   ): Promise<RawTransaction> {
-    const bridge = this.getBridge(provider);
-    const txSendParams = await this.prepareTxSendParams(
-      bridge.chainType,
-      params
-    );
-    return bridge.buildRawTransactionSend(txSendParams);
+    return this.getBridge(provider).buildRawTransactionSend(params);
   }
 
-  private getBridge(provider: Provider): Bridge {
+  private getBridge(provider?: Provider): Bridge {
+    if (!provider) {
+      return new SolanaBridge(this.solParams, this.api);
+    }
     if (this.isTronWeb(provider)) {
-      return new TronBridge(provider);
+      return new TronBridge(provider, this.api);
     } else {
       // Web3
-      return new EvmBridge(provider as Web3);
+      return new EvmBridge(provider as Web3, this.api);
     }
   }
 
   private isTronWeb(params: Provider): boolean {
     // @ts-expect-error get existing trx property
     return (params as TronWeb).trx !== undefined;
-  }
-
-  async prepareTxSendParams(
-    bridgeChainType: ChainType,
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<TxSendParams> {
-    const txSendParams = {} as TxSendParams;
-    let fromChainId;
-    let toChainType;
-
-    if (isSendParamsWithChainSymbol(params)) {
-      const chainDetailsMap = await this.api.getChainDetailsMap();
-      fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
-      toChainType = chainProperties[params.toChainSymbol].chainType;
-      txSendParams.contractAddress =
-        chainDetailsMap[params.fromChainSymbol].bridgeAddress;
-      txSendParams.fromTokenAddress = params.fromTokenAddress;
-      txSendParams.toChainId =
-        chainDetailsMap[params.toChainSymbol].allbridgeChainId;
-      txSendParams.toTokenAddress = params.toTokenAddress;
-      txSendParams.amount = convertFloatAmountToInt(
-        params.amount,
-        getDecimalsByContractAddress(
-          chainDetailsMap,
-          params.fromChainSymbol,
-          txSendParams.fromTokenAddress
-        )
-      ).toFixed();
-    } else {
-      fromChainId = params.sourceChainToken.allbridgeChainId;
-      toChainType =
-        chainProperties[params.destinationChainToken.chainSymbol].chainType;
-      txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
-      txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
-      txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
-      txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
-      txSendParams.amount = convertFloatAmountToInt(
-        params.amount,
-        params.sourceChainToken.decimals
-      ).toFixed();
-    }
-    txSendParams.messenger = params.messenger;
-    txSendParams.fromAccountAddress = params.fromAccountAddress;
-
-    let { fee } = params;
-    if (fee == null) {
-      fee = await this.api.getReceiveTransactionCost({
-        sourceChainId: fromChainId,
-        destinationChainId: txSendParams.toChainId,
-        messenger: txSendParams.messenger,
-      });
-    }
-    txSendParams.fee = fee;
-
-    txSendParams.fromTokenAddress = formatAddress(
-      txSendParams.fromTokenAddress,
-      bridgeChainType,
-      bridgeChainType
-    );
-    txSendParams.toAccountAddress = formatAddress(
-      params.toAccountAddress,
-      toChainType,
-      bridgeChainType
-    );
-    txSendParams.toTokenAddress = formatAddress(
-      txSendParams.toTokenAddress,
-      toChainType,
-      bridgeChainType
-    );
-    return txSendParams;
   }
 
   async prepareGetAllowanceParams(

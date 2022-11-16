@@ -42,14 +42,17 @@ async function runExample() {
   await sendRawTransaction(web3, rawTransactionApprove, account);
 
   // initiate transfer
-  const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(web3, {
-    amount: "1.01",
-    fromAccountAddress: fromAddress,
-    toAccountAddress: toAddress,
-    sourceChainToken: sourceTokenInfo,
-    destinationChainToken: destinationTokenInfo,
-    messenger: Messenger.ALLBRIDGE,
-  });
+  const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
+    {
+      amount: "1.01",
+      fromAccountAddress: fromAddress,
+      toAccountAddress: toAddress,
+      sourceChainToken: sourceTokenInfo,
+      destinationChainToken: destinationTokenInfo,
+      messenger: Messenger.ALLBRIDGE,
+    },
+    web3
+  );
   const txReceipt = await sendRawTransaction(
     web3,
     rawTransactionTransfer,

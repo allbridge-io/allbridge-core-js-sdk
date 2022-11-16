@@ -70,12 +70,12 @@ describe("RawTransactionBuilder", () => {
       messenger: Messenger.ALLBRIDGE,
     };
     const web3 = new Web3();
-    const actual = await rawTransactionBuilder.send(web3, params);
+    const actual = await rawTransactionBuilder.send(params, web3);
     expect(actual).toEqual(expectedSendTransaction);
     expect(bridgeServiceMock.buildRawTransactionSend).toHaveBeenCalled();
     expect(bridgeServiceMock.buildRawTransactionSend).toBeCalledWith(
-      web3,
-      params
+      params,
+      web3
     );
   });
 });

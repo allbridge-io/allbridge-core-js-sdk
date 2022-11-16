@@ -39,9 +39,9 @@ export class RawTransactionBuilder {
    * @param params
    */
   async send(
-    provider: Provider,
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
+    provider?: Provider
   ): Promise<RawTransaction> {
-    return this.bridgeService.buildRawTransactionSend(provider, params);
+    return this.bridgeService.buildRawTransactionSend(params, provider);
   }
 }

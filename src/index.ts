@@ -11,6 +11,7 @@ import {
   SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./bridge/models";
+import { SolanaBridgeParams } from "./bridge/sol";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
@@ -47,6 +48,8 @@ export {
 
 export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
+  solanaRpcUrl: string;
+  wormholeMessengerProgramId: string;
 }
 
 export class AllbridgeCoreSdk {
@@ -59,6 +62,8 @@ export class AllbridgeCoreSdk {
    */
   private bridgeService: BridgeService;
 
+  readonly params: AllbridgeCoreSdkOptions;
+
   rawTransactionBuilder: RawTransactionBuilder;
 
   /**
@@ -66,11 +71,18 @@ export class AllbridgeCoreSdk {
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
   constructor(params: AllbridgeCoreSdkOptions = production) {
-    const apiClient = new AllbridgeCoreClientImpl({ apiUrl: params.apiUrl });
+    const apiClient = new AllbridgeCoreClientImpl({
+      apiUrl: params.apiUrl,
+    });
+    const solParams: SolanaBridgeParams = {
+      solanaRpcUrl: params.solanaRpcUrl,
+      wormholeMessengerProgramId: params.wormholeMessengerProgramId,
+    };
     this.api = new AllbridgeCachingCoreClient(apiClient);
-    const bridgeService = new BridgeService(this.api);
+    const bridgeService = new BridgeService(this.api, solParams);
     this.bridgeService = bridgeService;
     this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
+    this.params = params;
   }
 
   /**

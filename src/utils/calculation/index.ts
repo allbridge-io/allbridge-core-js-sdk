@@ -102,7 +102,7 @@ function convertAmountPrecision(
   return Big(amount).times(toPowBase10(dif)).round(0, 0);
 }
 
-function toPowBase10(decimals: number): Big {
+export function toPowBase10(decimals: number): Big {
   return Big(10).pow(decimals);
 }
 
