@@ -402,6 +402,9 @@ export class AllbridgeCoreSdk {
     return sourceTxTime + destinationTxTime;
   }
 
+  /**
+   * Forces refresh of cached information about the state of liquidity pools.
+   */
   async refreshPoolInfo(): Promise<void> {
     return this.api.refreshPoolInfo();
   }

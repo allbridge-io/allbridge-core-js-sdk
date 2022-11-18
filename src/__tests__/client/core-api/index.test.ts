@@ -1,4 +1,4 @@
-import nock, { Body, RequestBodyMatcher } from "nock";
+import nock from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
@@ -19,6 +19,7 @@ import transferStatus from "../../data/transfer-status/TransferStatus.json";
 import poolInfoResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
+import { getRequestBodyMatcher } from "../../mock/utils";
 
 const expectedTokensGroupedByChain =
   tokensGroupedByChain as unknown as ChainDetailsMap;
@@ -111,7 +112,3 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 });
-
-function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
-  return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
-}

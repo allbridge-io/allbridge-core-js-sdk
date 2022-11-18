@@ -54,7 +54,7 @@ function mapTokenInfoWithChainDetailsFromDto(
   dto: TokenDTO
 ): TokenInfoWithChainDetails {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
-  const { poolInfo, ...dtoWithoutPoolInfo } = dto;
+  const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
     ...dtoWithoutPoolInfo,
     ...chainDetailsWithoutName,
@@ -119,6 +119,24 @@ export function mapPoolKeyObjectToPoolKey(
   poolKeyObject: PoolKeyObject
 ): string {
   return poolKeyObject.chainSymbol + "_" + poolKeyObject.poolAddress;
+}
+
+export function mapChainDetailsMapToPoolKeyObjects(
+  chainDetailsMap: ChainDetailsMap
+): PoolKeyObject[] {
+  const result = [];
+  for (const [chainSymbolValue, chainDetails] of Object.entries(
+    chainDetailsMap
+  )) {
+    const chainSymbol = chainSymbolValue as ChainSymbol;
+    for (const token of chainDetails.tokens) {
+      result.push({
+        chainSymbol,
+        poolAddress: token.poolAddress,
+      });
+    }
+  }
+  return result;
 }
 
 export function mapPoolInfoResponseToPoolInfoMap(

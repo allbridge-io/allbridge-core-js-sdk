@@ -1,7 +1,7 @@
 /* cSpell:disable */
 
-import nock, { Body, RequestBodyMatcher } from "nock";
-import { describe, it, expect, beforeEach } from "vitest";
+import nock from "nock";
+import { beforeEach, describe, expect, it } from "vitest";
 import { BridgeService } from "../../bridge";
 import { SendParamsWithChainSymbols, TxSendParams } from "../../bridge/models";
 import { ChainSymbol, ChainType } from "../../chains";
@@ -15,6 +15,7 @@ import {
   ReceiveTransactionCostResponse,
 } from "../../client/core-api/core-api.model";
 import tokenInfoResponse from "../mock/core-api/token-info.json";
+import { getRequestBodyMatcher } from "../mock/utils";
 
 describe("BridgeService", () => {
   let api: AllbridgeCoreClient;
@@ -129,9 +130,3 @@ describe("BridgeService", () => {
     });
   });
 });
-
-function getRequestBodyMatcher(
-  expectedBody: ReceiveTransactionCostRequest
-): RequestBodyMatcher {
-  return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
-}
