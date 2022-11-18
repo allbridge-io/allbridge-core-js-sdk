@@ -203,7 +203,7 @@ SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens
 applying the bridging fee.
 
 ```js
-const amountToBeReceived = sdk.getAmountToBeReceived(
+const amountToBeReceived = await sdk.getAmountToBeReceived(
   amountToSend,
   sourceTokenInfo,
   destinationTokenInfo
@@ -216,7 +216,7 @@ SDK method `getAmountToSend` can be used to calculate the amount of tokens to se
 tokens the receiving party should get.
 
 ```js
-const amountToSend = sdk.getAmountToSend(
+const amountToSend = await sdk.getAmountToSend(
   amountToBeReceived,
   sourceTokenInfo,
   destinationTokenInfo

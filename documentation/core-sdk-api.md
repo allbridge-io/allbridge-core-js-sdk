@@ -14,6 +14,7 @@
 - [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)
 - [Get amount to send and tx cost](#get-amount-to-send-and-tx-cost)
 - [Get average transfer time](#get-average-transfer-time)
+- [Refresh pool information](#refresh-pool-information)
 
 ## Approve Tokens
 _Method_: approve
@@ -269,7 +270,7 @@ _Returns_:
 _Example_:
 
 ```js
- const sourceFeePercent = sdk.calculateFeePercentOnSourceChain(
+ const sourceFeePercent = await sdk.calculateFeePercentOnSourceChain(
   amount,
   sourceToken
 );
@@ -294,7 +295,7 @@ _Returns_:
 _Example_:
 
 ```js
-const destinationFeePercent = sdk.calculateFeePercentOnDestinationChain(
+const destinationFeePercent = await sdk.calculateFeePercentOnDestinationChain(
   amount,
   sourceToken,
   destinationToken
@@ -320,7 +321,7 @@ _Returns_:
 _Example_:
 
 ```js
-const amountToBeReceived = sdk.getAmountToBeReceived(
+const amountToBeReceived = await sdk.getAmountToBeReceived(
   amount,
   sourceToken,
   destinationToken
@@ -347,7 +348,7 @@ _Returns_:
 _Example_:
 
 ```js
-const amountToSend = sdk.getAmountToSend(
+const amountToSend = await sdk.getAmountToSend(
   amount,
   sourceToken,
   destinationToken
@@ -500,5 +501,23 @@ const transferTimeMs = sdk.getAverageTransferTime(
   sourceToken,
   destinationToken,
   Messenger.ALLBRIDGE
+);
+```
+
+## Refresh pool information
+_Method_: refreshPoolInfo
+
+Forces refresh of cached information about the state of liquidity pools. Outdated cache leads to calculated amounts to be less accurate. The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
+
+_Example_:
+
+```js
+// update the state of liquidity pools
+await sdk.refreshPoolInfo();
+// calculate amount to be received using updated information
+const amountToBeReceived = await sdk.getAmountToBeReceived(
+  amount,
+  sourceToken,
+  destinationToken
 );
 ```
