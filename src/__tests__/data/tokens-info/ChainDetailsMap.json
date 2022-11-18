@@ -158,15 +158,6 @@
         "tokenAddress": "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         "decimals": 9,
         "symbol": "YARO",
-        "poolInfo": {
-          "dValue": "201006012",
-          "aValue": "20",
-          "totalLpAmount": "100502995",
-          "vUsdBalance": "111795184",
-          "tokenBalance": "89242061",
-          "accRewardPerShareP": "133754374346811973",
-          "p": 48
-        },
         "feeShare": "0.003",
         "apr": "51.739745973369194549",
         "lpRate": "0.99883244162470286635",
