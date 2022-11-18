@@ -52,14 +52,17 @@ async function runExample() {
   );
 
   // initiate transfer
-  const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(tronWeb, {
-    amount: "1.01",
-    fromAccountAddress: fromAddress,
-    toAccountAddress: toAddress,
-    sourceChainToken: sourceTokenInfo,
-    destinationChainToken: destinationTokenInfo,
-    messenger: Messenger.ALLBRIDGE,
-  });
+  const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
+    {
+      amount: "1.01",
+      fromAccountAddress: fromAddress,
+      toAccountAddress: toAddress,
+      sourceChainToken: sourceTokenInfo,
+      destinationChainToken: destinationTokenInfo,
+      messenger: Messenger.ALLBRIDGE,
+    },
+    tronWeb
+  );
 
   const transferReceipt = await sendRawTransaction(
     tronWeb,

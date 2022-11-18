@@ -3,14 +3,16 @@ import { beforeEach, describe, expect, test } from "vitest";
 import Web3 from "web3";
 import { EvmBridge } from "../../../bridge/evm";
 import { ApproveData, TxSendParams } from "../../../bridge/models";
+import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { mockNonce } from "../../mock/bridge/utils";
 
 describe("EvmBridge", () => {
   let evmBridge: EvmBridge;
+  let api: any;
 
   beforeEach(() => {
-    evmBridge = new EvmBridge(new Web3());
+    evmBridge = new EvmBridge(new Web3(), api as AllbridgeCoreClient);
   });
 
   describe("Given transfer params", () => {
@@ -38,12 +40,13 @@ describe("EvmBridge", () => {
       });
     });
 
-    test("buildRawTransactionSend should return RawTransaction", async () => {
+    test("buildRawTransactionSend should return RawTransaction", () => {
       mockNonce();
 
       const params: TxSendParams = {
         amount: "1330000000000000000",
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+        fromChainId: 2,
         fromAccountAddress: from,
         fromTokenAddress:
           "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
@@ -55,7 +58,7 @@ describe("EvmBridge", () => {
         fee: gasFee,
       };
 
-      const actual = await evmBridge.buildRawTransactionSend(params);
+      const actual = evmBridge.buildRawTransactionSendFromParams(params);
       expect(actual).toEqual({
         from: from,
         to: bridgeAddress,

@@ -116,6 +116,7 @@ type AccountAddress = string | number[];
 export interface TxSendParams {
   amount: string;
   contractAddress: string;
+  fromChainId: number;
   fromAccountAddress: string;
   fromTokenAddress: AccountAddress;
   toChainId: number;
