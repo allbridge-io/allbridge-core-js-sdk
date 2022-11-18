@@ -2,18 +2,26 @@ import { Big } from "big.js";
 import { BridgeService } from "./bridge";
 import {
   ApproveData,
+  CheckAllowanceParamsWithTokenAddress,
+  CheckAllowanceParamsWithTokenInfo,
+  GetAllowanceParamsWithTokenAddress,
+  GetAllowanceParamsWithTokenInfo,
   Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
 } from "./bridge/models";
+import { SolanaBridgeParams } from "./bridge/sol";
 import { ChainSymbol } from "./chains";
-import { AllbridgeCoreClient } from "./client/core-api";
+import { AllbridgeCoreClientImpl } from "./client/core-api";
+import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { production } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndTxCost, Messenger } from "./models";
+import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
+  ChainDetailsMap,
   TokenInfo,
   TokenInfoWithChainDetails,
   TokensInfo,
@@ -40,32 +48,102 @@ export {
 
 export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
+  solanaRpcUrl: string;
+  wormholeMessengerProgramId: string;
 }
 
 export class AllbridgeCoreSdk {
   /**
    * @internal
    */
-  private readonly api: AllbridgeCoreClient;
+  private readonly api: AllbridgeCachingCoreClient;
   /**
    * @internal
    */
   private bridgeService: BridgeService;
+
+  readonly params: AllbridgeCoreSdkOptions;
+
+  rawTransactionBuilder: RawTransactionBuilder;
 
   /**
    * Initializes the SDK object.
    * @param params Preset parameters can be used. See {@link production | production preset}
    */
   constructor(params: AllbridgeCoreSdkOptions = production) {
-    this.api = new AllbridgeCoreClient({ apiUrl: params.apiUrl });
-    this.bridgeService = new BridgeService(this.api);
+    const apiClient = new AllbridgeCoreClientImpl({
+      apiUrl: params.apiUrl,
+    });
+    const solParams: SolanaBridgeParams = {
+      solanaRpcUrl: params.solanaRpcUrl,
+      wormholeMessengerProgramId: params.wormholeMessengerProgramId,
+    };
+    this.api = new AllbridgeCachingCoreClient(apiClient);
+    const bridgeService = new BridgeService(this.api, solParams);
+    this.bridgeService = bridgeService;
+    this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
+    this.params = params;
   }
 
   /**
+   * @deprecated Use one of the following methods instead: chainDetailsMap, tokens, tokensByChain.
    * Fetches information about the supported tokens from the Allbridge Core API.
    */
   async getTokensInfo(): Promise<TokensInfo> {
-    return this.api.getTokensInfo();
+    return new TokensInfo(await this.api.getChainDetailsMap());
+  }
+
+  /**
+   * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
+   */
+  async chainDetailsMap(): Promise<ChainDetailsMap> {
+    return this.api.getChainDetailsMap();
+  }
+
+  /**
+   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens}.
+   */
+  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap();
+    return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
+  }
+
+  /**
+   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens} on the selected chain.
+   */
+  async tokensByChain(
+    chainSymbol: ChainSymbol
+  ): Promise<TokenInfoWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap();
+    return map[chainSymbol].tokens;
+  }
+
+  /**
+   * Get amount of tokens approved to be sent by the bridge
+   * @param provider
+   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @returns the amount of approved tokens
+   */
+  async getAllowance(
+    provider: Provider,
+    params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
+  ): Promise<string> {
+    return await this.bridgeService.getAllowance(provider, params);
+  }
+
+  /**
+   * Check if the amount of approved tokens is enough to make a transfer
+   * @param provider
+   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @returns true if the amount of approved tokens is enough to make a transfer
+   */
+  async checkAllowance(
+    provider: Provider,
+    params:
+      | CheckAllowanceParamsWithTokenAddress
+      | CheckAllowanceParamsWithTokenInfo
+  ): Promise<boolean> {
+    return await this.bridgeService.checkAllowance(provider, params);
   }
 
   /**

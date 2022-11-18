@@ -1,27 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { Big } from "big.js";
 import BN from "bn.js";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import Web3 from "web3";
-import { EvmBridge } from "../bridge/evm";
-import { TronBridge } from "../bridge/trx";
-import * as UtilsModule from "../bridge/utils";
+import { formatAddress } from "../bridge/utils";
 import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
+  ChainDetailsMap,
   ChainSymbol,
+  ChainType,
   Messenger,
   SendParamsWithChainSymbols,
   TokenInfoWithChainDetails,
 } from "../index";
 
 import { getFeePercent } from "../utils/calculation";
+import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
+import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
+import { mockEvmContract } from "./mock/bridge/evm/evm-bridge";
+import {
+  mockTronContract,
+  mockTronVerifyTx,
+} from "./mock/bridge/trx/trx-bridge";
+import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 /* eslint-disable-next-line */
 const TronWeb = require("tronweb");
@@ -296,193 +303,347 @@ describe("SDK", () => {
     });
   });
 
-  describe("send", () => {
-    const fee = "20000000000000000";
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
-    let scope: nock.Scope = nock("http://localhost")
-      .get("/token-info")
-      .reply(200, tokenInfoResponse)
-      .persist();
+  describe("Given info server", () => {
+    const scope: nock.Scope = nock("http://localhost");
 
-    const nonceSpy = vi.spyOn(UtilsModule, "getNonce");
-    // prettier-ignore
-    // @ts-expect-error mock nonce
-    const nonceBuffer = Buffer.from(["59", "18", "4e", "21", "62", "17", "8a", "2b", "b2", "27", "1a", "97", "50", "6d", "e9", "a9", "a3", "b8", "c7", "9e", "fa", "0c", "54", "38", "9d", "97", "30", "e0", "c7", "8e", "07", "12"]);
-    nonceSpy.mockImplementation(() => nonceBuffer);
+    scope.get("/token-info").reply(200, tokenInfoResponse).persist();
 
-    test("Should return txId after sending GRL to TRX", async () => {
-      const receiveFeeRequest: ReceiveTransactionCostRequest = {
-        sourceChainId: 2,
-        destinationChainId: 4,
-        messenger: Messenger.ALLBRIDGE,
-      };
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
-      const fromTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
-      const toTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U"; // cspell:disable-line
-      const toAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cspell:disable-line
-      const sendParams: SendParamsWithChainSymbols = {
-        amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.GRL,
-        fromTokenAddress: fromTokenAddress,
-        fromAccountAddress: fromAccountAddress,
-
-        toChainSymbol: ChainSymbol.TRX,
-        toTokenAddress: toTokenAddress,
-        toAccountAddress: toAccountAddress,
-
-        messenger: Messenger.ALLBRIDGE,
-      };
-
-      const gas = 100000;
-      const estimateGasMocked = vi.fn(() => {
-        return gas;
-      });
-      const transactionHash = 1234567890;
-      const sendMocked = vi.fn(() => {
-        return { transactionHash: transactionHash };
-      });
-      const swapAndBridgeMocked = vi.fn(() => {
-        return {
-          estimateGas: estimateGasMocked,
-          send: sendMocked,
-        };
-      });
-      const bridgeMocked = {
-        methods: {
-          swapAndBridge: swapAndBridgeMocked,
-        },
-      };
-
-      const getBridgeContract = vi.spyOn(
-        EvmBridge.prototype as any,
-        "getBridgeContract"
-      );
-      getBridgeContract.mockImplementation(() => {
-        return bridgeMocked;
+    describe("Get tokens info", () => {
+      test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
+        const chainDetailsMap =
+          tokensGroupedByChain as unknown as ChainDetailsMap;
+        expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
       });
 
-      const transactionResponse = await sdk.send(new Web3(), sendParams);
-
-      expect(swapAndBridgeMocked).toBeCalledTimes(1);
-      expect(estimateGasMocked).toBeCalledTimes(1);
-      expect(sendMocked).toBeCalledTimes(1);
-
-      expect(swapAndBridgeMocked).lastCalledWith(
-        "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
-        "1330000000000000000",
-        "0x000000000000000000000000b83811067ab3a275ece28d3f8ec6875105ef9bae",
-        4,
-        "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
-        new BN(nonceBuffer),
-        1
-      );
-      expect(estimateGasMocked).lastCalledWith({
-        from: fromAccountAddress,
-        value: fee,
+      it("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
+        const expectedTokenInfoWithChainDetails =
+          tokenInfoList as unknown as TokenInfoWithChainDetails[];
+        expect(await sdk.tokens()).toEqual(expectedTokenInfoWithChainDetails);
       });
-      expect(sendMocked).lastCalledWith({
-        from: fromAccountAddress,
-        gas: gas,
-        value: fee,
+
+      it("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
+        const expectedTokenInfoWithChainDetailsGRL =
+          tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
+        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(
+          expectedTokenInfoWithChainDetailsGRL
+        );
       });
-      expect(transactionResponse).toEqual({ txId: transactionHash });
-      scope.done();
     });
 
-    test("Should return txId after sending TRX to GRL", async () => {
-      const receiveFeeRequest: ReceiveTransactionCostRequest = {
-        sourceChainId: 4,
-        destinationChainId: 2,
-        messenger: Messenger.ALLBRIDGE,
-      };
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      /* cSpell:disable */
-      const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
-      const fromTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
-      const toTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
-      const toAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
-      /* cSpell:enable */
-      const sendParams: SendParamsWithChainSymbols = {
-        amount: "1.33",
+    describe("send", () => {
+      const fee = "20000000000000000";
+      const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
+      const nonceBuffer = mockNonce();
+      const tokensAmount = "1.33";
 
-        fromChainSymbol: ChainSymbol.TRX,
-        fromTokenAddress: fromTokenAddress,
-        fromAccountAddress: fromAccountAddress,
-
-        toChainSymbol: ChainSymbol.GRL,
-        toTokenAddress: toTokenAddress,
-        toAccountAddress: toAccountAddress,
-
-        messenger: Messenger.ALLBRIDGE,
-      };
-
-      const gas = 100000;
-      const estimateGasMocked = vi.fn(() => {
-        return gas;
-      });
-      const transactionHash = 1234567890;
-      const sendMocked = vi.fn(() => {
-        return transactionHash;
-      });
-      const swapAndBridgeMocked = vi.fn(() => {
-        return {
-          estimateGas: estimateGasMocked,
-          send: sendMocked,
+      test("Should return txId after sending GRL to TRX", async () => {
+        const toChainId = 4;
+        const receiveFeeRequest: ReceiveTransactionCostRequest = {
+          sourceChainId: 2,
+          destinationChainId: toChainId,
+          messenger: Messenger.ALLBRIDGE,
         };
-      });
-      const bridgeMocked = {
-        methods: {
+        scope
+          .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
+          .reply(201, receiveFeeResponse)
+          .persist();
+        const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
+        const fromTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+        const toTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U"; // cspell:disable-line
+        const toAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cspell:disable-line
+        const fromTokenDecimals = 18;
+
+        const sendParams: SendParamsWithChainSymbols = {
+          amount: tokensAmount,
+
+          fromChainSymbol: ChainSymbol.GRL,
+          fromTokenAddress: fromTokenAddress,
+          fromAccountAddress: fromAccountAddress,
+
+          toChainSymbol: ChainSymbol.TRX,
+          toTokenAddress: toTokenAddress,
+          toAccountAddress: toAccountAddress,
+
+          messenger: Messenger.ALLBRIDGE,
+        };
+
+        const gas = 100000;
+        const estimateGasMocked = vi.fn(() => {
+          return gas;
+        });
+        const transactionHash = 1234567890;
+        const sendMocked = vi.fn(() => {
+          return { transactionHash: transactionHash };
+        });
+        const swapAndBridgeMocked = vi.fn(() => {
+          return {
+            estimateGas: estimateGasMocked,
+            send: sendMocked,
+          };
+        });
+        mockEvmContract({
           swapAndBridge: swapAndBridgeMocked,
-        },
-      };
+        });
 
-      const getContract = vi.spyOn(TronBridge.prototype as any, "getContract");
-      getContract.mockImplementation(() => {
-        return bridgeMocked;
+        const transactionResponse = await sdk.send(new Web3(), sendParams);
+
+        expect(swapAndBridgeMocked).toBeCalledTimes(1);
+        expect(estimateGasMocked).toBeCalledTimes(1);
+        expect(sendMocked).toBeCalledTimes(1);
+
+        const expectedAmount = Big(tokensAmount)
+          .mul(10 ** fromTokenDecimals)
+          .toFixed();
+        expect(swapAndBridgeMocked).lastCalledWith(
+          formatAddress(fromTokenAddress, ChainType.EVM, ChainType.EVM),
+          expectedAmount,
+          formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
+          toChainId,
+          formatAddress(toTokenAddress, ChainType.TRX, ChainType.EVM),
+          new BN(nonceBuffer),
+          Messenger.ALLBRIDGE
+        );
+        expect(estimateGasMocked).lastCalledWith({
+          from: fromAccountAddress,
+          value: fee,
+        });
+        expect(sendMocked).lastCalledWith({
+          from: fromAccountAddress,
+          gas: gas,
+          value: fee,
+        });
+        expect(transactionResponse).toEqual({ txId: transactionHash });
+        scope.done();
       });
 
-      const verifyTxMocked = vi.spyOn(TronBridge.prototype as any, "verifyTx");
-      verifyTxMocked.mockImplementation(() => {
-        return;
-      });
-      // prettier-ignore
-      /* eslint-disable-next-line */
-      const transactionResponse = await sdk.send(new TronWeb("mock", "mock"), sendParams);
-      expect(swapAndBridgeMocked).toBeCalledTimes(1);
-      expect(verifyTxMocked).toBeCalledTimes(1);
-      expect(sendMocked).toBeCalledTimes(1);
+      test("Should return txId after sending TRX to GRL", async () => {
+        const toChainId = 2;
 
-      expect(swapAndBridgeMocked).lastCalledWith(
-        [
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 177, 3, 136, 240, 79, 131, 49,
-          181, 154, 2, 115, 44, 193, 182, 172, 13, 112, 69, 87, 75,
-        ],
-        "1330000000000000000",
-        [
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 215, 237, 156, 249, 136, 20,
-          39, 241, 219, 41, 155, 144, 253, 99, 239, 128, 93, 209, 13,
-        ],
-        2,
-        [
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 199, 219, 196, 168, 150, 179, 75,
-          122, 16, 221, 162, 239, 114, 5, 33, 69, 169, 18, 47, 67,
-        ],
-        nonceBuffer.toJSON().data,
-        1
-      );
-      expect(sendMocked).lastCalledWith({
-        callValue: fee,
+        const receiveFeeRequest: ReceiveTransactionCostRequest = {
+          sourceChainId: 4,
+          destinationChainId: toChainId,
+          messenger: Messenger.ALLBRIDGE,
+        };
+        scope
+          .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
+          .reply(201, receiveFeeResponse)
+          .persist();
+        /* cSpell:disable */
+        const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
+        const fromTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
+        const toTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+        const toAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
+        /* cSpell:enable */
+        const toTokenDecimals = 18;
+        const sendParams: SendParamsWithChainSymbols = {
+          amount: tokensAmount,
+
+          fromChainSymbol: ChainSymbol.TRX,
+          fromTokenAddress: fromTokenAddress,
+          fromAccountAddress: fromAccountAddress,
+
+          toChainSymbol: ChainSymbol.GRL,
+          toTokenAddress: toTokenAddress,
+          toAccountAddress: toAccountAddress,
+
+          messenger: Messenger.ALLBRIDGE,
+        };
+
+        const gas = 100000;
+        const estimateGasMocked = vi.fn(() => {
+          return gas;
+        });
+        const transactionHash = 1234567890;
+        const sendMocked = vi.fn(() => {
+          return transactionHash;
+        });
+        const swapAndBridgeMocked = vi.fn(() => {
+          return {
+            estimateGas: estimateGasMocked,
+            send: sendMocked,
+          };
+        });
+        mockTronContract({
+          swapAndBridge: swapAndBridgeMocked,
+        });
+        const verifyTxMocked = mockTronVerifyTx();
+        // prettier-ignore
+        /* eslint-disable-next-line */
+        const transactionResponse = await sdk.send(new TronWeb("mock", "mock"), sendParams);
+        expect(swapAndBridgeMocked).toBeCalledTimes(1);
+        expect(verifyTxMocked).toBeCalledTimes(1);
+        expect(sendMocked).toBeCalledTimes(1);
+
+        const expectedAmount = Big(tokensAmount)
+          .mul(10 ** toTokenDecimals)
+          .toFixed();
+        expect(swapAndBridgeMocked).lastCalledWith(
+          formatAddress(fromTokenAddress, ChainType.TRX, ChainType.TRX),
+          expectedAmount,
+          formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
+          toChainId,
+          formatAddress(toTokenAddress, ChainType.EVM, ChainType.TRX),
+          nonceBuffer.toJSON().data,
+          Messenger.ALLBRIDGE
+        );
+        expect(sendMocked).lastCalledWith({
+          callValue: fee,
+        });
+        expect(transactionResponse).toEqual({ txId: transactionHash });
+        scope.done();
       });
-      expect(transactionResponse).toEqual({ txId: transactionHash });
-      scope.done();
+    });
+
+    describe("Allowance", () => {
+      const tokensAmount = "100.1";
+      const owner = "owner";
+
+      describe("Given EVM bridge", () => {
+        const chainSymbol = ChainSymbol.GRL;
+        /* cSpell:disable */
+        const tokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+        const poolAddress = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
+        /* cSpell:enable */
+        const tokenDecimals = 18;
+        const provider = new Web3();
+
+        let methodCallMock: any;
+        let allowanceMocked: any;
+
+        beforeEach(() => {
+          methodCallMock = vi.fn(() => {
+            return Big(tokensAmount)
+              .mul(10 ** tokenDecimals)
+              .toFixed();
+          });
+          allowanceMocked = vi.fn(() => {
+            return {
+              call: methodCallMock,
+            };
+          });
+          mockEvmContract({
+            allowance: allowanceMocked,
+          });
+        });
+
+        test("☀️ getAllowance should return float. amount of approved tokens", async () => {
+          const actual = await sdk.getAllowance(provider, {
+            owner: owner,
+            chainSymbol: chainSymbol,
+            tokenAddress: tokenAddress,
+          });
+          expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
+          expect(allowanceMocked).toHaveBeenCalledOnce();
+          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(actual).toEqual(tokensAmount);
+
+          scope.done();
+        });
+
+        test.each([
+          {
+            amount: tokensAmount,
+            expected: true,
+          },
+          {
+            amount: "99.9",
+            expected: true,
+          },
+          {
+            amount: "1000",
+            expected: false,
+          },
+        ])(
+          `☀️ checkAllowance should return true when amount is less than or equal to amount of approved tokens`,
+          async ({ amount, expected }) => {
+            const actual = await sdk.checkAllowance(provider, {
+              owner: owner,
+              chainSymbol: chainSymbol,
+              tokenAddress: tokenAddress,
+              amount: amount,
+            });
+            expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
+            expect(allowanceMocked).toHaveBeenCalledOnce();
+            expect(methodCallMock).toHaveBeenCalledOnce();
+            expect(actual).toEqual(expected);
+            scope.done();
+          }
+        );
+      });
+
+      describe("Given Tron bridge", () => {
+        const chainSymbol = ChainSymbol.TRX;
+        /* cSpell:disable */
+        const tokenAddress = "TYjmrhFaFMNKE8RheRUCQUWJHpRbY8Q9zy";
+        const poolAddress = "TYZmD6XgFNRNkDthZ8y7o2D9wPTqex7eRD";
+        /* cSpell:enable */
+        const tokenDecimals = 18;
+
+        const provider = new TronWeb("mock", "mock");
+
+        let methodCallMock: any;
+        let allowanceMocked: any;
+
+        beforeEach(() => {
+          methodCallMock = vi.fn(() => {
+            return Big(tokensAmount)
+              .mul(10 ** tokenDecimals)
+              .toFixed();
+          });
+          allowanceMocked = vi.fn(() => {
+            return {
+              call: methodCallMock,
+            };
+          });
+          mockTronContract({
+            allowance: allowanceMocked,
+          });
+        });
+
+        test("☀️ getAllowance should return float. amount of approved tokens", async () => {
+          const actual = await sdk.getAllowance(provider, {
+            owner: owner,
+            chainSymbol: chainSymbol,
+            tokenAddress: tokenAddress,
+          });
+          expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
+          expect(allowanceMocked).toHaveBeenCalledOnce();
+          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(actual).toEqual(tokensAmount);
+
+          scope.done();
+        });
+
+        test.each([
+          {
+            amount: tokensAmount,
+            expected: true,
+          },
+          {
+            amount: "99.9",
+            expected: true,
+          },
+          {
+            amount: "1000",
+            expected: false,
+          },
+        ])(
+          `☀️ checkAllowance should return true when amount is less than or equal to amount of approved tokens`,
+          async ({ amount, expected }) => {
+            const actual = await sdk.checkAllowance(provider, {
+              owner: owner,
+              chainSymbol: chainSymbol,
+              tokenAddress: tokenAddress,
+              amount: amount,
+            });
+            expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
+            expect(allowanceMocked).toHaveBeenCalledOnce();
+            expect(methodCallMock).toHaveBeenCalledOnce();
+            expect(actual).toEqual(expected);
+            scope.done();
+          }
+        );
+      });
     });
   });
 });

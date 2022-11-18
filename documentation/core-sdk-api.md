@@ -3,7 +3,9 @@
 ## Table of Contents
 - [Approve Tokens](#approve-tokens)
 - [Send Tokens](#send-tokens)
-- [Get Tokens Info](#get-tokens-info)
+- [Get Tokens](#get-tokens)
+- [Get tokens by chain](#get-tokens-by-chain)
+- [Get chain details map](#get-chain-details-map)
 - [Calculate fee percent on source chain](#calculate-fee-percent-on-source-chain)
 - [Calculate fee percent on destination chain](#calculate-fee-percent-on-destination-chain)
 - [Get amount to be received](#get-amount-to-be-received)
@@ -130,20 +132,123 @@ _Example_:
 const response = await sdk.send(web3, sendParams);
 ```
 
-## Get Tokens Info
-_Method_: getTokensInfo
+## Get tokens
 
-Fetches information about supported tokens and chains and returns an instance of [TokensInfo](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/documentation/core-sdk-tokens-info.md).
+_Method_: tokens
+
+Gets a list of all supported tokens.
 
 _Returns_:
 
-* TokensInfo - object that contains fetched information about supported tokens.
+* TokenInfoWithChainDetails[] - a list of all supported tokens.
+
+TokenInfoWithChainDetails:
+```js
+{
+  // token symbol, e.g. "USDT"
+  symbol: string;
+  // token name, e.g. "Tether USD"
+  name: string;
+  // token decimals, e.g. 18
+  decimals: number;
+  poolAddress: string;
+  tokenAddress: string;
+  poolInfo: PoolInfo;
+  feeShare: string;
+  apr: number;
+  lpRate: number;
+  // Chain symbol, e.g. "ETH"
+  chainSymbol: string;
+  // Chain ID according to EIP-155 as a 0x-prefixed hexadecimal string, e.g. "0x1". Nullable.
+  chainId?: string;
+  // Chain type, one of the following: "EVM", "SOLANA", "TRX"
+  chainType: string;
+  // Chain name, e.g. "Ethereum"
+  chainName: string;
+  // Unique chain identifier
+  allbridgeChainId: number;
+  // Bridge address on chain
+  bridgeAddress: string;
+  txTime: TxTime;
+  confirmations: number;
+}
+```
 
 _Example_:
 
 ```js
-const tokensInfo = await sdk.getTokensInfo();
-const supportedTokens = tokensInfo.tokens();
+const tokens = await sdk.tokens();
+```
+
+## Get tokens by chain
+
+_Method_: tokensByChain
+
+Gets a list of all supported tokens on a given chain.
+
+_Params_:
+
+* chainSymbol: ChainSymbol
+
+_Returns_:
+
+* TokenInfoWithChainDetails[] - a list of supported tokens on a given chain
+
+_Example_:
+
+```js
+const tokensOnTRX = await sdk.tokensByChain(ChainSymbol.TRX);
+```
+
+## Get chain details map
+
+_Method_: chainDetailsMap
+
+Gets information about supported tokens and chains as a map.
+
+_Returns_:
+
+* ChainDetailsMap - an object where key is the Chain Symbol and value is the corresponding chain details
+
+ChainDetailsMap
+```js
+const chainDetailsMapExample = {
+  "BSC": {
+    "chainSymbol": "BSC",
+    "chainId": "0x38",
+    "name": "BNB Chain",
+    "chainType": "EVM",
+    "allbridgeChainId": 2,
+    "bridgeAddress": bridgeAddressOnBSC,
+    "txTime": averageTransactionTimeOnBSC,
+    "confirmations": 15,
+    "tokens": tokensOnBSC
+  },
+  "ETH": {
+    "chainSymbol": "ETH",
+    "chainId": "0x1",
+    "name": "Ethereum",
+    "chainType": "EVM",
+    "allbridgeChainId": 1,
+    "bridgeAddress": bridgeAddressOnETH,
+    "txTime": averageTransactionTimeOnETH,
+    "confirmations": 5,
+    "tokens": tokensOnETH
+  },
+  //...
+}
+```
+
+_Example_:
+
+```js
+const chainDetailsMap = await sdk.chainDetailsMap();
+// get details about chain ETH
+const ethChainDetails = chainDetailsMap[ChainSymbol.ETH];
+const chainName = ethChainDetails.name;
+const bridgeAddress = ethChainDetails.bridgeAddress;
+// get tokens on chain ETH
+const tokensOnETH = ethChainDetails.tokens;
 ```
 
 ## Calculate fee percent on source chain

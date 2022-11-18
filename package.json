@@ -46,6 +46,7 @@
   },
   "keywords": [],
   "devDependencies": {
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "@ryansonshine/commitizen": "^4.2.8",
     "@ryansonshine/cz-conventional-changelog": "^3.3.4",
     "@semantic-release/changelog": "^6.0.1",
@@ -60,10 +61,12 @@
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
     "@vitest/coverage-c8": "^0.23.4",
+    "bs58": "^5.0.0",
     "c8": "^7.12.0",
     "cspell": "^6.12.0",
     "dotenv": "^16.0.3",
     "esbuild": "^0.15.10",
+    "esbuild-plugin-copy": "^1.6.0",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.1",
@@ -74,18 +77,21 @@
     "prettier": "^2.7.1",
     "semantic-release": "^19.0.5",
     "source-map-support": "^0.5.21",
-    "tronweb-typings": "^1.0.1",
     "typechain": "^8.1.0",
     "typedoc": "^0.23.15",
     "typescript": "^4.8.4",
-    "vite": "^3.1.8",
-    "vitest": "^0.23.4"
+    "vite": "^3.2.2",
+    "vitest": "^0.24.4"
   },
   "overrides": {
     "semver-regex": "3.1.4"
   },
   "dependencies": {
+    "@certusone/wormhole-sdk": "0.5.0",
+    "@project-serum/anchor": "^0.25.0",
+    "@solana/web3.js": "^1.66.2",
     "@types/big.js": "^6.1.6",
+    "assert": "^2.0.0",
     "axios": "^1.0.0",
     "big.js": "^6.2.1",
     "bn.js": "^5.2.1",

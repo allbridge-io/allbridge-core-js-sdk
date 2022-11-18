@@ -24,6 +24,11 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [3.2 Send Tokens](#32-send-tokens)
   - [Full example](#full-example)
 - [Other operations](#other-operations)
+  - [Transaction builder](#transaction-builder)
+    - [Approve Transaction](#approve-transaction)
+    - [Send Transaction](#send-transaction)
+      - [Solana Blockchain](#solana-blockchain)
+  - [Get information about sent transaction](#get-information-about-sent-transaction)
   - [Calculating amount of tokens to be received after fee](#calculating-amount-of-tokens-to-be-received-after-fee)
   - [Calculating amount of tokens to send](#calculating-amount-of-tokens-to-send)
   - [Getting the amount of gas fee](#getting-the-amount-of-gas-fee)
@@ -48,12 +53,11 @@ const sdk = new AllbridgeCoreSdk();
 ### 2. Get the list of supported tokens
 
 ```js
-const tokensInfo = await sdk.getTokensInfo();
-const supportedChains = tokensInfo.chainDetailsMap();
+const supportedChains = await sdk.chainDetailsMap();
 // extract information about ETH chain
 const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 // Choose one of the tokens supported on ETH
-const usdtOnEthTokenInfo = tokens.find(tokensInfo => tokensInfo.symbol === 'USDT');
+const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
 ```
 
 ### 3.1 Approve the transfer of tokens
@@ -69,8 +73,8 @@ const response = await sdk.approve(web3, {
 });
 ```
 
-**TIP:** To interact with the **Tron** blockchain, use: </br>
-```tronWeb``` instead of ```web3```
+**TIP:** To interact with the **Tron** blockchain: </br>
+use ```tronWeb``` instead of ```web3```
 
 ### 3.2 Send Tokens
 
@@ -86,6 +90,9 @@ await sdk.send(web3, {
   messenger: Messenger.ALLBRIDGE,
 });
 ```
+
+**TIP:** To interact with the **Tron** blockchain: </br>
+use ```tronWeb``` instead of ```web3```
 
 ### Full example
 
@@ -114,8 +121,7 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   // fetch information about supported chains
-  const tokensInfo = await sdk.getTokensInfo();
-  const chains = tokensInfo.chainDetailsMap();
+  const chains = await sdk.chainDetailsMap();
 
   const bscChain = chains[ChainSymbol.BSC];
   const busdTokenInfo = bscChain.tokens.find(tokenInfo => tokenInfo.symbol === 'BUSD');
@@ -146,6 +152,42 @@ runExample();
 ```
 
 ## Other operations
+
+### Transaction builder
+
+#### Approve Transaction
+
+SDK method `rawTransactionBuilder.approve` can be used to create approve Transaction.
+
+```js
+const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(web3, approveData);
+```
+
+**TIP:** To interact with the **Tron** blockchain: </br>
+use ```tronWeb``` instead of ```web3```
+
+#### Send Transaction
+
+SDK method `rawTransactionBuilder.send` can be used to create send Transaction.
+
+```js
+const rawTransactionSend = await sdk.rawTransactionBuilder.send(sendParams, web3);
+```
+
+**TIP:** </br>
+To interact with the **Tron** blockchain: </br>
+use ```tronWeb``` instead of ```web3``` </p>
+
+##### Solana Blockchain
+
+To create send transaction on **Solana** blockchain: </br>
+
+```js
+const rawTransactionSend = await sdk.rawTransactionBuilder.send(sendParams);
+```
+
+***TIP:***
+For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
 
 ### Get information about sent transaction
 

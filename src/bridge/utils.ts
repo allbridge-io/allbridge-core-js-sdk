@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable  @typescript-eslint/no-unsafe-call */
+import { PublicKey } from "@solana/web3.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
 import { chainProperties, ChainSymbol, ChainType } from "../chains";
 import { AllbridgeCoreClient } from "../client/core-api";
-import { ChainDetailsMap } from "../tokens-info";
+import { ChainDetailsMap, TokenInfoWithChainDetails } from "../tokens-info";
 import { convertFloatAmountToInt } from "../utils/calculation";
 import {
+  GetAllowanceParamsWithTokenAddress,
+  GetAllowanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TxSendParams,
@@ -27,9 +26,8 @@ export function formatAddress(
       break;
     }
     case ChainType.SOLANA: {
-      throw new Error(
-        `Error in formatAddress method: method not implemented for SOLANA`
-      );
+      buffer = new PublicKey(address).toBuffer();
+      break;
     }
     case ChainType.TRX: {
       buffer = tronAddressToBuffer32(address);
@@ -37,6 +35,7 @@ export function formatAddress(
     }
     default: {
       throw new Error(
+        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
         `Error in formatAddress method: unknown chain type ${from}, or method not implemented`
       );
     }
@@ -47,15 +46,14 @@ export function formatAddress(
       return "0x" + buffer.toString("hex");
     }
     case ChainType.SOLANA: {
-      throw new Error(
-        `Error in formatAddress method: method not implemented for toChainType: SOLANA`
-      );
+      return Array.from(buffer);
     }
     case ChainType.TRX: {
       return buffer.toJSON().data;
     }
     default: {
       throw new Error(
+        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
         `Error in formatAddress method: unknown chain type ${to}, or method not implemented`
       );
     }
@@ -78,7 +76,8 @@ function tronAddressToBuffer32(address: string): Buffer {
   return bufferToSize(buffer, 32);
 }
 
-function tronAddressToEthAddress(address: string): string {
+export function tronAddressToEthAddress(address: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address))
     .toString("hex")
     .replace(/^41/, "0x");
@@ -93,21 +92,35 @@ function bufferToSize(buffer: Buffer, size: number): Buffer {
   return result;
 }
 
-function getDecimalsByContractAddress(
+export function getDecimalsByContractAddress(
   chainDetailsMap: ChainDetailsMap,
   chainSymbol: ChainSymbol,
   contractAddress: string
 ): number {
-  const sourceTokenInfoWithChainDetails = chainDetailsMap[
-    chainSymbol
-  ].tokens.find(
-    (value) =>
-      value.tokenAddress.toUpperCase() === contractAddress.toUpperCase()
+  return getTokenInfoByTokenAddress(
+    chainDetailsMap,
+    chainSymbol,
+    contractAddress
+  ).decimals;
+}
+
+export function getTokenInfoByTokenAddress(
+  chainDetailsMap: ChainDetailsMap,
+  chainSymbol: ChainSymbol,
+  tokenAddress: string
+): TokenInfoWithChainDetails {
+  const tokenInfo = chainDetailsMap[chainSymbol].tokens.find(
+    (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
   );
-  if (!sourceTokenInfoWithChainDetails) {
-    throw new Error("Cannot find source token info");
+  if (!tokenInfo) {
+    throw new Error(
+      "Cannot find token info about token " +
+        tokenAddress +
+        " on chain " +
+        chainSymbol
+    );
   }
-  return sourceTokenInfoWithChainDetails.decimals;
+  return tokenInfo;
 }
 
 export function getNonce(): Buffer {
@@ -120,12 +133,12 @@ export async function prepareTxSendParams(
   api: AllbridgeCoreClient
 ): Promise<TxSendParams> {
   const txSendParams = {} as TxSendParams;
-  let fromChainId;
   let toChainType;
 
   if (isSendParamsWithChainSymbol(params)) {
-    const chainDetailsMap = (await api.getTokensInfo()).chainDetailsMap();
-    fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
+    const chainDetailsMap = await api.getChainDetailsMap();
+    txSendParams.fromChainId =
+      chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
     toChainType = chainProperties[params.toChainSymbol].chainType;
     txSendParams.contractAddress =
       chainDetailsMap[params.fromChainSymbol].bridgeAddress;
@@ -142,7 +155,7 @@ export async function prepareTxSendParams(
       )
     ).toFixed();
   } else {
-    fromChainId = params.sourceChainToken.allbridgeChainId;
+    txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
     toChainType =
       chainProperties[params.destinationChainToken.chainSymbol].chainType;
     txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
@@ -160,7 +173,7 @@ export async function prepareTxSendParams(
   let { fee } = params;
   if (fee == null) {
     fee = await api.getReceiveTransactionCost({
-      sourceChainId: fromChainId,
+      sourceChainId: txSendParams.fromChainId,
       destinationChainId: txSendParams.toChainId,
       messenger: txSendParams.messenger,
     });
@@ -185,6 +198,10 @@ export async function prepareTxSendParams(
   return txSendParams;
 }
 
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(() => resolve(), ms));
+}
+
 export function isSendParamsWithChainSymbol(
   params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
 ): params is SendParamsWithChainSymbols {
@@ -192,6 +209,9 @@ export function isSendParamsWithChainSymbol(
   return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
 }
 
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(() => resolve(), ms));
+export function isGetAllowanceParamsWithTokenInfo(
+  params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
+): boolean {
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+  return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
 }

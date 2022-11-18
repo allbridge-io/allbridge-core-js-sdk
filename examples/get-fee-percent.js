@@ -3,9 +3,7 @@ const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
-  const tokensInfo = await sdk.getTokensInfo();
-
-  const tokens = tokensInfo.tokens();
+  const tokens = await sdk.tokens();
   const sourceToken = tokens[0];
   const destinationToken = tokens[tokens.length - 1];
   const amount = "100.5";

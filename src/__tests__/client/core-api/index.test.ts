@@ -1,7 +1,7 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { beforeEach, describe, expect, it } from "vitest";
-import { ChainSymbol } from "../../../../dist/src";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { ChainSymbol } from "../../../chains";
+import { AllbridgeCoreClientImpl } from "../../../client/core-api";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
@@ -13,13 +13,14 @@ import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
+
 const expectedTokensGroupedByChain =
   tokensGroupedByChain as unknown as ChainDetailsMap;
 const expectedTransferStatus =
   transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
-  const api = new AllbridgeCoreClient({ apiUrl: "http://localhost" });
+  const api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost" });
 
   describe("given /token-info endpoint", () => {
     let scope: nock.Scope;
@@ -30,9 +31,10 @@ describe("AllbridgeCoreClient", () => {
         .reply(200, tokenInfoResponse);
     });
 
-    it("☀️ getTokensInfo() returns TokensInfo", async () => {
-      const actual = await api.getTokensInfo();
-      expect(actual.chainDetailsMap()).toEqual(expectedTokensGroupedByChain);
+    it("☀️ getChainDetailsMap() returns ChainDetailsMap", async () => {
+      expect(await api.getChainDetailsMap()).toEqual(
+        expectedTokensGroupedByChain
+      );
       scope.done();
     });
   });
