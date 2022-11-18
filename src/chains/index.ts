@@ -35,6 +35,12 @@ export enum ChainType {
   TRX = "TRX",
 }
 
+// export const maxAmountByChainType: Record<string, string> = {
+//   [ChainType.EVM]: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+//   [ChainType.SOLANA]: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+//   [ChainType.TRX]: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+// }
+//
 export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.GRL]: {
     chainSymbol: ChainSymbol.GRL,

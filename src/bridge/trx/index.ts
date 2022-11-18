@@ -3,7 +3,7 @@ import * as TronWeb from "tronweb";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceData,
@@ -14,7 +14,7 @@ import {
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce, prepareTxSendParams, sleep } from "../utils";
+import { amountToHex, getNonce, prepareTxSendParams, sleep } from "../utils";
 
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
@@ -126,11 +126,12 @@ export class TronBridge extends Bridge {
     );
   }
 
-  async approve(approveData: ApproveData): Promise<TransactionResponse> {
-    const { tokenAddress, spender, owner } = approveData;
+  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
+    const { tokenAddress, spender, owner, amount } = params;
     const tokenContract = await this.getContract(tokenAddress);
+    const amountHex = amount === undefined ? MAX_AMOUNT : amountToHex(amount);
     const transactionHash = await tokenContract
-      .approve(spender, MAX_AMOUNT)
+      .approve(spender, amountHex)
       .send({ from: owner });
     /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
     await this.verifyTx(transactionHash);
@@ -138,13 +139,14 @@ export class TronBridge extends Bridge {
   }
 
   async buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner } = approveData;
+    const { tokenAddress, spender, owner, amount } = params;
+    const amountHex = amount === undefined ? MAX_AMOUNT : amountToHex(amount);
 
     const parameter = [
       { type: "address", value: spender },
-      { type: "uint256", value: MAX_AMOUNT },
+      { type: "uint256", value: amountHex },
     ];
     const value = "0";
     const methodSignature = "approve(address,uint256)";

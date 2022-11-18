@@ -8,6 +8,11 @@ import { TokenInfoWithChainDetails } from "../../tokens-info";
 
 export interface ApproveData {
   /**
+   * A chain symbol of the blockchain where the token smart contract is deployed.
+   * Semi-optional. Required if parameter `amount` is defined.
+   */
+  chainSymbol?: ChainSymbol;
+  /**
    * The token address itself
    */
   tokenAddress: string;
@@ -20,6 +25,11 @@ export interface ApproveData {
    *  The address of the contract that we allow to use tokens
    */
   spender: string;
+  /**
+   * The float amount of tokens to approve.
+   * Optional. Maximum amount is used if parameter not defined.
+   */
+  amount?: string | number | Big;
 }
 
 export interface GetTokenBalanceData {
@@ -126,6 +136,16 @@ export interface TxSendParams {
   fee: string;
 }
 
+export interface ApproveParamsDto {
+  tokenAddress: string;
+  owner: string;
+  spender: string;
+  /**
+   * Integer amount of tokens to approve.
+   */
+  amount?: string;
+}
+
 export type GetAllowanceParamsDto = GetAllowanceParamsWithTokenInfo;
 
 /**
@@ -133,7 +153,7 @@ export type GetAllowanceParamsDto = GetAllowanceParamsWithTokenInfo;
  */
 export interface CheckAllowanceParamsDto extends GetAllowanceParamsDto {
   /**
-   * The float amount of tokens to check allowance.
+   * The integer amount of tokens to check allowance.
    */
   amount: string | number | Big;
 }

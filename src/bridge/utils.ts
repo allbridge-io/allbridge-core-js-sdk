@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import BN from "bn.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
@@ -214,4 +215,8 @@ export function isGetAllowanceParamsWithTokenInfo(
 ): boolean {
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
+}
+
+export function amountToHex(amount: string): string {
+  return "0x" + new BN(amount).toString("hex");
 }

@@ -1,3 +1,4 @@
+import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../client/core-api";
 import {
@@ -7,6 +8,7 @@ import {
 import { EvmBridge } from "./evm";
 import {
   ApproveData,
+  ApproveParamsDto,
   Bridge,
   CheckAllowanceParamsDto,
   CheckAllowanceParamsWithTokenAddress,
@@ -62,14 +64,18 @@ export class BridgeService {
     provider: Provider,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    return this.getBridge(provider).approve(approveData);
+    return this.getBridge(provider).approve(
+      await this.prepareApproveParams(approveData)
+    );
   }
 
   async buildRawTransactionApprove(
     provider: Provider,
     approveData: ApproveData
   ): Promise<RawTransaction> {
-    return this.getBridge(provider).buildRawTransactionApprove(approveData);
+    return this.getBridge(provider).buildRawTransactionApprove(
+      await this.prepareApproveParams(approveData)
+    );
   }
 
   async send(
@@ -133,6 +139,36 @@ export class BridgeService {
         params.amount,
         getAllowanceParams.tokenInfo.decimals
       ),
+    };
+  }
+
+  private async prepareApproveParams(
+    approveData: ApproveData
+  ): Promise<ApproveParamsDto> {
+    let amount;
+    if (approveData.amount === undefined) {
+      amount = undefined;
+    } else if (Big(approveData.amount).eq(0)) {
+      amount = "0";
+    } else {
+      if (!approveData.chainSymbol) {
+        throw Error("Parameter 'chainSymbol' is required");
+      }
+      const tokenInfo = getTokenInfoByTokenAddress(
+        await this.api.getChainDetailsMap(),
+        approveData.chainSymbol,
+        approveData.tokenAddress
+      );
+      amount = convertFloatAmountToInt(
+        approveData.amount,
+        tokenInfo.decimals
+      ).toFixed();
+    }
+    return {
+      tokenAddress: approveData.tokenAddress,
+      owner: approveData.owner,
+      spender: approveData.spender,
+      amount: amount,
     };
   }
 }
