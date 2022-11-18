@@ -3,9 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 /* eslint-disable-next-line  import/no-named-as-default */
 import Big from "big.js";
 import Web3 from "web3";
-import { PoolInfoDTO } from "../../../client/core-api/core-api.model";
+import { PoolInfo } from "../../../tokens-info";
+import { swapToVUsd } from "../../../utils/calculation";
 import { Bridge as BridgeType } from "../models/types/bridge";
-import { swapToVUsd } from "./calculation";
 
 export async function getVUsdAmount(
   amount: string,
@@ -17,7 +17,7 @@ export async function getVUsdAmount(
   const feeShare = Big(poolAccountInfo.feeShareBp.toString())
     .div(10000)
     .toFixed();
-  const poolInfo: PoolInfoDTO = {
+  const poolInfo: PoolInfo = {
     aValue: poolAccountInfo.a.toString(),
     dValue: poolAccountInfo.d.toString(),
     totalLpAmount: poolAccountInfo.totalLpAmount.toString(),
@@ -25,8 +25,8 @@ export async function getVUsdAmount(
     vUsdBalance: poolAccountInfo.vUsdBalance.toString(),
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
-  return swapToVUsd(amount, decimals, feeShare, poolInfo)
-    .amountIncludingCommissionInSystemPrecision;
+  // @ts-expect-error enough params for TokenInfo
+  return swapToVUsd(amount, { decimals, feeShare, poolInfo }).toFixed();
 }
 
 export function getMessage(args: {
