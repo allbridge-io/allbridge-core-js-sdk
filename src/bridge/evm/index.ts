@@ -3,16 +3,19 @@ import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../chains";
+import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   ApproveData,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceData,
   RawTransaction,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce } from "../utils";
+import { getNonce, prepareTxSendParams } from "../utils";
 import abi from "./abi/Abi.json";
 import { Abi as BridgeContract } from "./types/Abi";
 import { BaseContract } from "./types/types";
@@ -23,7 +26,7 @@ export const MAX_AMOUNT =
 export class EvmBridge extends Bridge {
   chainType: ChainType.EVM = ChainType.EVM;
 
-  constructor(public web3: Web3) {
+  constructor(public web3: Web3, public api: AllbridgeCoreClient) {
     super();
   }
 
@@ -80,7 +83,18 @@ export class EvmBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  async buildRawTransactionSend(params: TxSendParams): Promise<RawTransaction> {
+  async buildRawTransactionSend(
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+  ): Promise<RawTransaction> {
+    const txSendParams = await prepareTxSendParams(
+      this.chainType,
+      params,
+      this.api
+    );
+    return this.buildRawTransactionSendFromParams(txSendParams);
+  }
+
+  buildRawTransactionSendFromParams(params: TxSendParams): RawTransaction {
     const {
       amount,
       contractAddress,
@@ -106,15 +120,13 @@ export class EvmBridge extends Bridge {
       messenger
     );
 
-    return new Promise((resolve) =>
-      resolve({
-        from: fromAccountAddress,
-        to: contractAddress,
-        value: fee,
-        data: swapAndBridgeMethod.encodeABI(),
-        type: 2,
-      })
-    );
+    return {
+      from: fromAccountAddress,
+      to: contractAddress,
+      value: fee,
+      data: swapAndBridgeMethod.encodeABI(),
+      type: 2,
+    };
   }
 
   async approve(approveData: ApproveData): Promise<TransactionResponse> {

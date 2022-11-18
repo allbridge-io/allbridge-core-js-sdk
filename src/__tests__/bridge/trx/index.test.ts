@@ -5,6 +5,7 @@ import { ApproveData } from "../../../bridge/models";
 import { MAX_AMOUNT, TronBridge } from "../../../bridge/trx";
 import { formatAddress } from "../../../bridge/utils";
 import { ChainType } from "../../../chains";
+import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { mockNonce } from "../../mock/bridge/utils";
 import triggerSmartContractApproveResponse from "../../mock/tron-web/trigger-smart-contract-approve.json";
@@ -13,6 +14,7 @@ import triggerSmartContractSendResponse from "../../mock/tron-web/trigger-smart-
 describe("TrxBridge", () => {
   let trxBridge: TronBridge;
   let tronWebMock: any;
+  let api: any;
 
   const nonceBuffer = mockNonce();
 
@@ -22,7 +24,10 @@ describe("TrxBridge", () => {
         triggerSmartContract: vi.fn(),
       },
     };
-    trxBridge = new TronBridge(tronWebMock as typeof TronWeb);
+    trxBridge = new TronBridge(
+      tronWebMock as typeof TronWeb,
+      api as AllbridgeCoreClient
+    );
   });
 
   afterEach(() => {
@@ -103,7 +108,7 @@ describe("TrxBridge", () => {
         toAccountAddress: formatAddress(to, ChainType.EVM, ChainType.TRX),
       };
 
-      const actual = await trxBridge.buildRawTransactionSend(params);
+      const actual = await trxBridge.buildRawTransactionSendFromParams(params);
 
       expect(actual).toEqual(triggerSmartContractSendResponse.transaction);
       expect(

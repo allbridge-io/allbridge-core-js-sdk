@@ -1,17 +1,20 @@
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../chains";
+import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   ApproveData,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceData,
   RawTransaction,
+  SendParamsWithChainSymbols,
+  SendParamsWithTokenInfos,
   SmartContractMethodParameter,
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce, sleep } from "../utils";
+import { getNonce, prepareTxSendParams, sleep } from "../utils";
 
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
@@ -19,7 +22,7 @@ export const MAX_AMOUNT =
 export class TronBridge extends Bridge {
   chainType: ChainType.TRX = ChainType.TRX;
 
-  constructor(public tronWeb: typeof TronWeb) {
+  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
     super();
   }
 
@@ -74,7 +77,20 @@ export class TronBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  async buildRawTransactionSend(params: TxSendParams): Promise<RawTransaction> {
+  async buildRawTransactionSend(
+    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+  ): Promise<RawTransaction> {
+    const txSendParams = await prepareTxSendParams(
+      this.chainType,
+      params,
+      this.api
+    );
+    return this.buildRawTransactionSendFromParams(txSendParams);
+  }
+
+  async buildRawTransactionSendFromParams(
+    params: TxSendParams
+  ): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -184,7 +200,7 @@ export class TronBridge extends Bridge {
         parameter,
         fromAddress
       );
-    if (!transactionObject.result || !transactionObject.result.result) {
+    if (!transactionObject?.result?.result) {
       throw Error(
         "Unknown error: " + JSON.stringify(transactionObject, null, 2)
       );

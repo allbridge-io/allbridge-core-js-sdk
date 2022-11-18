@@ -9,8 +9,15 @@
     "socio",
     "allbridge",
     "Solana",
+    "solana",
     "Promi",
-    "tronweb"
+    "tronweb",
+    "certusone",
+    "Keypair",
+    "vusd",
+    "Vusd",
+    "SYSVAR",
+    "keccak"
   ],
   "flagWords": [],
   "ignorePaths": [
@@ -18,6 +25,7 @@
     "package-lock.json",
     "yarn.lock",
     "tsconfig.json",
-    "node_modules/**"
+    "node_modules/**",
+    "src/configs/"
   ]
 }
