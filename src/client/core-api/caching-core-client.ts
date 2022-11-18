@@ -14,10 +14,9 @@ import {
   ReceiveTransactionCostRequest,
   TransferStatusResponse,
 } from "./core-api.model";
-import { AllbridgeCoreClient, AllbridgeCoreClientParams } from "./index";
+import { AllbridgeCoreClient } from "./index";
 
 export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
-  readonly params: AllbridgeCoreClientParams;
   private readonly client;
   private chainDetailsMap?: ChainDetailsMap;
   private readonly poolInfoCache;
@@ -25,7 +24,6 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   constructor(client: AllbridgeCoreClient) {
     this.client = client;
     this.poolInfoCache = new PoolInfoCache();
-    this.params = client.params;
   }
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {

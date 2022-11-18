@@ -19,8 +19,6 @@ export interface AllbridgeCoreClientParams {
 }
 
 export interface AllbridgeCoreClient {
-  readonly params: AllbridgeCoreClientParams;
-
   getChainDetailsMap(): Promise<ChainDetailsMap>;
 
   getTransferStatus(
@@ -42,10 +40,8 @@ export interface AllbridgeCoreClient {
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   private api: Axios;
-  readonly params: AllbridgeCoreClientParams;
 
   constructor(params: AllbridgeCoreClientParams) {
-    this.params = params;
     this.api = axios.create({
       baseURL: params.apiUrl,
       headers: {
