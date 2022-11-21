@@ -78,7 +78,6 @@ function tronAddressToBuffer32(address: string): Buffer {
 }
 
 export function tronAddressToEthAddress(address: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address))
     .toString("hex")
     .replace(/^41/, "0x");

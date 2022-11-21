@@ -8,11 +8,6 @@ import { TokenInfoWithChainDetails } from "../../tokens-info";
 
 export interface ApproveData {
   /**
-   * A chain symbol of the blockchain where the token smart contract is deployed.
-   * Semi-optional. Required if parameter `amount` is defined.
-   */
-  chainSymbol?: ChainSymbol;
-  /**
    * The token address itself
    */
   tokenAddress: string;
@@ -26,7 +21,7 @@ export interface ApproveData {
    */
   spender: string;
   /**
-   * The float amount of tokens to approve.
+   * The integer amount of tokens to approve.
    * Optional. Maximum amount is used if parameter not defined.
    */
   amount?: string | number | Big;

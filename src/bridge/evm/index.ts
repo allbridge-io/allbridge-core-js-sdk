@@ -135,7 +135,7 @@ export class EvmBridge extends Bridge {
 
     const approveMethod = await tokenContract.methods.approve(
       spender,
-      amount === undefined ? MAX_AMOUNT : amountToHex(amount)
+      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
     const estimateGas = await approveMethod.estimateGas({ from: owner });
 
@@ -151,9 +151,10 @@ export class EvmBridge extends Bridge {
   ): Promise<RawTransaction> {
     const { tokenAddress, spender, owner, amount } = params;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+
     const approveMethod = await tokenContract.methods.approve(
       spender,
-      amount === undefined ? MAX_AMOUNT : amountToHex(amount)
+      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
     return {
       from: owner,

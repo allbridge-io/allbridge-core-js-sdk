@@ -65,7 +65,7 @@ export class BridgeService {
     approveData: ApproveData
   ): Promise<TransactionResponse> {
     return this.getBridge(provider).approve(
-      await this.prepareApproveParams(approveData)
+      this.prepareApproveParams(approveData)
     );
   }
 
@@ -74,7 +74,7 @@ export class BridgeService {
     approveData: ApproveData
   ): Promise<RawTransaction> {
     return this.getBridge(provider).buildRawTransactionApprove(
-      await this.prepareApproveParams(approveData)
+      this.prepareApproveParams(approveData)
     );
   }
 
@@ -142,33 +142,15 @@ export class BridgeService {
     };
   }
 
-  private async prepareApproveParams(
-    approveData: ApproveData
-  ): Promise<ApproveParamsDto> {
-    let amount;
-    if (approveData.amount === undefined) {
-      amount = undefined;
-    } else if (Big(approveData.amount).eq(0)) {
-      amount = "0";
-    } else {
-      if (!approveData.chainSymbol) {
-        throw Error("Parameter 'chainSymbol' is required");
-      }
-      const tokenInfo = getTokenInfoByTokenAddress(
-        await this.api.getChainDetailsMap(),
-        approveData.chainSymbol,
-        approveData.tokenAddress
-      );
-      amount = convertFloatAmountToInt(
-        approveData.amount,
-        tokenInfo.decimals
-      ).toFixed();
-    }
+  private prepareApproveParams(approveData: ApproveData): ApproveParamsDto {
     return {
       tokenAddress: approveData.tokenAddress,
       owner: approveData.owner,
       spender: approveData.spender,
-      amount: amount,
+      amount:
+        approveData.amount == undefined
+          ? undefined
+          : Big(approveData.amount).toFixed(),
     };
   }
 }

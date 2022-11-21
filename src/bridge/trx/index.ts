@@ -72,7 +72,6 @@ export class TronBridge extends Bridge {
     const transactionHash = await swapAndBridgeMethod.send({
       callValue: fee,
     });
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
     await this.verifyTx(transactionHash);
     return { txId: transactionHash };
   }
@@ -129,11 +128,10 @@ export class TronBridge extends Bridge {
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
     const { tokenAddress, spender, owner, amount } = params;
     const tokenContract = await this.getContract(tokenAddress);
-    const amountHex = amount === undefined ? MAX_AMOUNT : amountToHex(amount);
+    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
     const transactionHash = await tokenContract
       .approve(spender, amountHex)
       .send({ from: owner });
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
     await this.verifyTx(transactionHash);
     return { txId: transactionHash };
   }
@@ -142,7 +140,7 @@ export class TronBridge extends Bridge {
     params: ApproveParamsDto
   ): Promise<RawTransaction> {
     const { tokenAddress, spender, owner, amount } = params;
-    const amountHex = amount === undefined ? MAX_AMOUNT : amountToHex(amount);
+    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
 
     const parameter = [
       { type: "address", value: spender },
