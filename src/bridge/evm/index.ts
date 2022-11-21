@@ -8,7 +8,7 @@ import {
   ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -39,9 +39,11 @@ export class EvmBridge extends Bridge {
     return tokenContract.methods.allowance(owner, spender).call();
   }
 
-  async getTokenBalance(data: GetTokenBalanceData): Promise<string> {
-    return await this.getContract(erc20abi as AbiItem[], data.tokenAddress)
-      .methods.balanceOf(data.account)
+  async getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string> {
+    return await this.getContract(erc20abi as AbiItem[], params.tokenAddress)
+      .methods.balanceOf(params.account)
       .call();
   }
 

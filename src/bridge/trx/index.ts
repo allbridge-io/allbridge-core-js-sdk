@@ -6,7 +6,7 @@ import {
   ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -38,9 +38,11 @@ export class TronBridge extends Bridge {
     return allowance.toString();
   }
 
-  async getTokenBalance(data: GetTokenBalanceData): Promise<string> {
-    const contract = await this.getContract(data.tokenAddress);
-    const balance = await contract.balanceOf(data.account).call();
+  async getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string> {
+    const contract = await this.getContract(params.tokenAddress);
+    const balance = await contract.balanceOf(params.account).call();
     return balance.toString();
   }
 

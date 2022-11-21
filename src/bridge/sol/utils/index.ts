@@ -1,11 +1,19 @@
-import { Program } from "@project-serum/anchor";
+import { Program, Provider, Spl } from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 /* eslint-disable-next-line  import/no-named-as-default */
 import Big from "big.js";
 import Web3 from "web3";
 import { PoolInfo } from "../../../tokens-info";
 import { swapToVUsd } from "../../../utils/calculation";
+import { TokenAccountData } from "../models";
 import { Bridge as BridgeType } from "../models/types/bridge";
+
+export async function getTokenAccountData(
+  account: PublicKey,
+  provider: Provider
+): Promise<TokenAccountData> {
+  return await Spl.token(provider).account.token.fetch(account);
+}
 
 export async function getVUsdAmount(
   amount: string,
@@ -26,7 +34,7 @@ export async function getVUsdAmount(
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
   // @ts-expect-error enough params for TokenInfo
-  return swapToVUsd(amount, { decimals, feeShare, poolInfo }).toFixed();
+  return swapToVUsd(amount, { decimals, feeShare }, poolInfo).toFixed();
 }
 
 export function getMessage(args: {

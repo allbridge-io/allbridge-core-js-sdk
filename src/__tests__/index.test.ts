@@ -7,7 +7,6 @@ import {
   beforeEach,
   describe,
   expect,
-  it,
   test,
   vi,
 } from "vitest";
@@ -23,6 +22,7 @@ import {
   ChainDetailsMap,
   ChainSymbol,
   ChainType,
+  GetTokenBalanceParamsWithTokenAddress,
   Messenger,
   PoolInfo,
   SendParamsWithChainSymbols,
@@ -33,6 +33,10 @@ import { getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
+import {
+  mockBridgeService_getTokenBalance,
+  mockedTokenBalance,
+} from "./mock/bridge";
 import {
   mockEvmContract,
   mockEvmSendRawTransaction,
@@ -375,13 +379,13 @@ describe("SDK", () => {
         expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
       });
 
-      it("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
+      test("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
         const expectedTokenInfoWithChainDetails =
           tokenInfoList as unknown as TokenInfoWithChainDetails[];
         expect(await sdk.tokens()).toEqual(expectedTokenInfoWithChainDetails);
       });
 
-      it("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
+      test("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
         const expectedTokenInfoWithChainDetailsGRL =
           tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
         expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(
@@ -589,6 +593,20 @@ describe("SDK", () => {
 
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
+      });
+    });
+
+    describe("getTokenBalance", () => {
+      test("should delegate call to bridge service", async () => {
+        mockBridgeService_getTokenBalance();
+
+        const getTokenBalanceParams: GetTokenBalanceParamsWithTokenAddress = {
+          account: "account",
+          tokenAddress: "tokenAddress",
+        };
+
+        const tokenBalance = await sdk.getTokenBalance(getTokenBalanceParams);
+        expect(tokenBalance).toEqual(mockedTokenBalance);
       });
     });
 

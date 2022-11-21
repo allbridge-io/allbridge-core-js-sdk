@@ -2,6 +2,12 @@ export {
   ApproveData,
   TransactionResponse,
   BaseSendParams,
+  CheckAllowanceParamsWithTokenAddress,
+  CheckAllowanceParamsWithTokenInfo,
+  GetAllowanceParamsWithTokenAddress,
+  GetAllowanceParamsWithTokenInfo,
+  GetTokenBalanceParamsWithTokenAddress,
+  GetTokenBalanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   Provider,
@@ -18,6 +24,7 @@ export {
   MessengerTxTime,
   PoolInfo,
 } from "../tokens-info/tokens-info.model";
+export { RawTransactionBuilder } from "../raw-transaction-builder";
 
 export interface AmountsAndTxCost {
   /**

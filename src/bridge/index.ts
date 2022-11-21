@@ -16,6 +16,8 @@ import {
   GetAllowanceParamsDto,
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
+  GetTokenBalanceParamsWithTokenAddress,
+  GetTokenBalanceParamsWithTokenInfo,
   Provider,
   RawTransaction,
   SendParamsWithChainSymbols,
@@ -27,6 +29,7 @@ import { TronBridge } from "./trx";
 import {
   getTokenInfoByTokenAddress,
   isGetAllowanceParamsWithTokenInfo,
+  isGetTokenBalanceParamsWithTokenInfo,
 } from "./utils";
 
 export class BridgeService {
@@ -90,6 +93,36 @@ export class BridgeService {
     provider?: Provider
   ): Promise<RawTransaction> {
     return this.getBridge(provider).buildRawTransactionSend(params);
+  }
+
+  async getTokenBalance(
+    params:
+      | GetTokenBalanceParamsWithTokenAddress
+      | GetTokenBalanceParamsWithTokenInfo,
+    provider?: Provider
+  ): Promise<string> {
+    let tokenBalanceParams: GetTokenBalanceParamsWithTokenAddress;
+
+    if (isGetTokenBalanceParamsWithTokenInfo(params)) {
+      tokenBalanceParams = {
+        account: params.account,
+        tokenAddress: params.tokenInfo.tokenAddress,
+        tokenDecimals: params.tokenInfo.decimals,
+      };
+    } else {
+      tokenBalanceParams = params;
+    }
+
+    const tokenBalance = await this.getBridge(provider).getTokenBalance(
+      tokenBalanceParams
+    );
+    if (tokenBalanceParams.tokenDecimals) {
+      return convertIntAmountToFloat(
+        tokenBalance,
+        tokenBalanceParams.tokenDecimals
+      ).toString();
+    }
+    return tokenBalance;
   }
 
   private getBridge(provider?: Provider): Bridge {

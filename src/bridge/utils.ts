@@ -10,6 +10,8 @@ import { convertFloatAmountToInt } from "../utils/calculation";
 import {
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
+  GetTokenBalanceParamsWithTokenAddress,
+  GetTokenBalanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TxSendParams,
@@ -214,6 +216,15 @@ export function isGetAllowanceParamsWithTokenInfo(
 ): boolean {
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
+}
+
+export function isGetTokenBalanceParamsWithTokenInfo(
+  params:
+    | GetTokenBalanceParamsWithTokenAddress
+    | GetTokenBalanceParamsWithTokenInfo
+): params is GetTokenBalanceParamsWithTokenInfo {
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+  return (params as GetTokenBalanceParamsWithTokenInfo).tokenInfo !== undefined;
 }
 
 export function amountToHex(amount: string): string {
