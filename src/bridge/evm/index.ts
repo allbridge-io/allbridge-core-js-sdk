@@ -46,41 +46,8 @@ export class EvmBridge extends Bridge {
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const {
-      amount,
-      contractAddress,
-      fromAccountAddress,
-      fromTokenAddress,
-      toChainId,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-      fee,
-    } = params;
-
-    const bridgeContract = this.getBridgeContract(contractAddress);
-    const nonce = new BN(getNonce());
-
-    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      fromTokenAddress,
-      amount,
-      toAccountAddress,
-      toChainId,
-      toTokenAddress,
-      nonce,
-      messenger
-    );
-    const estimateGas = await swapAndBridgeMethod.estimateGas({
-      from: fromAccountAddress,
-      value: fee,
-    });
-
-    const { transactionHash } = await swapAndBridgeMethod.send({
-      from: fromAccountAddress,
-      value: fee,
-      gas: estimateGas,
-    });
-    return { txId: transactionHash };
+    const rawTransaction = this.buildRawTransactionSendFromParams(params);
+    return this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionSend(
@@ -130,20 +97,8 @@ export class EvmBridge extends Bridge {
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    const { tokenAddress, spender, owner, amount } = params;
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
-
-    const approveMethod = await tokenContract.methods.approve(
-      spender,
-      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
-    );
-    const estimateGas = await approveMethod.estimateGas({ from: owner });
-
-    const { transactionHash } = await approveMethod.send({
-      from: owner,
-      gas: estimateGas,
-    });
-    return { txId: transactionHash };
+    const rawTransaction = await this.buildRawTransactionApprove(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionApprove(
@@ -163,6 +118,21 @@ export class EvmBridge extends Bridge {
       data: approveMethod.encodeABI(),
       type: 2,
     };
+  }
+
+  private async sendRawTransaction(rawTransaction: RawTransaction) {
+    const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
+    // @ts-expect-error access raw transaction field
+    const account = this.web3.eth.accounts.wallet[rawTransaction.from];
+    const signTxReceipt = await account.signTransaction({
+      ...rawTransaction,
+      gas: estimateGas,
+    });
+    const { transactionHash } = await this.web3.eth.sendSignedTransaction(
+      // @ts-expect-error access signTxReceipt field
+      signTxReceipt.rawTransaction
+    );
+    return { txId: transactionHash };
   }
 
   private getContract<T extends BaseContract>(

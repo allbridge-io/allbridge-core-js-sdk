@@ -33,7 +33,10 @@ import { getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockEvmContract } from "./mock/bridge/evm/evm-bridge";
+import {
+  mockEvmContract,
+  mockEvmSendRawTransaction,
+} from "./mock/bridge/evm/evm-bridge";
 import {
   mockTronContract,
   mockTronVerifyTx,
@@ -394,6 +397,7 @@ describe("SDK", () => {
       const tokensAmount = "1.33";
 
       test("Should return txId after sending GRL to TRX", async () => {
+        const bridgeAddress = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
         const toChainId = 4;
         const receiveFeeRequest: ReceiveTransactionCostRequest = {
           sourceChainId: 2,
@@ -428,25 +432,34 @@ describe("SDK", () => {
         const estimateGasMocked = vi.fn(() => {
           return gas;
         });
-        const transactionHash = 1234567890;
-        const sendMocked = vi.fn(() => {
-          return { transactionHash: transactionHash };
+        const transactionHash = "1234567890";
+        const expectedData = "data";
+        const encodeABIMocked = vi.fn(() => {
+          return expectedData;
         });
         const swapAndBridgeMocked = vi.fn(() => {
           return {
             estimateGas: estimateGasMocked,
-            send: sendMocked,
+            encodeABI: encodeABIMocked,
           };
         });
         mockEvmContract({
           swapAndBridge: swapAndBridgeMocked,
         });
+        const methodSendRawTransactionSpy =
+          mockEvmSendRawTransaction(transactionHash);
 
         const transactionResponse = await sdk.send(new Web3(), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(estimateGasMocked).toBeCalledTimes(1);
-        expect(sendMocked).toBeCalledTimes(1);
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledWith({
+          from: fromAccountAddress,
+          to: bridgeAddress,
+          value: fee,
+          data: expectedData,
+          type: 2,
+        });
 
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** fromTokenDecimals)
@@ -460,15 +473,6 @@ describe("SDK", () => {
           new BN(nonceBuffer),
           Messenger.ALLBRIDGE
         );
-        expect(estimateGasMocked).lastCalledWith({
-          from: fromAccountAddress,
-          value: fee,
-        });
-        expect(sendMocked).lastCalledWith({
-          from: fromAccountAddress,
-          gas: gas,
-          value: fee,
-        });
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
       });
@@ -486,6 +490,7 @@ describe("SDK", () => {
           .reply(201, receiveFeeResponse)
           .persist();
         /* cSpell:disable */
+        const bridgeAddress = "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM";
         const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
         const fromTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
         const toTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
@@ -506,46 +511,82 @@ describe("SDK", () => {
           messenger: Messenger.ALLBRIDGE,
         };
 
-        const gas = 100000;
-        const estimateGasMocked = vi.fn(() => {
-          return gas;
-        });
-        const transactionHash = 1234567890;
-        const sendMocked = vi.fn(() => {
-          return transactionHash;
-        });
-        const swapAndBridgeMocked = vi.fn(() => {
+        const transactionHash = "1234567890";
+        const rawTx = "rawTx";
+        const methodTriggerSmartContractMock = vi.fn(() => {
           return {
-            estimateGas: estimateGasMocked,
-            send: sendMocked,
+            result: {
+              result: true,
+            },
+            transaction: rawTx,
           };
         });
-        mockTronContract({
-          swapAndBridge: swapAndBridgeMocked,
+        const signedTx = { signature: "signature" };
+        const methodSignMock = vi.fn(() => {
+          return signedTx;
         });
-        const verifyTxMocked = mockTronVerifyTx();
-        // prettier-ignore
-        /* eslint-disable-next-line */
-        const transactionResponse = await sdk.send(new TronWeb("mock", "mock"), sendParams);
-        expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(verifyTxMocked).toBeCalledTimes(1);
-        expect(sendMocked).toBeCalledTimes(1);
+        const methodSendRawTransactionMock = vi.fn(() => {
+          return { transaction: { txID: transactionHash } };
+        });
+        const tronWebMock = {
+          transactionBuilder: {
+            triggerSmartContract: methodTriggerSmartContractMock,
+          },
+          trx: {
+            sign: methodSignMock,
+            sendRawTransaction: methodSendRawTransactionMock,
+          },
+        };
 
+        const verifyTxMocked = mockTronVerifyTx();
+        const transactionResponse = await sdk.send(tronWebMock, sendParams);
+        expect(methodTriggerSmartContractMock).toHaveBeenCalledOnce();
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** toTokenDecimals)
           .toFixed();
-        expect(swapAndBridgeMocked).lastCalledWith(
-          formatAddress(fromTokenAddress, ChainType.TRX, ChainType.TRX),
-          expectedAmount,
-          formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
-          toChainId,
-          formatAddress(toTokenAddress, ChainType.EVM, ChainType.TRX),
-          nonceBuffer.toJSON().data,
-          Messenger.ALLBRIDGE
+        expect(methodTriggerSmartContractMock).toBeCalledWith(
+          bridgeAddress,
+          "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)",
+          { callValue: fee },
+          [
+            {
+              type: "bytes32",
+              value: formatAddress(
+                fromTokenAddress,
+                ChainType.TRX,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint256", value: expectedAmount },
+            {
+              type: "bytes32",
+              value: formatAddress(
+                toAccountAddress,
+                ChainType.EVM,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint8", value: toChainId },
+            {
+              type: "bytes32",
+              value: formatAddress(
+                toTokenAddress,
+                ChainType.EVM,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint256", value: nonceBuffer.toJSON().data },
+            { type: "uint8", value: Messenger.ALLBRIDGE },
+          ],
+          fromAccountAddress
         );
-        expect(sendMocked).lastCalledWith({
-          callValue: fee,
-        });
+        expect(methodSignMock).toHaveBeenCalledOnce();
+        expect(methodSignMock).toBeCalledWith(rawTx);
+        expect(methodSendRawTransactionMock).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionMock).toBeCalledWith(signedTx);
+        expect(verifyTxMocked).toHaveBeenCalledOnce();
+        expect(verifyTxMocked).toBeCalledWith(transactionHash);
+
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
       });

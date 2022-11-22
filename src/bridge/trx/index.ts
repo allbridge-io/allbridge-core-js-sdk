@@ -45,35 +45,8 @@ export class TronBridge extends Bridge {
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const {
-      amount,
-      contractAddress,
-      fromTokenAddress,
-      toChainId,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-      fee,
-    } = params;
-
-    const bridgeContract = await this.getContract(contractAddress);
-    const nonce = getNonce().toJSON().data;
-
-    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      fromTokenAddress,
-      amount,
-      toAccountAddress,
-      toChainId,
-      toTokenAddress,
-      nonce,
-      messenger
-    );
-
-    const transactionHash = await swapAndBridgeMethod.send({
-      callValue: fee,
-    });
-    await this.verifyTx(transactionHash);
-    return { txId: transactionHash };
+    const rawTransaction = await this.buildRawTransactionSendFromParams(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionSend(
@@ -126,14 +99,8 @@ export class TronBridge extends Bridge {
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    const { tokenAddress, spender, owner, amount } = params;
-    const tokenContract = await this.getContract(tokenAddress);
-    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
-    const transactionHash = await tokenContract
-      .approve(spender, amountHex)
-      .send({ from: owner });
-    await this.verifyTx(transactionHash);
-    return { txId: transactionHash };
+    const rawTransaction = await this.buildRawTransactionApprove(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionApprove(
@@ -206,5 +173,19 @@ export class TronBridge extends Bridge {
       );
     }
     return transactionObject.transaction;
+  }
+
+  private async sendRawTransaction(rawTransaction: RawTransaction) {
+    const signedTx = await this.tronWeb.trx.sign(rawTransaction);
+
+    if (!signedTx.signature) {
+      throw Error("Transaction was not signed properly");
+    }
+
+    const receipt = await this.tronWeb.trx.sendRawTransaction(signedTx);
+
+    const transactionHash = receipt.transaction.txID;
+    await this.verifyTx(transactionHash);
+    return { txId: transactionHash };
   }
 }
