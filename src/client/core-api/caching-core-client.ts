@@ -14,14 +14,14 @@ import {
   ReceiveTransactionCostRequest,
   TransferStatusResponse,
 } from "./core-api.model";
-import { AllbridgeCoreClient } from "./index";
+import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
 export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   private readonly client;
   private chainDetailsMap?: ChainDetailsMap;
   private readonly poolInfoCache;
 
-  constructor(client: AllbridgeCoreClient) {
+  constructor(client: AllbridgeCoreClientImpl) {
     this.client = client;
     this.poolInfoCache = new PoolInfoCache();
   }
@@ -33,28 +33,6 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
       this.poolInfoCache.putAll(result.poolInfoMap);
     }
     return this.chainDetailsMap;
-  }
-
-  async getChainDetailsMapAndPoolInfoMap(): Promise<{
-    chainDetailsMap: ChainDetailsMap;
-    poolInfoMap: PoolInfoMap;
-  }> {
-    if (this.chainDetailsMap === undefined) {
-      const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-      this.chainDetailsMap = result.chainDetailsMap;
-      this.poolInfoCache.putAll(result.poolInfoMap);
-      return result;
-    }
-
-    const poolInfoMap = await this.client.getPoolInfoMap(
-      mapChainDetailsMapToPoolKeyObjects(this.chainDetailsMap)
-    );
-    this.poolInfoCache.putAll(poolInfoMap);
-
-    return {
-      chainDetailsMap: this.chainDetailsMap,
-      poolInfoMap: poolInfoMap,
-    };
   }
 
   getTransferStatus(
@@ -70,14 +48,6 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     return this.client.getReceiveTransactionCost(args);
   }
 
-  async getPoolInfoMap(
-    pools: PoolKeyObject[] | PoolKeyObject
-  ): Promise<PoolInfoMap> {
-    const poolInfoMap = await this.client.getPoolInfoMap(pools);
-    this.poolInfoCache.putAll(poolInfoMap);
-    return poolInfoMap;
-  }
-
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
     /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
@@ -91,7 +61,17 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   }
 
   async refreshPoolInfo(): Promise<void> {
-    await this.getChainDetailsMapAndPoolInfoMap();
+    let poolInfoMap;
+    if (this.chainDetailsMap === undefined) {
+      const result = await this.client.getChainDetailsMapAndPoolInfoMap();
+      this.chainDetailsMap = result.chainDetailsMap;
+      poolInfoMap = result.poolInfoMap;
+    } else {
+      poolInfoMap = await this.client.getPoolInfoMap(
+        mapChainDetailsMapToPoolKeyObjects(this.chainDetailsMap)
+      );
+    }
+    this.poolInfoCache.putAll(poolInfoMap);
   }
 }
 

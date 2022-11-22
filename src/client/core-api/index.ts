@@ -29,13 +29,6 @@ export interface AllbridgeCoreClient {
   getReceiveTransactionCost(
     args: ReceiveTransactionCostRequest
   ): Promise<string>;
-
-  getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
-
-  getChainDetailsMapAndPoolInfoMap(): Promise<{
-    chainDetailsMap: ChainDetailsMap;
-    poolInfoMap: PoolInfoMap;
-  }>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
