@@ -5,14 +5,6 @@
     "tokenAddress": "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
     "decimals": 18,
     "symbol": "YUSD",
-    "poolInfo": {
-      "aValue": "20",
-      "dValue": "200000001",
-      "tokenBalance": "100469776",
-      "vUsdBalance": "99530279",
-      "totalLpAmount": "100000000",
-      "accRewardPerShareP": "61452639838135255812251932"
-    },
     "feeShare": "0.003",
     "apr": "0.1",
     "lpRate": "1.000000275",
@@ -40,14 +32,6 @@
     "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
     "decimals": 18,
     "symbol": "YARO",
-    "poolInfo": {
-      "aValue": "20",
-      "dValue": "200000001",
-      "tokenBalance": "100131102",
-      "vUsdBalance": "99868904",
-      "totalLpAmount": "100000000",
-      "accRewardPerShareP": "16785636387150217916395996"
-    },
     "feeShare": "0.003",
     "apr": "0.1",
     "lpRate": "1.00000003",

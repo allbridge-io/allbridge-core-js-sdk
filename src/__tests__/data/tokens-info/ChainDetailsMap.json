@@ -24,14 +24,6 @@
         "tokenAddress": "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
         "decimals": 18,
         "symbol": "YUSD",
-        "poolInfo": {
-          "aValue": "20",
-          "dValue": "200000001",
-          "tokenBalance": "100469776",
-          "vUsdBalance": "99530279",
-          "totalLpAmount": "100000000",
-          "accRewardPerShareP": "61452639838135255812251932"
-        },
         "feeShare": "0.003",
         "apr": "0.1",
         "lpRate": "1.000000275",
@@ -59,14 +51,6 @@
         "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         "decimals": 18,
         "symbol": "YARO",
-        "poolInfo": {
-          "aValue": "20",
-          "dValue": "200000001",
-          "tokenBalance": "100131102",
-          "vUsdBalance": "99868904",
-          "totalLpAmount": "100000000",
-          "accRewardPerShareP": "16785636387150217916395996"
-        },
         "feeShare": "0.003",
         "apr": "0.1",
         "lpRate": "1.00000003",
@@ -110,14 +94,6 @@
         "tokenAddress": "TYjmrhFaFMNKE8RheRUCQUWJHpRbY8Q9zy",
         "decimals": 18,
         "symbol": "USDY",
-        "poolInfo": {
-          "aValue": "20",
-          "dValue": "200002007",
-          "tokenBalance": "99733829",
-          "vUsdBalance": "100268196",
-          "totalLpAmount": "100000999",
-          "accRewardPerShareP": "38158654839395707688528060"
-        },
         "feeShare": "0.003",
         "apr": "0",
         "lpRate": "1.00000013499865136347",
@@ -140,14 +116,6 @@
         "tokenAddress": "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         "decimals": 18,
         "symbol": "YARO",
-        "poolInfo": {
-          "aValue": "20",
-          "dValue": "200000001",
-          "tokenBalance": "99770715",
-          "vUsdBalance": "100229299",
-          "totalLpAmount": "100000000",
-          "accRewardPerShareP": "26941073402885591531520000"
-        },
         "feeShare": "0.003",
         "apr": "0",
         "lpRate": "1.00000007",
@@ -190,15 +158,6 @@
         "tokenAddress": "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         "decimals": 9,
         "symbol": "YARO",
-        "poolInfo": {
-          "dValue": "201006012",
-          "aValue": "20",
-          "totalLpAmount": "100502995",
-          "vUsdBalance": "111795184",
-          "tokenBalance": "89242061",
-          "accRewardPerShareP": "133754374346811973",
-          "p": 48
-        },
         "feeShare": "0.003",
         "apr": "51.739745973369194549",
         "lpRate": "0.99883244162470286635",

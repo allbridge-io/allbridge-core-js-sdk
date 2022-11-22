@@ -1,6 +1,7 @@
 import { ChainSymbol } from "../../chains";
+import { PoolInfo } from "../../tokens-info";
 
-export type ChainDetailsMapDTO = Record<string, ChainDetailsDTO>;
+export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
 
 export interface ChainDetailsDTO {
   tokens: TokenDTO[];
@@ -29,6 +30,7 @@ export interface PoolInfoDTO {
   vUsdBalance: string;
   totalLpAmount: string;
   accRewardPerShareP: string;
+  p?: number;
 }
 
 export enum MessengerKeyDTO {
@@ -106,3 +108,9 @@ export interface BridgeTransaction {
   confirmations: number;
   confirmationsNeeded: number;
 }
+
+export type PoolInfoResponse = {
+  [chainSymbol in ChainSymbol]?: {
+    string: PoolInfo;
+  };
+};

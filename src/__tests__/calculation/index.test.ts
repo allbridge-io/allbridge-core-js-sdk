@@ -114,28 +114,32 @@ describe("Calculation", () => {
         ...basicTokenInfo,
         decimals: 18,
         feeShare: "0",
-        poolInfo: {
-          aValue: "20",
-          dValue: "2000000000001",
-          tokenBalance: "1000000000000",
-          vUsdBalance: "1000000000000",
-          totalLpAmount: "",
-          accRewardPerShareP: "",
-        },
+      };
+      const poolInfo = {
+        aValue: "20",
+        dValue: "2000000000001",
+        tokenBalance: "1000000000000",
+        vUsdBalance: "1000000000000",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
       };
 
       test.each([
         [30000000000000000, 28],
         [1000000000000000000000, 999998],
       ])("☀️ swapToVUsd amount: %s -> %d", (amount, expectedAmount) => {
-        expect(swapToVUsd(amount, token)).toEqual(Big(expectedAmount));
+        expect(swapToVUsd(amount, token, poolInfo)).toEqual(
+          Big(expectedAmount)
+        );
       });
 
       test.each([
         [28, 26000000000000000],
         [999998, 999996000000000000000],
       ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
-        expect(swapFromVUsd(amount, token)).toEqual(Big(expectedAmount));
+        expect(swapFromVUsd(amount, token, poolInfo)).toEqual(
+          Big(expectedAmount)
+        );
       });
     });
 
@@ -144,22 +148,24 @@ describe("Calculation", () => {
         ...basicTokenInfo,
         decimals: 18,
         feeShare: "0",
-        poolInfo: {
-          aValue: "20",
-          dValue: "2000000000001",
-          tokenBalance: "100000000001",
-          vUsdBalance: "2000000000000",
-          totalLpAmount: "",
-          accRewardPerShareP: "",
-        },
+      };
+      const poolInfo = {
+        aValue: "20",
+        dValue: "2000000000001",
+        tokenBalance: "100000000001",
+        vUsdBalance: "2000000000000",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
       };
 
       test("☀️ swapToVUsd near-zero amount", () => {
-        expect(swapToVUsd(10000000000000000, token)).toEqual(Big(22));
+        expect(swapToVUsd(10000000000000000, token, poolInfo)).toEqual(Big(22));
       });
 
       test("☀️ swapFromVUsd near-zero amount", () => {
-        expect(swapFromVUsd(22, token)).toEqual(Big(10000000000000000));
+        expect(swapFromVUsd(22, token, poolInfo)).toEqual(
+          Big(10000000000000000)
+        );
       });
     });
 
@@ -168,28 +174,32 @@ describe("Calculation", () => {
         ...basicTokenInfo,
         decimals: 18,
         feeShare: "0",
-        poolInfo: {
-          aValue: "20",
-          dValue: "2000000000001",
-          tokenBalance: "2000000000000",
-          vUsdBalance: "100000000001",
-          totalLpAmount: "",
-          accRewardPerShareP: "",
-        },
+      };
+      const poolInfo = {
+        aValue: "20",
+        dValue: "2000000000001",
+        tokenBalance: "2000000000000",
+        vUsdBalance: "100000000001",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
       };
 
       test.each([
         [1, 0],
         [10000000000000000, 5],
       ])("☀️ swapToVUsd amount: %d -> %d", (amount, expectedAmount) => {
-        expect(swapToVUsd(amount, token)).toEqual(Big(expectedAmount));
+        expect(swapToVUsd(amount, token, poolInfo)).toEqual(
+          Big(expectedAmount)
+        );
       });
 
       test.each([
         [0, 0],
         [5, 11000000000000000],
       ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
-        expect(swapFromVUsd(amount, token)).toEqual(Big(expectedAmount));
+        expect(swapFromVUsd(amount, token, poolInfo)).toEqual(
+          Big(expectedAmount)
+        );
       });
     });
 
@@ -198,40 +208,40 @@ describe("Calculation", () => {
         ...basicTokenInfo,
         decimals: 18,
         feeShare: "0.003",
-        poolInfo: {
-          aValue: "20",
-          dValue: "200000001",
-          tokenBalance: "100166280",
-          vUsdBalance: "99833728",
-          totalLpAmount: "",
-          accRewardPerShareP: "",
-        },
+      };
+      const sourcePoolInfo = {
+        aValue: "20",
+        dValue: "200000001",
+        tokenBalance: "100166280",
+        vUsdBalance: "99833728",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
       };
 
       const destinationToken: TokenInfo = {
         ...basicTokenInfo,
         decimals: 18,
         feeShare: "0.003",
-        poolInfo: {
-          aValue: "20",
-          dValue: "200000001",
-          tokenBalance: "99738849",
-          vUsdBalance: "100261169",
-          totalLpAmount: "",
-          accRewardPerShareP: "",
-        },
+      };
+      const destinationPoolInfo = {
+        aValue: "20",
+        dValue: "200000001",
+        tokenBalance: "99738849",
+        vUsdBalance: "100261169",
+        totalLpAmount: "",
+        accRewardPerShareP: "",
       };
 
       test("☀️ swapToVUsd 10 tokens", () => {
-        expect(swapToVUsd(10000000000000000000, sourceToken)).toEqual(
-          Big(9969)
-        );
+        expect(
+          swapToVUsd(10000000000000000000, sourceToken, sourcePoolInfo)
+        ).toEqual(Big(9969));
       });
 
       test("☀️ swapFromVUsd almost 10 tokens", () => {
-        expect(swapFromVUsd(9969, destinationToken)).toEqual(
-          Big(9938096000000000000)
-        );
+        expect(
+          swapFromVUsd(9969, destinationToken, destinationPoolInfo)
+        ).toEqual(Big(9938096000000000000));
       });
     });
   });

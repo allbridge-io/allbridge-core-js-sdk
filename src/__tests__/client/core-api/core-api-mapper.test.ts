@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mapChainDetailsMapFromDTO } from "../../../client/core-api/core-api-mapper";
-import { ChainDetailsMapDTO } from "../../../client/core-api/core-api.model";
+import { mapChainDetailsResponseToChainDetailsMap } from "../../../client/core-api/core-api-mapper";
+import { ChainDetailsResponse } from "../../../client/core-api/core-api.model";
 import { ChainDetailsWithTokens, ChainDetailsMap } from "../../../tokens-info";
 import chainDetailsGRL from "../../data/tokens-info/ChainDetails-GRL.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
@@ -11,11 +11,12 @@ const expectedTokensGroupedByChain =
 
 describe("Core API Mapper", () => {
   describe("given ChainDetailsMapDTO", () => {
-    const dto: ChainDetailsMapDTO = tokensInfo as unknown as ChainDetailsMapDTO;
+    const dto: ChainDetailsResponse =
+      tokensInfo as unknown as ChainDetailsResponse;
 
     describe("mapChainDetailsMapFromDTO", () => {
       it("returns ChainDetailsMap object", () => {
-        const actual = mapChainDetailsMapFromDTO(dto);
+        const actual = mapChainDetailsResponseToChainDetailsMap(dto);
         expect(actual).toEqual(expectedTokensGroupedByChain);
       });
     });
@@ -26,8 +27,10 @@ describe("Core API Mapper", () => {
       it("returns empty ChainDetailsMap object", () => {
         const chainDetails =
           chainDetailsGRL as unknown as ChainDetailsWithTokens;
-        const dto = { UNKNOWN: chainDetails } as unknown as ChainDetailsMapDTO;
-        const actual = mapChainDetailsMapFromDTO(dto);
+        const dto = {
+          UNKNOWN: chainDetails,
+        } as unknown as ChainDetailsResponse;
+        const actual = mapChainDetailsResponseToChainDetailsMap(dto);
         expect(actual).toEqual({});
       });
     });

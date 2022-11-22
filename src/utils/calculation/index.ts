@@ -1,5 +1,11 @@
 import { Big, BigSource } from "big.js";
-import { TokenInfo } from "../../tokens-info";
+import { ChainSymbol } from "../../chains";
+import { AllbridgeCachingCoreClient } from "../../client/core-api/caching-core-client";
+import {
+  PoolInfo,
+  TokenInfo,
+  TokenInfoWithChainDetails,
+} from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
 export function getFeePercent(input: BigSource, output: BigSource): number {
@@ -14,7 +20,11 @@ export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
   return convertAmountPrecision(amount, SYSTEM_PRECISION, decimals);
 }
 
-export function swapToVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
+export function swapToVUsd(
+  amount: BigSource,
+  tokenInfo: TokenInfo,
+  poolInfo: PoolInfo
+): Big {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
     return Big(0);
@@ -25,18 +35,20 @@ export function swapToVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
     amountWithoutFee,
     tokenInfo.decimals
   );
-  const poolInfo = tokenInfo.poolInfo;
   const tokenBalance = Big(poolInfo.tokenBalance).plus(inSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
   return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round(0, 0);
 }
 
-export function swapFromVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
+export function swapFromVUsd(
+  amount: BigSource,
+  tokenInfo: TokenInfo,
+  poolInfo: PoolInfo
+): Big {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
     return Big(0);
   }
-  const poolInfo = tokenInfo.poolInfo;
   const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
   const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
   const result = fromSystemPrecision(
@@ -49,12 +61,12 @@ export function swapFromVUsd(amount: BigSource, tokenInfo: TokenInfo): Big {
 
 export function swapToVUsdReverse(
   amount: BigSource,
-  tokenInfo: TokenInfo
+  tokenInfo: TokenInfo,
+  poolInfo: PoolInfo
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);
   }
-  const poolInfo = tokenInfo.poolInfo;
   const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amount);
   const tokenBalance = getY(vUsdNewAmount, poolInfo.aValue, poolInfo.dValue);
   const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
@@ -73,7 +85,8 @@ export function swapToVUsdReverse(
 
 export function swapFromVUsdReverse(
   amount: BigSource,
-  tokenInfo: TokenInfo
+  tokenInfo: TokenInfo,
+  poolInfo: PoolInfo
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);
@@ -87,7 +100,6 @@ export function swapFromVUsdReverse(
     amountWithFee,
     tokenInfo.decimals
   );
-  const poolInfo = tokenInfo.poolInfo;
   const tokenBalance = Big(poolInfo.tokenBalance).minus(inSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
   return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round(0, 0);
@@ -118,6 +130,16 @@ export function convertIntAmountToFloat(
   decimals: number
 ): Big {
   return Big(amountInt).div(toPowBase10(decimals));
+}
+
+export async function getPoolInfoByTokenInfo(
+  api: AllbridgeCachingCoreClient,
+  sourceChainToken: TokenInfoWithChainDetails
+) {
+  return await api.getPoolInfoByKey({
+    chainSymbol: sourceChainToken.chainSymbol as ChainSymbol,
+    poolAddress: sourceChainToken.poolAddress,
+  });
 }
 
 // y = (sqrt(x(4ad³ + x (4a(d - x) - d )²)) + x (4a(d - x) - d ))/8ax

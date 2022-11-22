@@ -22,7 +22,6 @@ describe("Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    // @ts-expect-error enough params
     api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost" });
     scope = nock("http://localhost")
       .get("/token-info")
