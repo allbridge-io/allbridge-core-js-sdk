@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { vi } from "vitest";
 import { TronBridge } from "../../../../bridge/trx";
 

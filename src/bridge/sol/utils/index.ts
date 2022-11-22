@@ -60,7 +60,6 @@ export function getMessage(args: {
     throw new Error("message is not defined");
   }
   const hash = Web3.utils.keccak256(
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any*/
     Buffer.from(message.replace("0x", ""), "hex") as any
   );
 
@@ -78,7 +77,6 @@ export function getMessage(args: {
   }
 
   const hashWithSigner = Web3.utils.keccak256(
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any*/
     Buffer.from(messageWithSigner.replace("0x", ""), "hex") as any
   );
 

@@ -3,7 +3,7 @@ import * as TronWeb from "tronweb";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceData,
@@ -14,7 +14,7 @@ import {
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce, prepareTxSendParams, sleep } from "../utils";
+import { amountToHex, getNonce, prepareTxSendParams, sleep } from "../utils";
 
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
@@ -45,36 +45,8 @@ export class TronBridge extends Bridge {
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const {
-      amount,
-      contractAddress,
-      fromTokenAddress,
-      toChainId,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-      fee,
-    } = params;
-
-    const bridgeContract = await this.getContract(contractAddress);
-    const nonce = getNonce().toJSON().data;
-
-    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      fromTokenAddress,
-      amount,
-      toAccountAddress,
-      toChainId,
-      toTokenAddress,
-      nonce,
-      messenger
-    );
-
-    const transactionHash = await swapAndBridgeMethod.send({
-      callValue: fee,
-    });
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
-    await this.verifyTx(transactionHash);
-    return { txId: transactionHash };
+    const rawTransaction = await this.buildRawTransactionSendFromParams(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionSend(
@@ -126,25 +98,20 @@ export class TronBridge extends Bridge {
     );
   }
 
-  async approve(approveData: ApproveData): Promise<TransactionResponse> {
-    const { tokenAddress, spender, owner } = approveData;
-    const tokenContract = await this.getContract(tokenAddress);
-    const transactionHash = await tokenContract
-      .approve(spender, MAX_AMOUNT)
-      .send({ from: owner });
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
-    await this.verifyTx(transactionHash);
-    return { txId: transactionHash };
+  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
+    const rawTransaction = await this.buildRawTransactionApprove(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner } = approveData;
+    const { tokenAddress, spender, owner, amount } = params;
+    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
 
     const parameter = [
       { type: "address", value: spender },
-      { type: "uint256", value: MAX_AMOUNT },
+      { type: "uint256", value: amountHex },
     ];
     const value = "0";
     const methodSignature = "approve(address,uint256)";
@@ -206,5 +173,19 @@ export class TronBridge extends Bridge {
       );
     }
     return transactionObject.transaction;
+  }
+
+  private async sendRawTransaction(rawTransaction: RawTransaction) {
+    const signedTx = await this.tronWeb.trx.sign(rawTransaction);
+
+    if (!signedTx.signature) {
+      throw Error("Transaction was not signed properly");
+    }
+
+    const receipt = await this.tronWeb.trx.sendRawTransaction(signedTx);
+
+    const transactionHash = receipt.transaction.txID;
+    await this.verifyTx(transactionHash);
+    return { txId: transactionHash };
   }
 }

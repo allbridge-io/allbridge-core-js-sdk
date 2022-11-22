@@ -28,7 +28,7 @@ async function runExample() {
     (tokenInfo) => tokenInfo.symbol === "USDT"
   );
 
-  const destinationChain = chains[ChainSymbol.GRL];
+  const destinationChain = chains[ChainSymbol.ETH];
   const destinationTokenInfo = destinationChain.tokens.find(
     (tokenInfo) => tokenInfo.symbol === "USDT"
   );

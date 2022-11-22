@@ -13,7 +13,7 @@ import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceData,
@@ -59,12 +59,12 @@ export class SolanaBridge extends Bridge {
     super();
   }
 
-  approve(approveData: ApproveData): Promise<TransactionResponse> {
+  approve(params: ApproveParamsDto): Promise<TransactionResponse> {
     throw new Error("NOT SUPPORTED");
   }
 
   buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction> {
     throw new Error("NOT SUPPORTED");
   }

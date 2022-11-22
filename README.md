@@ -183,7 +183,7 @@ use ```tronWeb``` instead of ```web3``` </p>
 To create send transaction on **Solana** blockchain: </br>
 
 ```js
-const rawTransactionSend = await sdk.rawTransactionBuilder.send(sendParams);
+const { rawTransactionSend, requiredAdditionalSigner } = await sdk.rawTransactionBuilder.send(sendParams);
 ```
 
 ***TIP:***
