@@ -3,10 +3,10 @@ import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { prepareTxSendParams } from "../utils";
 import {
-  ApproveData,
+  ApproveParamsDto,
   CheckAllowanceParamsDto,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -18,7 +18,9 @@ export abstract class Bridge {
   abstract chainType: ChainType;
   abstract api: AllbridgeCoreClient;
 
-  abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
+  abstract getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string>;
 
   abstract getAllowance(params: GetAllowanceParamsDto): Promise<string>;
 
@@ -44,9 +46,9 @@ export abstract class Bridge {
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<RawTransaction>;
 
-  abstract approve(approveData: ApproveData): Promise<TransactionResponse>;
+  abstract approve(params: ApproveParamsDto): Promise<TransactionResponse>;
 
   abstract buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction>;
 }

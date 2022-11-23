@@ -13,10 +13,10 @@ import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -30,7 +30,7 @@ import {
 } from "../utils";
 import { SwapAndBridgeSolData } from "./models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "./models/types/bridge";
-import { getMessage, getVUsdAmount } from "./utils";
+import { getMessage, getTokenAccountData, getVUsdAmount } from "./utils";
 import {
   getAssociatedAccount,
   getAuthorityAccount,
@@ -59,12 +59,12 @@ export class SolanaBridge extends Bridge {
     super();
   }
 
-  approve(approveData: ApproveData): Promise<TransactionResponse> {
+  approve(params: ApproveParamsDto): Promise<TransactionResponse> {
     throw new Error("NOT SUPPORTED");
   }
 
   buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction> {
     throw new Error("NOT SUPPORTED");
   }
@@ -215,7 +215,7 @@ export class SolanaBridge extends Bridge {
 
   private async buildSwapAndBridgeAllbridgeTransaction(
     swapAndBridgeData: SwapAndBridgeSolData
-  ): Promise<Transaction> {
+  ): Promise<RawTransaction> {
     const {
       bridge,
       vusdAmount,
@@ -250,37 +250,39 @@ export class SolanaBridge extends Bridge {
       allbridgeMessengerProgramId
     );
 
-    return await bridge.methods
-      .swapAndBridge({
-        vusdAmount,
-        nonce,
-        destinationChainId,
-        recipient,
-        receiveToken,
-      })
-      .accounts({
-        mint,
-        user: userAccount,
-        config,
-        lock: lockAccount,
-        pool: poolAccount,
-        gasPrice,
-        bridgeAuthority,
-        userToken,
-        bridgeToken: bridgeTokenAccount,
-        chainBridge: chainBridgeAccount,
-        messenger: allbridgeMessengerProgramId,
-        messengerGasUsage: messengerGasUsageAccount,
-        messengerConfig,
-        sentMessageAccount,
-        otherBridgeToken: otherBridgeTokenAccount,
-      })
-      .preInstructions([
-        web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 1000000,
-        }),
-      ])
-      .transaction();
+    return {
+      transaction: await bridge.methods
+        .swapAndBridge({
+          vusdAmount,
+          nonce,
+          destinationChainId,
+          recipient,
+          receiveToken,
+        })
+        .accounts({
+          mint,
+          user: userAccount,
+          config,
+          lock: lockAccount,
+          pool: poolAccount,
+          gasPrice,
+          bridgeAuthority,
+          userToken,
+          bridgeToken: bridgeTokenAccount,
+          chainBridge: chainBridgeAccount,
+          messenger: allbridgeMessengerProgramId,
+          messengerGasUsage: messengerGasUsageAccount,
+          messengerConfig,
+          sentMessageAccount,
+          otherBridgeToken: otherBridgeTokenAccount,
+        })
+        .preInstructions([
+          web3.ComputeBudgetProgram.setComputeUnitLimit({
+            units: 1000000,
+          }),
+        ])
+        .transaction(),
+    };
   }
 
   private async buildSwapAndBridgeWormholeTransaction(
@@ -413,8 +415,19 @@ export class SolanaBridge extends Bridge {
     throw new Error("NOT SUPPORTED");
   }
 
-  getTokenBalance(data: GetTokenBalanceData): Promise<string> {
-    throw new Error("NOT SUPPORTED");
+  async getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string> {
+    const { account, tokenAddress } = params;
+    const associatedAccount = await getAssociatedAccount(
+      new PublicKey(account),
+      new PublicKey(tokenAddress)
+    );
+    const accountData = await getTokenAccountData(
+      associatedAccount,
+      this.buildAnchorProvider(account)
+    );
+    return accountData.amount.toString();
   }
 
   sendTx(params: TxSendParams): Promise<TransactionResponse> {

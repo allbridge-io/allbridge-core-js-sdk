@@ -1,4 +1,4 @@
-import { BasicChainProperties } from "../chains";
+import { BasicChainProperties, ChainSymbol } from "../chains";
 import { Messenger } from "../client/core-api/core-api.model";
 
 /**
@@ -23,7 +23,6 @@ export interface TokenInfo {
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
-  poolInfo: PoolInfo;
   feeShare: string;
   apr: number;
   lpRate: number;
@@ -59,3 +58,9 @@ export interface MessengerTxTime {
 export type TxTime = {
   [messenger in Messenger]?: MessengerTxTime;
 };
+
+export interface PoolKeyObject {
+  chainSymbol: ChainSymbol;
+  poolAddress: string;
+}
+export type PoolInfoMap = Record<string, PoolInfo>;

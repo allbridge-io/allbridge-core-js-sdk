@@ -17,6 +17,7 @@ specifiers:
   '@types/node': ^18.8.2
   '@types/prompts': ^2.4.1
   '@types/randombytes': ^2.0.0
+  '@types/timed-cache': ^2.0.0
   '@typescript-eslint/eslint-plugin': ^5.39.0
   '@typescript-eslint/parser': ^5.39.0
   '@vitest/coverage-c8': ^0.23.4
@@ -43,6 +44,7 @@ specifiers:
   randombytes: ^2.1.0
   semantic-release: ^19.0.5
   source-map-support: ^0.5.21
+  timed-cache: ^2.0.0
   tronweb: ^4.4.0
   typechain: ^8.1.0
   typedoc: ^0.23.15
@@ -66,6 +68,7 @@ dependencies:
   erc-20-abi: 1.0.0
   querystring: 0.2.1
   randombytes: 2.1.0
+  timed-cache: 2.0.0
   tronweb: 4.4.0
   web3: 1.8.0
   web3-core: 1.8.0
@@ -85,6 +88,7 @@ devDependencies:
   '@types/node': 18.11.9
   '@types/prompts': 2.4.1
   '@types/randombytes': 2.0.0
+  '@types/timed-cache': 2.0.0
   '@typescript-eslint/eslint-plugin': 5.42.1_2udltptbznfmezdozpdoa2aemq
   '@typescript-eslint/parser': 5.42.1_rmayb2veg2btbq6mbmnyivgasy
   '@vitest/coverage-c8': 0.23.4
@@ -1793,6 +1797,12 @@ packages:
       '@types/node': 18.11.9
     dev: false
 
+  /@types/timed-cache/2.0.0:
+    resolution: {integrity: sha512-Iaw7yMUUVRY+ZUZNTaq4MpMDttAvF1QyCiovosXJQrb5Pz2uNAodl2/FOtD5HcWk1/vnUw4S7HxEjB94z5/fPQ==}
+    dev: true
+
+  /@typescript-eslint/eslint-plugin/5.39.0_xyciw6oqjoiiono4dhv3uhn5my:
+    resolution: {integrity: sha512-xVfKOkBm5iWMNGKQ2fwX5GVgBuHmZBO1tCRwXmY5oAIsPscfwm2UADDuNB8ZVYCtpQvJK4xpjrK7jEhcJ0zY9A==}
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
     dev: true
@@ -7820,6 +7830,10 @@ packages:
     dependencies:
       readable-stream: 3.6.0
     dev: true
+
+  /timed-cache/2.0.0:
+    resolution: {integrity: sha512-9owe3VtDCtZKo8bfk5bSC4tSzIRP65doXI0i2oFWNP4VjQDwoRIsADynZQZz6XXK7exL7bOuI3HExFQ9LGi3tQ==}
+    dev: false
 
   /timed-out/4.0.1:
     resolution: {integrity: sha512-G7r3AhovYtr5YKOWQkta8RKAPb+J9IsO4uVmzjl8AZwfhs8UcUwTiD6gcJYSgOtzyjvQKrKYn41syHbUWMkafA==}

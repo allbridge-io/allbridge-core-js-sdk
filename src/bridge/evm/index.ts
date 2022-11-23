@@ -5,17 +5,17 @@ import { AbiItem } from "web3-utils";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce, prepareTxSendParams } from "../utils";
+import { amountToHex, getNonce, prepareTxSendParams } from "../utils";
 import abi from "./abi/Abi.json";
 import { Abi as BridgeContract } from "./types/Abi";
 import { BaseContract } from "./types/types";
@@ -39,48 +39,17 @@ export class EvmBridge extends Bridge {
     return tokenContract.methods.allowance(owner, spender).call();
   }
 
-  async getTokenBalance(data: GetTokenBalanceData): Promise<string> {
-    return await this.getContract(erc20abi as AbiItem[], data.tokenAddress)
-      .methods.balanceOf(data.account)
+  async getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string> {
+    return await this.getContract(erc20abi as AbiItem[], params.tokenAddress)
+      .methods.balanceOf(params.account)
       .call();
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const {
-      amount,
-      contractAddress,
-      fromAccountAddress,
-      fromTokenAddress,
-      toChainId,
-      toAccountAddress,
-      toTokenAddress,
-      messenger,
-      fee,
-    } = params;
-
-    const bridgeContract = this.getBridgeContract(contractAddress);
-    const nonce = new BN(getNonce());
-
-    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      fromTokenAddress,
-      amount,
-      toAccountAddress,
-      toChainId,
-      toTokenAddress,
-      nonce,
-      messenger
-    );
-    const estimateGas = await swapAndBridgeMethod.estimateGas({
-      from: fromAccountAddress,
-      value: fee,
-    });
-
-    const { transactionHash } = await swapAndBridgeMethod.send({
-      from: fromAccountAddress,
-      value: fee,
-      gas: estimateGas,
-    });
-    return { txId: transactionHash };
+    const rawTransaction = this.buildRawTransactionSendFromParams(params);
+    return this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionSend(
@@ -129,31 +98,20 @@ export class EvmBridge extends Bridge {
     };
   }
 
-  async approve(approveData: ApproveData): Promise<TransactionResponse> {
-    const { tokenAddress, spender, owner } = approveData;
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
-
-    const approveMethod = await tokenContract.methods.approve(
-      spender,
-      MAX_AMOUNT
-    );
-    const estimateGas = await approveMethod.estimateGas({ from: owner });
-
-    const { transactionHash } = await approveMethod.send({
-      from: owner,
-      gas: estimateGas,
-    });
-    return { txId: transactionHash };
+  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
+    const rawTransaction = await this.buildRawTransactionApprove(params);
+    return await this.sendRawTransaction(rawTransaction);
   }
 
   async buildRawTransactionApprove(
-    approveData: ApproveData
+    params: ApproveParamsDto
   ): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner } = approveData;
+    const { tokenAddress, spender, owner, amount } = params;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+
     const approveMethod = await tokenContract.methods.approve(
       spender,
-      MAX_AMOUNT
+      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
     return {
       from: owner,
@@ -162,6 +120,21 @@ export class EvmBridge extends Bridge {
       data: approveMethod.encodeABI(),
       type: 2,
     };
+  }
+
+  private async sendRawTransaction(rawTransaction: RawTransaction) {
+    const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
+    // @ts-expect-error access raw transaction field
+    const account = this.web3.eth.accounts.wallet[rawTransaction.from];
+    const signTxReceipt = await account.signTransaction({
+      ...rawTransaction,
+      gas: estimateGas,
+    });
+    const { transactionHash } = await this.web3.eth.sendSignedTransaction(
+      // @ts-expect-error access signTxReceipt field
+      signTxReceipt.rawTransaction
+    );
+    return { txId: transactionHash };
   }
 
   private getContract<T extends BaseContract>(

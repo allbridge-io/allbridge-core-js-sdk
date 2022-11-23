@@ -1,3 +1,4 @@
+import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../client/core-api";
 import {
@@ -7,6 +8,7 @@ import {
 import { EvmBridge } from "./evm";
 import {
   ApproveData,
+  ApproveParamsDto,
   Bridge,
   CheckAllowanceParamsDto,
   CheckAllowanceParamsWithTokenAddress,
@@ -14,6 +16,8 @@ import {
   GetAllowanceParamsDto,
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
+  GetTokenBalanceParamsWithTokenAddress,
+  GetTokenBalanceParamsWithTokenInfo,
   Provider,
   RawTransaction,
   SendParamsWithChainSymbols,
@@ -25,6 +29,7 @@ import { TronBridge } from "./trx";
 import {
   getTokenInfoByTokenAddress,
   isGetAllowanceParamsWithTokenInfo,
+  isGetTokenBalanceParamsWithTokenInfo,
 } from "./utils";
 
 export class BridgeService {
@@ -62,14 +67,18 @@ export class BridgeService {
     provider: Provider,
     approveData: ApproveData
   ): Promise<TransactionResponse> {
-    return this.getBridge(provider).approve(approveData);
+    return this.getBridge(provider).approve(
+      this.prepareApproveParams(approveData)
+    );
   }
 
   async buildRawTransactionApprove(
     provider: Provider,
     approveData: ApproveData
   ): Promise<RawTransaction> {
-    return this.getBridge(provider).buildRawTransactionApprove(approveData);
+    return this.getBridge(provider).buildRawTransactionApprove(
+      this.prepareApproveParams(approveData)
+    );
   }
 
   async send(
@@ -84,6 +93,36 @@ export class BridgeService {
     provider?: Provider
   ): Promise<RawTransaction> {
     return this.getBridge(provider).buildRawTransactionSend(params);
+  }
+
+  async getTokenBalance(
+    params:
+      | GetTokenBalanceParamsWithTokenAddress
+      | GetTokenBalanceParamsWithTokenInfo,
+    provider?: Provider
+  ): Promise<string> {
+    let tokenBalanceParams: GetTokenBalanceParamsWithTokenAddress;
+
+    if (isGetTokenBalanceParamsWithTokenInfo(params)) {
+      tokenBalanceParams = {
+        account: params.account,
+        tokenAddress: params.tokenInfo.tokenAddress,
+        tokenDecimals: params.tokenInfo.decimals,
+      };
+    } else {
+      tokenBalanceParams = params;
+    }
+
+    const tokenBalance = await this.getBridge(provider).getTokenBalance(
+      tokenBalanceParams
+    );
+    if (tokenBalanceParams.tokenDecimals) {
+      return convertIntAmountToFloat(
+        tokenBalance,
+        tokenBalanceParams.tokenDecimals
+      ).toString();
+    }
+    return tokenBalance;
   }
 
   private getBridge(provider?: Provider): Bridge {
@@ -133,6 +172,18 @@ export class BridgeService {
         params.amount,
         getAllowanceParams.tokenInfo.decimals
       ),
+    };
+  }
+
+  private prepareApproveParams(approveData: ApproveData): ApproveParamsDto {
+    return {
+      tokenAddress: approveData.tokenAddress,
+      owner: approveData.owner,
+      spender: approveData.spender,
+      amount:
+        approveData.amount == undefined
+          ? undefined
+          : Big(approveData.amount).toFixed(),
     };
   }
 }

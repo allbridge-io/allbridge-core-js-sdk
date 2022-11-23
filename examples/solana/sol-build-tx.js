@@ -69,7 +69,7 @@ async function runExampleViaAllbridge() {
   );
 
   // initiate transfer using Messenger.ALLBRIDGE
-  const transaction = await sdk.rawTransactionBuilder.send({
+  const { transaction } = await sdk.rawTransactionBuilder.send({
     amount: "0.7",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressTrx,

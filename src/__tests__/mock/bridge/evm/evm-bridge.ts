@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { vi } from "vitest";
 import { EvmBridge } from "../../../../bridge/evm";
 
@@ -12,4 +10,15 @@ export function mockEvmContract(methods: any) {
   methodGetContract.mockImplementation(() => {
     return contractMocked;
   });
+}
+
+export function mockEvmSendRawTransaction(transactionHash: string) {
+  const methodSendRawTransaction = vi.spyOn(
+    EvmBridge.prototype as any,
+    "sendRawTransaction"
+  );
+  methodSendRawTransaction.mockImplementation(() => {
+    return { txId: transactionHash };
+  });
+  return methodSendRawTransaction;
 }

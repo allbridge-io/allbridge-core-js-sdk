@@ -39,7 +39,7 @@ async function runExample() {
     owner: fromAddress,
     spender: sourceTokenInfo.poolAddress,
   });
-  await sendRawTransaction(web3, rawTransactionApprove, account);
+  await sendRawTransaction(web3, rawTransactionApprove);
 
   // initiate transfer
   const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
@@ -53,17 +53,13 @@ async function runExample() {
     },
     web3
   );
-  const txReceipt = await sendRawTransaction(
-    web3,
-    rawTransactionTransfer,
-    account
-  );
+  const txReceipt = await sendRawTransaction(web3, rawTransactionTransfer);
   console.log("Tokens sent:", txReceipt.transactionHash);
 }
 
-async function sendRawTransaction(web3, rawTransaction, account) {
+async function sendRawTransaction(web3, rawTransaction) {
   const gasLimit = await web3.eth.estimateGas(rawTransaction);
-
+  const account = web3.eth.accounts.wallet[rawTransaction.from];
   const createTxReceipt = await account.signTransaction({
     ...rawTransaction,
     gas: gasLimit,

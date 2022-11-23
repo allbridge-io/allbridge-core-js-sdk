@@ -1,7 +1,15 @@
 import { Big } from "big.js";
 import BN from "bn.js";
-import nock, { Body, RequestBodyMatcher } from "nock";
-import { beforeEach, describe, expect, it, test, vi } from "vitest";
+import nock, { cleanAll as nockCleanAll } from "nock";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 
 import Web3 from "web3";
 import { formatAddress } from "../bridge/utils";
@@ -14,7 +22,9 @@ import {
   ChainDetailsMap,
   ChainSymbol,
   ChainType,
+  GetTokenBalanceParamsWithTokenAddress,
   Messenger,
+  PoolInfo,
   SendParamsWithChainSymbols,
   TokenInfoWithChainDetails,
 } from "../index";
@@ -23,13 +33,21 @@ import { getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockEvmContract } from "./mock/bridge/evm/evm-bridge";
+import {
+  mockBridgeService_getTokenBalance,
+  mockedTokenBalance,
+} from "./mock/bridge";
+import {
+  mockEvmContract,
+  mockEvmSendRawTransaction,
+} from "./mock/bridge/evm/evm-bridge";
 import {
   mockTronContract,
   mockTronVerifyTx,
 } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
+import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 /* eslint-disable-next-line */
 const TronWeb = require("tronweb");
 
@@ -39,172 +57,213 @@ const basicTokenInfoWithChainDetails =
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
 
+  const testConfig = {
+    apiUrl: "http://localhost",
+    solanaRpcUrl: "solanaRpcUrl",
+    wormholeMessengerProgramId: "wormholeMessengerProgramId",
+  };
   beforeEach(() => {
-    sdk = new AllbridgeCoreSdk({ apiUrl: "http://localhost" });
+    sdk = new AllbridgeCoreSdk(testConfig);
   });
 
   describe("Given tokens with different precision", () => {
+    const scope: nock.Scope = nock("http://localhost");
+
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "GRL",
       decimals: 18,
       feeShare: "0",
-      poolInfo: {
-        aValue: "20",
-        dValue: "200001",
-        tokenBalance: "100000",
-        vUsdBalance: "100000",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "TRX",
       decimals: 6,
       feeShare: "0",
-      poolInfo: {
-        aValue: "20",
-        dValue: "200001",
-        tokenBalance: "100000",
-        vUsdBalance: "100000",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
     };
 
+    const poolInfo = {
+      aValue: "20",
+      dValue: "200001",
+      tokenBalance: "100000",
+      vUsdBalance: "100000",
+      totalLpAmount: "",
+      accRewardPerShareP: "",
+    };
     const amountToSend = "100";
     const amountToReceive = "84.18";
 
-    test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, () => {
-      const actual = sdk.getAmountToBeReceived(
+    beforeAll(() => {
+      mockPoolInfoEndpoint(scope, [
+        { token: sourceChainToken, poolInfo },
+        { token: destinationChainToken, poolInfo },
+      ]);
+    });
+    afterAll(() => {
+      nockCleanAll();
+    });
+
+    test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
+      const actual = await sdk.getAmountToBeReceived(
         amountToSend,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toEqual(amountToReceive);
+      scope.done();
     });
 
-    test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, () => {
-      const actual = sdk.getAmountToSend(
+    test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
+      const actual = await sdk.getAmountToSend(
         amountToReceive,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toBeCloseTo(+amountToSend, 2);
+      scope.done();
     });
   });
 
   describe("Given tokens with imbalanced pool", () => {
+    const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "GRL",
       decimals: 6,
       feeShare: "0",
-      poolInfo: {
-        aValue: "20",
-        dValue: "204253",
-        tokenBalance: "17684",
-        vUsdBalance: "191863",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
+    };
+    const sourcePoolInfo = {
+      aValue: "20",
+      dValue: "204253",
+      tokenBalance: "17684",
+      vUsdBalance: "191863",
+      totalLpAmount: "",
+      accRewardPerShareP: "",
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "TRX",
       decimals: 18,
       feeShare: "0",
-      poolInfo: {
-        aValue: "20",
-        dValue: "206649",
-        tokenBalance: "202486",
-        vUsdBalance: "12487",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
     };
+    const destinationPoolInfo: PoolInfo = {
+      aValue: "20",
+      dValue: "206649",
+      tokenBalance: "202486",
+      vUsdBalance: "12487",
+      totalLpAmount: "",
+      accRewardPerShareP: "",
+    };
+    beforeAll(() => {
+      mockPoolInfoEndpoint(scope, [
+        { token: sourceChainToken, poolInfo: sourcePoolInfo },
+        { token: destinationChainToken, poolInfo: destinationPoolInfo },
+      ]);
+    });
+    afterAll(() => {
+      nockCleanAll();
+    });
 
     const amountToSend = "84.16";
     const amountToReceive = "97.776";
 
-    test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, () => {
-      const actual = sdk.getAmountToBeReceived(
+    test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
+      const actual = await sdk.getAmountToBeReceived(
         amountToSend,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toEqual(amountToReceive);
+      scope.done();
     });
 
-    test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, () => {
-      const actual = sdk.getAmountToSend(
+    test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
+      const actual = await sdk.getAmountToSend(
         amountToReceive,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toBeCloseTo(+amountToSend, 2);
+      scope.done();
     });
   });
 
   describe("Given tokens with fee", () => {
+    const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "GRL",
       decimals: 18,
       feeShare: "0.003",
-      poolInfo: {
-        aValue: "20",
-        dValue: "200000001",
-        tokenBalance: "100166280",
-        vUsdBalance: "99833728",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
+    };
+    const sourcePoolInfo = {
+      aValue: "20",
+      dValue: "200000001",
+      tokenBalance: "100166280",
+      vUsdBalance: "99833728",
+      totalLpAmount: "",
+      accRewardPerShareP: "",
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
+      chainSymbol: "TRX",
       decimals: 18,
       feeShare: "0.003",
-      poolInfo: {
-        aValue: "20",
-        dValue: "200000001",
-        tokenBalance: "99738849",
-        vUsdBalance: "100261169",
-        totalLpAmount: "",
-        accRewardPerShareP: "",
-      },
     };
+    const destinationPoolInfo: PoolInfo = {
+      aValue: "20",
+      dValue: "200000001",
+      tokenBalance: "99738849",
+      vUsdBalance: "100261169",
+      totalLpAmount: "",
+      accRewardPerShareP: "",
+    };
+    beforeAll(() => {
+      mockPoolInfoEndpoint(scope, [
+        { token: sourceChainToken, poolInfo: sourcePoolInfo },
+        { token: destinationChainToken, poolInfo: destinationPoolInfo },
+      ]);
+    });
+    afterAll(() => {
+      nockCleanAll();
+    });
 
     const amountToSend = "10";
     const vUsd = 9.969;
     const amountToReceive = "9.938096";
 
-    test(`☀ getAmountToBeReceived for amount ${amountToSend} should return -> ${amountToReceive}`, () => {
-      const actual = sdk.getAmountToBeReceived(
+    test(`☀ getAmountToBeReceived for amount ${amountToSend} should return -> ${amountToReceive}`, async () => {
+      const actual = await sdk.getAmountToBeReceived(
         amountToSend,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toEqual(amountToReceive);
+      scope.done();
     });
 
-    test(`☀ getAmountToSend for amount ${amountToReceive} should return -> ${amountToSend}`, () => {
-      const actual = sdk.getAmountToSend(
+    test(`☀ getAmountToSend for amount ${amountToReceive} should return -> ${amountToSend}`, async () => {
+      const actual = await sdk.getAmountToSend(
         amountToReceive,
         sourceChainToken,
         destinationChainToken
       );
       expect(actual).toEqual(amountToSend);
+      scope.done();
     });
 
     describe("calculateFeesPercentOnSourceChain", () => {
       const expectedPercent = getFeePercent(amountToSend, vUsd);
-      test(`☀️ should return fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, () => {
-        const actual = sdk.calculateFeePercentOnSourceChain(
+      test(`☀️ should return fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, async () => {
+        const actual = await sdk.calculateFeePercentOnSourceChain(
           amountToSend,
           sourceChainToken
         );
         expect(actual).toEqual(expectedPercent);
       });
 
-      test("☁ calculateFeePercentOnSourceChain should return for amount: 0 -> 0%", () => {
-        const actual = sdk.calculateFeePercentOnSourceChain(
+      test("☁ calculateFeePercentOnSourceChain should return for amount: 0 -> 0%", async () => {
+        const actual = await sdk.calculateFeePercentOnSourceChain(
           0,
           sourceChainToken
         );
@@ -214,8 +273,8 @@ describe("SDK", () => {
 
     describe("calculateFeePercentOnDestinationChain", () => {
       const expectedPercent = getFeePercent(vUsd, amountToReceive);
-      test(`☀️ should return fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, () => {
-        const actual = sdk.calculateFeePercentOnDestinationChain(
+      test(`☀️ should return fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, async () => {
+        const actual = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
           sourceChainToken,
           destinationChainToken
@@ -223,8 +282,8 @@ describe("SDK", () => {
         expect(actual).toBeCloseTo(expectedPercent, 2);
       });
 
-      test("☁ should return for amount: 0 -> 0%", () => {
-        const actual = sdk.calculateFeePercentOnDestinationChain(
+      test("☁ should return for amount: 0 -> 0%", async () => {
+        const actual = await sdk.calculateFeePercentOnDestinationChain(
           0,
           sourceChainToken,
           destinationChainToken
@@ -236,13 +295,13 @@ describe("SDK", () => {
     describe("calculate total fee", () => {
       const expectedPercent = getFeePercent(amountToSend, amountToReceive);
 
-      test(`☀️ calculated source and destination fees should match total fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, () => {
-        const feePercentOnSource = sdk.calculateFeePercentOnSourceChain(
+      test(`☀️ calculated source and destination fees should match total fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, async () => {
+        const feePercentOnSource = await sdk.calculateFeePercentOnSourceChain(
           amountToSend,
           sourceChainToken
         );
         const feePercentOnDestination =
-          sdk.calculateFeePercentOnDestinationChain(
+          await sdk.calculateFeePercentOnDestinationChain(
             amountToSend,
             sourceChainToken,
             destinationChainToken
@@ -303,10 +362,15 @@ describe("SDK", () => {
     });
   });
 
-  describe("Given info server", () => {
+  describe("Given token info endpoint", () => {
     const scope: nock.Scope = nock("http://localhost");
 
-    scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+    beforeAll(() => {
+      scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+    });
+    afterAll(() => {
+      nockCleanAll();
+    });
 
     describe("Get tokens info", () => {
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
@@ -315,13 +379,13 @@ describe("SDK", () => {
         expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
       });
 
-      it("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
+      test("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
         const expectedTokenInfoWithChainDetails =
           tokenInfoList as unknown as TokenInfoWithChainDetails[];
         expect(await sdk.tokens()).toEqual(expectedTokenInfoWithChainDetails);
       });
 
-      it("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
+      test("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
         const expectedTokenInfoWithChainDetailsGRL =
           tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
         expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(
@@ -337,6 +401,7 @@ describe("SDK", () => {
       const tokensAmount = "1.33";
 
       test("Should return txId after sending GRL to TRX", async () => {
+        const bridgeAddress = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
         const toChainId = 4;
         const receiveFeeRequest: ReceiveTransactionCostRequest = {
           sourceChainId: 2,
@@ -371,25 +436,34 @@ describe("SDK", () => {
         const estimateGasMocked = vi.fn(() => {
           return gas;
         });
-        const transactionHash = 1234567890;
-        const sendMocked = vi.fn(() => {
-          return { transactionHash: transactionHash };
+        const transactionHash = "1234567890";
+        const expectedData = "data";
+        const encodeABIMocked = vi.fn(() => {
+          return expectedData;
         });
         const swapAndBridgeMocked = vi.fn(() => {
           return {
             estimateGas: estimateGasMocked,
-            send: sendMocked,
+            encodeABI: encodeABIMocked,
           };
         });
         mockEvmContract({
           swapAndBridge: swapAndBridgeMocked,
         });
+        const methodSendRawTransactionSpy =
+          mockEvmSendRawTransaction(transactionHash);
 
         const transactionResponse = await sdk.send(new Web3(), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(estimateGasMocked).toBeCalledTimes(1);
-        expect(sendMocked).toBeCalledTimes(1);
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledWith({
+          from: fromAccountAddress,
+          to: bridgeAddress,
+          value: fee,
+          data: expectedData,
+          type: 2,
+        });
 
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** fromTokenDecimals)
@@ -403,15 +477,6 @@ describe("SDK", () => {
           new BN(nonceBuffer),
           Messenger.ALLBRIDGE
         );
-        expect(estimateGasMocked).lastCalledWith({
-          from: fromAccountAddress,
-          value: fee,
-        });
-        expect(sendMocked).lastCalledWith({
-          from: fromAccountAddress,
-          gas: gas,
-          value: fee,
-        });
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
       });
@@ -429,6 +494,7 @@ describe("SDK", () => {
           .reply(201, receiveFeeResponse)
           .persist();
         /* cSpell:disable */
+        const bridgeAddress = "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM";
         const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
         const fromTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
         const toTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
@@ -449,48 +515,98 @@ describe("SDK", () => {
           messenger: Messenger.ALLBRIDGE,
         };
 
-        const gas = 100000;
-        const estimateGasMocked = vi.fn(() => {
-          return gas;
-        });
-        const transactionHash = 1234567890;
-        const sendMocked = vi.fn(() => {
-          return transactionHash;
-        });
-        const swapAndBridgeMocked = vi.fn(() => {
+        const transactionHash = "1234567890";
+        const rawTx = "rawTx";
+        const methodTriggerSmartContractMock = vi.fn(() => {
           return {
-            estimateGas: estimateGasMocked,
-            send: sendMocked,
+            result: {
+              result: true,
+            },
+            transaction: rawTx,
           };
         });
-        mockTronContract({
-          swapAndBridge: swapAndBridgeMocked,
+        const signedTx = { signature: "signature" };
+        const methodSignMock = vi.fn(() => {
+          return signedTx;
         });
-        const verifyTxMocked = mockTronVerifyTx();
-        // prettier-ignore
-        /* eslint-disable-next-line */
-        const transactionResponse = await sdk.send(new TronWeb("mock", "mock"), sendParams);
-        expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(verifyTxMocked).toBeCalledTimes(1);
-        expect(sendMocked).toBeCalledTimes(1);
+        const methodSendRawTransactionMock = vi.fn(() => {
+          return { transaction: { txID: transactionHash } };
+        });
+        const tronWebMock = {
+          transactionBuilder: {
+            triggerSmartContract: methodTriggerSmartContractMock,
+          },
+          trx: {
+            sign: methodSignMock,
+            sendRawTransaction: methodSendRawTransactionMock,
+          },
+        };
 
+        const verifyTxMocked = mockTronVerifyTx();
+        const transactionResponse = await sdk.send(tronWebMock, sendParams);
+        expect(methodTriggerSmartContractMock).toHaveBeenCalledOnce();
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** toTokenDecimals)
           .toFixed();
-        expect(swapAndBridgeMocked).lastCalledWith(
-          formatAddress(fromTokenAddress, ChainType.TRX, ChainType.TRX),
-          expectedAmount,
-          formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
-          toChainId,
-          formatAddress(toTokenAddress, ChainType.EVM, ChainType.TRX),
-          nonceBuffer.toJSON().data,
-          Messenger.ALLBRIDGE
+        expect(methodTriggerSmartContractMock).toBeCalledWith(
+          bridgeAddress,
+          "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)",
+          { callValue: fee },
+          [
+            {
+              type: "bytes32",
+              value: formatAddress(
+                fromTokenAddress,
+                ChainType.TRX,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint256", value: expectedAmount },
+            {
+              type: "bytes32",
+              value: formatAddress(
+                toAccountAddress,
+                ChainType.EVM,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint8", value: toChainId },
+            {
+              type: "bytes32",
+              value: formatAddress(
+                toTokenAddress,
+                ChainType.EVM,
+                ChainType.TRX
+              ),
+            },
+            { type: "uint256", value: nonceBuffer.toJSON().data },
+            { type: "uint8", value: Messenger.ALLBRIDGE },
+          ],
+          fromAccountAddress
         );
-        expect(sendMocked).lastCalledWith({
-          callValue: fee,
-        });
+        expect(methodSignMock).toHaveBeenCalledOnce();
+        expect(methodSignMock).toBeCalledWith(rawTx);
+        expect(methodSendRawTransactionMock).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionMock).toBeCalledWith(signedTx);
+        expect(verifyTxMocked).toHaveBeenCalledOnce();
+        expect(verifyTxMocked).toBeCalledWith(transactionHash);
+
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
+      });
+    });
+
+    describe("getTokenBalance", () => {
+      test("should delegate call to bridge service", async () => {
+        mockBridgeService_getTokenBalance();
+
+        const getTokenBalanceParams: GetTokenBalanceParamsWithTokenAddress = {
+          account: "account",
+          tokenAddress: "tokenAddress",
+        };
+
+        const tokenBalance = await sdk.getTokenBalance(getTokenBalanceParams);
+        expect(tokenBalance).toEqual(mockedTokenBalance);
       });
     });
 
@@ -647,9 +763,3 @@ describe("SDK", () => {
     });
   });
 });
-
-function getRequestBodyMatcher(
-  expectedBody: ReceiveTransactionCostRequest
-): RequestBodyMatcher {
-  return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
-}

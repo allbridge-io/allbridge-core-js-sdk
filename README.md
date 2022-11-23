@@ -151,6 +151,9 @@ async function runExample() {
 runExample();
 ```
 
+***TIP:***
+For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
+
 ## Other operations
 
 ### Transaction builder
@@ -183,11 +186,11 @@ use ```tronWeb``` instead of ```web3``` </p>
 To create send transaction on **Solana** blockchain: </br>
 
 ```js
-const rawTransactionSend = await sdk.rawTransactionBuilder.send(sendParams);
+const { transaction, signer } = await sdk.rawTransactionBuilder.send(sendParams);
 ```
 
 ***TIP:***
-For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/solana/sol-build-tx.js)
 
 ### Get information about sent transaction
 
@@ -203,7 +206,7 @@ SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens
 applying the bridging fee.
 
 ```js
-const amountToBeReceived = sdk.getAmountToBeReceived(
+const amountToBeReceived = await sdk.getAmountToBeReceived(
   amountToSend,
   sourceTokenInfo,
   destinationTokenInfo
@@ -216,7 +219,7 @@ SDK method `getAmountToSend` can be used to calculate the amount of tokens to se
 tokens the receiving party should get.
 
 ```js
-const amountToSend = sdk.getAmountToSend(
+const amountToSend = await sdk.getAmountToSend(
   amountToBeReceived,
   sourceTokenInfo,
   destinationTokenInfo
