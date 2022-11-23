@@ -27,9 +27,27 @@ export interface ApproveData {
   amount?: string | number | Big;
 }
 
-export interface GetTokenBalanceData {
-  tokenAddress: string;
+export interface GetTokenBalanceParamsWithTokenAddress {
+  /**
+   *  The address for which we will find out the token balance
+   */
   account: string;
+  /**
+   *  The token address itself
+   */
+  tokenAddress: string;
+  /**
+   *  If present, the result will be recalculated in precision with token decimals
+   */
+  tokenDecimals?: number;
+}
+
+export interface GetTokenBalanceParamsWithTokenInfo {
+  /**
+   *  The address for which we will find out the token balance
+   */
+  account: string;
+  tokenInfo: TokenInfoWithChainDetails;
 }
 
 export interface TransactionResponse {

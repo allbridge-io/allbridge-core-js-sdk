@@ -6,7 +6,7 @@ import {
   ApproveParamsDto,
   CheckAllowanceParamsDto,
   GetAllowanceParamsDto,
-  GetTokenBalanceData,
+  GetTokenBalanceParamsWithTokenAddress,
   RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -18,7 +18,9 @@ export abstract class Bridge {
   abstract chainType: ChainType;
   abstract api: AllbridgeCoreClient;
 
-  abstract getTokenBalance(data: GetTokenBalanceData): Promise<string>;
+  abstract getTokenBalance(
+    params: GetTokenBalanceParamsWithTokenAddress
+  ): Promise<string>;
 
   abstract getAllowance(params: GetAllowanceParamsDto): Promise<string>;
 

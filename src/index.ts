@@ -6,6 +6,8 @@ import {
   CheckAllowanceParamsWithTokenInfo,
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
+  GetTokenBalanceParamsWithTokenAddress,
+  GetTokenBalanceParamsWithTokenInfo,
   Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
@@ -155,6 +157,21 @@ export class AllbridgeCoreSdk {
     approveData: ApproveData
   ): Promise<TransactionResponse> {
     return await this.bridgeService.approve(provider, approveData);
+  }
+
+  /**
+   * Get token balance
+   * @param params
+   * @param provider
+   * @returns Token balance
+   */
+  async getTokenBalance(
+    params:
+      | GetTokenBalanceParamsWithTokenAddress
+      | GetTokenBalanceParamsWithTokenInfo,
+    provider?: Provider
+  ): Promise<string> {
+    return this.bridgeService.getTokenBalance(params, provider);
   }
 
   /**
