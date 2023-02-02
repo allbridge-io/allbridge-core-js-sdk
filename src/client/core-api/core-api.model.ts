@@ -7,7 +7,7 @@ export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
   bridgeAddress: string;
-  txTime: TxTimeDTO;
+  transferTime: TransferTimeDTO;
   confirmations: number;
 }
 
@@ -38,14 +38,13 @@ export enum MessengerKeyDTO {
   WORMHOLE = "wormhole",
 }
 
-export type TxTimeDTO = {
-  [messenger in MessengerKeyDTO]: MessengerDTO;
+export type TransferTimeDTO = {
+  [chain in ChainSymbol]: MessengerTransferTimeDTO;
 };
 
-export interface MessengerDTO {
-  in: number;
-  out: number;
-}
+export type MessengerTransferTimeDTO = {
+  [messenger in MessengerKeyDTO]: number;
+};
 
 export enum Messenger {
   ALLBRIDGE = 1,

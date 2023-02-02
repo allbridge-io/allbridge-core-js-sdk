@@ -42,17 +42,89 @@
     ],
     "chainId": 2,
     "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-    "txTime": {
-      "allbridge": {
-        "in": 30000,
-        "out": 120000
+    "transferTime": {
+      "ETH": {
+        "allbridge": 120000,
+        "wormhole": 120000
       },
-      "wormhole": {
-        "in": 30000,
-        "out": 120000
+      "POL": {
+        "allbridge": 120000,
+        "wormhole": 600000
+      },
+      "TRX": {
+        "allbridge": 120000,
+        "wormhole": null
+      },
+      "SOL": {
+        "allbridge": 120000,
+        "wormhole": 40140000
       }
     },
     "confirmations": 5
+  },
+  "POL": {
+    "tokens": [
+      {
+        "name": "USD Coin",
+        "poolAddress": "0x6d92cF0D4ae712817AaD1A4CCac37145E19E3622",
+        "tokenAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "decimals": 6,
+        "symbol": "USDC",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "101518623",
+          "tokenBalance": "51851977",
+          "vUsdBalance": "49667220",
+          "totalLpAmount": "50758546",
+          "accRewardPerShareP": "9620890911302556",
+          "p": 52
+        },
+        "feeShare": "0.0015",
+        "apr": "0.09296298756928563541",
+        "lpRate": "1.00002027324711969171"
+      },
+      {
+        "name": "Tether USD",
+        "poolAddress": "0x171f3F8AE9825667a51f31ABCc085E2F92a47826",
+        "tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        "decimals": 6,
+        "symbol": "USDT",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "101172063",
+          "tokenBalance": "50170874",
+          "vUsdBalance": "51001273",
+          "totalLpAmount": "50585435",
+          "accRewardPerShareP": "4709957294631997",
+          "p": 52
+        },
+        "feeShare": "0.0015",
+        "apr": "0.04748078844651022051",
+        "lpRate": "1.00001340306750352152"
+      }
+    ],
+    "chainId": 5,
+    "bridgeAddress": "0xDbBE85a3E22F52F834c3D5ED627fb76DB554669e",
+    "swapAddress": "0xb43B971FA3A385bC291EC5a244B1b9324f746fBc",
+    "transferTime": {
+      "BSC": {
+        "allbridge": 420000,
+        "wormhole": 600000
+      },
+      "ETH": {
+        "allbridge": 420000,
+        "wormhole": 600000
+      },
+      "TRX": {
+        "allbridge": 360000,
+        "wormhole": null
+      },
+      "SOL": {
+        "allbridge": 420000,
+        "wormhole": 600000
+      }
+    },
+    "confirmations": 150
   },
   "TRX": {
     "tokens": [
@@ -97,10 +169,22 @@
     ],
     "chainId": 4,
     "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
-    "txTime": {
-      "allbridge": {
-        "in": 30000,
-        "out": 180000
+    "transferTime": {
+      "BSC": {
+        "allbridge": 180000,
+        "wormhole": null
+      },
+      "ETH": {
+        "allbridge": 180000,
+        "wormhole": null
+      },
+      "POL": {
+        "allbridge": 180000,
+        "wormhole": null
+      },
+      "SOL": {
+        "allbridge": 180000,
+        "wormhole": null
       }
     },
     "confirmations": 20
@@ -111,14 +195,22 @@
     "chainType": "SOLANA",
     "chainId": 5,
     "bridgeAddress": "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
-    "txTime": {
-      "allbridge": {
-        "in": 60000,
-        "out": 180000
+    "transferTime": {
+      "BSC": {
+        "allbridge": 120000,
+        "wormhole": 120000
       },
-      "wormhole": {
-        "in": 120000,
-        "out": 480000
+      "ETH": {
+        "allbridge": 120000,
+        "wormhole": 120000
+      },
+      "POL": {
+        "allbridge": 120000,
+        "wormhole": 120000
+      },
+      "TRX": {
+        "allbridge": 120000,
+        "wormhole": null
       }
     },
     "confirmations": 32,
@@ -136,16 +228,6 @@
         "chainType": "SOLANA",
         "allbridgeChainId": 5,
         "bridgeAddress": "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
-        "txTime": {
-          "allbridge": {
-            "in": 60000,
-            "out": 180000
-          },
-          "wormhole": {
-            "in": 120000,
-            "out": 480000
-          }
-        },
         "confirmations": 32,
         "chainName": "Solana"
       }

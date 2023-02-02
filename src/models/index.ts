@@ -20,8 +20,8 @@ export {
 export { ChainSymbol, ChainType } from "../chains/index";
 export {
   TokenInfoWithChainDetails,
-  TxTime,
-  MessengerTxTime,
+  TransferTime,
+  MessengerTransferTime,
   PoolInfo,
 } from "../tokens-info/tokens-info.model";
 export { RawTransactionBuilder } from "../raw-transaction-builder";
