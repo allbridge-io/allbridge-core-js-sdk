@@ -27,6 +27,10 @@ export enum ChainSymbol {
    * The TRON network.
    */
   TRX = "TRX",
+  /**
+   * The Polygon network.
+   */
+  POL = "POL",
 }
 
 export enum ChainType {
@@ -52,6 +56,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.ETH,
     chainId: "0x1",
     name: "Ethereum",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.POL]: {
+    chainSymbol: ChainSymbol.POL,
+    chainId: "0x89",
+    name: "Polygon",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.SOL]: {

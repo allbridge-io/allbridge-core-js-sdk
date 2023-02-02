@@ -54,6 +54,62 @@
     },
     "confirmations": 5
   },
+  "POL": {
+    "tokens": [
+      {
+        "name": "USD Coin",
+        "poolAddress": "0x6d92cF0D4ae712817AaD1A4CCac37145E19E3622",
+        "tokenAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "decimals": 6,
+        "symbol": "USDC",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "101518623",
+          "tokenBalance": "51851977",
+          "vUsdBalance": "49667220",
+          "totalLpAmount": "50758546",
+          "accRewardPerShareP": "9620890911302556",
+          "p": 52
+        },
+        "feeShare": "0.0015",
+        "apr": "0.09296298756928563541",
+        "lpRate": "1.00002027324711969171"
+      },
+      {
+        "name": "Tether USD",
+        "poolAddress": "0x171f3F8AE9825667a51f31ABCc085E2F92a47826",
+        "tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        "decimals": 6,
+        "symbol": "USDT",
+        "poolInfo": {
+          "aValue": "20",
+          "dValue": "101172063",
+          "tokenBalance": "50170874",
+          "vUsdBalance": "51001273",
+          "totalLpAmount": "50585435",
+          "accRewardPerShareP": "4709957294631997",
+          "p": 52
+        },
+        "feeShare": "0.0015",
+        "apr": "0.04748078844651022051",
+        "lpRate": "1.00001340306750352152"
+      }
+    ],
+    "chainId": 5,
+    "bridgeAddress": "0xDbBE85a3E22F52F834c3D5ED627fb76DB554669e",
+    "swapAddress": "0xb43B971FA3A385bC291EC5a244B1b9324f746fBc",
+    "txTime": {
+      "allbridge": {
+        "in": 60000,
+        "out": 180000
+      },
+      "wormhole": {
+        "in": 120000,
+        "out": 480000
+      }
+    },
+    "confirmations": 150
+  },
   "TRX": {
     "tokens": [
       {
