@@ -53,6 +53,8 @@ const TronWeb = require("tronweb");
 
 const basicTokenInfoWithChainDetails =
   tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
+const basicTokenInfoWithChainDetails2 =
+  tokenInfoList[2] as unknown as TokenInfoWithChainDetails;
 
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
@@ -318,33 +320,27 @@ describe("SDK", () => {
   });
 
   describe("Given tokens with transfer times", () => {
+    const transferTime = 211_111;
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      txTime: {
-        [Messenger.ALLBRIDGE]: {
-          in: 30000,
-          out: 120000,
+      transferTime: {
+        [ChainSymbol.POL]: {
+          [Messenger.ALLBRIDGE]: transferTime,
+          [Messenger.WORMHOLE]: 120000,
         },
       },
     };
-    const destinationChainToken: TokenInfoWithChainDetails = {
-      ...basicTokenInfoWithChainDetails,
-      txTime: {
-        [Messenger.ALLBRIDGE]: {
-          in: 30000,
-          out: 180000,
-        },
-      },
-    };
+    const destinationChainToken: TokenInfoWithChainDetails =
+      basicTokenInfoWithChainDetails2;
 
     describe("getAverageTransferTime", () => {
-      test("☀ Should return 210 sec -> 210000", () => {
+      test("☀ Should return transferTime 211_111 ms", () => {
         const actual = sdk.getAverageTransferTime(
           sourceChainToken,
           destinationChainToken,
           Messenger.ALLBRIDGE
         );
-        expect(actual).toEqual(210_000);
+        expect(actual).toEqual(transferTime);
       });
 
       describe("Given unsupported messenger", () => {

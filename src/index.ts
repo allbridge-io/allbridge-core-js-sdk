@@ -24,6 +24,7 @@ import { AmountsAndTxCost, Messenger } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   ChainDetailsMap,
+  MessengerTransferTime,
   TokenInfoWithChainDetails,
   TokensInfo,
 } from "./tokens-info";
@@ -423,12 +424,15 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
   ): number | null {
-    const sourceTxTime = sourceChainToken.txTime[messenger]?.in;
-    const destinationTxTime = destinationChainToken.txTime[messenger]?.out;
-    if (!sourceTxTime || !destinationTxTime) {
+    const messengerTransferTime: MessengerTransferTime | undefined =
+      sourceChainToken.transferTime[
+        destinationChainToken.chainSymbol as ChainSymbol
+      ];
+    if (messengerTransferTime) {
+      return messengerTransferTime[messenger] ?? null;
+    } else {
       return null;
     }
-    return sourceTxTime + destinationTxTime;
   }
 
   /**

@@ -6,14 +6,22 @@
     "name": "Goerli",
     "allbridgeChainId": 2,
     "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-    "txTime": {
-      "1": {
-        "in": 30000,
-        "out": 120000
+    "transferTime": {
+      "ETH": {
+        "1": 120000,
+        "2": 120000
       },
-      "2": {
-        "in": 30000,
-        "out": 120000
+      "POL": {
+        "1": 120000,
+        "2": 600000
+      },
+      "SOL": {
+        "1": 120000,
+        "2": 40140000
+      },
+      "TRX": {
+        "1": 120000,
+        "2": null
       }
     },
     "confirmations": 5,
@@ -32,14 +40,22 @@
         "chainId": "0x5",
         "allbridgeChainId": 2,
         "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-        "txTime": {
-          "1": {
-            "in": 30000,
-            "out": 120000
+        "transferTime": {
+          "ETH": {
+            "1": 120000,
+            "2": 120000
           },
-          "2": {
-            "in": 30000,
-            "out": 120000
+          "POL": {
+            "1": 120000,
+            "2": 600000
+          },
+          "SOL": {
+            "1": 120000,
+            "2": 40140000
+          },
+          "TRX": {
+            "1": 120000,
+            "2": null
           }
         },
         "confirmations": 5,
@@ -59,14 +75,22 @@
         "chainId": "0x5",
         "allbridgeChainId": 2,
         "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-        "txTime": {
-          "1": {
-            "in": 30000,
-            "out": 120000
+        "transferTime": {
+          "ETH": {
+            "1": 120000,
+            "2": 120000
           },
-          "2": {
-            "in": 30000,
-            "out": 120000
+          "POL": {
+            "1": 120000,
+            "2": 600000
+          },
+          "SOL": {
+            "1": 120000,
+            "2": 40140000
+          },
+          "TRX": {
+            "1": 120000,
+            "2": null
           }
         },
         "confirmations": 5,
@@ -81,14 +105,22 @@
     "chainType": "EVM",
     "allbridgeChainId": 5,
     "bridgeAddress": "0xDbBE85a3E22F52F834c3D5ED627fb76DB554669e",
-    "txTime": {
-      "1": {
-        "in": 60000,
-        "out": 180000
+    "transferTime": {
+      "BSC": {
+        "1": 420000,
+        "2": 600000
       },
-      "2": {
-        "in": 120000,
-        "out": 480000
+      "ETH": {
+        "1": 420000,
+        "2": 600000
+      },
+      "SOL": {
+        "1": 420000,
+        "2": 600000
+      },
+      "TRX": {
+        "1": 360000,
+        "2": null
       }
     },
     "confirmations": 150,
@@ -107,14 +139,22 @@
         "chainType": "EVM",
         "allbridgeChainId": 5,
         "bridgeAddress": "0xDbBE85a3E22F52F834c3D5ED627fb76DB554669e",
-        "txTime": {
-          "1": {
-            "in": 60000,
-            "out": 180000
+        "transferTime": {
+          "BSC": {
+            "1": 420000,
+            "2": 600000
           },
-          "2": {
-            "in": 120000,
-            "out": 480000
+          "ETH": {
+            "1": 420000,
+            "2": 600000
+          },
+          "SOL": {
+            "1": 420000,
+            "2": 600000
+          },
+          "TRX": {
+            "1": 360000,
+            "2": null
           }
         },
         "confirmations": 150,
@@ -134,14 +174,22 @@
         "chainType": "EVM",
         "allbridgeChainId": 5,
         "bridgeAddress": "0xDbBE85a3E22F52F834c3D5ED627fb76DB554669e",
-        "txTime": {
-          "1": {
-            "in": 60000,
-            "out": 180000
+        "transferTime": {
+          "BSC": {
+            "1": 420000,
+            "2": 600000
           },
-          "2": {
-            "in": 120000,
-            "out": 480000
+          "ETH": {
+            "1": 420000,
+            "2": 600000
+          },
+          "SOL": {
+            "1": 420000,
+            "2": 600000
+          },
+          "TRX": {
+            "1": 360000,
+            "2": null
           }
         },
         "confirmations": 150,
@@ -155,10 +203,22 @@
     "name": "Tron",
     "allbridgeChainId": 4,
     "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
-    "txTime": {
-      "1": {
-        "in": 30000,
-        "out": 180000
+    "transferTime": {
+      "BSC": {
+        "1": 180000,
+        "2": null
+      },
+      "ETH": {
+        "1": 180000,
+        "2": null
+      },
+      "POL": {
+        "1": 180000,
+        "2": null
+      },
+      "SOL": {
+        "1": 180000,
+        "2": null
       }
     },
     "confirmations": 20,
@@ -176,10 +236,22 @@
         "chainType": "TRX",
         "allbridgeChainId": 4,
         "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
-        "txTime": {
-          "1": {
-            "in": 30000,
-            "out": 180000
+        "transferTime": {
+          "BSC": {
+            "1": 180000,
+            "2": null
+          },
+          "ETH": {
+            "1": 180000,
+            "2": null
+          },
+          "POL": {
+            "1": 180000,
+            "2": null
+          },
+          "SOL": {
+            "1": 180000,
+            "2": null
           }
         },
         "confirmations": 20,
@@ -198,10 +270,22 @@
         "chainType": "TRX",
         "allbridgeChainId": 4,
         "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
-        "txTime": {
-          "1": {
-            "in": 30000,
-            "out": 180000
+        "transferTime": {
+          "BSC": {
+            "1": 180000,
+            "2": null
+          },
+          "ETH": {
+            "1": 180000,
+            "2": null
+          },
+          "POL": {
+            "1": 180000,
+            "2": null
+          },
+          "SOL": {
+            "1": 180000,
+            "2": null
           }
         },
         "confirmations": 20,
@@ -215,14 +299,22 @@
     "chainType": "SOLANA",
     "allbridgeChainId": 5,
     "bridgeAddress": "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
-    "txTime": {
-      "1": {
-        "in": 60000,
-        "out": 180000
+    "transferTime": {
+      "BSC": {
+        "1": 120000,
+        "2": 120000
       },
-      "2": {
-        "in": 120000,
-        "out": 480000
+      "ETH": {
+        "1": 120000,
+        "2": 120000
+      },
+      "POL": {
+        "1": 120000,
+        "2": 120000
+      },
+      "TRX": {
+        "1": 120000,
+        "2": null
       }
     },
     "confirmations": 32,
@@ -240,14 +332,22 @@
         "chainType": "SOLANA",
         "allbridgeChainId": 5,
         "bridgeAddress": "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
-        "txTime": {
-          "1": {
-            "in": 60000,
-            "out": 180000
+        "transferTime": {
+          "BSC": {
+            "1": 120000,
+            "2": 120000
           },
-          "2": {
-            "in": 120000,
-            "out": 480000
+          "ETH": {
+            "1": 120000,
+            "2": 120000
+          },
+          "POL": {
+            "1": 120000,
+            "2": 120000
+          },
+          "TRX": {
+            "1": 120000,
+            "2": null
           }
         },
         "confirmations": 32,

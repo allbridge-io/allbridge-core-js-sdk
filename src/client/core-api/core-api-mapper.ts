@@ -3,19 +3,21 @@ import {
   ChainDetails,
   ChainDetailsMap,
   ChainDetailsWithTokens,
+  MessengerTransferTime,
   PoolInfoMap,
   PoolKeyObject,
   TokenInfoWithChainDetails,
-  TxTime,
+  TransferTime,
 } from "../../tokens-info";
 import {
   ChainDetailsDTO,
   ChainDetailsResponse,
   Messenger,
   MessengerKeyDTO,
+  MessengerTransferTimeDTO,
   PoolInfoResponse,
   TokenDTO,
-  TxTimeDTO,
+  TransferTimeDTO,
 } from "./core-api.model";
 
 export function mapChainDetailsResponseToChainDetailsMap(
@@ -73,14 +75,26 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
   }
 }
 
-function mapTxTimeFromDto(dto: TxTimeDTO): TxTime {
-  return Object.entries(dto).reduce<TxTime>((result, [key, value]) => {
-    const messenger = mapMessengerKeyDtoToMessenger(key as MessengerKeyDTO);
-    if (messenger) {
-      result[messenger] = value;
-    }
+function mapTransferTimeFromDto(dto: TransferTimeDTO): TransferTime {
+  return Object.entries(dto).reduce<TransferTime>((result, [key, value]) => {
+    result[key as ChainSymbol] = mapMessengerTransferTimeFromDto(value);
     return result;
   }, {});
+}
+
+function mapMessengerTransferTimeFromDto(
+  dto: MessengerTransferTimeDTO
+): MessengerTransferTime {
+  return Object.entries(dto).reduce<MessengerTransferTime>(
+    (messengerTransferTime, [key, value]) => {
+      const messenger = mapMessengerKeyDtoToMessenger(key as MessengerKeyDTO);
+      if (messenger) {
+        messengerTransferTime[messenger] = value;
+      }
+      return messengerTransferTime;
+    },
+    {}
+  );
 }
 
 function mapChainDetailsFromDto(
@@ -96,7 +110,7 @@ function mapChainDetailsFromDto(
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
-    txTime: mapTxTimeFromDto(dto.txTime),
+    transferTime: mapTransferTimeFromDto(dto.transferTime),
     confirmations: dto.confirmations,
   };
   return {

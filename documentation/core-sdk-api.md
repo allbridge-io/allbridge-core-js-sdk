@@ -170,7 +170,7 @@ TokenInfoWithChainDetails:
   allbridgeChainId: number;
   // Bridge address on chain
   bridgeAddress: string;
-  txTime: TxTime;
+  transferTime: TransferTime;
   confirmations: number;
 }
 ```
@@ -221,7 +221,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 2,
     "bridgeAddress": bridgeAddressOnBSC,
-    "txTime": averageTransactionTimeOnBSC,
+    "transferTime": averageTransactionTime,
     "confirmations": 15,
     "tokens": tokensOnBSC
   },
@@ -232,7 +232,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 1,
     "bridgeAddress": bridgeAddressOnETH,
-    "txTime": averageTransactionTimeOnETH,
+    "transferTime": averageTransactionTime,
     "confirmations": 5,
     "tokens": tokensOnETH
   },
