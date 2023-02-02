@@ -424,7 +424,11 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenInfoWithChainDetails,
     messenger: Messenger
   ): number | null {
-    return sourceChainToken.transferTime?.[destinationChainToken.chainSymbol as ChainSymbol]?.[messenger] ?? null;
+    return (
+      sourceChainToken.transferTime?.[
+        destinationChainToken.chainSymbol as ChainSymbol
+      ]?.[messenger] ?? null
+    );
   }
 
   /**
