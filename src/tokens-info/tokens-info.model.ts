@@ -9,7 +9,7 @@ export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 export interface ChainDetails extends BasicChainProperties {
   allbridgeChainId: number;
   bridgeAddress: string;
-  txTime: TxTime;
+  transferTime: TransferTime;
   confirmations: number;
 }
 
@@ -34,7 +34,7 @@ export interface TokenInfoWithChainDetails extends TokenInfo {
   chainName: string;
   allbridgeChainId: number;
   bridgeAddress: string;
-  txTime: TxTime;
+  transferTime: TransferTime;
   confirmations: number;
 }
 
@@ -47,20 +47,20 @@ export interface PoolInfo {
   accRewardPerShareP: string;
 }
 
-export interface MessengerTxTime {
-  in: number;
-  out: number;
-}
-
 /**
- * Contains average transaction times per messenger.
+ * Contains average transaction times per chain per messenger.
  */
-export type TxTime = {
-  [messenger in Messenger]?: MessengerTxTime;
+export type TransferTime = {
+  [chain in ChainSymbol]?: MessengerTransferTime;
+};
+
+export type MessengerTransferTime = {
+  [messenger in Messenger]?: number;
 };
 
 export interface PoolKeyObject {
   chainSymbol: ChainSymbol;
   poolAddress: string;
 }
+
 export type PoolInfoMap = Record<string, PoolInfo>;
