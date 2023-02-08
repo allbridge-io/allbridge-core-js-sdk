@@ -24,7 +24,6 @@ import { AmountsAndTxCost, Messenger } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   ChainDetailsMap,
-  MessengerTransferTime,
   TokenInfoWithChainDetails,
   TokensInfo,
 } from "./tokens-info";
@@ -425,6 +424,7 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): number | null {
     return (
+      /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
       sourceChainToken.transferTime?.[
         destinationChainToken.chainSymbol as ChainSymbol
       ]?.[messenger] ?? null
