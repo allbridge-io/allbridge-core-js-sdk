@@ -2,7 +2,7 @@ import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainType } from "../../chains";
+import { ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   ApproveParamsDto,
@@ -35,6 +35,14 @@ export class EvmBridge extends Bridge {
       tokenInfo: { tokenAddress, poolAddress: spender },
       owner,
     } = params;
+    return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
+  }
+
+  getAllowanceByTokenAddress(
+    tokenAddress: string,
+    owner: string,
+    spender: string
+  ): Promise<string> {
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
     return tokenContract.methods.allowance(owner, spender).call();
   }
@@ -99,8 +107,38 @@ export class EvmBridge extends Bridge {
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
+    const isUsdt = await this.isUsdt(params.tokenAddress);
+    if (isUsdt) {
+      const allowance = await this.getAllowanceByTokenAddress(
+        params.tokenAddress,
+        params.owner,
+        params.spender
+      );
+      if (allowance !== "0") {
+        const rawTransaction = await this.buildRawTransactionApprove({
+          ...params,
+          amount: "0",
+        });
+        await this.sendRawTransaction(rawTransaction);
+      }
+    }
     const rawTransaction = await this.buildRawTransactionApprove(params);
     return await this.sendRawTransaction(rawTransaction);
+  }
+
+  async isUsdt(tokenAddress: string): Promise<boolean> {
+    const chainDetailsMap = await this.api.getChainDetailsMap();
+    /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
+    const tokens = chainDetailsMap[ChainSymbol.ETH]?.tokens;
+    /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
+    if (tokens) {
+      const tokenIndex = tokens.findIndex(
+        (token) => token.tokenAddress === tokenAddress
+      );
+      return tokens[tokenIndex].symbol === "USDT";
+    } else {
+      return false;
+    }
   }
 
   async buildRawTransactionApprove(

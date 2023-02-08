@@ -22,3 +22,12 @@ export function mockEvmSendRawTransaction(transactionHash: string) {
   });
   return methodSendRawTransaction;
 }
+
+export function mockGetAllowanceByTokenAddress(allowance: string) {
+  // prettier-ignore
+  return vi.spyOn(EvmBridge.prototype, "getAllowanceByTokenAddress")
+    /* eslint-disable-next-line  @typescript-eslint/require-await */
+    .mockImplementation(async () => {
+      return allowance;
+    });
+}
