@@ -29,7 +29,7 @@
       {
         "name": "Tether USD",
         "poolAddress": "0xB827b15adA62D78F5cb90243bc4755cf4B9d1B0e",
-        "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
+        "tokenAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         "decimals": 6,
         "symbol": "USDT",
         "feeShare": "0.0015",

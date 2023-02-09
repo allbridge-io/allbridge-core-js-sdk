@@ -87,11 +87,11 @@ describe("EvmBridge", () => {
     });
 
     describe("approve for ETH/USDT", () => {
-      const tokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+      const usdtTokenAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
       const owner = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
       const spender = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
       const params: ApproveParamsDto = {
-        tokenAddress: tokenAddress,
+        tokenAddress: usdtTokenAddress,
         owner: owner,
         spender: spender,
       };
@@ -112,7 +112,7 @@ describe("EvmBridge", () => {
         expect(tx).toEqual({ txId: txHash });
         expect(getAllowanceSpy).toHaveBeenCalledTimes(1);
         expect(getAllowanceSpy).toHaveBeenCalledWith(
-          tokenAddress,
+          usdtTokenAddress,
           owner,
           spender
         );
@@ -129,7 +129,7 @@ describe("EvmBridge", () => {
         expect(tx).toEqual({ txId: txHash });
         expect(getAllowanceSpy).toHaveBeenCalledTimes(1);
         expect(getAllowanceSpy).toHaveBeenCalledWith(
-          tokenAddress,
+          usdtTokenAddress,
           owner,
           spender
         );

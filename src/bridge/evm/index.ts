@@ -23,6 +23,8 @@ import { BaseContract } from "./types/types";
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
+const USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+
 export class EvmBridge extends Bridge {
   chainType: ChainType.EVM = ChainType.EVM;
 
@@ -107,8 +109,7 @@ export class EvmBridge extends Bridge {
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    const isUsdt = await this.isUsdt(params.tokenAddress);
-    if (isUsdt) {
+    if (this.isUsdt(params.tokenAddress)) {
       const allowance = await this.getAllowanceByTokenAddress(
         params.tokenAddress,
         params.owner,
@@ -126,19 +127,8 @@ export class EvmBridge extends Bridge {
     return await this.sendRawTransaction(rawTransaction);
   }
 
-  async isUsdt(tokenAddress: string): Promise<boolean> {
-    const chainDetailsMap = await this.api.getChainDetailsMap();
-    /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
-    const tokens = chainDetailsMap[ChainSymbol.ETH]?.tokens;
-    /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
-    if (tokens) {
-      const tokenIndex = tokens.findIndex(
-        (token) => token.tokenAddress === tokenAddress
-      );
-      return tokens[tokenIndex].symbol === "USDT";
-    } else {
-      return false;
-    }
+  isUsdt(tokenAddress: string): boolean {
+    return tokenAddress.toLowerCase() === USDT_TOKEN_ADDRESS;
   }
 
   async buildRawTransactionApprove(
