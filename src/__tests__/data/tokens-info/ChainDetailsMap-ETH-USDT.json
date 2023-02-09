@@ -1,0 +1,66 @@
+{
+  "ETH": {
+    "chainSymbol": "ETH",
+    "chainId": "0x1",
+    "name": "Ethereum",
+    "chainType": "EVM",
+    "allbridgeChainId": 1,
+    "bridgeAddress": "0xA314330482f325D38A83B492EF6B006224a3bea9",
+    "transferTime": {
+      "BSC": {
+        "1": 1020000,
+        "2": 780000
+      },
+      "POL": {
+        "1": 1080000,
+        "2": 600000
+      },
+      "TRX": {
+        "1": 1020000,
+        "2": null
+      },
+      "SOL": {
+        "1": 1020000,
+        "2": 27900000
+      }
+    },
+    "confirmations": 80,
+    "tokens": [
+      {
+        "name": "Tether USD",
+        "poolAddress": "0xB827b15adA62D78F5cb90243bc4755cf4B9d1B0e",
+        "tokenAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "decimals": 6,
+        "symbol": "USDT",
+        "feeShare": "0.0015",
+        "apr": "0.08042120433199476518",
+        "lpRate": "1.00005909444514774664",
+        "chainSymbol": "ETH",
+        "chainId": "0x1",
+        "chainType": "EVM",
+        "allbridgeChainId": 1,
+        "bridgeAddress": "0xA314330482f325D38A83B492EF6B006224a3bea9",
+        "transferTime": {
+          "BSC": {
+            "1": 1020000,
+            "2": 780000
+          },
+          "POL": {
+            "1": 1080000,
+            "2": 600000
+          },
+          "TRX": {
+            "1": 1020000,
+            "2": null
+          },
+          "SOL": {
+            "1": 1020000,
+            "2": 27900000
+          }
+        },
+        "confirmations": 80,
+        "chainName": "Ethereum"
+      }
+    ]
+  }
+}

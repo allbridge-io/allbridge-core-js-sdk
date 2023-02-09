@@ -2,7 +2,7 @@ import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainType } from "../../chains";
+import { ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   ApproveParamsDto,
@@ -23,6 +23,8 @@ import { BaseContract } from "./types/types";
 export const MAX_AMOUNT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
+const USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+
 export class EvmBridge extends Bridge {
   chainType: ChainType.EVM = ChainType.EVM;
 
@@ -35,6 +37,14 @@ export class EvmBridge extends Bridge {
       tokenInfo: { tokenAddress, poolAddress: spender },
       owner,
     } = params;
+    return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
+  }
+
+  getAllowanceByTokenAddress(
+    tokenAddress: string,
+    owner: string,
+    spender: string
+  ): Promise<string> {
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
     return tokenContract.methods.allowance(owner, spender).call();
   }
@@ -99,8 +109,26 @@ export class EvmBridge extends Bridge {
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
+    if (this.isUsdt(params.tokenAddress)) {
+      const allowance = await this.getAllowanceByTokenAddress(
+        params.tokenAddress,
+        params.owner,
+        params.spender
+      );
+      if (allowance !== "0") {
+        const rawTransaction = await this.buildRawTransactionApprove({
+          ...params,
+          amount: "0",
+        });
+        await this.sendRawTransaction(rawTransaction);
+      }
+    }
     const rawTransaction = await this.buildRawTransactionApprove(params);
     return await this.sendRawTransaction(rawTransaction);
+  }
+
+  isUsdt(tokenAddress: string): boolean {
+    return tokenAddress.toLowerCase() === USDT_TOKEN_ADDRESS;
   }
 
   async buildRawTransactionApprove(

@@ -24,7 +24,6 @@ import { AmountsAndTxCost, Messenger } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
 import {
   ChainDetailsMap,
-  MessengerTransferTime,
   TokenInfoWithChainDetails,
   TokensInfo,
 } from "./tokens-info";
@@ -150,6 +149,9 @@ export class AllbridgeCoreSdk {
 
   /**
    * Approve tokens usage by another address on chains
+   * <p>
+   * For ETH/USDT: due to specificity of the USDT contract:<br/>
+   * If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
    * @param provider
    * @param approveData
    */
@@ -425,6 +427,7 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): number | null {
     return (
+      /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
       sourceChainToken.transferTime?.[
         destinationChainToken.chainSymbol as ChainSymbol
       ]?.[messenger] ?? null

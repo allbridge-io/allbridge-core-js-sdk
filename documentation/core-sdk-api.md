@@ -19,7 +19,9 @@
 ## Approve Tokens
 _Method_: approve
 
-Approve tokens usage by bridge on EVM and TRX blockchains for completing transfer
+Approve tokens usage by bridge on EVM and TRX blockchains for completing transfer</p>
+For Ethereum USDT - due to specificity of the USDT contract:<br/>
+If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 _Params_:
 

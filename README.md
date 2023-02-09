@@ -63,7 +63,9 @@ const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT')
 ### 3.1 Approve the transfer of tokens
 
 Before sending tokens the bridge has to be authorized to use user's tokens. This is done by calling the `approve` method
-on SDK instance.
+on SDK instance.</p>
+For Ethereum USDT - due to specificity of the USDT contract:<br/>
+If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 ```js
 const response = await sdk.approve(web3, {
