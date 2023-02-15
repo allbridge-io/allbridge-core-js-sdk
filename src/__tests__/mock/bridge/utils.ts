@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import * as UtilsModule from "../../../bridge/utils";
+import * as UtilsModule from "../../../services/bridge/utils";
 
 export function mockNonce() {
   const nonceSpy = vi.spyOn(UtilsModule, "getNonce");

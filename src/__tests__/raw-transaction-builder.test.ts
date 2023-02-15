@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";
-import { BridgeService } from "../bridge";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
 import {
   ApproveData,
@@ -11,10 +10,13 @@ import {
 } from "../index";
 
 import { RawTransactionBuilder } from "../raw-transaction-builder";
+import { BridgeService } from "../services/bridge";
+import { LiquidityPoolService } from "../services/liquidity-pool";
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawTransactionBuilder;
   let bridgeServiceMock: any;
+  let liquidityPoolService: any;
 
   beforeEach(() => {
     const BridgeServiceMock = vi.fn();
@@ -24,7 +26,8 @@ describe("RawTransactionBuilder", () => {
       new AllbridgeCoreClientImpl({ apiUrl: "apiUrl" })
     );
     rawTransactionBuilder = new RawTransactionBuilder(
-      bridgeServiceMock as BridgeService
+      bridgeServiceMock as BridgeService,
+      liquidityPoolService as LiquidityPoolService
     );
   });
 

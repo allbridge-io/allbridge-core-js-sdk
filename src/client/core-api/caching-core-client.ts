@@ -42,6 +42,10 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
+  getGasPriceForPolygon(): Promise<number> {
+    return this.client.getGasPriceForPolygon();
+  }
+
   getReceiveTransactionCost(
     args: ReceiveTransactionCostRequest
   ): Promise<string> {

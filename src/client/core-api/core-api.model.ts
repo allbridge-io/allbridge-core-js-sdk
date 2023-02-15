@@ -30,7 +30,7 @@ export interface PoolInfoDTO {
   vUsdBalance: string;
   totalLpAmount: string;
   accRewardPerShareP: string;
-  p?: number;
+  p: number;
 }
 
 export enum MessengerKeyDTO {

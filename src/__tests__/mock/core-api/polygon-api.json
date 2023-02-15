@@ -1,0 +1,17 @@
+{
+  "safeLow": {
+    "maxPriorityFee": 1.4333333322000001,
+    "maxFee": 1.4333333482000001
+  },
+  "standard": {
+    "maxPriorityFee": 1.4333333323333333,
+    "maxFee": 1.4333333483333333
+  },
+  "fast": {
+    "maxPriorityFee": 5.152222219,
+    "maxFee": 5.152222235000001
+  },
+  "estimatedBaseFee": 1.6e-8,
+  "blockTime": 2,
+  "blockNumber": 32076702
+}

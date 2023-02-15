@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { TronBridge } from "../../../../bridge/trx";
+import { TronBridge } from "../../../../services/bridge/trx";
 
 export function mockTronContract(methods: any) {
   const bridgeMocked = {
