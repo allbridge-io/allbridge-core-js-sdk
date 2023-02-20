@@ -1,4 +1,5 @@
 import { Big, BigSource } from "big.js";
+import BN from "bn.js";
 import { ChainSymbol } from "../../chains";
 import { AllbridgeCachingCoreClient } from "../../client/core-api/caching-core-client";
 import {
@@ -18,6 +19,43 @@ export function toSystemPrecision(amount: BigSource, decimals: number): Big {
 
 export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
   return convertAmountPrecision(amount, SYSTEM_PRECISION, decimals);
+}
+
+export function convertAmountPrecision(
+  amount: BigSource,
+  decimalsFrom: number,
+  decimalsTo: number
+): Big {
+  const dif = Big(decimalsTo).minus(decimalsFrom).toNumber();
+  return Big(amount).times(toPowBase10(dif)).round(0, 0);
+}
+
+export function toPowBase10(decimals: number): Big {
+  return Big(10).pow(decimals);
+}
+
+export function convertFloatAmountToInt(
+  amountFloat: BigSource,
+  decimals: number
+): Big {
+  return Big(amountFloat).times(toPowBase10(decimals));
+}
+
+export function convertIntAmountToFloat(
+  amountInt: BigSource,
+  decimals: number
+): Big {
+  return Big(amountInt).div(toPowBase10(decimals));
+}
+
+export async function getPoolInfoByTokenInfo(
+  api: AllbridgeCachingCoreClient,
+  sourceChainToken: TokenInfoWithChainDetails
+) {
+  return await api.getPoolInfoByKey({
+    chainSymbol: sourceChainToken.chainSymbol as ChainSymbol,
+    poolAddress: sourceChainToken.poolAddress,
+  });
 }
 
 export function swapToVUsd(
@@ -105,48 +143,11 @@ export function swapFromVUsdReverse(
   return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round(0, 0);
 }
 
-function convertAmountPrecision(
-  amount: BigSource,
-  decimalsFrom: number,
-  decimalsTo: number
-): Big {
-  const dif = Big(decimalsTo).minus(decimalsFrom).toNumber();
-  return Big(amount).times(toPowBase10(dif)).round(0, 0);
-}
-
-export function toPowBase10(decimals: number): Big {
-  return Big(10).pow(decimals);
-}
-
-export function convertFloatAmountToInt(
-  amountFloat: BigSource,
-  decimals: number
-): Big {
-  return Big(amountFloat).times(toPowBase10(decimals));
-}
-
-export function convertIntAmountToFloat(
-  amountInt: BigSource,
-  decimals: number
-): Big {
-  return Big(amountInt).div(toPowBase10(decimals));
-}
-
-export async function getPoolInfoByTokenInfo(
-  api: AllbridgeCachingCoreClient,
-  sourceChainToken: TokenInfoWithChainDetails
-) {
-  return await api.getPoolInfoByKey({
-    chainSymbol: sourceChainToken.chainSymbol as ChainSymbol,
-    poolAddress: sourceChainToken.poolAddress,
-  });
-}
-
 // y = (sqrt(x(4ad³ + x (4a(d - x) - d )²)) + x (4a(d - x) - d ))/8ax
 // commonPart = 4a(d - x) - d
 // sqrt = sqrt(x * (4ad³ + x * commonPart²)
 // y =   (sqrt + x * commonPart) / divider
-function getY(x: BigSource, a: BigSource, d: BigSource): Big {
+export function getY(x: BigSource, a: BigSource, d: BigSource): Big {
   const commonPartBig = Big(4).times(a).times(Big(d).minus(x)).minus(d);
   const dCubed = Big(d).pow(3);
   const commonPartSquared = commonPartBig.pow(2);
@@ -161,4 +162,41 @@ function getY(x: BigSource, a: BigSource, d: BigSource): Big {
     .div(dividerBig)
     .round(0, 0)
     .plus(1); // +1 to offset rounding errors
+}
+
+export function getEarned(
+  userLpAmount: string,
+  userRewardDebt: string,
+  accRewardPerShareP: string,
+  p: number
+): string {
+  const userLpAmountBN = new BN(userLpAmount);
+  const accRewardPerSharePBN = new BN(accRewardPerShareP);
+  const userRewardDebtBN = new BN(userRewardDebt);
+  const rewards = userLpAmountBN.mul(accRewardPerSharePBN).shrn(p);
+  return rewards.sub(userRewardDebtBN).toString();
+}
+
+export function aprInPercents(apr: number): string {
+  return apr * 100 > 0
+    ? `${Number(Big(apr).times(100).toFixed(2)).toLocaleString()}%`
+    : "N/A";
+}
+
+// a = 8Axy(x+y)
+// b = xy(16A - 4) / 3
+// c = sqrt(a² + b³)
+// D = cbrt(a + c) + cbrt(a - c)
+export function getD(aValue: string, x: string, y: string): string {
+  const xy = Big(x).times(y);
+  const xPlusY = Big(x).plus(y);
+  const a = Big(8).times(aValue).times(xy).times(xPlusY);
+  const b = xy.times(Big(16).times(aValue).minus(4)).div(3);
+  const aSquared = a.times(a);
+  const bCubed = b.times(b).times(b);
+  const a2b3 = aSquared.plus(bCubed);
+  const c = Big(a2b3).sqrt();
+  const cbrtAPlusC = Big(Math.cbrt(+a.plus(c).toFixed()));
+  const cbrtAMinusC = Big(Math.cbrt(+a.minus(c).toFixed()));
+  return cbrtAPlusC.plus(cbrtAMinusC).toFixed();
 }

@@ -10,8 +10,7 @@ export {
   GetTokenBalanceParamsWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
-  Provider,
-} from "../bridge/models/bridge.model";
+} from "../services/bridge/models/bridge.model";
 export {
   Messenger,
   TransferStatusResponse,
@@ -25,6 +24,12 @@ export {
   PoolInfo,
 } from "../tokens-info/tokens-info.model";
 export { RawTransactionBuilder } from "../raw-transaction-builder";
+export {
+  UserBalanceInfo,
+  UserBalanceInfoDTO,
+  LiquidityPoolsParams,
+  LiquidityPoolsParamsWithAmount,
+} from "../services/liquidity-pool/models/pool.model";
 
 export interface AmountsAndTxCost {
   /**

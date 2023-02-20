@@ -30,6 +30,7 @@ export interface TokenInfo {
 
 export interface TokenInfoWithChainDetails extends TokenInfo {
   chainSymbol: string;
+  chainType: string;
   chainId?: string; // A 0x-prefixed hexadecimal string
   chainName: string;
   allbridgeChainId: number;
@@ -45,6 +46,7 @@ export interface PoolInfo {
   vUsdBalance: string;
   totalLpAmount: string;
   accRewardPerShareP: string;
+  p: number;
 }
 
 /**

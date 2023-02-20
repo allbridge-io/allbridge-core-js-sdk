@@ -1,0 +1,118 @@
+[
+  {
+    "scope": "https://api.devnet.solana.com:443",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "method": "getAccountInfo",
+      "jsonrpc": "2.0",
+      "params": [
+        "6J9DNoMFciheb28kRbrtHjuKUgrfcAeq6AbSKNAJZJpE",
+        {
+          "encoding": "base64",
+          "commitment": "confirmed"
+        }
+      ],
+      "id": "33350381-1589-416f-b02d-b6e0d850ea2b"
+    },
+    "status": 200,
+    "response": [
+      "1f8b08000000000004035d50cb6e833010bcf7337c0d24180898483940c8536da534a215a97a3060e7c1c32e36812acabfd7a5ed257bd89dd1ecae34730567c1aa9aa76002cca101345013d114124cae206595245d0f313fbd925a9c58a5f6e010da4368a95d51302543cf352082d6f8a6810b2e1af2739c6189c1e41da03d9741b0ec92a4ddb49b85bbe0619ef3c37a8022ebbc8ff78c7a1be1d4a397405cf8238c3fdb67fcd46dfdff5aaf5810f624dc1f0ff3c52f4ce7fe36ede18cec90efc73d5e1dfa71d76487201c905134bb13fee874aa9c245810c7061f1a201d491b899342d9a0b8104403052e39aba550565dcb326c4303acad48adb208e3284441132f4b19903869def89c95cbdcf39d9589cb2f9cefa2d6762ee596a2ba0fb79273ced22398183715d729533f2885e6188ea94e2976749b64898e4ce4e81ea4896b9171065d086e0fdf2608eac5ab010000"
+    ],
+    "rawHeaders": [
+      "content-type",
+      "application/json; charset=utf-8",
+      "date",
+      "Mon, 20 Feb 2023 12:55:15 GMT",
+      "x-rpc-node",
+      "lon32",
+      "x-ratelimit-tier",
+      "foundation",
+      "x-ratelimit-method-limit",
+      "200",
+      "x-ratelimit-method-remaining",
+      "199",
+      "x-ratelimit-rps-limit",
+      "300",
+      "x-ratelimit-rps-remaining",
+      "299",
+      "x-ratelimit-conn-limit",
+      "200",
+      "x-ratelimit-conn-remaining",
+      "199",
+      "x-ratelimit-connrate-limit",
+      "200",
+      "x-ratelimit-connrate-remaining",
+      "199",
+      "x-ratelimit-pubsub-limit",
+      "50",
+      "x-ratelimit-pubsub-remaining",
+      "50",
+      "transfer-encoding",
+      "chunked",
+      "vary",
+      "Accept-Encoding",
+      "content-encoding",
+      "gzip"
+    ],
+    "responseIsBinary": false
+  },
+  {
+    "scope": "https://api.devnet.solana.com:443",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "method": "getAccountInfo",
+      "jsonrpc": "2.0",
+      "params": [
+        "6jaQgQcBktzTHj6GB4bFCyaDX3HPkB67pEqHGE4nxMiV",
+        {
+          "encoding": "base64",
+          "commitment": "confirmed"
+        }
+      ],
+      "id": "33350381-1589-416f-b02d-b6e0d850ea2b"
+    },
+    "status": 200,
+    "response": [
+      "1f8b08000000000004032d904b4f83401485f7fe8cd9162a030305922ea810142b5ab00f625c0c30580ac320cf3ed2ffee58bdab93dc736fbe732ee0d0b2aaa9136002792a010134a4edcb0e981790b0aa23c79bc475be214d9bb38afbe014a22954b8b72d195f436326411d2aea5500032e7bf27b9ce20e03f3030404ede46ce2f5a11ff9ce5bf21e2dd5ed52d1357ba490a01a3f1b011c3c4f0dbee2a7d1763d7cf0f5556515bb765bbc8621b50eb3e33bf1cb3ddddf4bf4fc3d188e7b9a14c3266f2cc8ce69305a7ff3707e81ab7f3d9f73ba18b74443e05300e44892bec371c9d1325cb6440025a6356bba96e3ab92a2689200d8589186e7b3a3b5ad2ffac8a5dd824471bfad1d46ddc2b0b44719d3132ec2f588b481ae32bdb91556754ecd923d30a52baf204ff90f94ca1994a12c1a338444a4cd34d190b44c24503670ac4049491370bdfb014ee209667f010000"
+    ],
+    "rawHeaders": [
+      "content-type",
+      "application/json; charset=utf-8",
+      "date",
+      "Mon, 20 Feb 2023 12:55:15 GMT",
+      "x-rpc-node",
+      "lon32",
+      "x-ratelimit-tier",
+      "foundation",
+      "x-ratelimit-method-limit",
+      "200",
+      "x-ratelimit-method-remaining",
+      "198",
+      "x-ratelimit-rps-limit",
+      "300",
+      "x-ratelimit-rps-remaining",
+      "298",
+      "x-ratelimit-conn-limit",
+      "200",
+      "x-ratelimit-conn-remaining",
+      "199",
+      "x-ratelimit-connrate-limit",
+      "200",
+      "x-ratelimit-connrate-remaining",
+      "199",
+      "x-ratelimit-pubsub-limit",
+      "50",
+      "x-ratelimit-pubsub-remaining",
+      "50",
+      "transfer-encoding",
+      "chunked",
+      "vary",
+      "Accept-Encoding",
+      "content-encoding",
+      "gzip"
+    ],
+    "responseIsBinary": false
+  }
+]

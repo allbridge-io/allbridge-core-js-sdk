@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { EvmBridge } from "../../../../bridge/evm";
+import { EvmBridge } from "../../../../services/bridge/evm";
 
 export function mockEvmContract(methods: any) {
   const contractMocked = {

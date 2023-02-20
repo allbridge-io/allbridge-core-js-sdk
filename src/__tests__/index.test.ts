@@ -12,7 +12,6 @@ import {
 } from "vitest";
 
 import Web3 from "web3";
-import { formatAddress } from "../bridge/utils";
 import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -28,6 +27,7 @@ import {
   SendParamsWithChainSymbols,
   TokenInfoWithChainDetails,
 } from "../index";
+import { formatAddress } from "../services/bridge/utils";
 
 import { getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";

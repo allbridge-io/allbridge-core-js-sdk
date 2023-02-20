@@ -24,6 +24,7 @@ Provides an easy integration with the Allbridge Core Bridge for DApps in the bro
   - [3.2 Send Tokens](#32-send-tokens)
   - [Full example](#full-example)
 - [Other operations](#other-operations)
+  - [Liquidity Pools operations](#liquidity-pools-operations)
   - [Transaction builder](#transaction-builder)
     - [Approve Transaction](#approve-transaction)
     - [Send Transaction](#send-transaction)
@@ -157,6 +158,12 @@ runExample();
 For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
 
 ## Other operations
+
+### Liquidity pools operations
+
+SDK supports operation with **Liquidity Pools**<br/>
+For more details, see [***Docs***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/core-sdk-liquidity-pools-api.md)<br/>
+For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/liquidity-pool)
 
 ### Transaction builder
 

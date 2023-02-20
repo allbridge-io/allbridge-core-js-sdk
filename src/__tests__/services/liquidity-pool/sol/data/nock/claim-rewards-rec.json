@@ -1,0 +1,176 @@
+[
+  {
+    "scope": "https://api.devnet.solana.com:443",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "method": "getAccountInfo",
+      "jsonrpc": "2.0",
+      "params": [
+        "6J9DNoMFciheb28kRbrtHjuKUgrfcAeq6AbSKNAJZJpE",
+        {
+          "encoding": "base64",
+          "commitment": "confirmed"
+        }
+      ],
+      "id": "33350381-1589-416f-b02d-b6e0d850ea2b"
+    },
+    "status": 200,
+    "response": [
+      "1f8b08000000000004034d90c96ec2301445f7fd0c6f49c0c1199c482c12c2285a8956b40a55174e302464b01b67aa10ff5e1384c4dbbcfb86bbb8e702ce8215258f8003c64308145052516715702e20624545bb5e129e7cd25224ac907fda50d3871a92bf2263f2acd9866d5a08c2ab021a92d5f4663e908a00e71be03daf3c6fd18561bb6ed7736bcefd34e5a7d500efd0791fecd9d15e0bb31cbd7ba2e11b2df86ddfc86bb7751fb5cc4e9edf0f5384b7ab792fbd188edae0bea566e9ba77bd3c3d5c4f7d13242c1ef0b8594d9fb64f723291494222a8a9831f05d08e467545c24cc638924c50056424e7acac848c6a210475a800d616b4942cfc60e763af0e1679e5d120acbff88ce58bd476cde598e47f24fdd8b5bad9e4db232e7bb84535e32c8a8103af125772b8f134108c2c1caa182243d52d64aad832906a49a6c8c6861e9911b8befc034e327463ab010000"
+    ],
+    "rawHeaders": [
+      "content-type",
+      "application/json; charset=utf-8",
+      "date",
+      "Wed, 15 Feb 2023 19:13:45 GMT",
+      "x-rpc-node",
+      "sg69",
+      "x-ratelimit-tier",
+      "foundation",
+      "x-ratelimit-method-limit",
+      "200",
+      "x-ratelimit-method-remaining",
+      "199",
+      "x-ratelimit-rps-limit",
+      "300",
+      "x-ratelimit-rps-remaining",
+      "299",
+      "x-ratelimit-conn-limit",
+      "200",
+      "x-ratelimit-conn-remaining",
+      "199",
+      "x-ratelimit-connrate-limit",
+      "200",
+      "x-ratelimit-connrate-remaining",
+      "199",
+      "x-ratelimit-pubsub-limit",
+      "50",
+      "x-ratelimit-pubsub-remaining",
+      "50",
+      "transfer-encoding",
+      "chunked",
+      "vary",
+      "Accept-Encoding",
+      "content-encoding",
+      "gzip"
+    ],
+    "responseIsBinary": false
+  },
+  {
+    "scope": "https://api.devnet.solana.com:443",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "method": "getAccountInfo",
+      "jsonrpc": "2.0",
+      "params": [
+        "GXL4PEzTPBCkB4fCgFMBL8n6japt2vYcu17HwQ4BsUNJ",
+        {
+          "encoding": "base64",
+          "commitment": "confirmed"
+        }
+      ],
+      "id": "33350381-1589-416f-b02d-b6e0d850ea2b"
+    },
+    "status": 200,
+    "response": [
+      "1f8b08000000000004039d914d6f82401086effd19730665d905859bc58f8a868a1ad1363dcce26a556491e5c3c6f8df4b3df7e49c2699f799649eb9c151c934cf6270c16c19a0412e549914e0de20966921ae8f16b3c34ae4ea20d326475a84b5086db22a91cd9838966377a841ee1a549894e20fde6281e07e82177b7371c5d0f2271b6f560d036646237c6b2ff8fba56d847c6a2f9c68a2fad131d8048359bcdc4cad684abb76bf3e13c1329c387352f9be35dff371dd1ff9780cbaeb0b1d67bdb4f74c85cf40ff338d018e4ad80cbe341057119705f2a4397f8789121a2478ce645e28704d833a66d7d040d6a9c81b874b7912e949ecc39df8f8390475cfe7011f4d66c3b51795afd5ce5928dba4abd0eaf71e3f498b4126e36f708d7b63f9b06d56d85b1177984974dae196ce0cece8c899addb84ed10a98564cbe0fef20bc5b00ddee2010000"
+    ],
+    "rawHeaders": [
+      "content-type",
+      "application/json; charset=utf-8",
+      "date",
+      "Wed, 15 Feb 2023 19:13:44 GMT",
+      "x-rpc-node",
+      "sg69",
+      "x-ratelimit-tier",
+      "foundation",
+      "x-ratelimit-method-limit",
+      "200",
+      "x-ratelimit-method-remaining",
+      "198",
+      "x-ratelimit-rps-limit",
+      "300",
+      "x-ratelimit-rps-remaining",
+      "298",
+      "x-ratelimit-conn-limit",
+      "200",
+      "x-ratelimit-conn-remaining",
+      "199",
+      "x-ratelimit-connrate-limit",
+      "200",
+      "x-ratelimit-connrate-remaining",
+      "199",
+      "x-ratelimit-pubsub-limit",
+      "50",
+      "x-ratelimit-pubsub-remaining",
+      "50",
+      "transfer-encoding",
+      "chunked",
+      "vary",
+      "Accept-Encoding",
+      "content-encoding",
+      "gzip"
+    ],
+    "responseIsBinary": false
+  },
+  {
+    "scope": "https://api.devnet.solana.com:443",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "method": "getAccountInfo",
+      "jsonrpc": "2.0",
+      "params": [
+        "6jaQgQcBktzTHj6GB4bFCyaDX3HPkB67pEqHGE4nxMiV",
+        {
+          "encoding": "base64",
+          "commitment": "confirmed"
+        }
+      ],
+      "id": "33350381-1589-416f-b02d-b6e0d850ea2b"
+    },
+    "status": 200,
+    "response": [
+      "1f8b08000000000004032d904b6f82401485f7fd19b3152c23c333718181d05243aba8489a2e06182ac23094b71aff7ba7a67775927beecd77ce0d9c5b563575024cb0984b40000d69fbb203e60d24aceac8f490b8ce0fa4697356711f9c43348732f7b625e36b682886aac9927c17c080cb9efc1da7b8c3c0fc045b828e8b6ce6f5811ff9ce47b28bd64ab89675d51e2924a8c66fc6160e9ea76cbfe3d7d1763d7cf6f54d6515c7362cde83805a676dda11bf3cd1d3b344af3f83e1b89759311cf2c682ec3a4cd6ffacd2f0eafcebe592d3c5b8252a025f02201349fa0ec72547cb70d912019498d6ace95a8eaf48b2ac4a026063451a9ecf8ef6b6beea2397762b12c57d583b8cba8561a92f0b4c2fb808f6235207bac9f4e65158d539354b4ec094eebc823ce53f34122b5042583490aa8ac88048d4919189584f333d437a2ca51ab83ffd02c92141667f010000"
+    ],
+    "rawHeaders": [
+      "content-type",
+      "application/json; charset=utf-8",
+      "date",
+      "Wed, 15 Feb 2023 19:13:46 GMT",
+      "x-rpc-node",
+      "sg69",
+      "x-ratelimit-tier",
+      "foundation",
+      "x-ratelimit-method-limit",
+      "200",
+      "x-ratelimit-method-remaining",
+      "197",
+      "x-ratelimit-rps-limit",
+      "300",
+      "x-ratelimit-rps-remaining",
+      "297",
+      "x-ratelimit-conn-limit",
+      "200",
+      "x-ratelimit-conn-remaining",
+      "199",
+      "x-ratelimit-connrate-limit",
+      "200",
+      "x-ratelimit-connrate-remaining",
+      "199",
+      "x-ratelimit-pubsub-limit",
+      "50",
+      "x-ratelimit-pubsub-remaining",
+      "50",
+      "transfer-encoding",
+      "chunked",
+      "vary",
+      "Accept-Encoding",
+      "content-encoding",
+      "gzip"
+    ],
+    "responseIsBinary": false
+  }
+]
