@@ -1,5 +1,13 @@
 import { Big } from "big.js";
-import { BridgeService } from "./bridge";
+import { ChainSymbol } from "./chains";
+import { AllbridgeCoreClientImpl } from "./client/core-api";
+import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
+import { TransferStatusResponse } from "./client/core-api/core-api.model";
+import { production } from "./configs";
+import { InsufficientPoolLiquidity } from "./exceptions";
+import { AmountsAndTxCost, Messenger, PoolInfo } from "./models";
+import { RawTransactionBuilder } from "./raw-transaction-builder";
+import { BridgeService } from "./services/bridge";
 import {
   ApproveData,
   CheckAllowanceParamsWithTokenAddress,
@@ -8,27 +16,22 @@ import {
   GetAllowanceParamsWithTokenInfo,
   GetTokenBalanceParamsWithTokenAddress,
   GetTokenBalanceParamsWithTokenInfo,
-  Provider,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
-} from "./bridge/models";
-import { SolanaBridgeParams } from "./bridge/sol";
-import { ChainSymbol } from "./chains";
-import { AllbridgeCoreClientImpl } from "./client/core-api";
-import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
-import { TransferStatusResponse } from "./client/core-api/core-api.model";
-import { production } from "./configs";
-import { InsufficientPoolLiquidity } from "./exceptions";
-import { AmountsAndTxCost, Messenger } from "./models";
-import { RawTransactionBuilder } from "./raw-transaction-builder";
+} from "./services/bridge/models";
+import { SolanaBridgeParams } from "./services/bridge/sol";
+import { LiquidityPoolService } from "./services/liquidity-pool";
+import { UserBalanceInfo } from "./services/liquidity-pool/models";
+import { SolanaPoolParams } from "./services/liquidity-pool/sol";
+import { Provider } from "./services/models";
 import {
   ChainDetailsMap,
-  MessengerTransferTime,
   TokenInfoWithChainDetails,
   TokensInfo,
 } from "./tokens-info";
 import {
+  aprInPercents,
   convertFloatAmountToInt,
   convertIntAmountToFloat,
   fromSystemPrecision,
@@ -51,6 +54,8 @@ export {
 export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
   solanaRpcUrl: string;
+  polygonApiUrl: string;
+
   wormholeMessengerProgramId: string;
 }
 
@@ -63,6 +68,7 @@ export class AllbridgeCoreSdk {
    * @internal
    */
   private bridgeService: BridgeService;
+  private liquidityPoolService: LiquidityPoolService;
 
   readonly params: AllbridgeCoreSdkOptions;
 
@@ -75,15 +81,27 @@ export class AllbridgeCoreSdk {
   constructor(params: AllbridgeCoreSdkOptions = production) {
     const apiClient = new AllbridgeCoreClientImpl({
       apiUrl: params.apiUrl,
+      polygonApiUrl: params.polygonApiUrl,
     });
-    const solParams: SolanaBridgeParams = {
+    const solBridgeParams: SolanaBridgeParams = {
       solanaRpcUrl: params.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
     };
     this.api = new AllbridgeCachingCoreClient(apiClient);
-    const bridgeService = new BridgeService(this.api, solParams);
+    const bridgeService = new BridgeService(this.api, solBridgeParams);
     this.bridgeService = bridgeService;
-    this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService);
+    const solPoolParams: SolanaPoolParams = {
+      solanaRpcUrl: params.solanaRpcUrl,
+    };
+    const liquidityPoolService = new LiquidityPoolService(
+      this.api,
+      solPoolParams
+    );
+    this.liquidityPoolService = liquidityPoolService;
+    this.rawTransactionBuilder = new RawTransactionBuilder(
+      bridgeService,
+      liquidityPoolService
+    );
     this.params = params;
   }
 
@@ -150,6 +168,9 @@ export class AllbridgeCoreSdk {
 
   /**
    * Approve tokens usage by another address on chains
+   * <p>
+   * For ETH/USDT: due to specificity of the USDT contract:<br/>
+   * If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
    * @param provider
    * @param approveData
    */
@@ -425,6 +446,7 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): number | null {
     return (
+      /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
       sourceChainToken.transferTime?.[
         destinationChainToken.chainSymbol as ChainSymbol
       ]?.[messenger] ?? null
@@ -436,5 +458,87 @@ export class AllbridgeCoreSdk {
    */
   async refreshPoolInfo(): Promise<void> {
     return this.api.refreshPoolInfo();
+  }
+
+  /**
+   * Get User Balance Info on Liquidity pool
+   * @param accountAddress
+   * @param token
+   * @param provider
+   * @returns UserBalanceInfo
+   */
+  async getLiquidityBalanceInfo(
+    accountAddress: string,
+    token: TokenInfoWithChainDetails,
+    provider?: Provider
+  ): Promise<UserBalanceInfo> {
+    return this.liquidityPoolService.getUserBalanceInfo(
+      accountAddress,
+      token,
+      provider
+    );
+  }
+
+  /**
+   * Calculates the amount of LP tokens that will be deposited
+   * @param amount The float amount of tokens that will be sent
+   * @param token
+   * @param provider
+   * @returns amount
+   */
+  async getLPAmountOnDeposit(
+    amount: string,
+    token: TokenInfoWithChainDetails,
+    provider?: Provider
+  ): Promise<string> {
+    return this.liquidityPoolService.getAmountToBeDeposited(
+      amount,
+      token,
+      provider
+    );
+  }
+
+  /**
+   * Calculates the amount of tokens will be withdrawn
+   * @param amount The float amount of tokens that will be sent
+   * @param accountAddress
+   * @param token
+   * @param provider
+   * @returns amount
+   */
+  async getAmountToBeWithdrawn(
+    amount: string,
+    accountAddress: string,
+    token: TokenInfoWithChainDetails,
+    provider?: Provider
+  ): Promise<string> {
+    return this.liquidityPoolService.getAmountToBeWithdrawn(
+      amount,
+      accountAddress,
+      token,
+      provider
+    );
+  }
+
+  /**
+   * Convert APR to percentage view
+   * @param apr
+   * @returns aprPercentageView
+   */
+  aprInPercents(apr: number): string {
+    return aprInPercents(apr);
+  }
+
+  /**
+   * Gets information about the pool by token
+   * @param token
+   * @param provider
+   * @returns poolInfo
+   */
+  getPoolInfo(
+    token: TokenInfoWithChainDetails,
+    provider?: Provider
+  ): Promise<PoolInfo> {
+    return this.liquidityPoolService.getPoolInfo(token, provider);
   }
 }

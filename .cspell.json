@@ -6,6 +6,8 @@
     "esbuild",
     "octocat",
     "rmrf",
+    "Yhax",
+    "shrn",
     "socio",
     "allbridge",
     "Solana",
@@ -26,6 +28,7 @@
     "yarn.lock",
     "tsconfig.json",
     "node_modules/**",
-    "src/configs/"
+    "src/configs/",
+    "src/__tests__/services/liquidity-pool/sol/data/"
   ]
 }

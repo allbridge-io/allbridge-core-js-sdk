@@ -1,6 +1,6 @@
 import { vi } from "vitest";
-import { BridgeService } from "../../../bridge";
-import { Bridge } from "../../../bridge/models";
+import { BridgeService } from "../../../services/bridge";
+import { Bridge } from "../../../services/bridge/models";
 
 export const mockedTokenBalance = "1234567890";
 

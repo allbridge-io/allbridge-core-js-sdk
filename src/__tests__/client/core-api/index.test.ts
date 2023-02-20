@@ -16,6 +16,7 @@ import {
 import poolInfoMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
+import polygonApiUrlResponse from "../../mock/core-api/polygon-api.json";
 import poolInfoResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
@@ -27,7 +28,11 @@ const expectedTransferStatus =
   transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
-  const api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost" });
+  const POLYGON_API_URL = "http://localhost/pol";
+  const api = new AllbridgeCoreClientImpl({
+    apiUrl: "http://localhost",
+    polygonApiUrl: POLYGON_API_URL,
+  });
 
   describe("given /token-info endpoint", () => {
     let scope: nock.Scope;
@@ -108,6 +113,21 @@ describe("AllbridgeCoreClient", () => {
       const actual = await api.getPoolInfoMap([poolKey]);
       expect(actual).toEqual(expectedPoolInfoMap);
 
+      scope.done();
+    });
+  });
+
+  describe("given polygonApiUrl endpoint", () => {
+    let scope: nock.Scope;
+
+    beforeEach(() => {
+      scope = nock(POLYGON_API_URL).get(``).reply(200, polygonApiUrlResponse);
+    });
+
+    it("☀️ getGasPriceForPolygon() returns GasPriceForPolygon", async () => {
+      const actual = await api.getGasPriceForPolygon();
+
+      expect(actual).toEqual(1433333332);
       scope.done();
     });
   });

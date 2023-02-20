@@ -1,0 +1,30 @@
+{
+  "result": {
+    "result": true
+  },
+  "transaction": {
+    "visible": false,
+    "txID": "68fb45f9453a4edee5211233bab57eb7dfbfc395623a55d401484a9ef610f1b5",
+    "raw_data": {
+      "contract": [
+        {
+          "parameter": {
+            "value": {
+              "data": "372500ab",
+              "owner_address": "41b83811067ab3a275ece28d3f8ec6875105ef9bae",
+              "contract_address": "41bb58c8a419276287518cfb4c4c2347e25fa76dad"
+            },
+            "type_url": "type.googleapis.com/protocol.TriggerSmartContract"
+          },
+          "type": "TriggerSmartContract"
+        }
+      ],
+      "ref_block_bytes": "de64",
+      "ref_block_hash": "2a5656fc7c4f7093",
+      "expiration": 1676484519000,
+      "fee_limit": 150000000,
+      "timestamp": 1676484465492
+    },
+    "raw_data_hex": "0a02de6422082a5656fc7c4f709340d8c88eb2e5305a6d081f12690a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412340a1541b83811067ab3a275ece28d3f8ec6875105ef9bae121541bb58c8a419276287518cfb4c4c2347e25fa76dad2204372500ab70d4a68bb2e530900180a3c347"
+  }
+}

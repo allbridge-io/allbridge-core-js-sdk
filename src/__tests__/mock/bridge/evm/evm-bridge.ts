@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { EvmBridge } from "../../../../bridge/evm";
+import { EvmBridge } from "../../../../services/bridge/evm";
 
 export function mockEvmContract(methods: any) {
   const contractMocked = {
@@ -21,4 +21,13 @@ export function mockEvmSendRawTransaction(transactionHash: string) {
     return { txId: transactionHash };
   });
   return methodSendRawTransaction;
+}
+
+export function mockGetAllowanceByTokenAddress(allowance: string) {
+  // prettier-ignore
+  return vi.spyOn(EvmBridge.prototype, "getAllowanceByTokenAddress")
+    /* eslint-disable-next-line  @typescript-eslint/require-await */
+    .mockImplementation(async () => {
+      return allowance;
+    });
 }

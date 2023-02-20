@@ -1,6 +1,8 @@
 import axios, { Axios } from "axios";
+import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
+import { convertAmountPrecision } from "../../utils/calculation";
 import {
   mapChainDetailsResponseToChainDetailsMap,
   mapChainDetailsResponseToPoolInfoMap,
@@ -16,6 +18,7 @@ import {
 
 export interface AllbridgeCoreClientParams {
   apiUrl: string;
+  polygonApiUrl: string;
 }
 
 export interface AllbridgeCoreClient {
@@ -26,6 +29,7 @@ export interface AllbridgeCoreClient {
     txId: string
   ): Promise<TransferStatusResponse>;
 
+  getGasPriceForPolygon(): Promise<number>;
   getReceiveTransactionCost(
     args: ReceiveTransactionCostRequest
   ): Promise<string>;
@@ -33,6 +37,7 @@ export interface AllbridgeCoreClient {
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   private api: Axios;
+  private readonly polygonApiUrl: string;
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
@@ -41,6 +46,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
         Accept: "application/json",
       },
     });
+    this.polygonApiUrl = params.polygonApiUrl;
   }
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
@@ -67,6 +73,19 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
       `/chain/${chainSymbol}/${txId}`
     );
     return data;
+  }
+
+  async getGasPriceForPolygon(): Promise<number> {
+    const response = await axios.get(this.polygonApiUrl);
+    return +Big(
+      convertAmountPrecision(
+        response.data.standard.maxPriorityFee.toString(),
+        0,
+        9
+      )
+    )
+      .round(0)
+      .toFixed();
   }
 
   async getReceiveTransactionCost(

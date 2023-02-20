@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
 
 import { vi } from "vitest";
+import { ChainType } from "../../../../chains";
+import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
   ApproveData,
   Bridge,
   GetAllowanceParamsDto,
   GetTokenBalanceParamsWithTokenAddress,
-  RawTransaction,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
-} from "../../../../bridge/models";
-import { SolanaBridgeParams } from "../../../../bridge/sol";
-import { ChainType } from "../../../../chains";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+} from "../../../../services/bridge/models";
+import { SolanaBridgeParams } from "../../../../services/bridge/sol";
+import { RawTransaction } from "../../../../services/models";
 
 export function createTestBridge(): Bridge {
   // @ts-expect-error
