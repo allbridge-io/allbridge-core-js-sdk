@@ -1,7 +1,8 @@
 import { Big } from "big.js";
 import { describe, expect, test } from "vitest";
-import { TokenInfo } from "../../tokens-info";
+import { TokenInfo } from "../../../tokens-info";
 import {
+  aprInPercents,
   convertFloatAmountToInt,
   convertIntAmountToFloat,
   fromSystemPrecision,
@@ -9,7 +10,7 @@ import {
   swapFromVUsd,
   swapToVUsd,
   toSystemPrecision,
-} from "../../utils/calculation";
+} from "../../../utils/calculation";
 
 describe("Calculation", () => {
   describe("Convert float amount to int", () => {
@@ -122,6 +123,7 @@ describe("Calculation", () => {
         vUsdBalance: "1000000000000",
         totalLpAmount: "",
         accRewardPerShareP: "",
+        p: 0,
       };
 
       test.each([
@@ -156,6 +158,7 @@ describe("Calculation", () => {
         vUsdBalance: "2000000000000",
         totalLpAmount: "",
         accRewardPerShareP: "",
+        p: 0,
       };
 
       test("☀️ swapToVUsd near-zero amount", () => {
@@ -182,6 +185,7 @@ describe("Calculation", () => {
         vUsdBalance: "100000000001",
         totalLpAmount: "",
         accRewardPerShareP: "",
+        p: 0,
       };
 
       test.each([
@@ -216,6 +220,7 @@ describe("Calculation", () => {
         vUsdBalance: "99833728",
         totalLpAmount: "",
         accRewardPerShareP: "",
+        p: 0,
       };
 
       const destinationToken: TokenInfo = {
@@ -230,6 +235,7 @@ describe("Calculation", () => {
         vUsdBalance: "100261169",
         totalLpAmount: "",
         accRewardPerShareP: "",
+        p: 0,
       };
 
       test("☀️ swapToVUsd 10 tokens", () => {
@@ -243,6 +249,16 @@ describe("Calculation", () => {
           swapFromVUsd(9969, destinationToken, destinationPoolInfo)
         ).toEqual(Big(9938096000000000000));
       });
+    });
+  });
+
+  describe("aprInPercents", () => {
+    test("convert apr to percent view", () => {
+      expect(aprInPercents(0.1256)).toEqual("12.56%");
+    });
+    test("invalid apr to percent view", () => {
+      expect(aprInPercents(0)).toEqual("N/A");
+      expect(aprInPercents(-1)).toEqual("N/A");
     });
   });
 });

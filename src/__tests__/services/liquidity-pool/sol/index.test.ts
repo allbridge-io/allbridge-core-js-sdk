@@ -81,6 +81,21 @@ describe("SolanaPool", () => {
       CLAIM_REWARDS_RAW_TX
     );
   });
+
+  test("getUserBalanceInfo", async () => {
+    nockRequests("user-balance-info");
+
+    const userBalanceInfo = await solanaPool.getUserBalanceInfo(
+      ACCOUNT_ADDRESS,
+      TOKEN_INFO
+    );
+
+    expect(userBalanceInfo).toEqual({
+      lpAmount: "7285",
+      rewardDebt: "5518259",
+    });
+    expect(userBalanceInfo.userLiquidity).toEqual(`7.285`);
+  });
 });
 
 function nockRequests(recName: string) {

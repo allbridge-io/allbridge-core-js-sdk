@@ -1,6 +1,15 @@
+import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import TronWeb from "tronweb";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { TronPool } from "../../../../services/liquidity-pool/trx";
 import { TokenInfoWithChainDetails } from "../../../../tokens-info";
@@ -9,10 +18,11 @@ import triggerSmartContractClaimRewardsResponse from "../../../mock/tron-web/tri
 import triggerSmartContractDepositResponse from "../../../mock/tron-web/trigger-smart-contract-deposit.json";
 import triggerSmartContractWithdrawResponse from "../../../mock/tron-web/trigger-smart-contract-withdraw.json";
 
-const ACCOUNT_ADDRESS = "0x5777777cf9881427F1dB299B90Fd63ef805dd10d";
-const POOL_ADDRESS = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
+const ACCOUNT_ADDRESS = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
+const POOL_ADDRESS = "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd";
 // @ts-expect-error enough
 const TOKEN_INFO: TokenInfoWithChainDetails = { poolAddress: POOL_ADDRESS };
+const LOCAL_NODE_URL = "https://local-test.com";
 
 describe("TronPool", () => {
   let api: any;
@@ -26,6 +36,15 @@ describe("TronPool", () => {
     tronWebMock as typeof TronWeb,
     api as AllbridgeCoreClient
   );
+
+  beforeAll(() => {
+    disableNetConnect();
+  });
+
+  afterAll(() => {
+    cleanAll();
+    abortPendingRequests();
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -136,4 +155,31 @@ describe("TronPool", () => {
       ACCOUNT_ADDRESS
     );
   });
+
+  describe("provide and nock full rec mock TronWeb", () => {
+    test("getUserBalanceInfo", async () => {
+      nockRequests("user-balance-info");
+
+      const tronWeb = new TronWeb({ fullHost: LOCAL_NODE_URL });
+
+      const tronPool = new TronPool(tronWeb, api as AllbridgeCoreClient);
+
+      const userBalanceInfo = await tronPool.getUserBalanceInfo(
+        ACCOUNT_ADDRESS,
+        TOKEN_INFO
+      );
+
+      expect(userBalanceInfo).toEqual({
+        lpAmount: "1790",
+        rewardDebt: "6562954865251962",
+      });
+      expect(userBalanceInfo.userLiquidity).toEqual(`1.79`);
+    });
+  });
 });
+
+function nockRequests(recName: string) {
+  load(
+    `./src/__tests__/services/liquidity-pool/trx/data/nock/${recName}-rec.json`
+  );
+}

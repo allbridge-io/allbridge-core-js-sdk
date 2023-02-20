@@ -23,3 +23,13 @@ export function mockPoolInfoEndpoint(
   }
   scope.post("/pool-info").reply(201, result).persist();
 }
+
+export function rpcReply(
+  result: any
+): (url: string, body: any) => Record<string, any> {
+  return (url, body: any) => ({
+    jsonrpc: "2.0",
+    id: body.id,
+    result: result,
+  });
+}
