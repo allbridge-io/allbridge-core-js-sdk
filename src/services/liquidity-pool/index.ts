@@ -108,7 +108,7 @@ export class LiquidityPoolService {
   ): Promise<RawTransaction> {
     params.amount = convertFloatAmountToInt(
       params.amount,
-      params.token.decimals
+      SYSTEM_PRECISION
     ).toString();
     return this.getPool(provider).buildRawTransactionWithdraw(params);
   }
