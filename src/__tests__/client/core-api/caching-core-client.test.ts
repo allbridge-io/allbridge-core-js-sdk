@@ -46,14 +46,6 @@ describe("AllbridgeCachingCoreClient", () => {
       expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledOnce();
     });
 
-    test("☀ getChainDetailsMap should cache ChainDetailsMap", async () => {
-      await client.getChainDetailsMap();
-      const actual = await client.getChainDetailsMap();
-      expect(actual).toEqual(expectedChainDetailsMap);
-
-      expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledOnce();
-    });
-
     describe("Given PoolInfoMap", () => {
       const poolKeyObject = {
         chainSymbol: ChainSymbol.GRL,
@@ -82,25 +74,8 @@ describe("AllbridgeCachingCoreClient", () => {
 
       test("☀ refreshPoolInfo should call getChainDetailsMapAndPoolInfoMap", async () => {
         await client.refreshPoolInfo();
-        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(0);
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledOnce();
         expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledOnce();
-      });
-
-      describe("Given ChainDetailsMap already loaded", () => {
-        beforeEach(async () => {
-          await client.getChainDetailsMap();
-        });
-
-        test("☀ refreshPoolInfo should call getPoolInfoMap", async () => {
-          expect(
-            apiMock.getChainDetailsMapAndPoolInfoMap
-          ).toHaveBeenCalledOnce();
-          await client.refreshPoolInfo();
-          expect(apiMock.getPoolInfoMap).toHaveBeenCalledOnce();
-          expect(
-            apiMock.getChainDetailsMapAndPoolInfoMap
-          ).toHaveBeenCalledOnce();
-        });
       });
     });
   });

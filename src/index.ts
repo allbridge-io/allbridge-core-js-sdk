@@ -141,7 +141,7 @@ export class AllbridgeCoreSdk {
   /**
    * Get amount of tokens approved to be sent by the bridge
    * @param provider
-   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @param params See {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
    * @returns the amount of approved tokens
    */
   async getAllowance(
@@ -154,7 +154,7 @@ export class AllbridgeCoreSdk {
   /**
    * Check if the amount of approved tokens is enough to make a transfer
    * @param provider
-   * @param params See {@link GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenAddress} and {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
+   * @param params See {@link GetAllowanceParamsWithTokenInfo | GetAllowanceParamsWithTokenInfo}
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
   async checkAllowance(

@@ -37,15 +37,14 @@ async function runExample() {
   if (
     //check if sending tokens already approved
     !(await sdk.checkAllowance(web3, {
-      chainSymbol: ChainSymbol.BSC,
-      tokenAddress: sourceTokenInfo.tokenAddress,
+      tokenInfo: sourceTokenInfo,
       owner: fromAddress,
       amount: "1.01",
     }))
   ) {
     // authorize a transfer of tokens from sender's address
     await sdk.approve(web3, {
-      tokenAddress: sourceTokenInfo.tokenAddress,
+      tokenInfo: sourceTokenInfo,
       owner: fromAddress,
       spender: sourceTokenInfo.poolAddress,
     });
