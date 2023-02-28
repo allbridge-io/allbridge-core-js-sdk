@@ -24,6 +24,9 @@ export interface ApproveData {
   amount?: string | number | Big;
 }
 
+/**
+ * @deprecated Please use {@link GetTokenBalanceParamsWithTokenInfo} instead
+ */
 export interface GetTokenBalanceParamsWithTokenAddress {
   /**
    *  The address for which we will find out the token balance
@@ -74,6 +77,9 @@ export interface BaseSendParams {
   fee?: string;
 }
 
+/**
+ * @deprecated Please use {@link SendParamsWithTokenInfos} instead
+ */
 export interface SendParamsWithChainSymbols extends BaseSendParams {
   /**
    * The chain symbol to transfer tokens from.
@@ -104,6 +110,9 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
+/**
+ * @deprecated Please use {@link CheckAllowanceParamsWithTokenInfo} instead
+ */
 export interface CheckAllowanceParamsWithTokenAddress
   extends GetAllowanceParamsWithTokenAddress {
   /**
@@ -120,6 +129,9 @@ export interface CheckAllowanceParamsWithTokenInfo
   amount: string | number | Big;
 }
 
+/**
+ * @deprecated Please use {@link GetAllowanceParamsWithTokenInfo} instead
+ */
 export interface GetAllowanceParamsWithTokenAddress {
   chainSymbol: ChainSymbol;
   tokenAddress: string;

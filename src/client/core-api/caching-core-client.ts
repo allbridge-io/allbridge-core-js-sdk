@@ -18,7 +18,6 @@ import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
 export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   private readonly client;
-  private chainDetailsMap?: ChainDetailsMap;
   private readonly poolInfoCache;
 
   constructor(client: AllbridgeCoreClientImpl) {
@@ -27,12 +26,9 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   }
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
-    if (this.chainDetailsMap === undefined) {
-      const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-      this.chainDetailsMap = result.chainDetailsMap;
-      this.poolInfoCache.putAll(result.poolInfoMap);
-    }
-    return this.chainDetailsMap;
+    const result = await this.client.getChainDetailsMapAndPoolInfoMap();
+    this.poolInfoCache.putAll(result.poolInfoMap);
+    return result.chainDetailsMap;
   }
 
   getTransferStatus(
@@ -65,16 +61,10 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   }
 
   async refreshPoolInfo(): Promise<void> {
-    let poolInfoMap;
-    if (this.chainDetailsMap === undefined) {
-      const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-      this.chainDetailsMap = result.chainDetailsMap;
-      poolInfoMap = result.poolInfoMap;
-    } else {
-      poolInfoMap = await this.client.getPoolInfoMap(
-        mapChainDetailsMapToPoolKeyObjects(this.chainDetailsMap)
-      );
-    }
+    const result = await this.client.getChainDetailsMapAndPoolInfoMap();
+    const poolInfoMap = await this.client.getPoolInfoMap(
+      mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap)
+    );
     this.poolInfoCache.putAll(poolInfoMap);
   }
 }
