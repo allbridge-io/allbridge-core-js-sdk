@@ -20,8 +20,7 @@ import abi from "./abi/Abi.json";
 import { Abi as BridgeContract } from "./types/Abi";
 import { BaseContract } from "./types/types";
 
-export const MAX_AMOUNT =
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 const USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7";
 
@@ -40,18 +39,12 @@ export class EvmBridge extends Bridge {
     return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
   }
 
-  getAllowanceByTokenAddress(
-    tokenAddress: string,
-    owner: string,
-    spender: string
-  ): Promise<string> {
+  getAllowanceByTokenAddress(tokenAddress: string, owner: string, spender: string): Promise<string> {
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
     return tokenContract.methods.allowance(owner, spender).call();
   }
 
-  async getTokenBalance(
-    params: GetTokenBalanceParamsWithTokenAddress
-  ): Promise<string> {
+  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
     return await this.getContract(erc20abi as AbiItem[], params.tokenAddress)
       .methods.balanceOf(params.account)
       .call();
@@ -65,17 +58,11 @@ export class EvmBridge extends Bridge {
   async buildRawTransactionSend(
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<RawTransaction> {
-    const txSendParams = await prepareTxSendParams(
-      this.chainType,
-      params,
-      this.api
-    );
+    const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return await this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(
-    params: TxSendParams
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(params: TxSendParams): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -124,11 +111,7 @@ export class EvmBridge extends Bridge {
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
     if (this.isUsdt(params.tokenAddress)) {
-      const allowance = await this.getAllowanceByTokenAddress(
-        params.tokenAddress,
-        params.owner,
-        params.spender
-      );
+      const allowance = await this.getAllowanceByTokenAddress(params.tokenAddress, params.owner, params.spender);
       if (allowance !== "0") {
         const rawTransaction = await this.buildRawTransactionApprove({
           ...params,
@@ -145,9 +128,7 @@ export class EvmBridge extends Bridge {
     return tokenAddress.toLowerCase() === USDT_TOKEN_ADDRESS;
   }
 
-  async buildRawTransactionApprove(
-    params: ApproveParamsDto
-  ): Promise<RawTransaction> {
+  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
     const { tokenAddress, spender, owner, amount } = params;
     const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
 
@@ -192,10 +173,7 @@ export class EvmBridge extends Bridge {
     return { txId: transactionHash };
   }
 
-  private getContract<T extends BaseContract>(
-    abiItem: AbiItem[],
-    contractAddress: string
-  ): T {
+  private getContract<T extends BaseContract>(abiItem: AbiItem[], contractAddress: string): T {
     return new this.web3.eth.Contract(abiItem, contractAddress) as any;
   }
 

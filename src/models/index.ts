@@ -11,11 +11,7 @@ export {
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "../services/bridge/models/bridge.model";
-export {
-  Messenger,
-  TransferStatusResponse,
-  BridgeTransaction,
-} from "../client/core-api/core-api.model";
+export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
 export {
   TokenInfoWithChainDetails,

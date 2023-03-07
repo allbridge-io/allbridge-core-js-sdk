@@ -26,11 +26,7 @@ import { LiquidityPoolService } from "./services/liquidity-pool";
 import { UserBalanceInfo } from "./services/liquidity-pool/models";
 import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
-import {
-  ChainDetailsMap,
-  TokenInfoWithChainDetails,
-  TokensInfo,
-} from "./tokens-info";
+import { ChainDetailsMap, TokenInfoWithChainDetails, TokensInfo } from "./tokens-info";
 import {
   aprInPercents,
   convertFloatAmountToInt,
@@ -46,11 +42,7 @@ import {
 
 export * from "./configs/production";
 export * from "./models";
-export {
-  TokensInfo,
-  ChainDetailsMap,
-  ChainDetailsWithTokens,
-} from "./tokens-info";
+export { TokensInfo, ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
 
 export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
@@ -94,15 +86,9 @@ export class AllbridgeCoreSdk {
     const solPoolParams: SolanaPoolParams = {
       solanaRpcUrl: params.solanaRpcUrl,
     };
-    const liquidityPoolService = new LiquidityPoolService(
-      this.api,
-      solPoolParams
-    );
+    const liquidityPoolService = new LiquidityPoolService(this.api, solPoolParams);
     this.liquidityPoolService = liquidityPoolService;
-    this.rawTransactionBuilder = new RawTransactionBuilder(
-      bridgeService,
-      liquidityPoolService
-    );
+    this.rawTransactionBuilder = new RawTransactionBuilder(bridgeService, liquidityPoolService);
     this.params = params;
   }
 
@@ -131,9 +117,7 @@ export class AllbridgeCoreSdk {
   /**
    * Returns a list of supported {@link TokenInfoWithChainDetails | tokens} on the selected chain.
    */
-  async tokensByChain(
-    chainSymbol: ChainSymbol
-  ): Promise<TokenInfoWithChainDetails[]> {
+  async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenInfoWithChainDetails[]> {
     const map = await this.api.getChainDetailsMap();
     return map[chainSymbol].tokens;
   }
@@ -159,9 +143,7 @@ export class AllbridgeCoreSdk {
    */
   async checkAllowance(
     provider: Provider,
-    params:
-      | CheckAllowanceParamsWithTokenAddress
-      | CheckAllowanceParamsWithTokenInfo
+    params: CheckAllowanceParamsWithTokenAddress | CheckAllowanceParamsWithTokenInfo
   ): Promise<boolean> {
     return await this.bridgeService.checkAllowance(provider, params);
   }
@@ -174,10 +156,7 @@ export class AllbridgeCoreSdk {
    * @param provider
    * @param approveData
    */
-  async approve(
-    provider: Provider,
-    approveData: ApproveData | ApproveDataWithTokenInfo
-  ): Promise<TransactionResponse> {
+  async approve(provider: Provider, approveData: ApproveData | ApproveDataWithTokenInfo): Promise<TransactionResponse> {
     return await this.bridgeService.approve(provider, approveData);
   }
 
@@ -188,9 +167,7 @@ export class AllbridgeCoreSdk {
    * @returns Token balance
    */
   async getTokenBalance(
-    params:
-      | GetTokenBalanceParamsWithTokenAddress
-      | GetTokenBalanceParamsWithTokenInfo,
+    params: GetTokenBalanceParamsWithTokenAddress | GetTokenBalanceParamsWithTokenInfo,
     provider?: Provider
   ): Promise<string> {
     return this.bridgeService.getTokenBalance(params, provider);
@@ -213,10 +190,7 @@ export class AllbridgeCoreSdk {
    * @param chainSymbol
    * @param txId
    */
-  async getTransferStatus(
-    chainSymbol: ChainSymbol,
-    txId: string
-  ): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.api.getTransferStatus(chainSymbol, txId);
   }
 
@@ -230,10 +204,7 @@ export class AllbridgeCoreSdk {
     amountFloat: number | string | Big,
     sourceChainToken: TokenInfoWithChainDetails
   ): Promise<number> {
-    const amountInt = convertFloatAmountToInt(
-      amountFloat,
-      sourceChainToken.decimals
-    );
+    const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
     }
@@ -242,10 +213,7 @@ export class AllbridgeCoreSdk {
       sourceChainToken,
       await getPoolInfoByTokenInfo(this.api, sourceChainToken)
     );
-    const vUsdInSourcePrecision = fromSystemPrecision(
-      vUsdInSystemPrecision,
-      sourceChainToken.decimals
-    );
+    const vUsdInSourcePrecision = fromSystemPrecision(vUsdInSystemPrecision, sourceChainToken.decimals);
     return getFeePercent(amountInt, vUsdInSourcePrecision);
   }
 
@@ -262,10 +230,7 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails
   ): Promise<number> {
-    const amountInt = convertFloatAmountToInt(
-      amountFloat,
-      sourceChainToken.decimals
-    );
+    const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
     }
@@ -279,10 +244,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       await getPoolInfoByTokenInfo(this.api, destinationChainToken)
     );
-    const vUsdInDestinationPrecision = fromSystemPrecision(
-      vUsdInSystemPrecision,
-      destinationChainToken.decimals
-    );
+    const vUsdInDestinationPrecision = fromSystemPrecision(vUsdInSystemPrecision, destinationChainToken.decimals);
     return getFeePercent(vUsdInDestinationPrecision, usd);
   }
 
@@ -307,11 +269,7 @@ export class AllbridgeCoreSdk {
         sourceChainToken,
         destinationChainToken
       ),
-      txCost: await this.getTxCost(
-        sourceChainToken,
-        destinationChainToken,
-        messenger
-      ),
+      txCost: await this.getTxCost(sourceChainToken, destinationChainToken, messenger),
     };
   }
 
@@ -330,17 +288,9 @@ export class AllbridgeCoreSdk {
     messenger: Messenger
   ): Promise<AmountsAndTxCost> {
     return {
-      amountToSendFloat: await this.getAmountToSend(
-        amountToBeReceivedFloat,
-        sourceChainToken,
-        destinationChainToken
-      ),
+      amountToSendFloat: await this.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken),
       amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
-      txCost: await this.getTxCost(
-        sourceChainToken,
-        destinationChainToken,
-        messenger
-      ),
+      txCost: await this.getTxCost(sourceChainToken, destinationChainToken, messenger),
     };
   }
 
@@ -355,16 +305,9 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails
   ): Promise<string> {
-    const amountToSend = convertFloatAmountToInt(
-      amountToSendFloat,
-      sourceChainToken.decimals
-    );
+    const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
 
-    const vUsd = swapToVUsd(
-      amountToSend,
-      sourceChainToken,
-      await getPoolInfoByTokenInfo(this.api, sourceChainToken)
-    );
+    const vUsd = swapToVUsd(amountToSend, sourceChainToken, await getPoolInfoByTokenInfo(this.api, sourceChainToken));
     const resultInt = swapFromVUsd(
       vUsd,
       destinationChainToken,
@@ -373,10 +316,7 @@ export class AllbridgeCoreSdk {
     if (resultInt.lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
-    return convertIntAmountToFloat(
-      resultInt,
-      destinationChainToken.decimals
-    ).toFixed();
+    return convertIntAmountToFloat(resultInt, destinationChainToken.decimals).toFixed();
   }
 
   /**
@@ -390,10 +330,7 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenInfoWithChainDetails,
     destinationChainToken: TokenInfoWithChainDetails
   ): Promise<string> {
-    const amountToBeReceived = convertFloatAmountToInt(
-      amountToBeReceivedFloat,
-      destinationChainToken.decimals
-    );
+    const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
 
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
@@ -408,10 +345,7 @@ export class AllbridgeCoreSdk {
     if (resultInt.lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
-    return convertIntAmountToFloat(
-      resultInt,
-      sourceChainToken.decimals
-    ).toFixed();
+    return convertIntAmountToFloat(resultInt, sourceChainToken.decimals).toFixed();
   }
 
   /**
@@ -447,9 +381,7 @@ export class AllbridgeCoreSdk {
   ): number | null {
     return (
       /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
-      sourceChainToken.transferTime?.[
-        destinationChainToken.chainSymbol as ChainSymbol
-      ]?.[messenger] ?? null
+      sourceChainToken.transferTime?.[destinationChainToken.chainSymbol as ChainSymbol]?.[messenger] ?? null
     );
   }
 
@@ -472,11 +404,7 @@ export class AllbridgeCoreSdk {
     token: TokenInfoWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return this.liquidityPoolService.getUserBalanceInfo(
-      accountAddress,
-      token,
-      provider
-    );
+    return this.liquidityPoolService.getUserBalanceInfo(accountAddress, token, provider);
   }
 
   /**
@@ -486,16 +414,8 @@ export class AllbridgeCoreSdk {
    * @param provider
    * @returns amount
    */
-  async getLPAmountOnDeposit(
-    amount: string,
-    token: TokenInfoWithChainDetails,
-    provider?: Provider
-  ): Promise<string> {
-    return this.liquidityPoolService.getAmountToBeDeposited(
-      amount,
-      token,
-      provider
-    );
+  async getLPAmountOnDeposit(amount: string, token: TokenInfoWithChainDetails, provider?: Provider): Promise<string> {
+    return this.liquidityPoolService.getAmountToBeDeposited(amount, token, provider);
   }
 
   /**
@@ -512,12 +432,7 @@ export class AllbridgeCoreSdk {
     token: TokenInfoWithChainDetails,
     provider?: Provider
   ): Promise<string> {
-    return this.liquidityPoolService.getAmountToBeWithdrawn(
-      amount,
-      accountAddress,
-      token,
-      provider
-    );
+    return this.liquidityPoolService.getAmountToBeWithdrawn(amount, accountAddress, token, provider);
   }
 
   /**
@@ -535,10 +450,7 @@ export class AllbridgeCoreSdk {
    * @param provider
    * @returns poolInfo
    */
-  getPoolInfo(
-    token: TokenInfoWithChainDetails,
-    provider?: Provider
-  ): Promise<PoolInfo> {
+  getPoolInfo(token: TokenInfoWithChainDetails, provider?: Provider): Promise<PoolInfo> {
     return this.liquidityPoolService.getPoolInfo(token, provider);
   }
 }

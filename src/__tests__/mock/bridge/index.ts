@@ -5,10 +5,7 @@ import { Bridge } from "../../../services/bridge/models";
 export const mockedTokenBalance = "1234567890";
 
 export function mockBridgeService_getTokenBalance() {
-  const tokenBalance = vi.spyOn(
-    BridgeService.prototype as any,
-    "getTokenBalance"
-  );
+  const tokenBalance = vi.spyOn(BridgeService.prototype as any, "getTokenBalance");
   tokenBalance.mockImplementation(() => {
     return mockedTokenBalance;
   });

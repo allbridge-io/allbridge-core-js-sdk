@@ -8,31 +8,15 @@ async function runExample() {
   const tokenAddress = process.env.TRX_TOKEN_ADDRESS;
   const accountAddress = process.env.TRX_ACCOUNT_ADDRESS;
 
-  const tronWeb = new TronWeb(
-    providerUrl,
-    providerUrl,
-    providerUrl,
-    privateKey
-  );
+  const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const halfToken = 0.5;
-  const estimatedAmount = await sdk.getAmountToBeWithdrawn(
-    halfToken,
-    accountAddress,
-    tokenInfo,
-    tronWeb
-  );
+  const estimatedAmount = await sdk.getAmountToBeWithdrawn(halfToken, accountAddress, tokenInfo, tronWeb);
 
-  console.log(
-    "If you withdraw %d LP tokens, then %d will be received",
-    halfToken,
-    estimatedAmount
-  );
+  console.log("If you withdraw %d LP tokens, then %d will be received", halfToken, estimatedAmount);
 }
 
 runExample();

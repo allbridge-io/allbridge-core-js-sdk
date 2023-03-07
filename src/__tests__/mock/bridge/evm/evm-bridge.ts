@@ -13,10 +13,7 @@ export function mockEvmContract(methods: any) {
 }
 
 export function mockEvmSendRawTransaction(transactionHash: string) {
-  const methodSendRawTransaction = vi.spyOn(
-    EvmBridge.prototype as any,
-    "sendRawTransaction"
-  );
+  const methodSendRawTransaction = vi.spyOn(EvmBridge.prototype as any, "sendRawTransaction");
   methodSendRawTransaction.mockImplementation(() => {
     return { txId: transactionHash };
   });

@@ -19,11 +19,7 @@ import {
   TxSendParams,
 } from "./models";
 
-export function formatAddress(
-  address: string,
-  from: ChainType,
-  to: ChainType
-): string | number[] {
+export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;
   switch (from) {
     case ChainType.EVM: {
@@ -82,9 +78,7 @@ function tronAddressToBuffer32(address: string): Buffer {
 }
 
 export function tronAddressToEthAddress(address: string): string {
-  return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address))
-    .toString("hex")
-    .replace(/^41/, "0x");
+  return Buffer.from(TronWebLib.utils.crypto.decodeBase58Address(address)).toString("hex").replace(/^41/, "0x");
 }
 
 function bufferToSize(buffer: Buffer, size: number): Buffer {
@@ -101,11 +95,7 @@ export function getDecimalsByContractAddress(
   chainSymbol: ChainSymbol,
   contractAddress: string
 ): number {
-  return getTokenInfoByTokenAddress(
-    chainDetailsMap,
-    chainSymbol,
-    contractAddress
-  ).decimals;
+  return getTokenInfoByTokenAddress(chainDetailsMap, chainSymbol, contractAddress).decimals;
 }
 
 export function getTokenInfoByTokenAddress(
@@ -117,12 +107,7 @@ export function getTokenInfoByTokenAddress(
     (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
   );
   if (!tokenInfo) {
-    throw new Error(
-      "Cannot find token info about token " +
-        tokenAddress +
-        " on chain " +
-        chainSymbol
-    );
+    throw new Error("Cannot find token info about token " + tokenAddress + " on chain " + chainSymbol);
   }
   return tokenInfo;
 }
@@ -141,39 +126,27 @@ export async function prepareTxSendParams(
 
   if (isSendParamsWithChainSymbol(params)) {
     const chainDetailsMap = await api.getChainDetailsMap();
-    txSendParams.fromChainId =
-      chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
+    txSendParams.fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
     txSendParams.fromChainSymbol = params.fromChainSymbol;
     toChainType = chainProperties[params.toChainSymbol].chainType;
-    txSendParams.contractAddress =
-      chainDetailsMap[params.fromChainSymbol].bridgeAddress;
+    txSendParams.contractAddress = chainDetailsMap[params.fromChainSymbol].bridgeAddress;
     txSendParams.fromTokenAddress = params.fromTokenAddress;
-    txSendParams.toChainId =
-      chainDetailsMap[params.toChainSymbol].allbridgeChainId;
+    txSendParams.toChainId = chainDetailsMap[params.toChainSymbol].allbridgeChainId;
     txSendParams.toTokenAddress = params.toTokenAddress;
     txSendParams.amount = convertFloatAmountToInt(
       params.amount,
-      getDecimalsByContractAddress(
-        chainDetailsMap,
-        params.fromChainSymbol,
-        txSendParams.fromTokenAddress
-      )
+      getDecimalsByContractAddress(chainDetailsMap, params.fromChainSymbol, txSendParams.fromTokenAddress)
     ).toFixed();
   } else {
     txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
-    txSendParams.fromChainSymbol = params.sourceChainToken
-      .chainSymbol as ChainSymbol;
-    toChainType =
-      chainProperties[params.destinationChainToken.chainSymbol].chainType;
+    txSendParams.fromChainSymbol = params.sourceChainToken.chainSymbol as ChainSymbol;
+    toChainType = chainProperties[params.destinationChainToken.chainSymbol].chainType;
     txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
     txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
 
     txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
     txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
-    txSendParams.amount = convertFloatAmountToInt(
-      params.amount,
-      params.sourceChainToken.decimals
-    ).toFixed();
+    txSendParams.amount = convertFloatAmountToInt(params.amount, params.sourceChainToken.decimals).toFixed();
   }
   txSendParams.messenger = params.messenger;
   txSendParams.fromAccountAddress = params.fromAccountAddress;
@@ -188,21 +161,9 @@ export async function prepareTxSendParams(
   }
   txSendParams.fee = fee;
 
-  txSendParams.fromTokenAddress = formatAddress(
-    txSendParams.fromTokenAddress,
-    bridgeChainType,
-    bridgeChainType
-  );
-  txSendParams.toAccountAddress = formatAddress(
-    params.toAccountAddress,
-    toChainType,
-    bridgeChainType
-  );
-  txSendParams.toTokenAddress = formatAddress(
-    txSendParams.toTokenAddress,
-    toChainType,
-    bridgeChainType
-  );
+  txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
+  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
+  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
   return txSendParams;
 }
 
@@ -224,17 +185,13 @@ export function isGetAllowanceParamsWithTokenInfo(
   return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
 }
 
-export function isApproveDataWithTokenInfo(
-  params: ApproveData | ApproveDataWithTokenInfo
-): boolean {
+export function isApproveDataWithTokenInfo(params: ApproveData | ApproveDataWithTokenInfo): boolean {
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   return (params as ApproveDataWithTokenInfo).token !== undefined;
 }
 
 export function isGetTokenBalanceParamsWithTokenInfo(
-  params:
-    | GetTokenBalanceParamsWithTokenAddress
-    | GetTokenBalanceParamsWithTokenInfo
+  params: GetTokenBalanceParamsWithTokenAddress | GetTokenBalanceParamsWithTokenInfo
 ): params is GetTokenBalanceParamsWithTokenInfo {
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   return (params as GetTokenBalanceParamsWithTokenInfo).tokenInfo !== undefined;

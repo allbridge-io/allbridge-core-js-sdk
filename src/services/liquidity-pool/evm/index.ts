@@ -4,12 +4,7 @@ import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
-import {
-  LiquidityPoolsParams,
-  LiquidityPoolsParamsWithAmount,
-  Pool,
-  UserBalanceInfo,
-} from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
 import abi from "./abi/abi.json";
 import { Abi as PoolContract } from "./types/Abi";
 import { BaseContract } from "./types/types";
@@ -22,27 +17,13 @@ export class EvmPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(
-    accountAddress: string,
-    token: TokenInfoWithChainDetails
-  ): Promise<UserBalanceInfo> {
-    return new UserBalanceInfo(
-      await this.getPoolContract(token.poolAddress)
-        .methods.userInfo(accountAddress)
-        .call()
-    );
+  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
+    return new UserBalanceInfo(await this.getPoolContract(token.poolAddress).methods.userInfo(accountAddress).call());
   }
 
   async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getPoolContract(token.poolAddress);
-    const [
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount,
-      accRewardPerShareP,
-    ] = await Promise.all([
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),
       poolContract.methods.d().call(),
       poolContract.methods.tokenBalance().call(),
@@ -63,36 +44,24 @@ export class EvmPool extends Pool {
   }
 
   /* eslint-disable-next-line  @typescript-eslint/require-await */
-  async buildRawTransactionDeposit(
-    params: LiquidityPoolsParamsWithAmount
-  ): Promise<RawTransaction> {
+  async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     return {
       ...(await this.buildTxParams(params)),
-      data: this.getPoolContract(params.token.poolAddress)
-        .methods.deposit(params.amount)
-        .encodeABI(),
+      data: this.getPoolContract(params.token.poolAddress).methods.deposit(params.amount).encodeABI(),
     };
   }
 
-  async buildRawTransactionWithdraw(
-    params: LiquidityPoolsParamsWithAmount
-  ): Promise<RawTransaction> {
+  async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     return {
       ...(await this.buildTxParams(params)),
-      data: this.getPoolContract(params.token.poolAddress)
-        .methods.withdraw(params.amount)
-        .encodeABI(),
+      data: this.getPoolContract(params.token.poolAddress).methods.withdraw(params.amount).encodeABI(),
     };
   }
 
-  async buildRawTransactionClaimRewards(
-    params: LiquidityPoolsParams
-  ): Promise<RawTransaction> {
+  async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     return {
       ...(await this.buildTxParams(params)),
-      data: this.getPoolContract(params.token.poolAddress)
-        .methods.claimRewards()
-        .encodeABI(),
+      data: this.getPoolContract(params.token.poolAddress).methods.claimRewards().encodeABI(),
     };
   }
 
@@ -116,10 +85,7 @@ export class EvmPool extends Pool {
     return txParams;
   }
 
-  private getContract<T extends BaseContract>(
-    abiItem: AbiItem[],
-    contractAddress: string
-  ): T {
+  private getContract<T extends BaseContract>(abiItem: AbiItem[], contractAddress: string): T {
     return new this.web3.eth.Contract(abiItem, contractAddress) as any;
   }
 

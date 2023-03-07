@@ -2,12 +2,7 @@ import axios, { Axios } from "axios";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/bridge/utils";
-import {
-  ChainDetailsMap,
-  PoolInfoMap,
-  PoolKeyObject,
-  TokenInfoWithChainDetails,
-} from "../../tokens-info";
+import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
 import {
   mapChainDetailsResponseToChainDetailsMap,
   mapChainDetailsResponseToPoolInfoMap,
@@ -30,10 +25,7 @@ export interface AllbridgeCoreClient {
   getChainDetailsMap(): Promise<ChainDetailsMap>;
   tokens(): Promise<TokenInfoWithChainDetails[]>;
 
-  getTransferStatus(
-    chainSymbol: ChainSymbol,
-    txId: string
-  ): Promise<TransferStatusResponse>;
+  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
 
   getPolygonGasInfo(): Promise<{
     maxPriorityFee: string;
@@ -44,9 +36,7 @@ export interface AllbridgeCoreClient {
 
   getPolygonMaxFee(): Promise<string>;
 
-  getReceiveTransactionCost(
-    args: ReceiveTransactionCostRequest
-  ): Promise<string>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -84,13 +74,8 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     };
   }
 
-  async getTransferStatus(
-    chainSymbol: ChainSymbol,
-    txId: string
-  ): Promise<TransferStatusResponse> {
-    const { data } = await this.api.get<TransferStatusResponse>(
-      `/chain/${chainSymbol}/${txId}`
-    );
+  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+    const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
     return data;
   }
 
@@ -117,9 +102,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     };
   }
 
-  private async getPolygonGasInfoFromGasStation(
-    level: "safeLow" | "standard" | "fast" = "standard"
-  ): Promise<{
+  private async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
     maxPriorityFee: number;
     maxFee: number;
   }> {
@@ -136,9 +119,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
         errorMessage =
           e instanceof Error
             ? `Cannot get polygon gas: ${e.message}`
-            : `Cannot get polygon gas: ${
-                e?.toString() ?? "some error occurred"
-              }`;
+            : `Cannot get polygon gas: ${e?.toString() ?? "some error occurred"}`;
         if (i < attempts - 1) {
           await sleep(1000);
         }
@@ -147,24 +128,16 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     throw new Error(errorMessage);
   }
 
-  async getReceiveTransactionCost(
-    args: ReceiveTransactionCostRequest
-  ): Promise<string> {
-    const { data } = await this.api.post<ReceiveTransactionCostResponse>(
-      "/receive-fee",
-      args,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string> {
+    const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     return data.fee;
   }
 
-  async getPoolInfoMap(
-    pools: PoolKeyObject[] | PoolKeyObject
-  ): Promise<PoolInfoMap> {
+  async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     const poolKeys = pools instanceof Array ? pools : [pools];
     const { data } = await this.api.post<PoolInfoResponse>(
       "/pool-info",

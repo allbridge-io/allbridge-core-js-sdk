@@ -16,9 +16,7 @@ async function runExample() {
   );
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const oneToken = 1;
   // create deposit raw transaction

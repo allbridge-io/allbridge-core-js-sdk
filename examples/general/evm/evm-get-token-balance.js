@@ -13,9 +13,7 @@ async function runExample() {
   web3.eth.accounts.wallet.add(account);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
   const tokenDecimals = tokenInfo.decimals;
 
   const tokenBalanceData = {
@@ -30,10 +28,7 @@ async function runExample() {
     tokenAddress: tokenAddress,
     tokenDecimals: tokenDecimals,
   };
-  const tokenBalanceWithPrecision = await sdk.getTokenBalance(
-    tokenBalanceWithPrecisionData,
-    web3
-  );
+  const tokenBalanceWithPrecision = await sdk.getTokenBalance(tokenBalanceWithPrecisionData, web3);
   console.log("With precision:", tokenBalanceWithPrecision);
 }
 

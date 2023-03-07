@@ -137,16 +137,14 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
 /**
  * @deprecated Please use {@link CheckAllowanceParamsWithTokenInfo} instead
  */
-export interface CheckAllowanceParamsWithTokenAddress
-  extends GetAllowanceParamsWithTokenAddress {
+export interface CheckAllowanceParamsWithTokenAddress extends GetAllowanceParamsWithTokenAddress {
   /**
    * The float amount of tokens to check allowance.
    */
   amount: string | number | Big;
 }
 
-export interface CheckAllowanceParamsWithTokenInfo
-  extends GetAllowanceParamsWithTokenInfo {
+export interface CheckAllowanceParamsWithTokenInfo extends GetAllowanceParamsWithTokenInfo {
   /**
    * The float amount of tokens to check allowance.
    */

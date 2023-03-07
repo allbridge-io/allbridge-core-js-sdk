@@ -20,9 +20,7 @@ import {
   TransferTimeDTO,
 } from "./core-api.model";
 
-export function mapChainDetailsResponseToChainDetailsMap(
-  response: ChainDetailsResponse
-): ChainDetailsMap {
+export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsResponse): ChainDetailsMap {
   return Object.entries(response).reduce<ChainDetailsMap>((map, entry) => {
     const chainSymbol = entry[0];
     const chainDetailsDTO = entry[1];
@@ -34,9 +32,7 @@ export function mapChainDetailsResponseToChainDetailsMap(
   }, {});
 }
 
-export function mapChainDetailsResponseToPoolInfoMap(
-  response: ChainDetailsResponse
-): PoolInfoMap {
+export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
@@ -51,10 +47,7 @@ export function mapChainDetailsResponseToPoolInfoMap(
   return poolInfoMap;
 }
 
-function mapTokenInfoWithChainDetailsFromDto(
-  chainDetails: ChainDetails,
-  dto: TokenDTO
-): TokenInfoWithChainDetails {
+function mapTokenInfoWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenInfoWithChainDetails {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
   const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
@@ -82,25 +75,17 @@ function mapTransferTimeFromDto(dto: TransferTimeDTO): TransferTime {
   }, {});
 }
 
-function mapMessengerTransferTimeFromDto(
-  dto: MessengerTransferTimeDTO
-): MessengerTransferTime {
-  return Object.entries(dto).reduce<MessengerTransferTime>(
-    (messengerTransferTime, [key, value]) => {
-      const messenger = mapMessengerKeyDtoToMessenger(key as MessengerKeyDTO);
-      if (messenger) {
-        messengerTransferTime[messenger] = value;
-      }
-      return messengerTransferTime;
-    },
-    {}
-  );
+function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): MessengerTransferTime {
+  return Object.entries(dto).reduce<MessengerTransferTime>((messengerTransferTime, [key, value]) => {
+    const messenger = mapMessengerKeyDtoToMessenger(key as MessengerKeyDTO);
+    if (messenger) {
+      messengerTransferTime[messenger] = value;
+    }
+    return messengerTransferTime;
+  }, {});
 }
 
-function mapChainDetailsFromDto(
-  chainSymbol: string,
-  dto: ChainDetailsDTO
-): ChainDetailsWithTokens | null {
+function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokens | null {
   const basicChainProperties = chainProperties[chainSymbol];
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
@@ -115,9 +100,7 @@ function mapChainDetailsFromDto(
   };
   return {
     ...chainDetails,
-    tokens: dto.tokens.map((tokenDto) =>
-      mapTokenInfoWithChainDetailsFromDto(chainDetails, tokenDto)
-    ),
+    tokens: dto.tokens.map((tokenDto) => mapTokenInfoWithChainDetailsFromDto(chainDetails, tokenDto)),
   };
 }
 
@@ -129,19 +112,13 @@ export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   };
 }
 
-export function mapPoolKeyObjectToPoolKey(
-  poolKeyObject: PoolKeyObject
-): string {
+export function mapPoolKeyObjectToPoolKey(poolKeyObject: PoolKeyObject): string {
   return poolKeyObject.chainSymbol + "_" + poolKeyObject.poolAddress;
 }
 
-export function mapChainDetailsMapToPoolKeyObjects(
-  chainDetailsMap: ChainDetailsMap
-): PoolKeyObject[] {
+export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetailsMap): PoolKeyObject[] {
   const result = [];
-  for (const [chainSymbolValue, chainDetails] of Object.entries(
-    chainDetailsMap
-  )) {
+  for (const [chainSymbolValue, chainDetails] of Object.entries(chainDetailsMap)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const token of chainDetails.tokens) {
       result.push({
@@ -153,17 +130,12 @@ export function mapChainDetailsMapToPoolKeyObjects(
   return result;
 }
 
-export function mapPoolInfoResponseToPoolInfoMap(
-  responseBody: PoolInfoResponse
-): PoolInfoMap {
+export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
-  for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(
-    responseBody
-  )) {
+  for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
-      poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] =
-        poolInfo;
+      poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;
     }
   }
   return poolInfoMap;

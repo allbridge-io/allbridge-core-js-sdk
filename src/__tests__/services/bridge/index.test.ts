@@ -4,10 +4,7 @@ import { GetTokenBalanceParamsWithTokenAddress } from "../../../index";
 import { BridgeService } from "../../../services/bridge";
 import { SolanaBridgeParams } from "../../../services/bridge/sol";
 import { mockBridgeService_getBridge } from "../../mock/bridge";
-import {
-  createTestBridge,
-  mockBridge_getTokenBalance,
-} from "../../mock/bridge/models/bridge";
+import { createTestBridge, mockBridge_getTokenBalance } from "../../mock/bridge/models/bridge";
 
 describe("BridgeService", () => {
   let bridgeService: BridgeService;
@@ -34,9 +31,7 @@ describe("BridgeService", () => {
         tokenAddress: "tokenAddress",
         tokenDecimals: 5,
       };
-      const tokenBalance = await bridgeService.getTokenBalance(
-        getTokenBalanceParams
-      );
+      const tokenBalance = await bridgeService.getTokenBalance(getTokenBalanceParams);
       expect(tokenBalance).toEqual("12345.6789");
     });
   });

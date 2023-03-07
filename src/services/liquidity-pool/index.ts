@@ -2,49 +2,22 @@ import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenInfoWithChainDetails } from "../../tokens-info";
-import {
-  convertFloatAmountToInt,
-  convertIntAmountToFloat,
-  fromSystemPrecision,
-} from "../../utils/calculation";
+import { convertFloatAmountToInt, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, RawTransaction } from "../models";
-import {
-  depositAmountToVUsd,
-  vUsdToWithdrawalAmount,
-} from "../utils/calculation";
+import { depositAmountToVUsd, vUsdToWithdrawalAmount } from "../utils/calculation";
 import { EvmPool } from "./evm";
-import {
-  LiquidityPoolsParams,
-  LiquidityPoolsParamsWithAmount,
-  Pool,
-  UserBalanceInfo,
-} from "./models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "./models";
 import { SolanaPool, SolanaPoolParams } from "./sol";
 import { TronPool } from "./trx";
 
 export class LiquidityPoolService {
-  constructor(
-    public api: AllbridgeCoreClient,
-    public solParams: SolanaPoolParams
-  ) {}
+  constructor(public api: AllbridgeCoreClient, public solParams: SolanaPoolParams) {}
 
-  async getAmountToBeDeposited(
-    amount: string,
-    token: TokenInfoWithChainDetails,
-    provider?: Provider
-  ): Promise<string> {
+  async getAmountToBeDeposited(amount: string, token: TokenInfoWithChainDetails, provider?: Provider): Promise<string> {
     const poolInfo = await this.getPoolInfo(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } =
-      poolInfo;
-    const vUsd = depositAmountToVUsd(
-      amount,
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount
-    );
+    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } = poolInfo;
+    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount);
     return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
   }
 
@@ -55,22 +28,10 @@ export class LiquidityPoolService {
     provider?: Provider
   ): Promise<string> {
     const poolInfo = await this.getPoolInfo(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } =
-      poolInfo;
-    const tokenAmountInSP = vUsdToWithdrawalAmount(
-      amount,
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount
-    );
+    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } = poolInfo;
+    const tokenAmountInSP = vUsdToWithdrawalAmount(amount, aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);
-    const userBalanceInfo = await this.getUserBalanceInfo(
-      accountAddress,
-      token,
-      provider
-    );
+    const userBalanceInfo = await this.getUserBalanceInfo(accountAddress, token, provider);
     const earned = userBalanceInfo.earned(poolInfo) || "0";
     const commonAmount = Big(tokenAmount).plus(earned).toFixed();
     return convertIntAmountToFloat(commonAmount, token.decimals).toFixed();
@@ -84,10 +45,7 @@ export class LiquidityPoolService {
     return this.getPool(provider).getUserBalanceInfo(accountAddress, token);
   }
 
-  getPoolInfo(
-    token: TokenInfoWithChainDetails,
-    provider?: Provider
-  ): Promise<PoolInfo> {
+  getPoolInfo(token: TokenInfoWithChainDetails, provider?: Provider): Promise<PoolInfo> {
     return this.getPool(provider).getPoolInfo(token);
   }
 
@@ -95,10 +53,7 @@ export class LiquidityPoolService {
     params: LiquidityPoolsParamsWithAmount,
     provider?: Provider
   ): Promise<RawTransaction> {
-    params.amount = convertFloatAmountToInt(
-      params.amount,
-      params.token.decimals
-    ).toString();
+    params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toString();
     return this.getPool(provider).buildRawTransactionDeposit(params);
   }
 
@@ -106,17 +61,11 @@ export class LiquidityPoolService {
     params: LiquidityPoolsParamsWithAmount,
     provider?: Provider
   ): Promise<RawTransaction> {
-    params.amount = convertFloatAmountToInt(
-      params.amount,
-      SYSTEM_PRECISION
-    ).toString();
+    params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toString();
     return this.getPool(provider).buildRawTransactionWithdraw(params);
   }
 
-  async buildRawTransactionClaimRewards(
-    params: LiquidityPoolsParams,
-    provider?: Provider
-  ): Promise<RawTransaction> {
+  async buildRawTransactionClaimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction> {
     return this.getPool(provider).buildRawTransactionClaimRewards(params);
   }
 

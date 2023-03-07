@@ -6,9 +6,7 @@ async function runExample() {
   const accountAddress = process.env.SOL_ACCOUNT_ADDRESS;
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
   const tokenDecimals = tokenInfo.decimals;
 
   const tokenBalanceData = {
@@ -23,9 +21,7 @@ async function runExample() {
     tokenAddress: tokenAddress,
     tokenDecimals: tokenDecimals,
   };
-  const tokenBalanceWithPrecision = await sdk.getTokenBalance(
-    tokenBalanceWithPrecisionData
-  );
+  const tokenBalanceWithPrecision = await sdk.getTokenBalance(tokenBalanceWithPrecisionData);
   console.log("With precision:", tokenBalanceWithPrecision);
 }
 

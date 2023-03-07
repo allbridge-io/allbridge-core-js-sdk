@@ -8,11 +8,7 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
-import {
-  ChainDetailsMap,
-  PoolInfoMap,
-  PoolKeyObject,
-} from "../../../tokens-info";
+import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
 import poolInfoMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
@@ -22,10 +18,8 @@ import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 import { getRequestBodyMatcher } from "../../mock/utils";
 
-const expectedTokensGroupedByChain =
-  tokensGroupedByChain as unknown as ChainDetailsMap;
-const expectedTransferStatus =
-  transferStatus as unknown as TransferStatusResponse;
+const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;
+const expectedTransferStatus = transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
   const POLYGON_API_URL = "http://localhost/pol";
@@ -38,29 +32,22 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
 
     beforeEach(() => {
-      scope = nock("http://localhost")
-        .get("/token-info")
-        .reply(200, tokenInfoResponse);
+      scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse);
     });
 
     it("☀️ getChainDetailsMap() returns ChainDetailsMap", async () => {
-      expect(await api.getChainDetailsMap()).toEqual(
-        expectedTokensGroupedByChain
-      );
+      expect(await api.getChainDetailsMap()).toEqual(expectedTokensGroupedByChain);
       scope.done();
     });
   });
 
   describe("given /chain/ChainSymbol/txId endpoint", () => {
     const chainSymbol = ChainSymbol.TRX;
-    const txId =
-      "0417a44b76793d32c316c1e8d05de99f5929e07415a4a87e4e858cf371ef467a";
+    const txId = "0417a44b76793d32c316c1e8d05de99f5929e07415a4a87e4e858cf371ef467a";
     let scope: nock.Scope;
 
     beforeEach(() => {
-      scope = nock("http://localhost")
-        .get(`/chain/${chainSymbol}/${txId}`)
-        .reply(200, transferStatusResponse);
+      scope = nock("http://localhost").get(`/chain/${chainSymbol}/${txId}`).reply(200, transferStatusResponse);
     });
 
     it("☀️ getTransferStatus returns TransferStatusResponse", async () => {

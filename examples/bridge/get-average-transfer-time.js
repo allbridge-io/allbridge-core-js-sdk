@@ -5,27 +5,19 @@ function msToTime(ms) {
   const seconds = Math.floor((ms / 1000) % 60);
   const minutes = Math.floor((ms / (60 * 1000)) % 60);
   const hours = Math.floor((ms / (3600 * 1000)) % 3600);
-  return `${hours === 0 ? "" : hours + ":"}${
-    minutes < 10 ? "0" + minutes : minutes
-  }:${seconds < 10 ? "0" + seconds : seconds}.${milliseconds}`;
+  return `${hours === 0 ? "" : hours + ":"}${minutes < 10 ? "0" + minutes : minutes}:${
+    seconds < 10 ? "0" + seconds : seconds
+  }.${milliseconds}`;
 }
 
 async function runExample() {
   const sdk = new AllbridgeCoreSdk();
 
   const tokens = await sdk.tokens();
-  const sourceToken = tokens.find(
-    (token) => token.chainSymbol === "ETH" && token.symbol === "USDT"
-  );
-  const destinationToken = tokens.find(
-    (token) => token.chainSymbol === "TRX" && token.symbol === "USDT"
-  );
+  const sourceToken = tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT");
+  const destinationToken = tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT");
 
-  const transferTimeMs = sdk.getAverageTransferTime(
-    sourceToken,
-    destinationToken,
-    Messenger.ALLBRIDGE
-  );
+  const transferTimeMs = sdk.getAverageTransferTime(sourceToken, destinationToken, Messenger.ALLBRIDGE);
 
   console.log(
     "Average transfer time from %s to %s is %s",

@@ -2,10 +2,7 @@ import { Big } from "big.js";
 import Web3 from "web3";
 import { ChainSymbol } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import {
-  convertFloatAmountToInt,
-  convertIntAmountToFloat,
-} from "../../utils/calculation";
+import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction } from "../models";
 import { EvmBridge } from "./evm";
 import {
@@ -35,52 +32,33 @@ import {
 } from "./utils";
 
 export class BridgeService {
-  constructor(
-    public api: AllbridgeCoreClient,
-    public solParams: SolanaBridgeParams
-  ) {}
+  constructor(public api: AllbridgeCoreClient, public solParams: SolanaBridgeParams) {}
 
   async getAllowance(
     provider: Provider,
     params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
   ): Promise<string> {
     const getAllowanceParams = await this.prepareGetAllowanceParams(params);
-    const allowanceInt = await this.getBridge(provider).getAllowance(
-      getAllowanceParams
-    );
-    return convertIntAmountToFloat(
-      allowanceInt,
-      getAllowanceParams.tokenInfo.decimals
-    ).toFixed();
+    const allowanceInt = await this.getBridge(provider).getAllowance(getAllowanceParams);
+    return convertIntAmountToFloat(allowanceInt, getAllowanceParams.tokenInfo.decimals).toFixed();
   }
 
   async checkAllowance(
     provider: Provider,
-    params:
-      | CheckAllowanceParamsWithTokenAddress
-      | CheckAllowanceParamsWithTokenInfo
+    params: CheckAllowanceParamsWithTokenAddress | CheckAllowanceParamsWithTokenInfo
   ): Promise<boolean> {
-    return this.getBridge(provider).checkAllowance(
-      await this.prepareCheckAllowanceParams(params)
-    );
+    return this.getBridge(provider).checkAllowance(await this.prepareCheckAllowanceParams(params));
   }
 
-  async approve(
-    provider: Provider,
-    approveData: ApproveData | ApproveDataWithTokenInfo
-  ): Promise<TransactionResponse> {
-    return this.getBridge(provider).approve(
-      await this.prepareApproveParams(approveData)
-    );
+  async approve(provider: Provider, approveData: ApproveData | ApproveDataWithTokenInfo): Promise<TransactionResponse> {
+    return this.getBridge(provider).approve(await this.prepareApproveParams(approveData));
   }
 
   async buildRawTransactionApprove(
     provider: Provider,
     approveData: ApproveData | ApproveDataWithTokenInfo
   ): Promise<RawTransaction> {
-    return this.getBridge(provider).buildRawTransactionApprove(
-      await this.prepareApproveParams(approveData)
-    );
+    return this.getBridge(provider).buildRawTransactionApprove(await this.prepareApproveParams(approveData));
   }
 
   async send(
@@ -98,9 +76,7 @@ export class BridgeService {
   }
 
   async getTokenBalance(
-    params:
-      | GetTokenBalanceParamsWithTokenAddress
-      | GetTokenBalanceParamsWithTokenInfo,
+    params: GetTokenBalanceParamsWithTokenAddress | GetTokenBalanceParamsWithTokenInfo,
     provider?: Provider
   ): Promise<string> {
     let tokenBalanceParams: GetTokenBalanceParamsWithTokenAddress;
@@ -115,14 +91,9 @@ export class BridgeService {
       tokenBalanceParams = params;
     }
 
-    const tokenBalance = await this.getBridge(provider).getTokenBalance(
-      tokenBalanceParams
-    );
+    const tokenBalance = await this.getBridge(provider).getTokenBalance(tokenBalanceParams);
     if (tokenBalanceParams.tokenDecimals) {
-      return convertIntAmountToFloat(
-        tokenBalance,
-        tokenBalanceParams.tokenDecimals
-      ).toString();
+      return convertIntAmountToFloat(tokenBalance, tokenBalanceParams.tokenDecimals).toString();
     }
     return tokenBalance;
   }
@@ -163,23 +134,16 @@ export class BridgeService {
   }
 
   async prepareCheckAllowanceParams(
-    params:
-      | CheckAllowanceParamsWithTokenAddress
-      | CheckAllowanceParamsWithTokenInfo
+    params: CheckAllowanceParamsWithTokenAddress | CheckAllowanceParamsWithTokenInfo
   ): Promise<CheckAllowanceParamsDto> {
     const getAllowanceParams = await this.prepareGetAllowanceParams(params);
     return {
       ...getAllowanceParams,
-      amount: convertFloatAmountToInt(
-        params.amount,
-        getAllowanceParams.tokenInfo.decimals
-      ),
+      amount: convertFloatAmountToInt(params.amount, getAllowanceParams.tokenInfo.decimals),
     };
   }
 
-  private async prepareApproveParams(
-    approveData: ApproveData | ApproveDataWithTokenInfo
-  ): Promise<ApproveParamsDto> {
+  private async prepareApproveParams(approveData: ApproveData | ApproveDataWithTokenInfo): Promise<ApproveParamsDto> {
     if (isApproveDataWithTokenInfo(approveData)) {
       approveData = approveData as ApproveDataWithTokenInfo;
       return {
@@ -187,26 +151,19 @@ export class BridgeService {
         owner: approveData.owner,
         spender: approveData.spender,
         chainSymbol: approveData.token.chainSymbol as ChainSymbol,
-        amount:
-          approveData.amount == undefined
-            ? undefined
-            : Big(approveData.amount).toFixed(),
+        amount: approveData.amount == undefined ? undefined : Big(approveData.amount).toFixed(),
       };
     } else {
       approveData = approveData as ApproveData;
       const chainSymbol = (await this.api.tokens()).find(
-        (tokenInfo) =>
-          tokenInfo.tokenAddress === (approveData as ApproveData).tokenAddress
+        (tokenInfo) => tokenInfo.tokenAddress === (approveData as ApproveData).tokenAddress
       )?.chainSymbol as ChainSymbol;
       return {
         tokenAddress: approveData.tokenAddress,
         owner: approveData.owner,
         spender: approveData.spender,
         chainSymbol: chainSymbol,
-        amount:
-          approveData.amount == undefined
-            ? undefined
-            : Big(approveData.amount).toFixed(),
+        amount: approveData.amount == undefined ? undefined : Big(approveData.amount).toFixed(),
       };
     }
   }

@@ -76,9 +76,7 @@ describe("EvmPool", () => {
       accountAddress: ACCOUNT_ADDRESS,
       token: TOKEN_INFO,
     };
-    const rawTransaction = await evmPool.buildRawTransactionClaimRewards(
-      params
-    );
+    const rawTransaction = await evmPool.buildRawTransactionClaimRewards(params);
 
     expect(rawTransaction).toEqual({
       from: ACCOUNT_ADDRESS,
@@ -118,10 +116,7 @@ describe("EvmPool", () => {
         )
       );
 
-    const userBalanceInfo = await evmPool.getUserBalanceInfo(
-      ACCOUNT_ADDRESS,
-      TOKEN_INFO
-    );
+    const userBalanceInfo = await evmPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 
     expect(userBalanceInfo).toEqual({
       lpAmount: "11490",

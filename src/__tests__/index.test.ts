@@ -1,21 +1,10 @@
 import { Big } from "big.js";
 import BN from "bn.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";
-import {
-  ReceiveTransactionCostRequest,
-  ReceiveTransactionCostResponse,
-} from "../client/core-api/core-api.model";
+import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
   ChainDetailsMap,
@@ -33,28 +22,17 @@ import { getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import {
-  mockBridgeService_getTokenBalance,
-  mockedTokenBalance,
-} from "./mock/bridge";
-import {
-  mockEvmContract,
-  mockEvmSendRawTransaction,
-} from "./mock/bridge/evm/evm-bridge";
-import {
-  mockTronContract,
-  mockTronVerifyTx,
-} from "./mock/bridge/trx/trx-bridge";
+import { mockBridgeService_getTokenBalance, mockedTokenBalance } from "./mock/bridge";
+import { mockEvmContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
+import { mockTronContract, mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 /* eslint-disable-next-line */
 const TronWeb = require("tronweb");
 
-const basicTokenInfoWithChainDetails =
-  tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
-const basicTokenInfoWithChainDetails2 =
-  tokenInfoList[2] as unknown as TokenInfoWithChainDetails;
+const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
+const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenInfoWithChainDetails;
 
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
@@ -106,21 +84,13 @@ describe("SDK", () => {
     });
 
     test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(
-        amountToSend,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(
-        amountToReceive,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
       expect(actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
@@ -170,21 +140,13 @@ describe("SDK", () => {
     const amountToReceive = "97.776";
 
     test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(
-        amountToSend,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(
-        amountToReceive,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
       expect(actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
@@ -235,21 +197,13 @@ describe("SDK", () => {
     const amountToReceive = "9.938096";
 
     test(`☀ getAmountToBeReceived for amount ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(
-        amountToSend,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for amount ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(
-        amountToReceive,
-        sourceChainToken,
-        destinationChainToken
-      );
+      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
       expect(actual).toEqual(amountToSend);
       scope.done();
     });
@@ -257,18 +211,12 @@ describe("SDK", () => {
     describe("calculateFeesPercentOnSourceChain", () => {
       const expectedPercent = getFeePercent(amountToSend, vUsd);
       test(`☀️ should return fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, async () => {
-        const actual = await sdk.calculateFeePercentOnSourceChain(
-          amountToSend,
-          sourceChainToken
-        );
+        const actual = await sdk.calculateFeePercentOnSourceChain(amountToSend, sourceChainToken);
         expect(actual).toEqual(expectedPercent);
       });
 
       test("☁ calculateFeePercentOnSourceChain should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnSourceChain(
-          0,
-          sourceChainToken
-        );
+        const actual = await sdk.calculateFeePercentOnSourceChain(0, sourceChainToken);
         expect(actual).toEqual(0);
       });
     });
@@ -285,11 +233,7 @@ describe("SDK", () => {
       });
 
       test("☁ should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnDestinationChain(
-          0,
-          sourceChainToken,
-          destinationChainToken
-        );
+        const actual = await sdk.calculateFeePercentOnDestinationChain(0, sourceChainToken, destinationChainToken);
         expect(actual).toEqual(0);
       });
     });
@@ -298,20 +242,14 @@ describe("SDK", () => {
       const expectedPercent = getFeePercent(amountToSend, amountToReceive);
 
       test(`☀️ calculated source and destination fees should match total fee percent for amount: ${amountToSend} -> ${expectedPercent}%`, async () => {
-        const feePercentOnSource = await sdk.calculateFeePercentOnSourceChain(
+        const feePercentOnSource = await sdk.calculateFeePercentOnSourceChain(amountToSend, sourceChainToken);
+        const feePercentOnDestination = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
-          sourceChainToken
+          sourceChainToken,
+          destinationChainToken
         );
-        const feePercentOnDestination =
-          await sdk.calculateFeePercentOnDestinationChain(
-            amountToSend,
-            sourceChainToken,
-            destinationChainToken
-          );
         const partAfterFeeOnSource = 1 - feePercentOnSource / 100;
-        const partAfterFeeOnDestination =
-          partAfterFeeOnSource -
-          (partAfterFeeOnSource * feePercentOnDestination) / 100;
+        const partAfterFeeOnDestination = partAfterFeeOnSource - (partAfterFeeOnSource * feePercentOnDestination) / 100;
         const actualFeePercent = (1 - partAfterFeeOnDestination) * 100;
 
         expect(actualFeePercent).toBeCloseTo(expectedPercent, 5);
@@ -330,16 +268,11 @@ describe("SDK", () => {
         },
       },
     };
-    const destinationChainToken: TokenInfoWithChainDetails =
-      basicTokenInfoWithChainDetails2;
+    const destinationChainToken: TokenInfoWithChainDetails = basicTokenInfoWithChainDetails2;
 
     describe("getAverageTransferTime", () => {
       test("☀ Should return transferTime 211_111 ms", () => {
-        const actual = sdk.getAverageTransferTime(
-          sourceChainToken,
-          destinationChainToken,
-          Messenger.ALLBRIDGE
-        );
+        const actual = sdk.getAverageTransferTime(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);
         expect(actual).toEqual(transferTime);
       });
 
@@ -347,11 +280,7 @@ describe("SDK", () => {
         const unsupportedMessenger = 999;
 
         test("☁ Should return null -> null", () => {
-          const actual = sdk.getAverageTransferTime(
-            sourceChainToken,
-            destinationChainToken,
-            unsupportedMessenger
-          );
+          const actual = sdk.getAverageTransferTime(sourceChainToken, destinationChainToken, unsupportedMessenger);
           expect(actual).toBeNull();
         });
       });
@@ -370,23 +299,19 @@ describe("SDK", () => {
 
     describe("Get tokens info", () => {
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
-        const chainDetailsMap =
-          tokensGroupedByChain as unknown as ChainDetailsMap;
+        const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
         expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
       });
 
       test("☀️ tokens() returns a list of TokenInfoWithChainDetails", async () => {
-        const expectedTokenInfoWithChainDetails =
-          tokenInfoList as unknown as TokenInfoWithChainDetails[];
+        const expectedTokenInfoWithChainDetails = tokenInfoList as unknown as TokenInfoWithChainDetails[];
         expect(await sdk.tokens()).toEqual(expectedTokenInfoWithChainDetails);
       });
 
       test("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
         const expectedTokenInfoWithChainDetailsGRL =
           tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
-        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(
-          expectedTokenInfoWithChainDetailsGRL
-        );
+        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGRL);
       });
     });
 
@@ -404,10 +329,7 @@ describe("SDK", () => {
           destinationChainId: toChainId,
           messenger: Messenger.ALLBRIDGE,
         };
-        scope
-          .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
-          .reply(201, receiveFeeResponse)
-          .persist();
+        scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
         const fromTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
         const toTokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U"; // cspell:disable-line
@@ -446,8 +368,7 @@ describe("SDK", () => {
         mockEvmContract({
           swapAndBridge: swapAndBridgeMocked,
         });
-        const methodSendRawTransactionSpy =
-          mockEvmSendRawTransaction(transactionHash);
+        const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
 
         const transactionResponse = await sdk.send(new Web3(), sendParams);
 
@@ -485,10 +406,7 @@ describe("SDK", () => {
           destinationChainId: toChainId,
           messenger: Messenger.ALLBRIDGE,
         };
-        scope
-          .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
-          .reply(201, receiveFeeResponse)
-          .persist();
+        scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         /* cSpell:disable */
         const bridgeAddress = "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM";
         const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
@@ -551,29 +469,17 @@ describe("SDK", () => {
           [
             {
               type: "bytes32",
-              value: formatAddress(
-                fromTokenAddress,
-                ChainType.TRX,
-                ChainType.TRX
-              ),
+              value: formatAddress(fromTokenAddress, ChainType.TRX, ChainType.TRX),
             },
             { type: "uint256", value: expectedAmount },
             {
               type: "bytes32",
-              value: formatAddress(
-                toAccountAddress,
-                ChainType.EVM,
-                ChainType.TRX
-              ),
+              value: formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
             },
             { type: "uint8", value: toChainId },
             {
               type: "bytes32",
-              value: formatAddress(
-                toTokenAddress,
-                ChainType.EVM,
-                ChainType.TRX
-              ),
+              value: formatAddress(toTokenAddress, ChainType.EVM, ChainType.TRX),
             },
             { type: "uint256", value: nonceBuffer.toJSON().data },
             { type: "uint8", value: Messenger.ALLBRIDGE },
