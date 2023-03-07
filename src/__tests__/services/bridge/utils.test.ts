@@ -116,6 +116,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
+        fromChainSymbol: ChainSymbol.GRL,
         fromTokenAddress:
           "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
         toChainId: 4,
@@ -155,6 +156,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
+        fromChainSymbol: ChainSymbol.GRL,
         fromTokenAddress:
           "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
         toChainId: 5,
@@ -194,6 +196,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         fromChainId: 4,
+        fromChainSymbol: ChainSymbol.TRX,
         fromTokenAddress: Array.from(
           bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki")
         ),
@@ -236,6 +239,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         fromChainId: 4,
+        fromChainSymbol: ChainSymbol.TRX,
         fromTokenAddress: Array.from(
           bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki")
         ),
@@ -278,6 +282,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
         fromChainId: 5,
+        fromChainSymbol: ChainSymbol.SOL,
         fromTokenAddress: Array.from(
           bs58.decode("f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L")
         ),
@@ -320,6 +325,7 @@ describe("Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
         fromChainId: 5,
+        fromChainSymbol: ChainSymbol.SOL,
         fromTokenAddress: Array.from(
           bs58.decode("f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L")
         ),

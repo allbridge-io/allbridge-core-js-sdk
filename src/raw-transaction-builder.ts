@@ -1,6 +1,7 @@
 import { BridgeService } from "./services/bridge";
 import {
   ApproveData,
+  ApproveDataWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "./services/bridge/models";
@@ -37,7 +38,7 @@ export class RawTransactionBuilder {
    */
   async approve(
     provider: Provider,
-    approveData: ApproveData
+    approveData: ApproveData | ApproveDataWithTokenInfo
   ): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionApprove(provider, approveData);
   }

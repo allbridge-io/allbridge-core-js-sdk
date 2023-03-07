@@ -10,6 +10,7 @@ import { RawTransactionBuilder } from "./raw-transaction-builder";
 import { BridgeService } from "./services/bridge";
 import {
   ApproveData,
+  ApproveDataWithTokenInfo,
   CheckAllowanceParamsWithTokenAddress,
   CheckAllowanceParamsWithTokenInfo,
   GetAllowanceParamsWithTokenAddress,
@@ -124,8 +125,7 @@ export class AllbridgeCoreSdk {
    * Returns a list of supported {@link TokenInfoWithChainDetails | tokens}.
    */
   async tokens(): Promise<TokenInfoWithChainDetails[]> {
-    const map = await this.api.getChainDetailsMap();
-    return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
+    return this.api.tokens();
   }
 
   /**
@@ -176,7 +176,7 @@ export class AllbridgeCoreSdk {
    */
   async approve(
     provider: Provider,
-    approveData: ApproveData
+    approveData: ApproveData | ApproveDataWithTokenInfo
   ): Promise<TransactionResponse> {
     return await this.bridgeService.approve(provider, approveData);
   }

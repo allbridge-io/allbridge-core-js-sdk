@@ -7,7 +7,8 @@ import { EvmPool } from "../../../../services/liquidity-pool/evm";
 import { TokenInfoWithChainDetails } from "../../../../tokens-info";
 import { rpcReply } from "../../../mock/utils";
 
-const POLYGON_GAS_PRICE = 1433333332;
+const POLYGON_GAS_PRICE = "1433333332";
+const POLYGON_MAX_PRICE = "1433333348";
 const ACCOUNT_ADDRESS = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
 const POOL_ADDRESS = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
 // @ts-expect-error enough
@@ -16,9 +17,12 @@ const LOCAL_NODE_URL = "https://local-test.com";
 describe("EvmPool", () => {
   // @ts-expect-error enough
   const api: AllbridgeCoreClient = {
-    getGasPriceForPolygon: () =>
+    getPolygonGasInfo: () =>
       new Promise((resolve) => {
-        resolve(POLYGON_GAS_PRICE);
+        resolve({
+          maxPriorityFee: POLYGON_GAS_PRICE,
+          maxFee: POLYGON_MAX_PRICE,
+        });
       }),
   };
 
@@ -99,6 +103,7 @@ describe("EvmPool", () => {
       value: "0",
       type: 2,
       maxPriorityFeePerGas: POLYGON_GAS_PRICE,
+      maxFeePerGas: POLYGON_MAX_PRICE,
     });
   });
 

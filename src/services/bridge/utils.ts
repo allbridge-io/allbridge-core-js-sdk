@@ -8,6 +8,8 @@ import { AllbridgeCoreClient } from "../../client/core-api";
 import { ChainDetailsMap, TokenInfoWithChainDetails } from "../../tokens-info";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import {
+  ApproveData,
+  ApproveDataWithTokenInfo,
   GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
   GetTokenBalanceParamsWithTokenAddress,
@@ -141,6 +143,7 @@ export async function prepareTxSendParams(
     const chainDetailsMap = await api.getChainDetailsMap();
     txSendParams.fromChainId =
       chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
+    txSendParams.fromChainSymbol = params.fromChainSymbol;
     toChainType = chainProperties[params.toChainSymbol].chainType;
     txSendParams.contractAddress =
       chainDetailsMap[params.fromChainSymbol].bridgeAddress;
@@ -158,10 +161,13 @@ export async function prepareTxSendParams(
     ).toFixed();
   } else {
     txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
+    txSendParams.fromChainSymbol = params.sourceChainToken
+      .chainSymbol as ChainSymbol;
     toChainType =
       chainProperties[params.destinationChainToken.chainSymbol].chainType;
     txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
     txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
+
     txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
     txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
     txSendParams.amount = convertFloatAmountToInt(
@@ -216,6 +222,13 @@ export function isGetAllowanceParamsWithTokenInfo(
 ): boolean {
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
+}
+
+export function isApproveDataWithTokenInfo(
+  params: ApproveData | ApproveDataWithTokenInfo
+): boolean {
+  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+  return (params as ApproveDataWithTokenInfo).token !== undefined;
 }
 
 export function isGetTokenBalanceParamsWithTokenInfo(

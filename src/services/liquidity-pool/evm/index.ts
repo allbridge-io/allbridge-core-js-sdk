@@ -105,10 +105,12 @@ export class EvmPool extends Pool {
     };
 
     if (params.token.chainSymbol == ChainSymbol.POL) {
-      const maxPriorityFeePerGas = await this.api.getGasPriceForPolygon();
+      const gasInfo = await this.api.getPolygonGasInfo();
+
       return {
         ...txParams,
-        maxPriorityFeePerGas,
+        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
+        maxFeePerGas: gasInfo.maxFee,
       };
     }
     return txParams;

@@ -2,7 +2,7 @@ import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainType } from "../../../chains";
+import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { RawTransaction } from "../../models";
 import {
@@ -58,7 +58,7 @@ export class EvmBridge extends Bridge {
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const rawTransaction = this.buildRawTransactionSendFromParams(params);
+    const rawTransaction = await this.buildRawTransactionSendFromParams(params);
     return this.sendRawTransaction(rawTransaction);
   }
 
@@ -70,10 +70,12 @@ export class EvmBridge extends Bridge {
       params,
       this.api
     );
-    return this.buildRawTransactionSendFromParams(txSendParams);
+    return await this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  buildRawTransactionSendFromParams(params: TxSendParams): RawTransaction {
+  async buildRawTransactionSendFromParams(
+    params: TxSendParams
+  ): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -99,13 +101,25 @@ export class EvmBridge extends Bridge {
       messenger
     );
 
-    return {
+    const tx = {
       from: fromAccountAddress,
       to: contractAddress,
       value: fee,
       data: swapAndBridgeMethod.encodeABI(),
       type: 2,
     };
+
+    if (params.fromChainSymbol == ChainSymbol.POL) {
+      const gasInfo = await this.api.getPolygonGasInfo();
+
+      return {
+        ...tx,
+        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
+        maxFeePerGas: gasInfo.maxFee,
+      };
+    }
+
+    return tx;
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
@@ -141,13 +155,26 @@ export class EvmBridge extends Bridge {
       spender,
       amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
-    return {
+
+    const tx = {
       from: owner,
       to: tokenAddress,
       value: "0",
       data: approveMethod.encodeABI(),
       type: 2,
     };
+
+    if (params.chainSymbol == ChainSymbol.POL) {
+      const gasInfo = await this.api.getPolygonGasInfo();
+
+      return {
+        ...tx,
+        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
+        maxFeePerGas: gasInfo.maxFee,
+      };
+    }
+
+    return tx;
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {

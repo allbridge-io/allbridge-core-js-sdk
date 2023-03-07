@@ -1,5 +1,6 @@
 import { Big } from "big.js";
 import Web3 from "web3";
+import { ChainSymbol } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import {
   convertFloatAmountToInt,
@@ -9,6 +10,7 @@ import { Provider, RawTransaction } from "../models";
 import { EvmBridge } from "./evm";
 import {
   ApproveData,
+  ApproveDataWithTokenInfo,
   ApproveParamsDto,
   Bridge,
   CheckAllowanceParamsDto,
@@ -27,6 +29,7 @@ import { SolanaBridge, SolanaBridgeParams } from "./sol";
 import { TronBridge } from "./trx";
 import {
   getTokenInfoByTokenAddress,
+  isApproveDataWithTokenInfo,
   isGetAllowanceParamsWithTokenInfo,
   isGetTokenBalanceParamsWithTokenInfo,
 } from "./utils";
@@ -64,19 +67,19 @@ export class BridgeService {
 
   async approve(
     provider: Provider,
-    approveData: ApproveData
+    approveData: ApproveData | ApproveDataWithTokenInfo
   ): Promise<TransactionResponse> {
     return this.getBridge(provider).approve(
-      this.prepareApproveParams(approveData)
+      await this.prepareApproveParams(approveData)
     );
   }
 
   async buildRawTransactionApprove(
     provider: Provider,
-    approveData: ApproveData
+    approveData: ApproveData | ApproveDataWithTokenInfo
   ): Promise<RawTransaction> {
     return this.getBridge(provider).buildRawTransactionApprove(
-      this.prepareApproveParams(approveData)
+      await this.prepareApproveParams(approveData)
     );
   }
 
@@ -174,15 +177,37 @@ export class BridgeService {
     };
   }
 
-  private prepareApproveParams(approveData: ApproveData): ApproveParamsDto {
-    return {
-      tokenAddress: approveData.tokenAddress,
-      owner: approveData.owner,
-      spender: approveData.spender,
-      amount:
-        approveData.amount == undefined
-          ? undefined
-          : Big(approveData.amount).toFixed(),
-    };
+  private async prepareApproveParams(
+    approveData: ApproveData | ApproveDataWithTokenInfo
+  ): Promise<ApproveParamsDto> {
+    if (isApproveDataWithTokenInfo(approveData)) {
+      approveData = approveData as ApproveDataWithTokenInfo;
+      return {
+        tokenAddress: approveData.token.tokenAddress,
+        owner: approveData.owner,
+        spender: approveData.spender,
+        chainSymbol: approveData.token.chainSymbol as ChainSymbol,
+        amount:
+          approveData.amount == undefined
+            ? undefined
+            : Big(approveData.amount).toFixed(),
+      };
+    } else {
+      approveData = approveData as ApproveData;
+      const chainSymbol = (await this.api.tokens()).find(
+        (tokenInfo) =>
+          tokenInfo.tokenAddress === (approveData as ApproveData).tokenAddress
+      )?.chainSymbol as ChainSymbol;
+      return {
+        tokenAddress: approveData.tokenAddress,
+        owner: approveData.owner,
+        spender: approveData.spender,
+        chainSymbol: chainSymbol,
+        amount:
+          approveData.amount == undefined
+            ? undefined
+            : Big(approveData.amount).toFixed(),
+      };
+    }
   }
 }

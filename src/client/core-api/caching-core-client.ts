@@ -5,6 +5,7 @@ import {
   PoolInfo,
   PoolInfoMap,
   PoolKeyObject,
+  TokenInfoWithChainDetails,
 } from "../../tokens-info";
 import {
   mapChainDetailsMapToPoolKeyObjects,
@@ -30,6 +31,9 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     this.poolInfoCache.putAll(result.poolInfoMap);
     return result.chainDetailsMap;
   }
+  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+    return await this.client.tokens();
+  }
 
   getTransferStatus(
     chainSymbol: ChainSymbol,
@@ -38,8 +42,19 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
-  getGasPriceForPolygon(): Promise<number> {
-    return this.client.getGasPriceForPolygon();
+  getPolygonGasInfo(): Promise<{
+    maxPriorityFee: string;
+    maxFee: string;
+  }> {
+    return this.client.getPolygonGasInfo();
+  }
+
+  async getPolygonMaxPriorityFee(): Promise<string> {
+    return await this.client.getPolygonMaxPriorityFee();
+  }
+
+  async getPolygonMaxFee(): Promise<string> {
+    return await this.client.getPolygonMaxFee();
   }
 
   getReceiveTransactionCost(
