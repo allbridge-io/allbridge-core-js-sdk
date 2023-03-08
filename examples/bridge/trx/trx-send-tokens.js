@@ -1,8 +1,4 @@
-const {
-  AllbridgeCoreSdk,
-  ChainSymbol,
-  Messenger,
-} = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk, ChainSymbol, Messenger } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
 require("dotenv").config({ path: "../../.env" });
 
@@ -30,12 +26,7 @@ async function runExample() {
     // fee: 20000000000000000, //0.02 Ether - optional param
   };
 
-  const tronWeb = new TronWeb(
-    providerUrl,
-    providerUrl,
-    providerUrl,
-    privateKey
-  );
+  const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
 
   const sdk = new AllbridgeCoreSdk();
 

@@ -24,10 +24,7 @@ export interface ContractEventLog<T> extends EventLog {
 }
 export interface ContractEventEmitter<T> extends EventEmitter {
   on(event: "connected", listener: (subscriptionId: string) => void): this;
-  on(
-    event: "data" | "changed",
-    listener: (event: ContractEventLog<T>) => void
-  ): this;
+  on(event: "data" | "changed", listener: (event: ContractEventLog<T>) => void): this;
   on(event: "error", listener: (error: Error) => void): this;
 }
 
@@ -63,11 +60,5 @@ export interface PayableTransactionObject<T> {
   encodeABI(): string;
 }
 
-export type BlockType =
-  | "latest"
-  | "pending"
-  | "genesis"
-  | "earliest"
-  | number
-  | BN;
+export type BlockType = "latest" | "pending" | "genesis" | "earliest" | number | BN;
 export type BaseContract = Omit<Contract, "clone" | "once">;

@@ -23,6 +23,6 @@ $ pnpm add @allbridge/bridge-core-sdk
 ### 1. Initialize SDK instance
 
 ```js
-const AllbridgeCoreSdk = require("@allbridge/allbridge-core-sdk");
+const AllbridgeCoreSdk = require("@allbridge/bridge-core-sdk");
 const sdk = new AllbridgeCoreSdk();
 ```

@@ -3,11 +3,35 @@ import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../../tokens-info";
 
+/**
+ * @deprecated Please use {@link ApproveDataWithTokenInfo} instead
+ */
 export interface ApproveData {
   /**
    * The token address itself
    */
   tokenAddress: string;
+  /**
+   *  The address of the owner of the tokens allowing the use of their tokens
+   *
+   */
+  owner: string;
+  /**
+   *  The address of the contract that we allow to use tokens
+   */
+  spender: string;
+  /**
+   * The integer amount of tokens to approve.
+   * Optional. Maximum amount is used if parameter not defined.
+   */
+  amount?: string | number | Big;
+}
+
+export interface ApproveDataWithTokenInfo {
+  /**
+   * The token info
+   */
+  token: TokenInfoWithChainDetails;
   /**
    *  The address of the owner of the tokens allowing the use of their tokens
    *
@@ -113,16 +137,14 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
 /**
  * @deprecated Please use {@link CheckAllowanceParamsWithTokenInfo} instead
  */
-export interface CheckAllowanceParamsWithTokenAddress
-  extends GetAllowanceParamsWithTokenAddress {
+export interface CheckAllowanceParamsWithTokenAddress extends GetAllowanceParamsWithTokenAddress {
   /**
    * The float amount of tokens to check allowance.
    */
   amount: string | number | Big;
 }
 
-export interface CheckAllowanceParamsWithTokenInfo
-  extends GetAllowanceParamsWithTokenInfo {
+export interface CheckAllowanceParamsWithTokenInfo extends GetAllowanceParamsWithTokenInfo {
   /**
    * The float amount of tokens to check allowance.
    */
@@ -152,6 +174,7 @@ export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromChainId: number;
+  fromChainSymbol: ChainSymbol;
   fromAccountAddress: string;
   fromTokenAddress: AccountAddress;
   toChainId: number;
@@ -163,6 +186,7 @@ export interface TxSendParams {
 
 export interface ApproveParamsDto {
   tokenAddress: string;
+  chainSymbol: ChainSymbol;
   owner: string;
   spender: string;
   /**

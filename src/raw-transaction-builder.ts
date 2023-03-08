@@ -1,14 +1,12 @@
 import { BridgeService } from "./services/bridge";
 import {
   ApproveData,
+  ApproveDataWithTokenInfo,
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "./services/bridge/models";
 import { LiquidityPoolService } from "./services/liquidity-pool";
-import {
-  LiquidityPoolsParams,
-  LiquidityPoolsParamsWithAmount,
-} from "./services/liquidity-pool/models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./services/liquidity-pool/models";
 import { Provider, RawTransaction } from "./services/models";
 
 export class RawTransactionBuilder {
@@ -22,10 +20,7 @@ export class RawTransactionBuilder {
    *
    * @param bridgeService
    */
-  constructor(
-    bridgeService: BridgeService,
-    liquidityPoolService: LiquidityPoolService
-  ) {
+  constructor(bridgeService: BridgeService, liquidityPoolService: LiquidityPoolService) {
     this.bridgeService = bridgeService;
     this.liquidityPoolService = liquidityPoolService;
   }
@@ -35,10 +30,7 @@ export class RawTransactionBuilder {
    * @param provider
    * @param approveData
    */
-  async approve(
-    provider: Provider,
-    approveData: ApproveData
-  ): Promise<RawTransaction> {
+  async approve(provider: Provider, approveData: ApproveData | ApproveDataWithTokenInfo): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionApprove(provider, approveData);
   }
 
@@ -59,14 +51,8 @@ export class RawTransactionBuilder {
    * @param params
    * @param provider
    */
-  async deposit(
-    params: LiquidityPoolsParamsWithAmount,
-    provider?: Provider
-  ): Promise<RawTransaction> {
-    return this.liquidityPoolService.buildRawTransactionDeposit(
-      params,
-      provider
-    );
+  async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    return this.liquidityPoolService.buildRawTransactionDeposit(params, provider);
   }
 
   /**
@@ -74,14 +60,8 @@ export class RawTransactionBuilder {
    * @param params
    * @param provider
    */
-  async withdraw(
-    params: LiquidityPoolsParamsWithAmount,
-    provider?: Provider
-  ): Promise<RawTransaction> {
-    return this.liquidityPoolService.buildRawTransactionWithdraw(
-      params,
-      provider
-    );
+  async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    return this.liquidityPoolService.buildRawTransactionWithdraw(params, provider);
   }
 
   /**
@@ -89,13 +69,7 @@ export class RawTransactionBuilder {
    * @param params
    * @param provider
    */
-  async claimRewards(
-    params: LiquidityPoolsParams,
-    provider?: Provider
-  ): Promise<RawTransaction> {
-    return this.liquidityPoolService.buildRawTransactionClaimRewards(
-      params,
-      provider
-    );
+  async claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction> {
+    return this.liquidityPoolService.buildRawTransactionClaimRewards(params, provider);
   }
 }

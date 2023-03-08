@@ -12,21 +12,11 @@ async function runExample() {
   web3.eth.accounts.wallet.add(account);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const oneToken = 1;
-  const estimatedAmount = await sdk.getLPAmountOnDeposit(
-    oneToken,
-    tokenInfo,
-    web3
-  );
-  console.log(
-    "If you send %d , then %d of LP tokens will be deposited",
-    oneToken,
-    estimatedAmount
-  );
+  const estimatedAmount = await sdk.getLPAmountOnDeposit(oneToken, tokenInfo, web3);
+  console.log("If you send %d , then %d of LP tokens will be deposited", oneToken, estimatedAmount);
 }
 
 runExample();

@@ -21,10 +21,7 @@ export function createTestBridge(): Bridge {
   return new TestBridge(undefined, undefined, undefined);
 }
 
-export function mockBridge_getTokenBalance(
-  bridge: Bridge,
-  tokenBalance: string
-) {
+export function mockBridge_getTokenBalance(bridge: Bridge, tokenBalance: string) {
   const getTokenBalance = vi.spyOn(bridge, "getTokenBalance");
   getTokenBalance.mockImplementation(() => {
     return Promise.resolve(tokenBalance);
@@ -32,11 +29,7 @@ export function mockBridge_getTokenBalance(
 }
 
 export class TestBridge extends Bridge {
-  constructor(
-    public params: SolanaBridgeParams,
-    public api: AllbridgeCoreClient,
-    public chainType: ChainType
-  ) {
+  constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient, public chainType: ChainType) {
     super();
   }
 
@@ -45,16 +38,12 @@ export class TestBridge extends Bridge {
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionApprove(
-    approveData: ApproveData
-  ): Promise<RawTransaction> {
+  buildRawTransactionApprove(approveData: ApproveData): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  buildRawTransactionSend(params: SendParamsWithChainSymbols | SendParamsWithTokenInfos): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
@@ -63,9 +52,7 @@ export class TestBridge extends Bridge {
     return Promise.resolve("");
   }
 
-  getTokenBalance(
-    params: GetTokenBalanceParamsWithTokenAddress
-  ): Promise<string> {
+  getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
     return Promise.resolve("");
   }
 

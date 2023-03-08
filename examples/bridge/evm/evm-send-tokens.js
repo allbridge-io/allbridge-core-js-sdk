@@ -1,8 +1,4 @@
-const {
-  AllbridgeCoreSdk,
-  ChainSymbol,
-  Messenger,
-} = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk, ChainSymbol, Messenger } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
 require("dotenv").config({ path: "../../.env" });
 

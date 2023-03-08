@@ -6,22 +6,12 @@ async function runExample() {
   const accountAddress = process.env.SOL_ACCOUNT_ADDRESS;
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const halfToken = 0.5;
-  const estimatedAmount = await sdk.getAmountToBeWithdrawn(
-    halfToken,
-    accountAddress,
-    tokenInfo
-  );
+  const estimatedAmount = await sdk.getAmountToBeWithdrawn(halfToken, accountAddress, tokenInfo);
 
-  console.log(
-    "If you withdraw %d LP tokens, then %d will be received",
-    halfToken,
-    estimatedAmount
-  );
+  console.log("If you withdraw %d LP tokens, then %d will be received", halfToken, estimatedAmount);
 }
 
 runExample();

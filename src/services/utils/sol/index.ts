@@ -8,10 +8,7 @@ import { swapToVUsd } from "../../../utils/calculation";
 import { TokenAccountData } from "../../models/sol";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 
-export async function getTokenAccountData(
-  account: PublicKey,
-  provider: Provider
-): Promise<TokenAccountData> {
+export async function getTokenAccountData(account: PublicKey, provider: Provider): Promise<TokenAccountData> {
   return await Spl.token(provider).account.token.fetch(account);
 }
 
@@ -22,9 +19,7 @@ export async function getVUsdAmount(
 ): Promise<string> {
   const poolAccountInfo = await bridge.account.pool.fetch(poolAccount);
   const decimals = poolAccountInfo.decimals;
-  const feeShare = Big(poolAccountInfo.feeShareBp.toString())
-    .div(10000)
-    .toFixed();
+  const feeShare = Big(poolAccountInfo.feeShareBp.toString()).div(10000).toFixed();
   const poolInfo: Omit<PoolInfo, "p"> = {
     aValue: poolAccountInfo.a.toString(),
     dValue: poolAccountInfo.d.toString(),
@@ -67,9 +62,7 @@ export function getMessage(args: {
   if (!message) {
     throw new Error("message is not defined");
   }
-  const hash = Web3.utils.keccak256(
-    Buffer.from(message.replace("0x", ""), "hex") as any
-  );
+  const hash = Web3.utils.keccak256(Buffer.from(message.replace("0x", ""), "hex") as any);
 
   const hashBuffer = Buffer.from(hash.replace("0x", ""), "hex");
   hashBuffer[0] = sourceChainId;
@@ -84,14 +77,9 @@ export function getMessage(args: {
     throw new Error("messageWithSigner is not defined");
   }
 
-  const hashWithSigner = Web3.utils.keccak256(
-    Buffer.from(messageWithSigner.replace("0x", ""), "hex") as any
-  );
+  const hashWithSigner = Web3.utils.keccak256(Buffer.from(messageWithSigner.replace("0x", ""), "hex") as any);
 
-  const hashWithSignerBuffer = Buffer.from(
-    hashWithSigner.replace("0x", ""),
-    "hex"
-  );
+  const hashWithSignerBuffer = Buffer.from(hashWithSigner.replace("0x", ""), "hex");
 
   hashWithSignerBuffer[0] = hashBuffer[0];
   hashWithSignerBuffer[1] = hashBuffer[1];

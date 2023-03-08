@@ -1,19 +1,8 @@
 import Cache from "timed-cache";
 import { ChainSymbol } from "../../chains";
-import {
-  ChainDetailsMap,
-  PoolInfo,
-  PoolInfoMap,
-  PoolKeyObject,
-} from "../../tokens-info";
-import {
-  mapChainDetailsMapToPoolKeyObjects,
-  mapPoolKeyObjectToPoolKey,
-} from "./core-api-mapper";
-import {
-  ReceiveTransactionCostRequest,
-  TransferStatusResponse,
-} from "./core-api.model";
+import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
+import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
+import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
 export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
@@ -30,21 +19,30 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     this.poolInfoCache.putAll(result.poolInfoMap);
     return result.chainDetailsMap;
   }
+  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+    return await this.client.tokens();
+  }
 
-  getTransferStatus(
-    chainSymbol: ChainSymbol,
-    txId: string
-  ): Promise<TransferStatusResponse> {
+  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
-  getGasPriceForPolygon(): Promise<number> {
-    return this.client.getGasPriceForPolygon();
+  getPolygonGasInfo(): Promise<{
+    maxPriorityFee: string;
+    maxFee: string;
+  }> {
+    return this.client.getPolygonGasInfo();
   }
 
-  getReceiveTransactionCost(
-    args: ReceiveTransactionCostRequest
-  ): Promise<string> {
+  async getPolygonMaxPriorityFee(): Promise<string> {
+    return await this.client.getPolygonMaxPriorityFee();
+  }
+
+  async getPolygonMaxFee(): Promise<string> {
+    return await this.client.getPolygonMaxFee();
+  }
+
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string> {
     return this.client.getReceiveTransactionCost(args);
   }
 
@@ -62,9 +60,7 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
 
   async refreshPoolInfo(): Promise<void> {
     const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-    const poolInfoMap = await this.client.getPoolInfoMap(
-      mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap)
-    );
+    const poolInfoMap = await this.client.getPoolInfoMap(mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap));
     this.poolInfoCache.putAll(poolInfoMap);
   }
 }

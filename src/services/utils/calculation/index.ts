@@ -1,10 +1,6 @@
 import { Big } from "big.js";
 import BN from "bn.js";
-import {
-  convertFloatAmountToInt,
-  getD,
-  getY,
-} from "../../../utils/calculation";
+import { convertFloatAmountToInt, getD, getY } from "../../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../../utils/calculation/constants";
 
 export function depositAmountToVUsd(
@@ -61,9 +57,7 @@ function preWithdrawSwap(
 ): string {
   if (amountToken.gt(amountVUsd)) {
     const extraToken = amountToken.minus(amountVUsd).div(2);
-    const extraVUsd = Big(vUsdBalance).minus(
-      getY(Big(tokenBalance).plus(extraToken).toFixed(), aValue, dValue)
-    );
+    const extraVUsd = Big(vUsdBalance).minus(getY(Big(tokenBalance).plus(extraToken).toFixed(), aValue, dValue));
     const amountTokenMinusExtraToken = amountToken.minus(extraToken);
     const amountVUsdPlusExtraVUsd = amountVUsd.plus(extraVUsd);
     return amountTokenMinusExtraToken.lte(amountVUsdPlusExtraVUsd)
@@ -71,9 +65,7 @@ function preWithdrawSwap(
       : amountVUsdPlusExtraVUsd.toFixed();
   } else {
     const extraVUsd = amountVUsd.minus(amountToken).div(2);
-    const extraToken = Big(tokenBalance).minus(
-      getY(Big(vUsdBalance).plus(extraVUsd).toFixed(), aValue, dValue)
-    );
+    const extraToken = Big(tokenBalance).minus(getY(Big(vUsdBalance).plus(extraVUsd).toFixed(), aValue, dValue));
     const amountVUsdMinusExtraVUsd = amountVUsd.minus(extraVUsd);
     const amountTokenPlusExtraToken = amountToken.plus(extraToken);
     return amountVUsdMinusExtraVUsd.lte(amountTokenPlusExtraToken)

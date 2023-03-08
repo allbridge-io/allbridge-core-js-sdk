@@ -19,7 +19,8 @@
     "vusd",
     "Vusd",
     "SYSVAR",
-    "keccak"
+    "keccak",
+    "Gwai"
   ],
   "flagWords": [],
   "ignorePaths": [

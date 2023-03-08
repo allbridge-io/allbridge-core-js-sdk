@@ -16,9 +16,7 @@ async function runExample() {
   );
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   // create claim rewards raw transaction
   const rawTransactionDeposit = await sdk.rawTransactionBuilder.claimRewards(

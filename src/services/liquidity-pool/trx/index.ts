@@ -4,12 +4,7 @@ import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import {
-  LiquidityPoolsParams,
-  LiquidityPoolsParamsWithAmount,
-  Pool,
-  UserBalanceInfo,
-} from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
 
 export class TronPool extends Pool {
   chainType: ChainType.TRX = ChainType.TRX;
@@ -19,10 +14,7 @@ export class TronPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(
-    accountAddress: string,
-    token: TokenInfoWithChainDetails
-  ): Promise<UserBalanceInfo> {
+  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
     const contract = await this.getContract(token.poolAddress);
     const userInfoData = await contract.userInfo(accountAddress).call();
     return new UserBalanceInfo({
@@ -34,14 +26,7 @@ export class TronPool extends Pool {
   async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
     const poolContract = await this.getContract(token.poolAddress);
 
-    const [
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount,
-      accRewardPerShareP,
-    ] = await Promise.all([
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),
       poolContract.methods.d().call(),
       poolContract.methods.tokenBalance().call(),
@@ -61,55 +46,31 @@ export class TronPool extends Pool {
     };
   }
 
-  buildRawTransactionDeposit(
-    params: LiquidityPoolsParamsWithAmount
-  ): Promise<RawTransaction> {
+  buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { amount, accountAddress } = params;
 
     const parameter = [{ type: "uint256", value: amount }];
     const methodSignature = "deposit(uint256)";
 
-    return this.buildRawTransaction(
-      params.token.poolAddress,
-      methodSignature,
-      parameter,
-      "0",
-      accountAddress
-    );
+    return this.buildRawTransaction(params.token.poolAddress, methodSignature, parameter, "0", accountAddress);
   }
 
-  buildRawTransactionWithdraw(
-    params: LiquidityPoolsParamsWithAmount
-  ): Promise<RawTransaction> {
+  buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { amount, accountAddress } = params;
 
     const parameter = [{ type: "uint256", value: amount }];
     const methodSignature = "withdraw(uint256)";
 
-    return this.buildRawTransaction(
-      params.token.poolAddress,
-      methodSignature,
-      parameter,
-      "0",
-      accountAddress
-    );
+    return this.buildRawTransaction(params.token.poolAddress, methodSignature, parameter, "0", accountAddress);
   }
 
-  buildRawTransactionClaimRewards(
-    params: LiquidityPoolsParams
-  ): Promise<RawTransaction> {
+  buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const { accountAddress } = params;
 
     const parameter: SmartContractMethodParameter[] = [];
     const methodSignature = "claimRewards()";
 
-    return this.buildRawTransaction(
-      params.token.poolAddress,
-      methodSignature,
-      parameter,
-      "0",
-      accountAddress
-    );
+    return this.buildRawTransaction(params.token.poolAddress, methodSignature, parameter, "0", accountAddress);
   }
 
   private async buildRawTransaction(
@@ -119,20 +80,17 @@ export class TronPool extends Pool {
     value: string,
     fromAddress: string
   ): Promise<RawTransaction> {
-    const transactionObject =
-      await this.tronWeb.transactionBuilder.triggerSmartContract(
-        contractAddress,
-        methodSignature,
-        {
-          callValue: value,
-        },
-        parameter,
-        fromAddress
-      );
+    const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
+      contractAddress,
+      methodSignature,
+      {
+        callValue: value,
+      },
+      parameter,
+      fromAddress
+    );
     if (!transactionObject?.result?.result) {
-      throw Error(
-        "Unknown error: " + JSON.stringify(transactionObject, null, 2)
-      );
+      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
   }

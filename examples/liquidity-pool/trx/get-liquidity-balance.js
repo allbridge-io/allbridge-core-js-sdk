@@ -8,30 +8,16 @@ async function runTronExample() {
   const tokenAddress = process.env.TRX_TOKEN_ADDRESS;
   const accountAddress = process.env.TRX_ACCOUNT_ADDRESS;
 
-  const tronWeb = new TronWeb(
-    providerUrl,
-    providerUrl,
-    providerUrl,
-    privateKey
-  );
+  const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
-  const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
-    accountAddress,
-    tokenInfo,
-    tronWeb
-  );
+  const userBalanceInfo = await sdk.getLiquidityBalanceInfo(accountAddress, tokenInfo, tronWeb);
   const poolInfo = await sdk.getPoolInfo(tokenInfo, tronWeb);
 
   console.log("Tron User balance: ", userBalanceInfo.userLiquidity);
-  console.log(
-    "Tron User rewards: ",
-    userBalanceInfo.earned(poolInfo, tokenInfo.decimals)
-  );
+  console.log("Tron User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
   console.log("Tron Pool APR: ", sdk.aprInPercents(tokenInfo.apr));
 }
 

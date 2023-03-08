@@ -28,8 +28,7 @@ describe("AllbridgeCachingCoreClient", () => {
   });
 
   describe("Given ChainDetailsMap", () => {
-    const expectedChainDetailsMap =
-      tokensGroupedByChain as unknown as ChainDetailsMap;
+    const expectedChainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
     const expectedPoolInfoMap = poolInfoMap as unknown as PoolInfoMap;
 
     beforeEach(() => {

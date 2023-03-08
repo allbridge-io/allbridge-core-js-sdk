@@ -24,10 +24,7 @@ describe("TrxBridge", () => {
         triggerSmartContract: vi.fn(),
       },
     };
-    trxBridge = new TronBridge(
-      tronWebMock as typeof TronWeb,
-      api as AllbridgeCoreClient
-    );
+    trxBridge = new TronBridge(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient);
   });
 
   afterEach(() => {
@@ -40,8 +37,7 @@ describe("TrxBridge", () => {
     const to = "0x01237296aaF2ba01AC9a819813E260Bb4Ad6642d";
     const bridgeAddress = "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM";
     const tokenAddress = "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U";
-    const destinationTokenAddress =
-      "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
+    const destinationTokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
     const poolAddress = "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd";
     /* cSpell:enable */
     const amount = "1370000000000000000";
@@ -50,9 +46,7 @@ describe("TrxBridge", () => {
     const messenger = Messenger.ALLBRIDGE;
 
     test("buildRawTransactionApprove should return RawTransaction", async () => {
-      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(
-        triggerSmartContractApproveResponse
-      );
+      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractApproveResponse);
 
       const approveData: ApproveParamsDto = {
         tokenAddress: tokenAddress,
@@ -63,12 +57,8 @@ describe("TrxBridge", () => {
       const actual = await trxBridge.buildRawTransactionApprove(approveData);
 
       expect(actual).toEqual(triggerSmartContractApproveResponse.transaction);
-      expect(
-        tronWebMock.transactionBuilder.triggerSmartContract
-      ).toHaveBeenCalledOnce();
-      expect(
-        tronWebMock.transactionBuilder.triggerSmartContract
-      ).toHaveBeenCalledWith(
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         tokenAddress,
         "approve(address,uint256)",
         { callValue: "0" },
@@ -84,23 +74,13 @@ describe("TrxBridge", () => {
     });
 
     test("buildRawTransactionSend should return RawTransaction", async () => {
-      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(
-        triggerSmartContractSendResponse
-      );
+      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractSendResponse);
 
       const params = {
         contractAddress: bridgeAddress,
-        fromTokenAddress: formatAddress(
-          tokenAddress,
-          ChainType.TRX,
-          ChainType.TRX
-        ),
+        fromTokenAddress: formatAddress(tokenAddress, ChainType.TRX, ChainType.TRX),
         toChainId: destinationChainId,
-        toTokenAddress: formatAddress(
-          destinationTokenAddress,
-          ChainType.EVM,
-          ChainType.TRX
-        ),
+        toTokenAddress: formatAddress(destinationTokenAddress, ChainType.EVM, ChainType.TRX),
         amount: amount,
         messenger: messenger,
         fromAccountAddress: from,
@@ -111,12 +91,8 @@ describe("TrxBridge", () => {
       const actual = await trxBridge.buildRawTransactionSendFromParams(params);
 
       expect(actual).toEqual(triggerSmartContractSendResponse.transaction);
-      expect(
-        tronWebMock.transactionBuilder.triggerSmartContract
-      ).toHaveBeenCalledOnce();
-      expect(
-        tronWebMock.transactionBuilder.triggerSmartContract
-      ).toHaveBeenCalledWith(
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         bridgeAddress,
         "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)",
         { callValue: gasFee },
@@ -133,11 +109,7 @@ describe("TrxBridge", () => {
           { type: "uint8", value: destinationChainId },
           {
             type: "bytes32",
-            value: formatAddress(
-              destinationTokenAddress,
-              ChainType.EVM,
-              ChainType.TRX
-            ),
+            value: formatAddress(destinationTokenAddress, ChainType.EVM, ChainType.TRX),
           },
           { type: "uint256", value: nonceBuffer.toJSON().data },
           { type: "uint8", value: messenger },

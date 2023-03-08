@@ -47,7 +47,7 @@ $ npm install @allbridge/bridge-core-sdk
 ### 1. Initialize SDK instance
 
 ```js
-const AllbridgeCoreSdk = require('@allbridge/allbridge-core-sdk');
+const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const sdk = new AllbridgeCoreSdk();
 ```
 
@@ -199,7 +199,7 @@ const { transaction, signer } = await sdk.rawTransactionBuilder.send(sendParams)
 ```
 
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/solana/sol-build-tx.js)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/bridge/solana/sol-build-send-tx.js)
 
 ### Get information about sent transaction
 

@@ -6,13 +6,7 @@ import type BN from "bn.js";
 import type { ContractOptions } from "web3-eth-contract";
 import type { EventLog } from "web3-core";
 import type { EventEmitter } from "events";
-import type {
-  Callback,
-  NonPayableTransactionObject,
-  BlockType,
-  ContractEventLog,
-  BaseContract,
-} from "./types";
+import type { Callback, NonPayableTransactionObject, BlockType, ContractEventLog, BaseContract } from "./types";
 
 export interface EventOptions {
   filter?: object;
@@ -70,11 +64,7 @@ export type Withdraw = ContractEventLog<{
 }>;
 
 export interface Abi extends BaseContract {
-  constructor(
-    jsonInterface: any[],
-    address?: string,
-    options?: ContractOptions
-  ): Abi;
+  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Abi;
   clone(): Abi;
   methods: {
     PP(): NonPayableTransactionObject<string>;
@@ -97,10 +87,7 @@ export interface Abi extends BaseContract {
 
     feeShareBP(): NonPayableTransactionObject<string>;
 
-    getD(
-      x: number | string | BN,
-      y: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    getD(x: number | string | BN, y: number | string | BN): NonPayableTransactionObject<string>;
 
     getPrice(): NonPayableTransactionObject<string>;
 
@@ -114,25 +101,15 @@ export interface Abi extends BaseContract {
 
     router(): NonPayableTransactionObject<string>;
 
-    setAdminFeeShare(
-      _adminFeeShareBP: number | string | BN
-    ): NonPayableTransactionObject<void>;
+    setAdminFeeShare(_adminFeeShareBP: number | string | BN): NonPayableTransactionObject<void>;
 
-    setFeeShare(
-      _feeShareBP: number | string | BN
-    ): NonPayableTransactionObject<void>;
+    setFeeShare(_feeShareBP: number | string | BN): NonPayableTransactionObject<void>;
 
     setRouter(_router: string): NonPayableTransactionObject<void>;
 
-    swapFromVUsd(
-      user: string,
-      amount: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    swapFromVUsd(user: string, amount: number | string | BN): NonPayableTransactionObject<string>;
 
-    swapToVUsd(
-      user: string,
-      amount: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    swapToVUsd(user: string, amount: number | string | BN): NonPayableTransactionObject<string>;
 
     token(): NonPayableTransactionObject<string>;
 
@@ -158,28 +135,16 @@ export interface Abi extends BaseContract {
     Deposit(options?: EventOptions, cb?: Callback<Deposit>): EventEmitter;
 
     OwnershipTransferred(cb?: Callback<OwnershipTransferred>): EventEmitter;
-    OwnershipTransferred(
-      options?: EventOptions,
-      cb?: Callback<OwnershipTransferred>
-    ): EventEmitter;
+    OwnershipTransferred(options?: EventOptions, cb?: Callback<OwnershipTransferred>): EventEmitter;
 
     RewardsClaimed(cb?: Callback<RewardsClaimed>): EventEmitter;
-    RewardsClaimed(
-      options?: EventOptions,
-      cb?: Callback<RewardsClaimed>
-    ): EventEmitter;
+    RewardsClaimed(options?: EventOptions, cb?: Callback<RewardsClaimed>): EventEmitter;
 
     SwappedFromVUsd(cb?: Callback<SwappedFromVUsd>): EventEmitter;
-    SwappedFromVUsd(
-      options?: EventOptions,
-      cb?: Callback<SwappedFromVUsd>
-    ): EventEmitter;
+    SwappedFromVUsd(options?: EventOptions, cb?: Callback<SwappedFromVUsd>): EventEmitter;
 
     SwappedToVUsd(cb?: Callback<SwappedToVUsd>): EventEmitter;
-    SwappedToVUsd(
-      options?: EventOptions,
-      cb?: Callback<SwappedToVUsd>
-    ): EventEmitter;
+    SwappedToVUsd(options?: EventOptions, cb?: Callback<SwappedToVUsd>): EventEmitter;
 
     Withdraw(cb?: Callback<Withdraw>): EventEmitter;
     Withdraw(options?: EventOptions, cb?: Callback<Withdraw>): EventEmitter;
@@ -191,32 +156,16 @@ export interface Abi extends BaseContract {
   once(event: "Deposit", options: EventOptions, cb: Callback<Deposit>): void;
 
   once(event: "OwnershipTransferred", cb: Callback<OwnershipTransferred>): void;
-  once(
-    event: "OwnershipTransferred",
-    options: EventOptions,
-    cb: Callback<OwnershipTransferred>
-  ): void;
+  once(event: "OwnershipTransferred", options: EventOptions, cb: Callback<OwnershipTransferred>): void;
 
   once(event: "RewardsClaimed", cb: Callback<RewardsClaimed>): void;
-  once(
-    event: "RewardsClaimed",
-    options: EventOptions,
-    cb: Callback<RewardsClaimed>
-  ): void;
+  once(event: "RewardsClaimed", options: EventOptions, cb: Callback<RewardsClaimed>): void;
 
   once(event: "SwappedFromVUsd", cb: Callback<SwappedFromVUsd>): void;
-  once(
-    event: "SwappedFromVUsd",
-    options: EventOptions,
-    cb: Callback<SwappedFromVUsd>
-  ): void;
+  once(event: "SwappedFromVUsd", options: EventOptions, cb: Callback<SwappedFromVUsd>): void;
 
   once(event: "SwappedToVUsd", cb: Callback<SwappedToVUsd>): void;
-  once(
-    event: "SwappedToVUsd",
-    options: EventOptions,
-    cb: Callback<SwappedToVUsd>
-  ): void;
+  once(event: "SwappedToVUsd", options: EventOptions, cb: Callback<SwappedToVUsd>): void;
 
   once(event: "Withdraw", cb: Callback<Withdraw>): void;
   once(event: "Withdraw", options: EventOptions, cb: Callback<Withdraw>): void;

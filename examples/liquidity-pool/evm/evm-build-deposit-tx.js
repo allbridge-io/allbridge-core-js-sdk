@@ -9,15 +9,11 @@ async function runExample() {
 
   // configure web3
   const web3 = new Web3(process.env.WEB3_PROVIDER_URL);
-  const account = web3.eth.accounts.privateKeyToAccount(
-    process.env.ETH_PRIVATE_KEY
-  );
+  const account = web3.eth.accounts.privateKeyToAccount(process.env.ETH_PRIVATE_KEY);
   web3.eth.accounts.wallet.add(account);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const oneToken = 1;
   // create deposit raw transaction
