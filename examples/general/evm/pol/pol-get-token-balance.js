@@ -1,6 +1,6 @@
 const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
-require("dotenv").config({ path: "../../.env" });
+require("dotenv").config({ path: "../../../.env" });
 
 async function runExample() {
   const providerUrl = process.env.POL_WEB3_PROVIDER_URL;
@@ -15,7 +15,7 @@ async function runExample() {
   const sdk = new AllbridgeCoreSdk();
   const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
   const tokenDecimals = tokenInfo.decimals;
-  console.log("tokenInfo.chainSymbol:", tokenInfo.chainSymbol);
+
   const tokenBalanceData = {
     account: accountAddress,
     tokenAddress: tokenAddress,
