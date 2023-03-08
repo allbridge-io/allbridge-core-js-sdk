@@ -47,7 +47,7 @@ describe("EvmBridge", () => {
         from: from,
         to: tokenAddress,
         value: "0",
-        data: "0x095ea7b3000000000000000000000000ec46d2b11e68a31026673d63b345b889ab37c0bcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        data: "0x095ea7b3000000000000000000000000ec46d2b11e68a31026673d63b345b889ab37c0bcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       });
     });
 
