@@ -378,8 +378,7 @@ describe("SDK", () => {
           from: fromAccountAddress,
           to: bridgeAddress,
           value: fee,
-          data: expectedData,
-          type: 2,
+          data: expectedData
         });
 
         const expectedAmount = Big(tokensAmount)

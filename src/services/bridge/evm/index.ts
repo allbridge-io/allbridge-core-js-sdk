@@ -92,8 +92,7 @@ export class EvmBridge extends Bridge {
       from: fromAccountAddress,
       to: contractAddress,
       value: fee,
-      data: swapAndBridgeMethod.encodeABI(),
-      type: 2,
+      data: swapAndBridgeMethod.encodeABI()
     };
 
     if (params.fromChainSymbol == ChainSymbol.POL) {
@@ -141,8 +140,7 @@ export class EvmBridge extends Bridge {
       from: owner,
       to: tokenAddress,
       value: "0",
-      data: approveMethod.encodeABI(),
-      type: 2,
+      data: approveMethod.encodeABI()
     };
 
     if (params.chainSymbol == ChainSymbol.POL) {

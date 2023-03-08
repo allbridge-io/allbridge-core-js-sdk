@@ -49,7 +49,6 @@ describe("EvmPool", () => {
       from: ACCOUNT_ADDRESS,
       to: POOL_ADDRESS,
       value: "0",
-      type: 2,
       data: "0xb6b55f250000000000000000000000000000000000000000000000000de0b6b3a7640000",
     });
   });
@@ -66,7 +65,6 @@ describe("EvmPool", () => {
       from: ACCOUNT_ADDRESS,
       to: POOL_ADDRESS,
       value: "0",
-      type: 2,
       data: "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000",
     });
   });
@@ -82,7 +80,6 @@ describe("EvmPool", () => {
       from: ACCOUNT_ADDRESS,
       to: POOL_ADDRESS,
       value: "0",
-      type: 2,
       data: "0x372500ab",
     });
   });
@@ -99,7 +96,6 @@ describe("EvmPool", () => {
       from: ACCOUNT_ADDRESS,
       to: POOL_ADDRESS,
       value: "0",
-      type: 2,
       maxPriorityFeePerGas: POLYGON_GAS_PRICE,
       maxFeePerGas: POLYGON_MAX_PRICE,
     });

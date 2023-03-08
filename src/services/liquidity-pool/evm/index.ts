@@ -69,8 +69,7 @@ export class EvmPool extends Pool {
     const txParams = {
       from: params.accountAddress,
       to: params.token.poolAddress,
-      value: "0",
-      type: 2,
+      value: "0"
     };
 
     if (params.token.chainSymbol == ChainSymbol.POL) {
