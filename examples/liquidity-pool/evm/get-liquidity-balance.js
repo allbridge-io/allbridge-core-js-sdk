@@ -13,22 +13,13 @@ async function runEvmExample() {
   web3.eth.accounts.wallet.add(account);
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
-  const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
-    accountAddress,
-    tokenInfo,
-    web3
-  );
+  const userBalanceInfo = await sdk.getLiquidityBalanceInfo(accountAddress, tokenInfo, web3);
   const poolInfo = await sdk.getPoolInfo(tokenInfo, web3);
 
   console.log("Evm User balance: ", userBalanceInfo.userLiquidity);
-  console.log(
-    "Evm User rewards: ",
-    userBalanceInfo.earned(poolInfo, tokenInfo.decimals)
-  );
+  console.log("Evm User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
   console.log("Evm Pool APR: ", sdk.aprInPercents(tokenInfo.apr));
 }
 

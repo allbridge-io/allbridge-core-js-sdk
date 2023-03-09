@@ -9,12 +9,7 @@ async function runExample() {
   const accountAddress = process.env.TRX_ACCOUNT_ADDRESS;
   const poolAddress = process.env.TRX_POOL_ADDRESS;
 
-  const tronWeb = new TronWeb(
-    providerUrl,
-    providerUrl,
-    providerUrl,
-    privateKey
-  );
+  const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
 
   const sdk = new AllbridgeCoreSdk();
   const approveData = {

@@ -11,9 +11,7 @@ async function runExample() {
   const tokenAddress = process.env.SOL_TOKEN_ADDRESS;
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   // create claim rewards raw transaction
   const transaction = await sdk.rawTransactionBuilder.claimRewards({
@@ -28,10 +26,7 @@ async function runExample() {
 
 async function sendRawTransaction(transaction, privateKey, sdk) {
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
-  let connection = new solanaWeb3.Connection(
-    sdk.params.solanaRpcUrl,
-    "confirmed"
-  );
+  let connection = new solanaWeb3.Connection(sdk.params.solanaRpcUrl, "confirmed");
   return await sendAndConfirmTransaction(connection, transaction, [keypair]);
 }
 

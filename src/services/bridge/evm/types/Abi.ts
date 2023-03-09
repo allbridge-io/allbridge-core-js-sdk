@@ -47,22 +47,12 @@ export type TokensSent = ContractEventLog<{
 }>;
 
 export interface Abi extends BaseContract {
-  constructor(
-    jsonInterface: any[],
-    address?: string,
-    options?: ContractOptions
-  ): Abi;
+  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Abi;
   clone(): Abi;
   methods: {
-    addBridgeToken(
-      chainId_: number | string | BN,
-      tokenAddress_: string | number[]
-    ): NonPayableTransactionObject<void>;
+    addBridgeToken(chainId_: number | string | BN, tokenAddress_: string | number[]): NonPayableTransactionObject<void>;
 
-    addPool(
-      pool: string,
-      token: string | number[]
-    ): NonPayableTransactionObject<void>;
+    addPool(pool: string, token: string | number[]): NonPayableTransactionObject<void>;
 
     allbridgeMessenger(): NonPayableTransactionObject<string>;
 
@@ -70,23 +60,16 @@ export interface Abi extends BaseContract {
 
     gasUsage(arg0: number | string | BN): NonPayableTransactionObject<string>;
 
-    getMessageCost(
-      chainId: number | string | BN,
-      protocol: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    getMessageCost(chainId: number | string | BN, protocol: number | string | BN): NonPayableTransactionObject<string>;
 
-    getTransactionCost(
-      chainId_: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    getTransactionCost(chainId_: number | string | BN): NonPayableTransactionObject<string>;
 
     hasReceivedMessage(
       message: string | number[],
       protocol: number | string | BN
     ): NonPayableTransactionObject<boolean>;
 
-    hasSentMessage(
-      message: string | number[]
-    ): NonPayableTransactionObject<boolean>;
+    hasSentMessage(message: string | number[]): NonPayableTransactionObject<boolean>;
 
     hashMessage(
       amount: number | string | BN,
@@ -98,22 +81,15 @@ export interface Abi extends BaseContract {
       messenger: number | string | BN
     ): NonPayableTransactionObject<string>;
 
-    otherBridgeTokens(
-      arg0: number | string | BN,
-      arg1: string | number[]
-    ): NonPayableTransactionObject<boolean>;
+    otherBridgeTokens(arg0: number | string | BN, arg1: string | number[]): NonPayableTransactionObject<boolean>;
 
-    otherBridges(
-      arg0: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    otherBridges(arg0: number | string | BN): NonPayableTransactionObject<string>;
 
     owner(): NonPayableTransactionObject<string>;
 
     pools(arg0: string | number[]): NonPayableTransactionObject<string>;
 
-    processedMessages(
-      arg0: string | number[]
-    ): NonPayableTransactionObject<boolean>;
+    processedMessages(arg0: string | number[]): NonPayableTransactionObject<boolean>;
 
     receiveTokens(
       amount: number | string | BN,
@@ -138,20 +114,13 @@ export interface Abi extends BaseContract {
 
     sentMessages(arg0: string | number[]): NonPayableTransactionObject<boolean>;
 
-    setAllbridgeMessenger(
-      _allbridgeMessenger: string
-    ): NonPayableTransactionObject<void>;
+    setAllbridgeMessenger(_allbridgeMessenger: string): NonPayableTransactionObject<void>;
 
     setGasOracle(gasOracle_: string): NonPayableTransactionObject<void>;
 
-    setGasUsage(
-      chainId_: number | string | BN,
-      gasUsage_: number | string | BN
-    ): NonPayableTransactionObject<void>;
+    setGasUsage(chainId_: number | string | BN, gasUsage_: number | string | BN): NonPayableTransactionObject<void>;
 
-    setWormholeMessenger(
-      _wormholeMessenger: string
-    ): NonPayableTransactionObject<void>;
+    setWormholeMessenger(_wormholeMessenger: string): NonPayableTransactionObject<void>;
 
     swap(
       amount: number | string | BN,
@@ -172,18 +141,13 @@ export interface Abi extends BaseContract {
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
 
-    withdrawGasTokens(
-      amount: number | string | BN
-    ): NonPayableTransactionObject<void>;
+    withdrawGasTokens(amount: number | string | BN): NonPayableTransactionObject<void>;
 
     wormholeMessenger(): NonPayableTransactionObject<string>;
   };
   events: {
     OwnershipTransferred(cb?: Callback<OwnershipTransferred>): EventEmitter;
-    OwnershipTransferred(
-      options?: EventOptions,
-      cb?: Callback<OwnershipTransferred>
-    ): EventEmitter;
+    OwnershipTransferred(options?: EventOptions, cb?: Callback<OwnershipTransferred>): EventEmitter;
 
     Received(cb?: Callback<Received>): EventEmitter;
     Received(options?: EventOptions, cb?: Callback<Received>): EventEmitter;
@@ -195,19 +159,11 @@ export interface Abi extends BaseContract {
   };
 
   once(event: "OwnershipTransferred", cb: Callback<OwnershipTransferred>): void;
-  once(
-    event: "OwnershipTransferred",
-    options: EventOptions,
-    cb: Callback<OwnershipTransferred>
-  ): void;
+  once(event: "OwnershipTransferred", options: EventOptions, cb: Callback<OwnershipTransferred>): void;
 
   once(event: "Received", cb: Callback<Received>): void;
   once(event: "Received", options: EventOptions, cb: Callback<Received>): void;
 
   once(event: "TokensSent", cb: Callback<TokensSent>): void;
-  once(
-    event: "TokensSent",
-    options: EventOptions,
-    cb: Callback<TokensSent>
-  ): void;
+  once(event: "TokensSent", options: EventOptions, cb: Callback<TokensSent>): void;
 }

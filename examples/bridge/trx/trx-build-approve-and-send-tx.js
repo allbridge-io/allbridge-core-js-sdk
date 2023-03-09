@@ -1,8 +1,4 @@
-const {
-  AllbridgeCoreSdk,
-  ChainSymbol,
-  Messenger,
-} = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk, ChainSymbol, Messenger } = require("@allbridge/bridge-core-sdk");
 const TronWeb = require("tronweb");
 require("dotenv").config({ path: "../../.env" });
 
@@ -24,32 +20,19 @@ async function runExample() {
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.TRX];
-  const sourceTokenInfo = sourceChain.tokens.find(
-    (tokenInfo) => tokenInfo.symbol === "USDT"
-  );
+  const sourceTokenInfo = sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
 
   const destinationChain = chains[ChainSymbol.ETH];
-  const destinationTokenInfo = destinationChain.tokens.find(
-    (tokenInfo) => tokenInfo.symbol === "USDT"
-  );
+  const destinationTokenInfo = destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
 
   // authorize the bridge to transfer tokens from sender's address
-  const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(
-    tronWeb,
-    {
-      tokenAddress: sourceTokenInfo.tokenAddress,
-      owner: fromAddress,
-      spender: sourceTokenInfo.poolAddress,
-    }
-  );
-  const approveReceipt = await sendRawTransaction(
-    tronWeb,
-    rawTransactionApprove
-  );
-  console.log(
-    "Approve transaction receipt",
-    JSON.stringify(approveReceipt, null, 2)
-  );
+  const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(tronWeb, {
+    tokenAddress: sourceTokenInfo.tokenAddress,
+    owner: fromAddress,
+    spender: sourceTokenInfo.poolAddress,
+  });
+  const approveReceipt = await sendRawTransaction(tronWeb, rawTransactionApprove);
+  console.log("Approve transaction receipt", JSON.stringify(approveReceipt, null, 2));
 
   // initiate transfer
   const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
@@ -64,10 +47,7 @@ async function runExample() {
     tronWeb
   );
 
-  const transferReceipt = await sendRawTransaction(
-    tronWeb,
-    rawTransactionTransfer
-  );
+  const transferReceipt = await sendRawTransaction(tronWeb, rawTransactionTransfer);
   console.log("Transfer tokens transaction receipt:", transferReceipt);
 }
 

@@ -1,15 +1,7 @@
 import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { TronPool } from "../../../../services/liquidity-pool/trx";
 import { TokenInfoWithChainDetails } from "../../../../tokens-info";
@@ -32,10 +24,7 @@ describe("TronPool", () => {
     },
   };
 
-  const tronPool = new TronPool(
-    tronWebMock as typeof TronWeb,
-    api as AllbridgeCoreClient
-  );
+  const tronPool = new TronPool(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient);
 
   beforeAll(() => {
     disableNetConnect();
@@ -51,9 +40,7 @@ describe("TronPool", () => {
   });
 
   test("buildRawTransactionDeposit", async () => {
-    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(
-      triggerSmartContractDepositResponse
-    );
+    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractDepositResponse);
 
     const amount = "1000000000000000000";
     const params = {
@@ -63,15 +50,9 @@ describe("TronPool", () => {
     };
     const rawTransaction = await tronPool.buildRawTransactionDeposit(params);
 
-    expect(rawTransaction).toEqual(
-      triggerSmartContractDepositResponse.transaction
-    );
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledOnce();
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledWith(
+    expect(rawTransaction).toEqual(triggerSmartContractDepositResponse.transaction);
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
       POOL_ADDRESS,
       "deposit(uint256)",
       {
@@ -88,9 +69,7 @@ describe("TronPool", () => {
   });
 
   test("buildRawTransactionWithdraw", async () => {
-    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(
-      triggerSmartContractWithdrawResponse
-    );
+    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractWithdrawResponse);
 
     const amount = "1000";
     const params = {
@@ -100,15 +79,9 @@ describe("TronPool", () => {
     };
     const rawTransaction = await tronPool.buildRawTransactionWithdraw(params);
 
-    expect(rawTransaction).toEqual(
-      triggerSmartContractWithdrawResponse.transaction
-    );
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledOnce();
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledWith(
+    expect(rawTransaction).toEqual(triggerSmartContractWithdrawResponse.transaction);
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
       POOL_ADDRESS,
       "withdraw(uint256)",
       {
@@ -125,27 +98,17 @@ describe("TronPool", () => {
   });
 
   test("buildRawTransactionClaimRewards", async () => {
-    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(
-      triggerSmartContractClaimRewardsResponse
-    );
+    tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractClaimRewardsResponse);
 
     const params = {
       accountAddress: ACCOUNT_ADDRESS,
       token: TOKEN_INFO,
     };
-    const rawTransaction = await tronPool.buildRawTransactionClaimRewards(
-      params
-    );
+    const rawTransaction = await tronPool.buildRawTransactionClaimRewards(params);
 
-    expect(rawTransaction).toEqual(
-      triggerSmartContractClaimRewardsResponse.transaction
-    );
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledOnce();
-    expect(
-      tronWebMock.transactionBuilder.triggerSmartContract
-    ).toHaveBeenCalledWith(
+    expect(rawTransaction).toEqual(triggerSmartContractClaimRewardsResponse.transaction);
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+    expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
       POOL_ADDRESS,
       "claimRewards()",
       {
@@ -164,10 +127,7 @@ describe("TronPool", () => {
 
       const tronPool = new TronPool(tronWeb, api as AllbridgeCoreClient);
 
-      const userBalanceInfo = await tronPool.getUserBalanceInfo(
-        ACCOUNT_ADDRESS,
-        TOKEN_INFO
-      );
+      const userBalanceInfo = await tronPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 
       expect(userBalanceInfo).toEqual({
         lpAmount: "1790",
@@ -179,7 +139,5 @@ describe("TronPool", () => {
 });
 
 function nockRequests(recName: string) {
-  load(
-    `./src/__tests__/services/liquidity-pool/trx/data/nock/${recName}-rec.json`
-  );
+  load(`./src/__tests__/services/liquidity-pool/trx/data/nock/${recName}-rec.json`);
 }

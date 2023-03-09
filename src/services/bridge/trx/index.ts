@@ -15,8 +15,7 @@ import {
 } from "../models";
 import { amountToHex, getNonce, prepareTxSendParams, sleep } from "../utils";
 
-export const MAX_AMOUNT =
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 export class TronBridge extends Bridge {
   chainType: ChainType.TRX = ChainType.TRX;
@@ -31,15 +30,11 @@ export class TronBridge extends Bridge {
       owner,
     } = params;
     const tokenContract = await this.getContract(tokenAddress);
-    const allowance = await tokenContract.methods
-      .allowance(owner, spender)
-      .call();
+    const allowance = await tokenContract.methods.allowance(owner, spender).call();
     return allowance.toString();
   }
 
-  async getTokenBalance(
-    params: GetTokenBalanceParamsWithTokenAddress
-  ): Promise<string> {
+  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
     const contract = await this.getContract(params.tokenAddress);
     const balance = await contract.balanceOf(params.account).call();
     return balance.toString();
@@ -53,17 +48,11 @@ export class TronBridge extends Bridge {
   async buildRawTransactionSend(
     params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
   ): Promise<RawTransaction> {
-    const txSendParams = await prepareTxSendParams(
-      this.chainType,
-      params,
-      this.api
-    );
+    const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(
-    params: TxSendParams
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(params: TxSendParams): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -87,16 +76,9 @@ export class TronBridge extends Bridge {
       { type: "uint8", value: messenger },
     ];
     const value = fee;
-    const methodSignature =
-      "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)";
+    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)";
 
-    return this.buildRawTransaction(
-      contractAddress,
-      methodSignature,
-      parameter,
-      value,
-      fromAccountAddress
-    );
+    return this.buildRawTransaction(contractAddress, methodSignature, parameter, value, fromAccountAddress);
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
@@ -104,9 +86,7 @@ export class TronBridge extends Bridge {
     return await this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionApprove(
-    params: ApproveParamsDto
-  ): Promise<RawTransaction> {
+  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
     const { tokenAddress, spender, owner, amount } = params;
     const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
 
@@ -117,13 +97,7 @@ export class TronBridge extends Bridge {
     const value = "0";
     const methodSignature = "approve(address,uint256)";
 
-    return this.buildRawTransaction(
-      tokenAddress,
-      methodSignature,
-      parameter,
-      value,
-      owner
-    );
+    return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
   }
 
   private getContract(contractAddress: string): Promise<any> {
@@ -158,20 +132,17 @@ export class TronBridge extends Bridge {
     value: string,
     fromAddress: string
   ): Promise<RawTransaction> {
-    const transactionObject =
-      await this.tronWeb.transactionBuilder.triggerSmartContract(
-        contractAddress,
-        methodSignature,
-        {
-          callValue: value,
-        },
-        parameter,
-        fromAddress
-      );
+    const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
+      contractAddress,
+      methodSignature,
+      {
+        callValue: value,
+      },
+      parameter,
+      fromAddress
+    );
     if (!transactionObject?.result?.result) {
-      throw Error(
-        "Unknown error: " + JSON.stringify(transactionObject, null, 2)
-      );
+      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
   }

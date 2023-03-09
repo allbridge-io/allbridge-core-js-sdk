@@ -3,6 +3,9 @@ import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { TokenInfoWithChainDetails } from "../../../tokens-info";
 
+/**
+ * @deprecated Please use {@link ApproveDataWithTokenInfo} instead
+ */
 export interface ApproveData {
   /**
    * The token address itself
@@ -24,6 +27,30 @@ export interface ApproveData {
   amount?: string | number | Big;
 }
 
+export interface ApproveDataWithTokenInfo {
+  /**
+   * The token info
+   */
+  token: TokenInfoWithChainDetails;
+  /**
+   *  The address of the owner of the tokens allowing the use of their tokens
+   *
+   */
+  owner: string;
+  /**
+   *  The address of the contract that we allow to use tokens
+   */
+  spender: string;
+  /**
+   * The integer amount of tokens to approve.
+   * Optional. Maximum amount is used if parameter not defined.
+   */
+  amount?: string | number | Big;
+}
+
+/**
+ * @deprecated Please use {@link GetTokenBalanceParamsWithTokenInfo} instead
+ */
 export interface GetTokenBalanceParamsWithTokenAddress {
   /**
    *  The address for which we will find out the token balance
@@ -74,6 +101,9 @@ export interface BaseSendParams {
   fee?: string;
 }
 
+/**
+ * @deprecated Please use {@link SendParamsWithTokenInfos} instead
+ */
 export interface SendParamsWithChainSymbols extends BaseSendParams {
   /**
    * The chain symbol to transfer tokens from.
@@ -104,22 +134,26 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
-export interface CheckAllowanceParamsWithTokenAddress
-  extends GetAllowanceParamsWithTokenAddress {
+/**
+ * @deprecated Please use {@link CheckAllowanceParamsWithTokenInfo} instead
+ */
+export interface CheckAllowanceParamsWithTokenAddress extends GetAllowanceParamsWithTokenAddress {
   /**
    * The float amount of tokens to check allowance.
    */
   amount: string | number | Big;
 }
 
-export interface CheckAllowanceParamsWithTokenInfo
-  extends GetAllowanceParamsWithTokenInfo {
+export interface CheckAllowanceParamsWithTokenInfo extends GetAllowanceParamsWithTokenInfo {
   /**
    * The float amount of tokens to check allowance.
    */
   amount: string | number | Big;
 }
 
+/**
+ * @deprecated Please use {@link GetAllowanceParamsWithTokenInfo} instead
+ */
 export interface GetAllowanceParamsWithTokenAddress {
   chainSymbol: ChainSymbol;
   tokenAddress: string;
@@ -140,6 +174,7 @@ export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromChainId: number;
+  fromChainSymbol: ChainSymbol;
   fromAccountAddress: string;
   fromTokenAddress: AccountAddress;
   toChainId: number;
@@ -151,6 +186,7 @@ export interface TxSendParams {
 
 export interface ApproveParamsDto {
   tokenAddress: string;
+  chainSymbol: ChainSymbol;
   owner: string;
   spender: string;
   /**

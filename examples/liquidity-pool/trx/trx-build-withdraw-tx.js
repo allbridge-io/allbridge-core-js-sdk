@@ -16,9 +16,7 @@ async function runExample() {
   );
 
   const sdk = new AllbridgeCoreSdk();
-  const tokenInfo = (await sdk.tokens()).find(
-    (tokenInfo) => tokenInfo.tokenAddress === tokenAddress
-  );
+  const tokenInfo = (await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress);
 
   const halfToken = 0.5;
   // create withdraw raw transaction

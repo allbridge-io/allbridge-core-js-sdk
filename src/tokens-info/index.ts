@@ -1,8 +1,5 @@
 import { ChainSymbol } from "../chains";
-import {
-  ChainDetailsMap,
-  TokenInfoWithChainDetails,
-} from "./tokens-info.model";
+import { ChainDetailsMap, TokenInfoWithChainDetails } from "./tokens-info.model";
 
 export * from "./tokens-info.model";
 
@@ -31,9 +28,7 @@ export class TokensInfo {
    * Returns a list of supported {@link TokenInfoWithChainDetails | tokens}.
    */
   tokens(): TokenInfoWithChainDetails[] {
-    return Object.values(this._map).flatMap(
-      (chainDetails) => chainDetails.tokens
-    );
+    return Object.values(this._map).flatMap((chainDetails) => chainDetails.tokens);
   }
 
   /**
