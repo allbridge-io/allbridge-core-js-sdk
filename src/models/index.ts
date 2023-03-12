@@ -1,4 +1,4 @@
-export {
+export type {
   ApproveData,
   TransactionResponse,
   BaseSendParams,
@@ -11,16 +11,17 @@ export {
   SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "../services/bridge/models/bridge.model";
-export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
+export type { TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
+export { Messenger } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
-export {
+export type {
   TokenInfoWithChainDetails,
   TransferTime,
   MessengerTransferTime,
   PoolInfo,
 } from "../tokens-info/tokens-info.model";
 export { RawTransactionBuilder } from "../raw-transaction-builder";
-export {
+export type {
   UserBalanceInfo,
   UserBalanceInfoDTO,
   LiquidityPoolsParams,

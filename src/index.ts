@@ -42,7 +42,8 @@ import {
 
 export * from "./configs/production";
 export * from "./models";
-export { TokensInfo, ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
+export { TokensInfo } from "./tokens-info";
+export type { ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
 
 export interface AllbridgeCoreSdkOptions {
   apiUrl: string;
