@@ -10,6 +10,17 @@
   "files": [
     "/dist"
   ],
+  "targets": {
+    "main": {
+      "optimize": true
+    },
+    "module": {
+      "optimize": true
+    },
+    "browser": {
+      "optimize": true
+    }
+  },
   "engines": {
     "node": "^18.7.0 || >= 16",
     "npm": "^8.16.0 || >= 8"
