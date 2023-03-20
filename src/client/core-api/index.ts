@@ -36,7 +36,10 @@ export interface AllbridgeCoreClient {
 
   getPolygonMaxFee(): Promise<string>;
 
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
+    fee: string;
+    sourceNativeTokenPrice?: string;
+  }>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -128,13 +131,19 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     throw new Error(errorMessage);
   }
 
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
+    fee: string;
+    sourceNativeTokenPrice?: string;
+  }> {
     const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    return data.fee;
+    return {
+      fee: data.fee,
+      sourceNativeTokenPrice: data.sourceNativeTokenPrice,
+    };
   }
 
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {

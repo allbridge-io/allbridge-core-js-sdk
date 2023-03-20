@@ -1,6 +1,5 @@
 import { Big, BigSource } from "big.js";
 import BN from "bn.js";
-import { ChainSymbol } from "../../chains";
 import { AllbridgeCachingCoreClient } from "../../client/core-api/caching-core-client";
 import { PoolInfo, TokenInfo, TokenInfoWithChainDetails } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
@@ -39,7 +38,7 @@ export async function getPoolInfoByTokenInfo(
   sourceChainToken: TokenInfoWithChainDetails
 ) {
   return await api.getPoolInfoByKey({
-    chainSymbol: sourceChainToken.chainSymbol as ChainSymbol,
+    chainSymbol: sourceChainToken.chainSymbol,
     poolAddress: sourceChainToken.poolAddress,
   });
 }
