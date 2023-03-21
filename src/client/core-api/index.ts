@@ -84,14 +84,14 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   async getPolygonMaxPriorityFee(): Promise<string> {
     const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxPriorityFeeGwai = gasInfo.maxPriorityFee;
-    return Big(maxPriorityFeeGwai).times(1e9).toFixed(0);
+    const maxPriorityFeeGwei = gasInfo.maxPriorityFee;
+    return Big(maxPriorityFeeGwei).times(1e9).toFixed(0);
   }
 
   async getPolygonMaxFee(): Promise<string> {
     const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxFeeGwai = gasInfo.maxFee;
-    return Big(maxFeeGwai).times(1e9).toFixed(0);
+    const maxFeeGwei = gasInfo.maxFee;
+    return Big(maxFeeGwei).times(1e9).toFixed(0);
   }
 
   async getPolygonGasInfo(): Promise<{
