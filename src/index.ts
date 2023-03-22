@@ -447,7 +447,7 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain.
    * @param destinationChainToken selected token on the destination chain.
    * @param messenger
-   * @returns Average transfer time in milliseconds or null if given combination of tokens and messenger is not supported.
+   * @returns Average transfer time in milliseconds or null if a given combination of tokens and messenger is not supported.
    */
   getAverageTransferTime(
     sourceChainToken: TokenInfoWithChainDetails,
@@ -462,6 +462,8 @@ export class AllbridgeCoreSdk {
 
   /**
    * Forces refresh of cached information about the state of liquidity pools.
+   * Outdated cache leads to calculated amounts being less accurate.
+   * The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
    */
   async refreshPoolInfo(): Promise<void> {
     return this.api.refreshPoolInfo();

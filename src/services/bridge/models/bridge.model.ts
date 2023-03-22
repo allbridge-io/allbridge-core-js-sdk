@@ -12,15 +12,18 @@ export interface ApproveData {
    * The token address itself
    */
   tokenAddress: string;
+
   /**
-   *  The address of the owner of the tokens allowing the use of their tokens
-   *
+   *  The address of the token owner who is granting permission to use tokens
+   *  to the spender
    */
   owner: string;
+
   /**
-   *  The address of the contract that we allow to use tokens
+   *  The address of the contract that is being granted permission to use tokens
    */
   spender: string;
+
   /**
    * The integer amount of tokens to approve.
    * Optional.
@@ -34,15 +37,18 @@ export interface ApproveDataWithTokenInfo {
    * The token info
    */
   token: TokenInfoWithChainDetails;
+
   /**
-   *  The address of the owner of the tokens allowing the use of their tokens
-   *
+   *  The address of the token owner who is granting permission to use tokens
+   *  to the spender
    */
   owner: string;
+
   /**
-   *  The address of the contract that we allow to use tokens
+   *  The address of the contract that is being granted permission to use tokens
    */
   spender: string;
+
   /**
    * The integer amount of tokens to approve.
    * Optional.
@@ -102,9 +108,9 @@ export interface BaseSendParams {
   /**
    * The integer amount of gas fee to pay for the transfer.
    * If gasFeePaymentMethod is WITH_NATIVE_CURRENCY then
-   * it is denominated in the smallest fraction of the source chain currency.
+   * it is denominated in the smallest unit of the source chain currency.
    * if gasFeePaymentMethod is WITH_STABLECOIN then
-   * it is denominated in the smallest fraction of the source token.
+   * it is denominated in the smallest unit of the source token.
    *
    * Optional.
    * If not defined, the default fee amount will be applied.

@@ -68,7 +68,7 @@ export interface AmountsAndGasFeeOptions {
   amountToBeReceivedFloat: string;
 
   /**
-   * Available ways to pay the transfer gas fee.
+   * Available ways to pay the transfer gas fee and gas fee amount.
    */
   gasFeeOptions: GasFeeOptions;
 }
