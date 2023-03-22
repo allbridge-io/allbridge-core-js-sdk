@@ -113,7 +113,8 @@ export interface BaseSendParams {
    * it is denominated in the smallest unit of the source token.
    *
    * Optional.
-   * If not defined, the default fee amount will be applied.
+   * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
+   * See method {@link getGasFeeOptions} to get required gas fee amount.
    */
   fee?: string;
 
