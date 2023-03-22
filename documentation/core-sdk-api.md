@@ -10,9 +10,9 @@
 - [Calculate fee percent on destination chain](#calculate-fee-percent-on-destination-chain)
 - [Get amount to be received](#get-amount-to-be-received)
 - [Get amount to send](#get-amount-to-send)
-- [Get tx cost](#get-tx-cost)
-- [Get amount to be received and tx cost](#get-amount-to-be-received-and-tx-cost)
-- [Get amount to send and tx cost](#get-amount-to-send-and-tx-cost)
+- [Get gas fee amount](#get-gas-fee-amount)
+- [Get amount to be received and gas fee options](#get-amount-to-be-received-and-gas-fee-options)
+- [Get amount to send and gas fee options](#get-amount-to-send-and-gas-fee-options)
 - [Get average transfer time](#get-average-transfer-time)
 - [Refresh pool information](#refresh-pool-information)
 
@@ -26,31 +26,40 @@ If the current allowance is not 0, this function will perform an additional tran
 _Params_:
 
 * provider: Provider - provider
-* approveData: ApproveData - required data for approving
+* approveData: ApproveDataWithTokenInfo - required data for approving
 
-ApproveData:
+ApproveDataWithTokenInfo:
 
 ```js
 {
   /**
-   * The token address itself
+   * The token info
    */
-  tokenAddress: string;
+  token: TokenInfoWithChainDetails;
+
   /**
-   *  The address of the owner of the tokens allowing the use of their tokens
-   *
+   *  The address of the token owner who is granting permission to use tokens 
+   *  to the spender
    */
   owner: string;
+
   /**
-   *  The address of the contract that we allow to use tokens
+   *  The address of the contract that is being granted permission to use tokens
    */
   spender: string;
+
+  /**
+   * The integer amount of tokens to approve.
+   * Optional.
+   * The maximum amount by default.
+   */
+  amount?: string | number | Big;
 }
 ```
 
 _Returns_:
 
-* TransactionResponse - response with completed transaction id
+* TransactionResponse — a response object with the transaction id
 
 TransactionResponse:
 
@@ -60,13 +69,25 @@ TransactionResponse:
 }
 ```
 
-_Example_:
+_Examples:_
 
+Setting contract at `poolAddress`
+as spender enables the owner to pay gas fees for the transfer with native tokens:
 ```js
 const approveData = {
-  tokenAddress: tokenAddress,
+  token: sourceTokenInfo,
   owner: accountAddress,
-  spender: contractAddress,
+  spender: sourceTokenInfo.poolAddress,
+};
+const response = await sdk.approve(web3, approveData);
+```
+Setting contract at `stablePayAddress`
+as spender enables the owner to pay gas fees for the transfer with stablecoins:  
+```js
+const approveData = {
+  token: sourceTokenInfo,
+  owner: accountAddress,
+  spender: sourceTokenInfo.stablePayAddress,
 };
 const response = await sdk.approve(web3, approveData);
 ```
@@ -79,29 +100,54 @@ Sends tokens through the bridge
 _Params_:
 
 * provider: Provider - provider
-* sendParams: SendParamsWithChainSymbols | SendParamsWithTokenInfos
+* sendParams: SendParamsWithTokenInfos
 
-##### sendParams init details:
+##### sendParams:
+```typescript
+  /**
+   * The float amount of tokens to transfer.
+   * (Includes gas fee if `gasFeePaymentMethod` is FeePaymentMethod.WITH_STABLECOIN)
+   */
+  amount: string;
 
-* SendParamsWithChainSymbols:
+  /**
+   * The account address to transfer tokens from.
+   */
+  fromAccountAddress: string;
 
-```js
-const sendParams = {
-  amount: "1.33",
+  /**
+   * The account address to transfer tokens to.
+   */
+  toAccountAddress: string;
 
-  fromChainSymbol: ChainSymbol.ETH,
-  fromTokenAddress: tokenAddress,
-  fromAccountAddress: accountAddress,
+  messenger: Messenger;
 
-  toChainSymbol: ChainSymbol.TRX,
-  toTokenAddress: receiveTokenAddress,
-  toAccountAddress: accountAddress,
+  /**
+   * The integer amount of gas fee to pay for the transfer.
+   * If gasFeePaymentMethod is WITH_NATIVE_CURRENCY then
+   * it is denominated in the smallest unit of the source chain currency.
+   * if gasFeePaymentMethod is WITH_STABLECOIN then
+   * it is denominated in the smallest unit of the source token.
+   *
+   * Optional.
+   * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
+   * See method getGasFeeOptions to get required gas fee amount.
+   */
+  fee?: string;
 
-  messenger: Messenger.ALLBRIDGE,
-};
+  /**
+   * Payment method for the gas fee.
+   *
+   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native tokens value
+   * WITH_STABLECOIN - gas fee will be deducted from the transaction amount
+   *
+   * Optional.
+   * WITH_NATIVE_CURRENCY by default.
+   */
+  gasFeePaymentMethod?: FeePaymentMethod;
 ```
 
-* SendParamsWithTokenInfos, see [Get Tokens Info](#get-tokens-info):
+Example: 
 
 ```js
 const sendParams = {
@@ -114,8 +160,10 @@ const sendParams = {
   destinationChainToken: destinationTokenInfoWithChainDetails, // see [Get Tokens Info]
 
   messenger: Messenger.ALLBRIDGE,
+  gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
 };
 ```
+To get sourceTokenInfoWithChainDetails or destinationTokenInfoWithChainDetails, see [Get Tokens Info](#get-tokens-info).
 
 _Returns_:
 
@@ -143,7 +191,7 @@ Gets a list of all supported tokens.
 
 _Returns_:
 
-* TokenInfoWithChainDetails[] - a list of all supported tokens.
+* TokenInfoWithChainDetails[] — a list of all supported tokens.
 
 TokenInfoWithChainDetails:
 ```js
@@ -195,7 +243,7 @@ _Params_:
 
 _Returns_:
 
-* TokenInfoWithChainDetails[] - a list of supported tokens on a given chain
+* TokenInfoWithChainDetails[] — a list of supported tokens on a given chain
 
 _Example_:
 
@@ -211,7 +259,7 @@ Gets information about supported tokens and chains as a map.
 
 _Returns_:
 
-* ChainDetailsMap - an object where key is the Chain Symbol and value is the corresponding chain details
+* ChainDetailsMap — an object where key is the Chain Symbol and value is the corresponding chain details
 
 ChainDetailsMap
 ```js
@@ -223,6 +271,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 2,
     "bridgeAddress": bridgeAddressOnBSC,
+    "stablePayAddress": stablePayAddressOnBSC,
     "transferTime": averageTransactionTime,
     "confirmations": 15,
     "tokens": tokensOnBSC
@@ -234,6 +283,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 1,
     "bridgeAddress": bridgeAddressOnETH,
+    "stablePayAddress": stablePayAddressOnETH,
     "transferTime": averageTransactionTime,
     "confirmations": 5,
     "tokens": tokensOnETH
@@ -262,8 +312,8 @@ Calculates the percentage of fee from the initial amount that is charged when tr
 
 _Params_:
 
-* amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* amountFloat: string | number | Big — initial amount of tokens to swap
+* sourceChainToken: TokenInfo — the source chain token info, see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
 
@@ -286,13 +336,13 @@ Calculates the percentage of fee that is charged when transferring to the given 
 
 _Params_:
 
-* amountFloat: string | number | Big - initial amount of tokens to swap
-* sourceChainToken: TokenInfo - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfo - the destination chain token info
+* amountFloat: string | number | Big — initial amount of tokens to swap
+* sourceChainToken: TokenInfo — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfo — the destination chain token info
 
 _Returns_:
 
-* number - The percentage of fee
+* number — The percentage of fee
 
 _Example_:
 
@@ -311,14 +361,14 @@ Calculates the amount of tokens the receiving party will get as a result of the 
 
 _Params_:
 
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
+* amountToBeReceivedFloat: string | number | Big — the amount of tokens that will be sent
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
 
-* string - The amount to send
+* string — The amount to send
 
 _Example_:
 
@@ -338,14 +388,14 @@ result of the swap.
 
 _Params_:
 
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
+* amountToBeReceivedFloat: string | number | Big — the amount of tokens that should be received
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
 
-* string - The amount to send
+* string — The amount to send
 
 _Example_:
 
@@ -357,73 +407,80 @@ const amountToSend = await sdk.getAmountToSend(
 );
 ```
 
-## Get tx cost
-_Method_: getTxCost
+## Get gas fee amount
 
-Fetches the amount of units in source chain currency to pay for the transfer.
+_Method_: getGasFeeOptions
+
+Retrieves information about the available methods to pay the gas fee,
+as well as the amount of gas fee needed for the bridge to complete a transfer on the destination chain.
 
 _Params_:
 
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
-  see [Get Tokens Info](#get-tokens-info)
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info
 * messenger: Messenger
 
 _Returns_:
 
-* string - The amount of gas fee to pay for transfer in the smallest denomination of the source chain currency.
+* GasFeeOptions — an object with the following properties:
+
+  - native: The amount of gas fee, denominated in the smallest unit of the source chain currency (e.g. wei for Ethereum).
+  - stablecoin: (optional) The amount of gas fee, denominated in the smallest unit of the source token.
+    If this property is not present, it indicates that the stablecoin payment method is not available.
 
 _Example_:
 
 ```js
-const txCost = await sdk.getTxCost(
+const { native, stablecoin } = await sdk.getGasFeeOptions(
   sourceTokenInfoWithChainDetails,
   destinationTokenInfoWithChainDetails,
   Messenger.ALLBRIDGE
 );
+console.log(native); // Output: "10000000000000000" (0.01 ETH)
+console.log(stablecoin); // Output: "10010000" (10.01 USDT)
 ```
 
-## Get amount to be received and tx cost
-_Method_: getAmountToBeReceivedAndTxCost
+## Get amount to be received and gas fee options
+_Method_: getAmountToBeReceivedAndGasFeeOptions
 
-See [Get amount to be received](#get-amount-to-be-received), [Get tx cost](#get-tx-cost)
+See [Get amount to be received](#get-amount-to-be-received), [Get gas fee amount](#get-gas-fee-amount)
 
 _Params_:
 
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
+* amountToBeReceivedFloat: string | number | Big — the amount of tokens that will be sent
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
 _Returns_:
 
-* AmountsAndTxCost:
+* AmountsAndGasFeeOptions:
 
 ```js
 {
   /**
-   * The amount of tokens to be sent.
+   * The floating point amount of tokens to be sent (not including gas fee).
    */
   amountToSendFloat: string;
 
   /**
-   * The amount of tokens to be received.
+   * The floating point amount of tokens to be received.
    */
   amountToBeReceivedFloat: string;
 
   /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
+   * Available ways to pay the transfer gas fee and gas fee amount.
    */
-  txCost: string;
+  gasFeeOptions: GasFeeOptions;
 }
 ``` 
 
 _Example_:
 
 ```js
-const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
-  await sdk.getAmountToBeReceivedAndTxCost(
+const {amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions} =
+  await sdk.getAmountToBeReceivedAndGasFeeOptions(
     amount,
     sourceToken,
     destinationToken,
@@ -431,47 +488,47 @@ const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
   );
 ```
 
-## Get amount to send and tx cost
-_Method_: getAmountToSendAndTxCost
+## Get amount to send and gas fee options
+_Method_: getAmountToSendAndGasFeeOptions
 
-See [Get amount to send](#get-amount-to-send), [Get tx cost](#get-tx-cost)
+See [Get amount to send](#get-amount-to-send), [Get gas fee amount](#get-gas-fee-amount)
 
 _Params_:
 
-* amountToBeReceivedFloat: string | number | Big - the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
+* amountToBeReceivedFloat: string | number | Big — the amount of tokens that should be received
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
 _Returns_:
 
-* AmountsAndTxCost:
+* AmountsAndGasFeeOptions:
 
 ```js
 {
   /**
-   * The amount of tokens to be sent.
+   * The floating point amount of tokens to be sent (not including gas fee).
    */
   amountToSendFloat: string;
 
   /**
-   * The amount of tokens to be received.
+   * The floating point amount of tokens to be received.
    */
   amountToBeReceivedFloat: string;
 
   /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
+   * Available ways to pay the transfer gas fee and gas fee amount.
    */
-  txCost: string;
+  gasFeeOptions: GasFeeOptions;
 }
 ``` 
 
 _Example_:
 
 ```js
-const {amountToSendFloat, amountToBeReceivedFloat, txCost} =
-  await sdk.getAmountToSendAndTxCost(
+const {amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions} =
+  await sdk.getAmountToSendAndGasFeeOptions(
     amount,
     sourceToken,
     destinationToken,
@@ -486,14 +543,14 @@ Gets the average time in ms to complete a transfer for given tokens and messenge
 
 _Params_:
 
-* sourceChainToken: TokenInfoWithChainDetails - the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails - the destination chain token info,
+* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
 _Returns_:
 
-* null | number - Average transfer time in milliseconds or null if given combination of tokens and messenger is not
+* null | number — Average transfer time in milliseconds or null if given combination of tokens and messenger is not
   supported.
 
 _Example_:
@@ -509,7 +566,9 @@ const transferTimeMs = sdk.getAverageTransferTime(
 ## Refresh pool information
 _Method_: refreshPoolInfo
 
-Forces refresh of cached information about the state of liquidity pools. Outdated cache leads to calculated amounts to be less accurate. The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
+Forces refresh of cached information about the state of liquidity pools.
+Outdated cache leads to calculated amounts being less accurate.
+The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
 
 _Example_:
 

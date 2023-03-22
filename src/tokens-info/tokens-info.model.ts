@@ -9,6 +9,7 @@ export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 export interface ChainDetails extends BasicChainProperties {
   allbridgeChainId: number;
   bridgeAddress: string;
+  stablePayAddress: string;
   transferTime: TransferTime;
   confirmations: number;
 }
@@ -28,15 +29,8 @@ export interface TokenInfo {
   lpRate: number;
 }
 
-export interface TokenInfoWithChainDetails extends TokenInfo {
-  chainSymbol: string;
-  chainType: string;
-  chainId?: string; // A 0x-prefixed hexadecimal string
+export interface TokenInfoWithChainDetails extends TokenInfo, Omit<ChainDetails, "name"> {
   chainName: string;
-  allbridgeChainId: number;
-  bridgeAddress: string;
-  transferTime: TransferTime;
-  confirmations: number;
 }
 
 export interface PoolInfo {

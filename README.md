@@ -63,16 +63,17 @@ const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT')
 
 ### 3.1 Approve the transfer of tokens
 
-Before sending tokens the bridge has to be authorized to use user's tokens. This is done by calling the `approve` method
-on SDK instance.</p>
+Before sending tokens, the bridge has to be authorized to use the tokens of the owner.
+This is done by calling the `approve` method on SDK instance.</p>
 For Ethereum USDT - due to specificity of the USDT contract:<br/>
-If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
+If the current allowance is not 0,
+this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 ```js
 const response = await sdk.approve(web3, {
-  tokenAddress: tokenAddress,
-  owner: senderAddress,
-  spender: poolAddress,
+  token: sourceTokenInfo,
+  owner: accountAddress,
+  spender: sourceTokenInfo.poolAddress,
 });
 ```
 
@@ -87,8 +88,8 @@ Initiate the transfer of tokens with `send` method on SDK instance.
 await sdk.send(web3, {
   amount: '1.01',
   fromAccountAddress: senderAddress,
-  sourceChainToken: usdtOnEthTokenInfo,
   toAccountAddress: recipientAddress,
+  sourceChainToken: usdtOnEthTokenInfo,
   destinationChainToken: usdtOnTrxTokenInfo,
   messenger: Messenger.ALLBRIDGE,
 });
@@ -237,15 +238,25 @@ const amountToSend = await sdk.getAmountToSend(
 
 ### Getting the amount of gas fee
 
-SDK method `getTxCost` can be used to fetch information about the amount of gas fee required to complete the transfer on
-the destination chain. Gas fee is paid during the [send](#32-send-tokens) operation in the source chain currency.
+The SDK method `getGasFeeOptions` allows to retrieve information about the available methods to pay the gas fee,
+as well as the amount of gas fee needed to complete a transfer on the destination chain.
+Gas fee is paid during the [send](#32-send-tokens) operation
+and can be paid either in the source chain's currency or in source tokens.
+
+The method returns an object with two properties:
+
+- native: The amount of gas fee, denominated in the smallest unit of the source chain currency (e.g. wei for Ethereum).
+- stablecoin: (optional) The amount of gas fee, denominated in the smallest unit of the source token.
+  If this property is not present, it indicates that the stablecoin payment method is not available.
 
 ```js
-const weiValue = await sdk.getTxCost(
+const { native, stablecoin } = await sdk.getGasFeeOptions(
   usdtOnEthTokenInfo, // from ETH
   usdtOnTrxTokenInfo, // to TRX
   Messenger.ALLBRIDGE
 );
+console.log(native); // Output: "10000000000000000" (0.01 ETH)
+console.log(stablecoin); // Output: "10010000" (10.01 USDT)
 ```
 
 ### Getting the average transfer time

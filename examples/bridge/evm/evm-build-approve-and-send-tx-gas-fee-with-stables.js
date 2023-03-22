@@ -1,5 +1,6 @@
-const { AllbridgeCoreSdk, ChainSymbol, Messenger } = require("@allbridge/bridge-core-sdk");
+const { AllbridgeCoreSdk, ChainSymbol, Messenger, FeePaymentMethod } = require("@allbridge/bridge-core-sdk");
 const Web3 = require("web3");
+const Big = require("big.js");
 require("dotenv").config({ path: "../../.env" });
 
 async function runExample() {
@@ -17,34 +18,45 @@ async function runExample() {
 
   const chains = await sdk.chainDetailsMap();
 
-  const sourceChain = chains[ChainSymbol.ETH];
+  const sourceChain = chains[ChainSymbol.BSC];
   const sourceTokenInfo = sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
 
   const destinationChain = chains[ChainSymbol.TRX];
   const destinationTokenInfo = destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
-  const amount = "1.01";
+
+  const amountToSendFloat = "1.01";
+  const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
+  const gasFeeAmount = gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN];
 
   // authorize the bridge to transfer tokens from sender's address
   const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(web3, {
     tokenAddress: sourceTokenInfo.tokenAddress,
     owner: fromAddress,
-    spender: sourceTokenInfo.poolAddress,
+    spender: sourceTokenInfo.stablePayAddress,
   });
   await sendRawTransaction(web3, rawTransactionApprove);
+
+  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
+  console.log(
+    `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
+  );
 
   // initiate transfer
   const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
     {
-      amount: amount,
+      amount: totalAmountFloat,
       fromAccountAddress: fromAddress,
       toAccountAddress: toAddress,
       sourceChainToken: sourceTokenInfo,
       destinationChainToken: destinationTokenInfo,
       messenger: Messenger.ALLBRIDGE,
+      gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
+      fee: gasFeeAmount,
     },
     web3
   );
-  console.log(`Sending ${amount} ${sourceTokenInfo.symbol}`);
+
   const txReceipt = await sendRawTransaction(web3, rawTransactionTransfer);
   console.log("tx id:", txReceipt.transactionHash);
 }

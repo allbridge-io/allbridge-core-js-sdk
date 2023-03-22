@@ -2,6 +2,7 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { FeePaymentMethod } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import {
   ApproveParamsDto,
@@ -25,6 +26,9 @@ export class TronBridge extends Bridge {
   }
 
   async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
+    if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      throw Error(`Gas fee payment method '${params.gasFeePaymentMethod}' is not supported`);
+    }
     const {
       tokenInfo: { tokenAddress, poolAddress: spender },
       owner,
