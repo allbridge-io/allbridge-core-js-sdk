@@ -811,8 +811,10 @@ describe("SDK", () => {
         const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
         const toAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cSpell:disable-line
 
+        const totalAmountFloat = Big(tokensAmount).add(feeInStablecoins).toFixed();
+
         const sendParams: SendParamsWithTokenInfos = {
-          amount: tokensAmount,
+          amount: totalAmountFloat,
           fromAccountAddress: fromAccountAddress,
           toAccountAddress: toAccountAddress,
           messenger: Messenger.ALLBRIDGE,
@@ -852,8 +854,7 @@ describe("SDK", () => {
           data: expectedData,
         });
 
-        const expectedAmount = Big(tokensAmount)
-          .add(feeInStablecoins)
+        const expectedTotalAmount = Big(totalAmountFloat)
           .mul(10 ** grlChainToken.decimals)
           .toFixed();
         const expectedFeeAmount = Big(feeInStablecoins)
@@ -861,7 +862,7 @@ describe("SDK", () => {
           .toFixed();
         expect(swapAndBridgeMocked).lastCalledWith(
           formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.EVM),
-          expectedAmount,
+          expectedTotalAmount,
           formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
           trxChainToken.allbridgeChainId,
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),

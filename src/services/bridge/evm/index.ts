@@ -90,10 +90,9 @@ export class EvmBridge extends Bridge {
     let value: string;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       const payerContract = this.getPayerContract(contractAddress);
-      const totalAmount = new Big(amount).add(fee).toFixed();
       swapAndBridgeMethod = payerContract.methods.swapAndBridge(
         fromTokenAddress,
-        totalAmount,
+        amount,
         toAccountAddress,
         toChainId,
         toTokenAddress,

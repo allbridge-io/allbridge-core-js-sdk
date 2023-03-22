@@ -93,7 +93,7 @@ export interface TransactionResponse {
 export interface BaseSendParams {
   /**
    * The float amount of tokens to transfer.
-   * (Does not include gas fee)
+   * (Includes gas fee if `gasFeePaymentMethod` is FeePaymentMethod.WITH_STABLECOIN)
    */
   amount: string;
   /**
@@ -121,8 +121,8 @@ export interface BaseSendParams {
   /**
    * Payment method for the gas fee.
    *
-   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native token
-   * WITH_STABLECOIN - gas fee will be added to transaction amount
+   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native tokens value
+   * WITH_STABLECOIN - gas fee will be deducted from the transaction amount
    *
    * Optional.
    * WITH_NATIVE_CURRENCY by default.

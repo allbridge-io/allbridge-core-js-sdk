@@ -106,7 +106,7 @@ _Params_:
 ```typescript
   /**
    * The float amount of tokens to transfer.
-   * (Does not include gas fee)
+   * (Includes gas fee if `gasFeePaymentMethod` is FeePaymentMethod.WITH_STABLECOIN)
    */
   amount: string;
 
@@ -138,8 +138,8 @@ _Params_:
   /**
    * Payment method for the gas fee.
    *
-   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native token
-   * WITH_STABLECOIN - gas fee will be added to transaction amount
+   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native tokens value
+   * WITH_STABLECOIN - gas fee will be deducted from the transaction amount
    *
    * Optional.
    * WITH_NATIVE_CURRENCY by default.
@@ -271,6 +271,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 2,
     "bridgeAddress": bridgeAddressOnBSC,
+    "stablePayAddress": stablePayAddressOnBSC,
     "transferTime": averageTransactionTime,
     "confirmations": 15,
     "tokens": tokensOnBSC
@@ -282,6 +283,7 @@ const chainDetailsMapExample = {
     "chainType": "EVM",
     "allbridgeChainId": 1,
     "bridgeAddress": bridgeAddressOnETH,
+    "stablePayAddress": stablePayAddressOnETH,
     "transferTime": averageTransactionTime,
     "confirmations": 5,
     "tokens": tokensOnETH
@@ -458,7 +460,7 @@ _Returns_:
 ```js
 {
   /**
-   * The floating point amount of tokens to be sent (not including fee).
+   * The floating point amount of tokens to be sent (not including gas fee).
    */
   amountToSendFloat: string;
 
@@ -506,7 +508,7 @@ _Returns_:
 ```js
 {
   /**
-   * The floating point amount of tokens to be sent (not including fee).
+   * The floating point amount of tokens to be sent (not including gas fee).
    */
   amountToSendFloat: string;
 

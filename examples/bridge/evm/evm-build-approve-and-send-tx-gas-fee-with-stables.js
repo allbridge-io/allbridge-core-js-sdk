@@ -18,13 +18,13 @@ async function runExample() {
 
   const chains = await sdk.chainDetailsMap();
 
-  const sourceChain = chains[ChainSymbol.ETH];
+  const sourceChain = chains[ChainSymbol.BSC];
   const sourceTokenInfo = sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
 
   const destinationChain = chains[ChainSymbol.TRX];
   const destinationTokenInfo = destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT");
 
-  const amountFloat = "1.01";
+  const amountToSendFloat = "1.01";
   const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
   const gasFeeAmount = gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN];
 
@@ -36,10 +36,16 @@ async function runExample() {
   });
   await sendRawTransaction(web3, rawTransactionApprove);
 
+  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
+  console.log(
+    `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
+  );
+
   // initiate transfer
   const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(
     {
-      amount: amountFloat,
+      amount: totalAmountFloat,
       fromAccountAddress: fromAddress,
       toAccountAddress: toAddress,
       sourceChainToken: sourceTokenInfo,
@@ -51,11 +57,6 @@ async function runExample() {
     web3
   );
 
-  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
-  const totalAmountFloat = new Big(amountFloat).add(gasFeeAmountFloat);
-  console.log(
-    `Sending ${amountFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
-  );
   const txReceipt = await sendRawTransaction(web3, rawTransactionTransfer);
   console.log("tx id:", txReceipt.transactionHash);
 }

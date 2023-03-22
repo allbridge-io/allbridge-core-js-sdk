@@ -58,7 +58,7 @@ export enum FeePaymentMethod {
 
 export interface AmountsAndGasFeeOptions {
   /**
-   * The floating point amount of tokens to be sent (not including fee).
+   * The floating point amount of tokens to be sent (not including gas fee).
    */
   amountToSendFloat: string;
 
