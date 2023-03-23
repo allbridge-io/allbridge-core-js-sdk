@@ -24,7 +24,7 @@ const expectedTransferStatus = transferStatus as unknown as TransferStatusRespon
 describe("AllbridgeCoreClient", () => {
   const POLYGON_API_URL = "http://localhost/pol";
   const api = new AllbridgeCoreClientImpl({
-    apiUrl: "http://localhost",
+    coreApiUrl: "http://localhost",
     polygonApiUrl: POLYGON_API_URL,
   });
 

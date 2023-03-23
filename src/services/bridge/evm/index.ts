@@ -1,4 +1,3 @@
-import { Big } from "big.js";
 import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";

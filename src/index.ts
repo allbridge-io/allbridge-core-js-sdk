@@ -3,7 +3,7 @@ import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
-import { production } from "./configs";
+import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndGasFeeOptions, AmountsAndTxCost, GasFeeOptions, Messenger, PoolInfo } from "./models";
 import { RawTransactionBuilder } from "./raw-transaction-builder";
@@ -41,12 +41,16 @@ import {
   swapToVUsdReverse,
 } from "./utils/calculation";
 
-export * from "./configs/production";
+export * from "./configs/mainnet";
 export * from "./models";
 export { TokensInfo, ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
 
 export interface AllbridgeCoreSdkOptions {
-  apiUrl: string;
+  coreApiUrl: string;
+  /**
+   * A set of headers to be added to all requests to the Core API.
+   */
+  coreApiHeaders?: Record<string, string>;
   solanaRpcUrl: string;
   polygonApiUrl: string;
 
@@ -70,11 +74,14 @@ export class AllbridgeCoreSdk {
 
   /**
    * Initializes the SDK object.
-   * @param params Preset parameters can be used. See {@link production | production preset}
+   * @param params
+   * Optional.
+   * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(params: AllbridgeCoreSdkOptions = production) {
+  constructor(params: AllbridgeCoreSdkOptions = mainnet) {
     const apiClient = new AllbridgeCoreClientImpl({
-      apiUrl: params.apiUrl,
+      coreApiUrl: params.coreApiUrl,
+      coreApiHeaders: params.coreApiHeaders,
       polygonApiUrl: params.polygonApiUrl,
     });
     const solBridgeParams: SolanaBridgeParams = {

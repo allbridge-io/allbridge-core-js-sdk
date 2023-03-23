@@ -17,7 +17,8 @@ import {
 } from "./core-api.model";
 
 export interface AllbridgeCoreClientParams {
-  apiUrl: string;
+  coreApiUrl: string;
+  coreApiHeaders?: Record<string, string>;
   polygonApiUrl: string;
 }
 
@@ -48,9 +49,10 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
-      baseURL: params.apiUrl,
+      baseURL: params.coreApiUrl,
       headers: {
         Accept: "application/json",
+        ...params.coreApiHeaders,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;

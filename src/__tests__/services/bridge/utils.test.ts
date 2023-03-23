@@ -20,7 +20,7 @@ describe("Bridge Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost", polygonApiUrl: "http://localhost" });
+    api = new AllbridgeCoreClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" });
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
 
