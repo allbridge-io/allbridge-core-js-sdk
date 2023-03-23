@@ -129,4 +129,22 @@ describe("AllbridgeCoreClient", () => {
       scope.done();
     });
   });
+
+  describe("Custom headers", () => {
+    const customHeaders = { "secret-waf-header": "secret-waf-header-value" };
+    const api = new AllbridgeCoreClientImpl({
+      coreApiUrl: "http://localhost",
+      polygonApiUrl: POLYGON_API_URL,
+      coreApiHeaders: customHeaders,
+    });
+
+    it("☀️ should be present", async () => {
+      const nockOptions = { reqheaders: customHeaders }; // cSpell:disable-line
+      const scope: nock.Scope = nock("http://localhost", nockOptions).get("/token-info").reply(200);
+
+      await api.getChainDetailsMap();
+
+      scope.done();
+    });
+  });
 });

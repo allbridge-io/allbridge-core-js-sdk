@@ -3,6 +3,7 @@ import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/bridge/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
+import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
   mapChainDetailsResponseToPoolInfoMap,
@@ -53,6 +54,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
       headers: {
         Accept: "application/json",
         ...params.coreApiHeaders,
+        "User-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;
