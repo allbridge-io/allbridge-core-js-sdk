@@ -3,6 +3,7 @@ import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/bridge/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
+import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
   mapChainDetailsResponseToPoolInfoMap,
@@ -17,7 +18,8 @@ import {
 } from "./core-api.model";
 
 export interface AllbridgeCoreClientParams {
-  apiUrl: string;
+  coreApiUrl: string;
+  coreApiHeaders?: Record<string, string>;
   polygonApiUrl: string;
 }
 
@@ -48,9 +50,11 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
-      baseURL: params.apiUrl,
+      baseURL: params.coreApiUrl,
       headers: {
         Accept: "application/json",
+        ...params.coreApiHeaders,
+        "User-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;

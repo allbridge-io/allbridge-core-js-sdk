@@ -1,3 +1,2 @@
-export * from "./development";
-export * from "./staging";
-export * from "./production";
+export * from "./testnet";
+export * from "./mainnet";

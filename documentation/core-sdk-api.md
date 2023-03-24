@@ -582,3 +582,6 @@ const amountToBeReceived = await sdk.getAmountToBeReceived(
   destinationToken
 );
 ```
+
+---
+#### Next: [SDK Liquidity Pools methods](core-sdk-liquidity-pools-api.md)
