@@ -1,6 +1,5 @@
 import { Big } from "big.js";
 import Web3 from "web3";
-import { ChainSymbol } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction } from "../models";
@@ -150,14 +149,17 @@ export class BridgeService {
         tokenAddress: approveData.token.tokenAddress,
         owner: approveData.owner,
         spender: approveData.spender,
-        chainSymbol: approveData.token.chainSymbol as ChainSymbol,
+        chainSymbol: approveData.token.chainSymbol,
         amount: approveData.amount == undefined ? undefined : Big(approveData.amount).toFixed(),
       };
     } else {
       approveData = approveData as ApproveData;
       const chainSymbol = (await this.api.tokens()).find(
         (tokenInfo) => tokenInfo.tokenAddress === (approveData as ApproveData).tokenAddress
-      )?.chainSymbol as ChainSymbol;
+      )?.chainSymbol;
+      if (!chainSymbol) {
+        throw Error(`Unknown chain by token address ${approveData.tokenAddress}`);
+      }
       return {
         tokenAddress: approveData.tokenAddress,
         owner: approveData.owner,

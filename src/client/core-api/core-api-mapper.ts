@@ -95,6 +95,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
+    stablePayAddress: dto.stablePayAddress,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
     confirmations: dto.confirmations,
   };

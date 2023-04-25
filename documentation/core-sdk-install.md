@@ -20,9 +20,5 @@ Using pnpm:
 $ pnpm add @allbridge/bridge-core-sdk
 ```
 
-### 1. Initialize SDK instance
-
-```js
-const AllbridgeCoreSdk = require("@allbridge/bridge-core-sdk");
-const sdk = new AllbridgeCoreSdk();
-```
+---
+#### Next: [Configure SDK instance](core-sdk-configure.md)

@@ -20,7 +20,8 @@
     "Vusd",
     "SYSVAR",
     "keccak",
-    "Gwai"
+    "Gwei",
+    "stablecoins"
   ],
   "flagWords": [],
   "ignorePaths": [

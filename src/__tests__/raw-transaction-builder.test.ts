@@ -17,7 +17,7 @@ describe("RawTransactionBuilder", () => {
     const BridgeServiceMock = vi.fn();
     BridgeServiceMock.prototype.buildRawTransactionApprove = vi.fn();
     BridgeServiceMock.prototype.buildRawTransactionSend = vi.fn();
-    bridgeServiceMock = new BridgeServiceMock(new AllbridgeCoreClientImpl({ apiUrl: "apiUrl" }));
+    bridgeServiceMock = new BridgeServiceMock(new AllbridgeCoreClientImpl({ coreApiUrl: "coreApiUrl" }));
     rawTransactionBuilder = new RawTransactionBuilder(
       bridgeServiceMock as BridgeService,
       liquidityPoolService as LiquidityPoolService

@@ -10,80 +10,36 @@ import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
+import { FeePaymentMethod } from "../../../models";
 import { SendParamsWithChainSymbols, TxSendParams } from "../../../services/bridge/models";
 import { prepareTxSendParams } from "../../../services/bridge/utils";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 
-describe("Utils", () => {
+describe("Bridge Utils", () => {
   let api: AllbridgeCoreClient;
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl({ apiUrl: "http://localhost" });
+    api = new AllbridgeCoreClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" });
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
 
   describe("prepareTxSendParams()", () => {
     const fee = "20000000000000000";
     const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
-    const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {
-      sourceChainId: 2,
-      destinationChainId: 4,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const receiveFeeRequestEVMtoSOL: ReceiveTransactionCostRequest = {
-      sourceChainId: 2,
-      destinationChainId: 5,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const receiveFeeRequestTRXtoEVM: ReceiveTransactionCostRequest = {
-      sourceChainId: 4,
-      destinationChainId: 2,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const receiveFeeRequestTRXtoSOL: ReceiveTransactionCostRequest = {
-      sourceChainId: 4,
-      destinationChainId: 5,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const receiveFeeRequestSOLtoEVM: ReceiveTransactionCostRequest = {
-      sourceChainId: 5,
-      destinationChainId: 2,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const receiveFeeRequestSOLtoTRX: ReceiveTransactionCostRequest = {
-      sourceChainId: 5,
-      destinationChainId: 4,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    beforeEach(() => {
+
+    it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {
+        sourceChainId: 2,
+        destinationChainId: 4,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
       scope = scope
         .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestEVMtoTRX))
         .reply(201, receiveFeeResponse)
         .persist();
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestEVMtoSOL))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestTRXtoEVM))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestTRXtoSOL))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestSOLtoEVM))
-        .reply(201, receiveFeeResponse)
-        .persist();
-      scope = scope
-        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestSOLtoTRX))
-        .reply(201, receiveFeeResponse)
-        .persist();
-    });
 
-    it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -110,13 +66,25 @@ describe("Utils", () => {
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-        fee: "20000000000000000",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
+        fee: fee,
         toAccountAddress: "0x000000000000000000000000b83811067ab3a275ece28d3f8ec6875105ef9bae",
       };
       expect(txSendParams).toEqual(expectedTxSendParams);
     });
 
     it("should return prepared TxSendParams for EVM->SOL blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestEVMtoSOL: ReceiveTransactionCostRequest = {
+        sourceChainId: 2,
+        destinationChainId: 5,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestEVMtoSOL))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -143,6 +111,7 @@ describe("Utils", () => {
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
         toAccountAddress: "0x583443dc4d82f958bdfce83c26d5ee2968af51d6f249e5181b2300c625a8cdf1",
       };
@@ -150,6 +119,17 @@ describe("Utils", () => {
     });
 
     it("should return prepared TxSendParams for TRX->EVM blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestTRXtoEVM: ReceiveTransactionCostRequest = {
+        sourceChainId: 4,
+        destinationChainId: 2,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestTRXtoEVM))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -176,6 +156,7 @@ describe("Utils", () => {
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
         toAccountAddress: Array.from(bs58.decode("1111111111112TicWmEvkX7SrURa6r3JeZwDiG7n")),
       };
@@ -183,6 +164,17 @@ describe("Utils", () => {
     });
 
     it("should return prepared TxSendParams for TRX->SOL blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestTRXtoSOL: ReceiveTransactionCostRequest = {
+        sourceChainId: 4,
+        destinationChainId: 5,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestTRXtoSOL))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -209,6 +201,7 @@ describe("Utils", () => {
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
         toAccountAddress: Array.from(bs58.decode("6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr")),
       };
@@ -216,6 +209,17 @@ describe("Utils", () => {
     });
 
     it("should return prepared TxSendParams for SOL->EVM blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestSOLtoEVM: ReceiveTransactionCostRequest = {
+        sourceChainId: 5,
+        destinationChainId: 2,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestSOLtoEVM))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -242,6 +246,7 @@ describe("Utils", () => {
         amount: "1330000000",
         messenger: 1,
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
         toAccountAddress: Array.from(bs58.decode("1111111111112TicWmEvkX7SrURa6r3JeZwDiG7n")),
       };
@@ -249,6 +254,17 @@ describe("Utils", () => {
     });
 
     it("should return prepared TxSendParams for SOL->TRX blockchain from SendParamsWithChainSymbols", async () => {
+      const receiveFeeRequestSOLtoTRX: ReceiveTransactionCostRequest = {
+        sourceChainId: 5,
+        destinationChainId: 4,
+        messenger: Messenger.ALLBRIDGE,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestSOLtoTRX))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
       const sendParams: SendParamsWithChainSymbols = {
         amount: "1.33",
 
@@ -275,6 +291,7 @@ describe("Utils", () => {
         amount: "1330000000",
         messenger: 1,
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
         toAccountAddress: Array.from(bs58.decode("1111111111113Zre8c5PsFSvvA2hXgPx1hGq9YCu")),
       };

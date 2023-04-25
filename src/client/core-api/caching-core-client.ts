@@ -42,7 +42,10 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     return await this.client.getPolygonMaxFee();
   }
 
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string> {
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
+    fee: string;
+    sourceNativeTokenPrice?: string;
+  }> {
     return this.client.getReceiveTransactionCost(args);
   }
 

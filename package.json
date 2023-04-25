@@ -21,6 +21,7 @@
     "access": "public"
   },
   "scripts": {
+    "prebuild": "npm run version",
     "build": "npm run clean && npm run type:dts && tsc && npm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
@@ -37,7 +38,8 @@
     "cz": "cz",
     "semantic-release": "semantic-release",
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
-    "tsdoc": "typedoc --excludeInternal src/index.ts"
+    "tsdoc": "typedoc --excludeInternal src/index.ts",
+    "version": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts"
   },
   "repository": {
     "type": "git",
@@ -80,8 +82,8 @@
     "typechain": "^8.1.0",
     "typedoc": "^0.23.15",
     "typescript": "^4.8.4",
-    "vite": "^3.2.2",
-    "vitest": "^0.24.4"
+    "vite": "^4.2.1",
+    "vitest": "^0.29.3"
   },
   "overrides": {
     "semver-regex": "3.1.4"
@@ -100,9 +102,16 @@
     "randombytes": "^2.1.0",
     "timed-cache": "^2.0.0",
     "tronweb": "^4.4.0",
-    "web3": "^1.8.0",
-    "web3-core": "^1.8.0",
-    "web3-eth-contract": "^1.8.0",
-    "web3-utils": "^1.8.0"
+    "web3": "^1.9.0",
+    "web3-core": "^1.9.0",
+    "web3-eth-contract": "^1.9.0",
+    "web3-utils": "^1.9.0"
+  },
+  "pnpm": {
+    "auditConfig": {
+      "ignoreCves": [
+        "CVE-2023-28155"
+      ]
+    }
   }
 }

@@ -3,6 +3,7 @@ import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/bridge/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
+import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
   mapChainDetailsResponseToPoolInfoMap,
@@ -17,7 +18,8 @@ import {
 } from "./core-api.model";
 
 export interface AllbridgeCoreClientParams {
-  apiUrl: string;
+  coreApiUrl: string;
+  coreApiHeaders?: Record<string, string>;
   polygonApiUrl: string;
 }
 
@@ -36,7 +38,10 @@ export interface AllbridgeCoreClient {
 
   getPolygonMaxFee(): Promise<string>;
 
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
+    fee: string;
+    sourceNativeTokenPrice?: string;
+  }>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -45,9 +50,11 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
-      baseURL: params.apiUrl,
+      baseURL: params.coreApiUrl,
       headers: {
         Accept: "application/json",
+        ...params.coreApiHeaders,
+        "User-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;
@@ -81,14 +88,14 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   async getPolygonMaxPriorityFee(): Promise<string> {
     const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxPriorityFeeGwai = gasInfo.maxPriorityFee;
-    return Big(maxPriorityFeeGwai).times(1e9).toFixed(0);
+    const maxPriorityFeeGwei = gasInfo.maxPriorityFee;
+    return Big(maxPriorityFeeGwei).times(1e9).toFixed(0);
   }
 
   async getPolygonMaxFee(): Promise<string> {
     const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxFeeGwai = gasInfo.maxFee;
-    return Big(maxFeeGwai).times(1e9).toFixed(0);
+    const maxFeeGwei = gasInfo.maxFee;
+    return Big(maxFeeGwei).times(1e9).toFixed(0);
   }
 
   async getPolygonGasInfo(): Promise<{
@@ -128,13 +135,19 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     throw new Error(errorMessage);
   }
 
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<string> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
+    fee: string;
+    sourceNativeTokenPrice?: string;
+  }> {
     const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    return data.fee;
+    return {
+      fee: data.fee,
+      sourceNativeTokenPrice: data.sourceNativeTokenPrice,
+    };
   }
 
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {

@@ -11,7 +11,7 @@ describe("BridgeService", () => {
 
   beforeEach(() => {
     const apiClient = new AllbridgeCoreClientImpl({
-      apiUrl: "apiUrl",
+      coreApiUrl: "coreApiUrl",
     });
     const solParams: SolanaBridgeParams = {
       solanaRpcUrl: "solanaRpcUrl",

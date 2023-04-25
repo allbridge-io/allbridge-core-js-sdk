@@ -4,6 +4,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { FeePaymentMethod } from "../../../models";
 import { RawTransaction } from "../../models";
 import {
   ApproveParamsDto,
@@ -15,10 +16,12 @@ import {
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { amountToHex, getNonce, prepareTxSendParams } from "../utils";
+import { amountToHex, checkIsGasPaymentMethodSupported, getNonce, prepareTxSendParams } from "../utils";
 import abi from "./abi/Abi.json";
+import payerAbi from "./abi/payer-contract.json";
 import { Abi as BridgeContract } from "./types/Abi";
-import { BaseContract } from "./types/types";
+import { PayerContract } from "./types/PayerContract";
+import { BaseContract, PayableTransactionObject } from "./types/types";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
@@ -32,10 +35,15 @@ export class EvmBridge extends Bridge {
   }
 
   getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    const {
-      tokenInfo: { tokenAddress, poolAddress: spender },
-      owner,
-    } = params;
+    const tokenAddress = params.tokenInfo.tokenAddress;
+    const owner = params.owner;
+    let spender;
+    checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, params.tokenInfo);
+    if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      spender = params.tokenInfo.stablePayAddress;
+    } else {
+      spender = params.tokenInfo.poolAddress;
+    }
     return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
   }
 
@@ -73,25 +81,43 @@ export class EvmBridge extends Bridge {
       toTokenAddress,
       messenger,
       fee,
+      gasFeePaymentMethod,
     } = params;
 
-    const bridgeContract = this.getBridgeContract(contractAddress);
     const nonce = new BN(getNonce());
-
-    const swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-      fromTokenAddress,
-      amount,
-      toAccountAddress,
-      toChainId,
-      toTokenAddress,
-      nonce,
-      messenger
-    );
+    let swapAndBridgeMethod: PayableTransactionObject<void>;
+    let value: string;
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      const payerContract = this.getPayerContract(contractAddress);
+      swapAndBridgeMethod = payerContract.methods.swapAndBridge(
+        fromTokenAddress,
+        amount,
+        toAccountAddress,
+        toChainId,
+        toTokenAddress,
+        nonce,
+        messenger,
+        fee
+      );
+      value = "0";
+    } else {
+      const bridgeContract = this.getBridgeContract(contractAddress);
+      swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
+        fromTokenAddress,
+        amount,
+        toAccountAddress,
+        toChainId,
+        toTokenAddress,
+        nonce,
+        messenger
+      );
+      value = fee;
+    }
 
     const tx = {
       from: fromAccountAddress,
       to: contractAddress,
-      value: fee,
+      value: value,
       data: swapAndBridgeMethod.encodeABI(),
     };
 
@@ -177,5 +203,9 @@ export class EvmBridge extends Bridge {
 
   private getBridgeContract(contractAddress: string): BridgeContract {
     return this.getContract<BridgeContract>(abi as AbiItem[], contractAddress);
+  }
+
+  private getPayerContract(contractAddress: string): PayerContract {
+    return this.getContract<PayerContract>(payerAbi as AbiItem[], contractAddress);
   }
 }
