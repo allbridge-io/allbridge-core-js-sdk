@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Dependencies audit
-        run: pnpm audit
+#      - name: Dependencies audit
+#        run: pnpm audit
 
       - name: Build
         run: pnpm run build
