@@ -1,5 +1,4 @@
-// @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import { TronWeb } from "tronweb-typings";
 
 import Web3 from "web3";
 
