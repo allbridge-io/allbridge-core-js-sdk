@@ -136,7 +136,8 @@ export interface Abi extends BaseContract {
       destinationChainId: number | string | BN,
       receiveToken: string | number[],
       nonce: number | string | BN,
-      messenger: number | string | BN
+      messenger: number | string | BN,
+      feeTokenAmount: number | string | BN
     ): PayableTransactionObject<void>;
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;

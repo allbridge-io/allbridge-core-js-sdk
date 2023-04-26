@@ -26,7 +26,7 @@ export {
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
 } from "../services/liquidity-pool/models/pool.model";
-
+export { testnet } from "../configs/testnet"
 export interface AmountsAndTxCost {
   /**
    * The amount of tokens to be sent.

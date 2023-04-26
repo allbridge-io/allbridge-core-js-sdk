@@ -623,9 +623,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint8",
+        "internalType": "uint256",
         "name": "destinationChainId",
-        "type": "uint8"
+        "type": "uint256"
       },
       {
         "internalType": "bytes32",
@@ -641,6 +641,11 @@
         "internalType": "enum MessengerProtocol",
         "name": "messenger",
         "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "feeTokenAmount",
+        "type": "uint256"
       }
     ],
     "name": "swapAndBridge",

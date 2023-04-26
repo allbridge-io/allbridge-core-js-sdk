@@ -109,7 +109,8 @@ export class EvmBridge extends Bridge {
         toChainId,
         toTokenAddress,
         nonce,
-        messenger
+        messenger,
+        0
       );
       value = fee;
     }
