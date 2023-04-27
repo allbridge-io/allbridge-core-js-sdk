@@ -6,7 +6,7 @@ import Web3 from "web3";
  * The provider is type that combines connection implementations for different chains.<br/>
  * TIP: None provider in the Solana blockchain case.
  */
-export type Provider = Web3 | typeof TronWeb;
+export type Provider = typeof Web3 | typeof TronWeb;
 
 export type RawTransaction = Object;
 
