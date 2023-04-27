@@ -9,6 +9,11 @@ export enum ChainSymbol {
   GRL = "GRL",
 
   /**
+   * The Sepolia testnet.
+   */
+  SPL = "SPL",
+
+  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -27,10 +32,16 @@ export enum ChainSymbol {
    * The TRON network.
    */
   TRX = "TRX",
+
   /**
    * The Polygon network.
    */
   POL = "POL",
+
+  /**
+   * The Polygon Mumbai testnet.
+   */
+  MUM = "MUM",
 }
 
 export enum ChainType {
@@ -44,6 +55,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.GRL,
     chainId: "0x5",
     name: "Goerli",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.SPL]: {
+    chainSymbol: ChainSymbol.SPL,
+    chainId: "0xaa36a7",
+    name: "Sepolia",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.BSC]: {
@@ -62,6 +79,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.POL,
     chainId: "0x89",
     name: "Polygon",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.MUM]: {
+    chainSymbol: ChainSymbol.MUM,
+    chainId: "0x13881",
+    name: "Mumbai",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.SOL]: {
