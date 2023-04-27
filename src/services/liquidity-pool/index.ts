@@ -77,7 +77,7 @@ export class LiquidityPoolService {
       return new TronPool(provider, this.api);
     } else {
       // Web3
-      return new EvmPool(provider as Web3, this.api);
+      return new EvmPool(provider as unknown as Web3, this.api);
     }
   }
 
