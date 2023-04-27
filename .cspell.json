@@ -21,7 +21,8 @@
     "SYSVAR",
     "keccak",
     "Gwei",
-    "stablecoins"
+    "stablecoins",
+    "Sepolia"
   ],
   "flagWords": [],
   "ignorePaths": [
