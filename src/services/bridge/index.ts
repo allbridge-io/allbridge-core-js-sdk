@@ -105,7 +105,7 @@ export class BridgeService {
       return new TronBridge(provider, this.api);
     } else {
       // Web3
-      return new EvmBridge(provider as Web3, this.api);
+      return new EvmBridge(provider as unknown as Web3, this.api);
     }
   }
 
