@@ -22,6 +22,7 @@ export interface SwapAndBridgeSolData {
   config: PublicKey;
   configAccountInfo: ConfigAccountInfo;
   gasPrice: PublicKey;
+  thisGasPrice: PublicKey;
   message: Buffer;
 }
 

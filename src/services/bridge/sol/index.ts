@@ -133,6 +133,7 @@ export class SolanaBridge extends Bridge {
     const configAccount = await getConfigAccount(bridge.programId);
     const configAccountInfo = await bridge.account.config.fetch(configAccount);
     const priceAccount = await getPriceAccount(destinationChainId, configAccountInfo.gasOracleProgramId);
+    const thisGasPriceAccount = await getPriceAccount(sourceChainId, configAccountInfo.gasOracleProgramId);
 
     const message = getMessage({
       amount: vUsdAmount,
@@ -168,6 +169,7 @@ export class SolanaBridge extends Bridge {
     swapAndBridgeData.config = configAccount;
     swapAndBridgeData.configAccountInfo = configAccountInfo;
     swapAndBridgeData.gasPrice = priceAccount;
+    swapAndBridgeData.thisGasPrice = thisGasPriceAccount;
     swapAndBridgeData.message = message;
 
     return swapAndBridgeData;
@@ -195,6 +197,7 @@ export class SolanaBridge extends Bridge {
       config,
       configAccountInfo,
       gasPrice,
+      thisGasPrice,
       message,
     } = swapAndBridgeData;
     const allbridgeMessengerProgramId = configAccountInfo.allbridgeMessengerProgramId;
@@ -219,6 +222,7 @@ export class SolanaBridge extends Bridge {
           lock: lockAccount,
           pool: poolAccount,
           gasPrice,
+          thisGasPrice,
           bridgeAuthority,
           userToken,
           bridgeToken: bridgeTokenAccount,
@@ -260,6 +264,7 @@ export class SolanaBridge extends Bridge {
       config,
       configAccountInfo,
       gasPrice,
+      thisGasPrice,
       message,
     } = swapAndBridgeData;
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
@@ -304,6 +309,7 @@ export class SolanaBridge extends Bridge {
       lock: lockAccount,
       pool: poolAccount,
       gasPrice,
+      thisGasPrice,
       bridgeAuthority,
       userToken,
       bridgeToken: bridgeTokenAccount,
