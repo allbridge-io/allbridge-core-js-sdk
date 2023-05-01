@@ -3,7 +3,7 @@ const bs58 = require("bs58");
 
 const solanaWeb3 = require("@solana/web3.js");
 const { sendAndConfirmTransaction } = require("@solana/web3.js");
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config({ path: "../../.env" });
 
 const fromAddress = process.env.SOL_ACCOUNT_ADDRESS;
 const privateKey = process.env.SOL_PRIVATE_KEY;
