@@ -11,10 +11,7 @@ import { FeePaymentMethod, GasFeeOptions } from "../../models";
 import { ChainDetailsMap, TokenInfoWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
 import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
-import {
-  SendParamsWithTokenInfos,
-  TxSendParams,
-} from "./models";
+import { SendParamsWithTokenInfos, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;

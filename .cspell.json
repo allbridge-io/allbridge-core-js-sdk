@@ -22,7 +22,9 @@
     "keccak",
     "Gwei",
     "stablecoins",
-    "Sepolia"
+    "Sepolia",
+    "Rebalancer",
+    "rebalancer"
   ],
   "flagWords": [],
   "ignorePaths": [
