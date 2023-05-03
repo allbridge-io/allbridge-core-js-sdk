@@ -108,16 +108,23 @@ describe("EvmPool", () => {
       .reply(
         200,
         rpcReply(
-          "0x0000000000000000000000000000000000000000000000000000000000002ce200000000000000000000000000000000000000000000000000b167f322c77e54"
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        )
+      )
+      .post("/")
+      .reply(
+        200,
+        rpcReply(
+          "0x000000000000000000000000000000000000000000000000000000000bebc200"
         )
       );
 
     const userBalanceInfo = await evmPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 
     expect(userBalanceInfo).toEqual({
-      lpAmount: "11490",
-      rewardDebt: "49935364835999316",
+      lpAmount: "200000000",
+      rewardDebt: "0",
     });
-    expect(userBalanceInfo.userLiquidity).toEqual(`11.49`);
+    expect(userBalanceInfo.userLiquidity).toEqual(`200000`);
   });
 });
