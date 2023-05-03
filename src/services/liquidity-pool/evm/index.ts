@@ -4,10 +4,10 @@ import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
+import abi from "../../models/abi/Pool.json";
+import { Pool as PoolContract } from "../../models/abi/types/Pool";
+import { BaseContract } from "../../models/abi/types/types";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
-import abi from "./abi/abi.json";
-import { Abi as PoolContract } from "./types/Abi";
-import { BaseContract } from "./types/types";
 
 export class EvmPool extends Pool {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -18,7 +18,9 @@ export class EvmPool extends Pool {
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
-    return new UserBalanceInfo(await this.getPoolContract(token.poolAddress).methods.userInfo(accountAddress).call());
+    const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
+    const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
   async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
@@ -28,7 +30,7 @@ export class EvmPool extends Pool {
       poolContract.methods.d().call(),
       poolContract.methods.tokenBalance().call(),
       poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalLpAmount().call(),
+      poolContract.methods.totalSupply().call(),
       poolContract.methods.accRewardPerShareP().call(),
     ]);
 

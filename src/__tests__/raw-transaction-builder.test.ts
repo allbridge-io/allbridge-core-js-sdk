@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import Web3 from "web3";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
-import { ApproveData, ChainSymbol, Messenger, SendParamsWithChainSymbols } from "../index";
+import { ApproveData, ChainSymbol, Messenger } from "../index";
 
 import { RawTransactionBuilder } from "../raw-transaction-builder";
 import { BridgeService } from "../services/bridge";

@@ -18,10 +18,8 @@ import {
   FeePaymentMethod,
   GasFeeOptions,
   GetAllowanceParamsWithTokenInfo,
-  GetTokenBalanceParamsWithTokenAddress,
   Messenger,
   PoolInfo,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TokenInfoWithChainDetails,
 } from "../index";

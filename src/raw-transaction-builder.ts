@@ -1,10 +1,5 @@
 import { BridgeService } from "./services/bridge";
-import {
-  ApproveData,
-  ApproveDataWithTokenInfo,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
-} from "./services/bridge/models";
+import { ApproveDataWithTokenInfo, SendParamsWithTokenInfos } from "./services/bridge/models";
 import { LiquidityPoolService } from "./services/liquidity-pool";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./services/liquidity-pool/models";
 import { Provider, RawTransaction } from "./services/models";
@@ -30,7 +25,7 @@ export class RawTransactionBuilder {
    * @param provider
    * @param approveData
    */
-  async approve(provider: Provider, approveData: ApproveData | ApproveDataWithTokenInfo): Promise<RawTransaction> {
+  async approve(provider: Provider, approveData: ApproveDataWithTokenInfo): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionApprove(provider, approveData);
   }
 
@@ -39,10 +34,7 @@ export class RawTransactionBuilder {
    * @param provider
    * @param params
    */
-  async send(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
-    provider?: Provider
-  ): Promise<RawTransaction> {
+  async send(params: SendParamsWithTokenInfos, provider?: Provider): Promise<RawTransaction> {
     return this.bridgeService.buildRawTransactionSend(params, provider);
   }
 

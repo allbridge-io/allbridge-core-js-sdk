@@ -1,14 +1,9 @@
 export {
-  ApproveData,
   TransactionResponse,
   BaseSendParams,
-  CheckAllowanceParamsWithTokenAddress,
   CheckAllowanceParamsWithTokenInfo,
-  GetAllowanceParamsWithTokenAddress,
   GetAllowanceParamsWithTokenInfo,
-  GetTokenBalanceParamsWithTokenAddress,
   GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
 } from "../services/bridge/models/bridge.model";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
@@ -26,6 +21,8 @@ export {
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
 } from "../services/liquidity-pool/models/pool.model";
+
+export { testnet } from "../configs/testnet";
 
 export interface AmountsAndTxCost {
   /**

@@ -4,11 +4,8 @@ import { vi } from "vitest";
 import { ChainType } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
-  ApproveData,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
@@ -43,7 +40,7 @@ export class TestBridge extends Bridge {
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionSend(params: SendParamsWithChainSymbols | SendParamsWithTokenInfos): Promise<RawTransaction> {
+  buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }

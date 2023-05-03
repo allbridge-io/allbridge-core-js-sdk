@@ -12,13 +12,6 @@ import { ChainDetailsMap, TokenInfoWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
 import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
 import {
-  ApproveData,
-  ApproveDataWithTokenInfo,
-  GetAllowanceParamsWithTokenAddress,
-  GetAllowanceParamsWithTokenInfo,
-  GetTokenBalanceParamsWithTokenAddress,
-  GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TxSendParams,
 } from "./models";
@@ -125,37 +118,21 @@ export function checkIsGasPaymentMethodSupported(
 
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
-  params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
+  params: SendParamsWithTokenInfos,
   api: AllbridgeCoreClient
 ): Promise<TxSendParams> {
   const txSendParams = {} as TxSendParams;
-  let toChainType;
 
-  let sourceTokenInfo: TokenInfoWithChainDetails;
-  if (isSendParamsWithChainSymbol(params)) {
-    const chainDetailsMap = await api.getChainDetailsMap();
-    txSendParams.fromChainId = chainDetailsMap[params.fromChainSymbol].allbridgeChainId;
-    txSendParams.fromChainSymbol = params.fromChainSymbol;
-    toChainType = chainProperties[params.toChainSymbol].chainType;
-    txSendParams.fromTokenAddress = params.fromTokenAddress;
-    txSendParams.toChainId = chainDetailsMap[params.toChainSymbol].allbridgeChainId;
-    txSendParams.toTokenAddress = params.toTokenAddress;
-    sourceTokenInfo = getTokenInfoByTokenAddress(
-      chainDetailsMap,
-      params.fromChainSymbol,
-      txSendParams.fromTokenAddress
-    );
-  } else {
-    txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
-    txSendParams.fromChainSymbol = params.sourceChainToken.chainSymbol;
-    toChainType = chainProperties[params.destinationChainToken.chainSymbol].chainType;
-    txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
-    txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
+  txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
+  txSendParams.fromChainSymbol = params.sourceChainToken.chainSymbol;
+  const toChainType = chainProperties[params.destinationChainToken.chainSymbol].chainType;
+  txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
+  txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
 
-    txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
-    txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
-    sourceTokenInfo = params.sourceChainToken;
-  }
+  txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
+  txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
+  const sourceTokenInfo = params.sourceChainToken;
+
   checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceTokenInfo);
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
@@ -223,32 +200,6 @@ export async function getGasFeeOptions(
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(() => resolve(), ms));
-}
-
-export function isSendParamsWithChainSymbol(
-  params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-): params is SendParamsWithChainSymbols {
-  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-  return (params as SendParamsWithChainSymbols).fromChainSymbol !== undefined;
-}
-
-export function isGetAllowanceParamsWithTokenInfo(
-  params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
-): boolean {
-  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-  return (params as GetAllowanceParamsWithTokenInfo).tokenInfo !== undefined;
-}
-
-export function isApproveDataWithTokenInfo(params: ApproveData | ApproveDataWithTokenInfo): boolean {
-  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-  return (params as ApproveDataWithTokenInfo).token !== undefined;
-}
-
-export function isGetTokenBalanceParamsWithTokenInfo(
-  params: GetTokenBalanceParamsWithTokenAddress | GetTokenBalanceParamsWithTokenInfo
-): params is GetTokenBalanceParamsWithTokenInfo {
-  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-  return (params as GetTokenBalanceParamsWithTokenInfo).tokenInfo !== undefined;
 }
 
 export function amountToHex(amount: string): string {

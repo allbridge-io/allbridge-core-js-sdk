@@ -53,7 +53,7 @@ export function getMessage(args: {
   const message = Web3.utils.encodePacked(
     { t: "uint256", v: amount },
     { t: "bytes32", v: recipient },
-    { t: "uint8", v: sourceChainId },
+    { t: "uint256", v: sourceChainId },
     { t: "bytes32", v: receiveToken },
     { t: "uint256", v: nonce },
     { t: "uint8", v: messenger }

@@ -4,14 +4,12 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, GetTokenBalanceParamsWithTokenInfo } from "../../../models";
 import { RawTransaction } from "../../models";
 import {
   ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
@@ -52,8 +50,8 @@ export class EvmBridge extends Bridge {
     return tokenContract.methods.allowance(owner, spender).call();
   }
 
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
-    return await this.getContract(erc20abi as AbiItem[], params.tokenAddress)
+  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
+    return await this.getContract(erc20abi as AbiItem[], params.tokenInfo.tokenAddress)
       .methods.balanceOf(params.account)
       .call();
   }
@@ -63,9 +61,7 @@ export class EvmBridge extends Bridge {
     return this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return await this.buildRawTransactionSendFromParams(txSendParams);
   }
@@ -109,7 +105,8 @@ export class EvmBridge extends Bridge {
         toChainId,
         toTokenAddress,
         nonce,
-        messenger
+        messenger,
+        0
       );
       value = fee;
     }
