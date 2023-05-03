@@ -21,15 +21,51 @@ export interface EventOptions {
   topics?: string[];
 }
 
+export type BridgingFeeFromTokens = ContractEventLog<{
+  gas: string;
+  0: string;
+}>;
 export type OwnershipTransferred = ContractEventLog<{
   previousOwner: string;
   newOwner: string;
   0: string;
   1: string;
 }>;
+export type ReceiveFee = ContractEventLog<{
+  bridgeTransactionCost: string;
+  messageTransactionCost: string;
+  0: string;
+  1: string;
+}>;
 export type Received = ContractEventLog<{
   0: string;
   1: string;
+}>;
+export type Swapped = ContractEventLog<{
+  sender: string;
+  recipient: string;
+  sendToken: string;
+  receiveToken: string;
+  sendAmount: string;
+  receiveAmount: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+  5: string;
+}>;
+export type TokensReceived = ContractEventLog<{
+  amount: string;
+  recipient: string;
+  nonce: string;
+  messenger: string;
+  message: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
 }>;
 export type TokensSent = ContractEventLog<{
   amount: string;
@@ -46,19 +82,29 @@ export type TokensSent = ContractEventLog<{
   5: string;
 }>;
 
-export interface Abi extends BaseContract {
-  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Abi;
-  clone(): Abi;
+export interface Bridge extends BaseContract {
+  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Bridge;
+  clone(): Bridge;
   methods: {
+    accumulatedFee(arg0: string): NonPayableTransactionObject<string>;
+
     addBridgeToken(chainId_: number | string | BN, tokenAddress_: string | number[]): NonPayableTransactionObject<void>;
 
     addPool(pool: string, token: string | number[]): NonPayableTransactionObject<void>;
 
     allbridgeMessenger(): NonPayableTransactionObject<string>;
 
+    canSwap(): NonPayableTransactionObject<string>;
+
     chainId(): NonPayableTransactionObject<string>;
 
     gasUsage(arg0: number | string | BN): NonPayableTransactionObject<string>;
+
+    getBridgingCostInTokens(
+      destinationChainId: number | string | BN,
+      messenger: number | string | BN,
+      tokenAddress: string
+    ): NonPayableTransactionObject<string>;
 
     getMessageCost(chainId: number | string | BN, protocol: number | string | BN): NonPayableTransactionObject<string>;
 
@@ -89,7 +135,9 @@ export interface Abi extends BaseContract {
 
     pools(arg0: string | number[]): NonPayableTransactionObject<string>;
 
-    processedMessages(arg0: string | number[]): NonPayableTransactionObject<boolean>;
+    processedMessages(arg0: string | number[]): NonPayableTransactionObject<string>;
+
+    rebalancer(): NonPayableTransactionObject<string>;
 
     receiveTokens(
       amount: number | string | BN,
@@ -97,8 +145,9 @@ export interface Abi extends BaseContract {
       sourceChainId: number | string | BN,
       receiveToken: string | number[],
       nonce: number | string | BN,
-      messenger: number | string | BN
-    ): NonPayableTransactionObject<void>;
+      messenger: number | string | BN,
+      receiveAmountMin: number | string | BN
+    ): PayableTransactionObject<void>;
 
     registerBridge(
       chainId_: number | string | BN,
@@ -112,13 +161,17 @@ export interface Abi extends BaseContract {
 
     renounceOwnership(): NonPayableTransactionObject<void>;
 
-    sentMessages(arg0: string | number[]): NonPayableTransactionObject<boolean>;
+    sentMessages(arg0: string | number[]): NonPayableTransactionObject<string>;
 
     setAllbridgeMessenger(_allbridgeMessenger: string): NonPayableTransactionObject<void>;
+
+    setCanSwap(_canDeposit: boolean): NonPayableTransactionObject<void>;
 
     setGasOracle(gasOracle_: string): NonPayableTransactionObject<void>;
 
     setGasUsage(chainId_: number | string | BN, gasUsage_: number | string | BN): NonPayableTransactionObject<void>;
+
+    setRebalancer(_rebalancer: string): NonPayableTransactionObject<void>;
 
     setWormholeMessenger(_wormholeMessenger: string): NonPayableTransactionObject<void>;
 
@@ -126,7 +179,8 @@ export interface Abi extends BaseContract {
       amount: number | string | BN,
       token: string | number[],
       receiveToken: string | number[],
-      recipient: string
+      recipient: string,
+      receiveAmountMin: number | string | BN
     ): NonPayableTransactionObject<void>;
 
     swapAndBridge(
@@ -142,16 +196,30 @@ export interface Abi extends BaseContract {
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
 
+    withdrawBridgingFeeInTokens(token: string): NonPayableTransactionObject<void>;
+
     withdrawGasTokens(amount: number | string | BN): NonPayableTransactionObject<void>;
 
     wormholeMessenger(): NonPayableTransactionObject<string>;
   };
   events: {
+    BridgingFeeFromTokens(cb?: Callback<BridgingFeeFromTokens>): EventEmitter;
+    BridgingFeeFromTokens(options?: EventOptions, cb?: Callback<BridgingFeeFromTokens>): EventEmitter;
+
     OwnershipTransferred(cb?: Callback<OwnershipTransferred>): EventEmitter;
     OwnershipTransferred(options?: EventOptions, cb?: Callback<OwnershipTransferred>): EventEmitter;
 
+    ReceiveFee(cb?: Callback<ReceiveFee>): EventEmitter;
+    ReceiveFee(options?: EventOptions, cb?: Callback<ReceiveFee>): EventEmitter;
+
     Received(cb?: Callback<Received>): EventEmitter;
     Received(options?: EventOptions, cb?: Callback<Received>): EventEmitter;
+
+    Swapped(cb?: Callback<Swapped>): EventEmitter;
+    Swapped(options?: EventOptions, cb?: Callback<Swapped>): EventEmitter;
+
+    TokensReceived(cb?: Callback<TokensReceived>): EventEmitter;
+    TokensReceived(options?: EventOptions, cb?: Callback<TokensReceived>): EventEmitter;
 
     TokensSent(cb?: Callback<TokensSent>): EventEmitter;
     TokensSent(options?: EventOptions, cb?: Callback<TokensSent>): EventEmitter;
@@ -159,11 +227,23 @@ export interface Abi extends BaseContract {
     allEvents(options?: EventOptions, cb?: Callback<EventLog>): EventEmitter;
   };
 
+  once(event: "BridgingFeeFromTokens", cb: Callback<BridgingFeeFromTokens>): void;
+  once(event: "BridgingFeeFromTokens", options: EventOptions, cb: Callback<BridgingFeeFromTokens>): void;
+
   once(event: "OwnershipTransferred", cb: Callback<OwnershipTransferred>): void;
   once(event: "OwnershipTransferred", options: EventOptions, cb: Callback<OwnershipTransferred>): void;
 
+  once(event: "ReceiveFee", cb: Callback<ReceiveFee>): void;
+  once(event: "ReceiveFee", options: EventOptions, cb: Callback<ReceiveFee>): void;
+
   once(event: "Received", cb: Callback<Received>): void;
   once(event: "Received", options: EventOptions, cb: Callback<Received>): void;
+
+  once(event: "Swapped", cb: Callback<Swapped>): void;
+  once(event: "Swapped", options: EventOptions, cb: Callback<Swapped>): void;
+
+  once(event: "TokensReceived", cb: Callback<TokensReceived>): void;
+  once(event: "TokensReceived", options: EventOptions, cb: Callback<TokensReceived>): void;
 
   once(event: "TokensSent", cb: Callback<TokensSent>): void;
   once(event: "TokensSent", options: EventOptions, cb: Callback<TokensSent>): void;
