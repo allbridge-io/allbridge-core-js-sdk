@@ -2,14 +2,12 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, GetTokenBalanceParamsWithTokenInfo } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import {
   ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
@@ -38,8 +36,8 @@ export class TronBridge extends Bridge {
     return allowance.toString();
   }
 
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
-    const contract = await this.getContract(params.tokenAddress);
+  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
+    const contract = await this.getContract(params.tokenInfo.tokenAddress);
     const balance = await contract.balanceOf(params.account).call();
     return balance.toString();
   }
@@ -49,9 +47,7 @@ export class TronBridge extends Bridge {
     return await this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return this.buildRawTransactionSendFromParams(txSendParams);
   }

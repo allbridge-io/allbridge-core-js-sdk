@@ -11,7 +11,7 @@ import {
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
 import { FeePaymentMethod } from "../../../models";
-import { SendParamsWithChainSymbols, TxSendParams } from "../../../services/bridge/models";
+import { TxSendParams } from "../../../services/bridge/models";
 import { prepareTxSendParams } from "../../../services/bridge/utils";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 

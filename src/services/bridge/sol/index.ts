@@ -26,13 +26,12 @@ import {
   ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
+  GetTokenBalanceParamsWithTokenInfo,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
 } from "../models";
-import { getNonce, isSendParamsWithChainSymbol, prepareTxSendParams } from "../utils";
+import { getNonce, prepareTxSendParams } from "../utils";
 
 export interface SolanaBridgeParams {
   solanaRpcUrl: string;
@@ -54,13 +53,11 @@ export class SolanaBridge extends Bridge {
     throw new Error("NOT SUPPORTED");
   }
 
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
     params.fee = "";
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
 
-    const solTxSendParams = await this.prepareSolTxSendParams(params, txSendParams);
+    const solTxSendParams = this.prepareSolTxSendParams(params, txSendParams);
 
     const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
     switch (txSendParams.messenger) {
@@ -74,22 +71,10 @@ export class SolanaBridge extends Bridge {
     }
   }
 
-  private async prepareSolTxSendParams(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
-    txSendParams: TxSendParams
-  ): Promise<SolTxSendParams> {
-    let poolAddress;
-    if (isSendParamsWithChainSymbol(params)) {
-      // @ts-expect-error
-      poolAddress = (await this.api.getChainDetailsMap())[params.fromChainSymbol].tokens.find(
-        (token) => token.tokenAddress === params.fromTokenAddress
-      ).poolAddress;
-    } else {
-      poolAddress = params.sourceChainToken.poolAddress;
-    }
+  private prepareSolTxSendParams(params: SendParamsWithTokenInfos, txSendParams: TxSendParams): SolTxSendParams {
     return {
       ...txSendParams,
-      poolAddress,
+      poolAddress: params.sourceChainToken.poolAddress,
     };
   }
 
@@ -368,9 +353,9 @@ export class SolanaBridge extends Bridge {
     throw new Error("NOT SUPPORTED");
   }
 
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
-    const { account, tokenAddress } = params;
-    const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(tokenAddress));
+  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
+    const { account, tokenInfo } = params;
+    const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(tokenInfo.tokenAddress));
     const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
     return accountData.amount.toString();
   }

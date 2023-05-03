@@ -7,8 +7,7 @@ import {
   ApproveParamsDto,
   CheckAllowanceParamsDto,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
+  GetTokenBalanceParamsWithTokenInfo,
   SendParamsWithTokenInfos,
   TransactionResponse,
   TxSendParams,
@@ -18,7 +17,7 @@ export abstract class Bridge {
   abstract chainType: ChainType;
   abstract api: AllbridgeCoreClient;
 
-  abstract getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string>;
+  abstract getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string>;
 
   abstract getAllowance(params: GetAllowanceParamsDto): Promise<string>;
 
@@ -27,16 +26,14 @@ export abstract class Bridge {
     return Big(allowance).gte(Big(params.amount));
   }
 
-  async send(params: SendParamsWithChainSymbols | SendParamsWithTokenInfos): Promise<TransactionResponse> {
+  async send(params: SendParamsWithTokenInfos): Promise<TransactionResponse> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return this.sendTx(txSendParams);
   }
 
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
 
-  abstract buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction>;
+  abstract buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction>;
 
   abstract approve(params: ApproveParamsDto): Promise<TransactionResponse>;
 

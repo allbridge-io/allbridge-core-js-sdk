@@ -6,7 +6,14 @@ import type BN from "bn.js";
 import type { ContractOptions } from "web3-eth-contract";
 import type { EventLog } from "web3-core";
 import type { EventEmitter } from "events";
-import type { Callback, NonPayableTransactionObject, BlockType, ContractEventLog, BaseContract } from "./types";
+import type {
+  Callback,
+  PayableTransactionObject,
+  NonPayableTransactionObject,
+  BlockType,
+  ContractEventLog,
+  BaseContract,
+} from "./types";
 
 export interface EventOptions {
   filter?: object;
@@ -14,6 +21,14 @@ export interface EventOptions {
   topics?: string[];
 }
 
+export type Approval = ContractEventLog<{
+  owner: string;
+  spender: string;
+  value: string;
+  0: string;
+  1: string;
+  2: string;
+}>;
 export type Deposit = ContractEventLog<{
   user: string;
   amount: string;
@@ -56,6 +71,14 @@ export type SwappedToVUsd = ContractEventLog<{
   3: string;
   4: string;
 }>;
+export type Transfer = ContractEventLog<{
+  from: string;
+  to: string;
+  value: string;
+  0: string;
+  1: string;
+  2: string;
+}>;
 export type Withdraw = ContractEventLog<{
   user: string;
   amount: string;
@@ -63,9 +86,9 @@ export type Withdraw = ContractEventLog<{
   1: string;
 }>;
 
-export interface Abi extends BaseContract {
-  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Abi;
-  clone(): Abi;
+export interface Pool extends BaseContract {
+  constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Pool;
+  clone(): Pool;
   methods: {
     PP(): NonPayableTransactionObject<string>;
 
@@ -73,9 +96,23 @@ export interface Abi extends BaseContract {
 
     accRewardPerShareP(): NonPayableTransactionObject<string>;
 
+    adjustTotalLpAmount(): NonPayableTransactionObject<void>;
+
     adminFeeAmount(): NonPayableTransactionObject<string>;
 
     adminFeeShareBP(): NonPayableTransactionObject<string>;
+
+    allowance(owner: string, spender: string): NonPayableTransactionObject<string>;
+
+    approve(spender: string, amount: number | string | BN): NonPayableTransactionObject<boolean>;
+
+    balanceOf(account: string): NonPayableTransactionObject<string>;
+
+    balanceRatioMinBP(): NonPayableTransactionObject<string>;
+
+    canDeposit(): NonPayableTransactionObject<string>;
+
+    canWithdraw(): NonPayableTransactionObject<string>;
 
     claimAdminFee(): NonPayableTransactionObject<void>;
 
@@ -83,15 +120,21 @@ export interface Abi extends BaseContract {
 
     d(): NonPayableTransactionObject<string>;
 
+    decimals(): NonPayableTransactionObject<string>;
+
+    decreaseAllowance(spender: string, subtractedValue: number | string | BN): NonPayableTransactionObject<boolean>;
+
     deposit(amount: number | string | BN): NonPayableTransactionObject<void>;
 
     feeShareBP(): NonPayableTransactionObject<string>;
 
-    getD(x: number | string | BN, y: number | string | BN): NonPayableTransactionObject<string>;
-
     getPrice(): NonPayableTransactionObject<string>;
 
     getY(x: number | string | BN): NonPayableTransactionObject<string>;
+
+    increaseAllowance(spender: string, addedValue: number | string | BN): NonPayableTransactionObject<boolean>;
+
+    name(): NonPayableTransactionObject<string>;
 
     owner(): NonPayableTransactionObject<string>;
 
@@ -99,38 +142,55 @@ export interface Abi extends BaseContract {
 
     renounceOwnership(): NonPayableTransactionObject<void>;
 
+    reserves(): NonPayableTransactionObject<string>;
+
     router(): NonPayableTransactionObject<string>;
 
     setAdminFeeShare(_adminFeeShareBP: number | string | BN): NonPayableTransactionObject<void>;
+
+    setBalanceRatioMinBP(_balanceRatioMinBP: number | string | BN): NonPayableTransactionObject<void>;
+
+    setCanDeposit(_canDeposit: boolean): NonPayableTransactionObject<void>;
+
+    setCanWithdraw(_canWithdraw: boolean): NonPayableTransactionObject<void>;
 
     setFeeShare(_feeShareBP: number | string | BN): NonPayableTransactionObject<void>;
 
     setRouter(_router: string): NonPayableTransactionObject<void>;
 
-    swapFromVUsd(user: string, amount: number | string | BN): NonPayableTransactionObject<string>;
+    swapFromVUsd(
+      user: string,
+      amount: number | string | BN,
+      receiveAmountMin: number | string | BN,
+      zeroFee: boolean
+    ): NonPayableTransactionObject<string>;
 
-    swapToVUsd(user: string, amount: number | string | BN): NonPayableTransactionObject<string>;
+    swapToVUsd(user: string, amount: number | string | BN, zeroFee: boolean): NonPayableTransactionObject<string>;
+
+    symbol(): NonPayableTransactionObject<string>;
 
     token(): NonPayableTransactionObject<string>;
 
     tokenBalance(): NonPayableTransactionObject<string>;
 
-    totalLpAmount(): NonPayableTransactionObject<string>;
+    totalSupply(): NonPayableTransactionObject<string>;
+
+    transfer(to: string, amount: number | string | BN): NonPayableTransactionObject<boolean>;
+
+    transferFrom(from: string, to: string, amount: number | string | BN): NonPayableTransactionObject<boolean>;
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
 
-    userInfo(arg0: string): NonPayableTransactionObject<{
-      lpAmount: string;
-      rewardDebt: string;
-      0: string;
-      1: string;
-    }>;
+    userRewardDebt(arg0: string): NonPayableTransactionObject<string>;
 
     vUsdBalance(): NonPayableTransactionObject<string>;
 
     withdraw(amountLp: number | string | BN): NonPayableTransactionObject<void>;
   };
   events: {
+    Approval(cb?: Callback<Approval>): EventEmitter;
+    Approval(options?: EventOptions, cb?: Callback<Approval>): EventEmitter;
+
     Deposit(cb?: Callback<Deposit>): EventEmitter;
     Deposit(options?: EventOptions, cb?: Callback<Deposit>): EventEmitter;
 
@@ -146,11 +206,17 @@ export interface Abi extends BaseContract {
     SwappedToVUsd(cb?: Callback<SwappedToVUsd>): EventEmitter;
     SwappedToVUsd(options?: EventOptions, cb?: Callback<SwappedToVUsd>): EventEmitter;
 
+    Transfer(cb?: Callback<Transfer>): EventEmitter;
+    Transfer(options?: EventOptions, cb?: Callback<Transfer>): EventEmitter;
+
     Withdraw(cb?: Callback<Withdraw>): EventEmitter;
     Withdraw(options?: EventOptions, cb?: Callback<Withdraw>): EventEmitter;
 
     allEvents(options?: EventOptions, cb?: Callback<EventLog>): EventEmitter;
   };
+
+  once(event: "Approval", cb: Callback<Approval>): void;
+  once(event: "Approval", options: EventOptions, cb: Callback<Approval>): void;
 
   once(event: "Deposit", cb: Callback<Deposit>): void;
   once(event: "Deposit", options: EventOptions, cb: Callback<Deposit>): void;
@@ -166,6 +232,9 @@ export interface Abi extends BaseContract {
 
   once(event: "SwappedToVUsd", cb: Callback<SwappedToVUsd>): void;
   once(event: "SwappedToVUsd", options: EventOptions, cb: Callback<SwappedToVUsd>): void;
+
+  once(event: "Transfer", cb: Callback<Transfer>): void;
+  once(event: "Transfer", options: EventOptions, cb: Callback<Transfer>): void;
 
   once(event: "Withdraw", cb: Callback<Withdraw>): void;
   once(event: "Withdraw", options: EventOptions, cb: Callback<Withdraw>): void;

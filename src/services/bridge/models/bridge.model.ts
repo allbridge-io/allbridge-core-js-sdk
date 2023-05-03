@@ -4,34 +4,6 @@ import { Messenger } from "../../../client/core-api/core-api.model";
 import { FeePaymentMethod } from "../../../models";
 import { TokenInfoWithChainDetails } from "../../../tokens-info";
 
-/**
- * @deprecated Please use {@link ApproveDataWithTokenInfo} instead
- */
-export interface ApproveData {
-  /**
-   * The token address itself
-   */
-  tokenAddress: string;
-
-  /**
-   *  The address of the token owner who is granting permission to use tokens
-   *  to the spender
-   */
-  owner: string;
-
-  /**
-   *  The address of the contract that is being granted permission to use tokens
-   */
-  spender: string;
-
-  /**
-   * The integer amount of tokens to approve.
-   * Optional.
-   * The maximum amount by default.
-   */
-  amount?: string | number | Big;
-}
-
 export interface ApproveDataWithTokenInfo {
   /**
    * The token info
@@ -55,24 +27,6 @@ export interface ApproveDataWithTokenInfo {
    * The maximum amount by default.
    */
   amount?: string | number | Big;
-}
-
-/**
- * @deprecated Please use {@link GetTokenBalanceParamsWithTokenInfo} instead
- */
-export interface GetTokenBalanceParamsWithTokenAddress {
-  /**
-   *  The address for which we will find out the token balance
-   */
-  account: string;
-  /**
-   *  The token address itself
-   */
-  tokenAddress: string;
-  /**
-   *  If present, the result will be recalculated in precision with token decimals
-   */
-  tokenDecimals?: number;
 }
 
 export interface GetTokenBalanceParamsWithTokenInfo {
@@ -130,28 +84,6 @@ export interface BaseSendParams {
   gasFeePaymentMethod?: FeePaymentMethod;
 }
 
-/**
- * @deprecated Please use {@link SendParamsWithTokenInfos} instead
- */
-export interface SendParamsWithChainSymbols extends BaseSendParams {
-  /**
-   * The chain symbol to transfer tokens from.
-   */
-  fromChainSymbol: ChainSymbol;
-  /**
-   * The token contract address on the source chain.
-   */
-  fromTokenAddress: string;
-  /**
-   * The chain symbol to transfer tokens to.
-   */
-  toChainSymbol: ChainSymbol;
-  /**
-   * The token contract address on the destination chain.
-   */
-  toTokenAddress: string;
-}
-
 export interface SendParamsWithTokenInfos extends BaseSendParams {
   /**
    * {@link TokenInfoWithChainDetails |The token info object} on the source chain.
@@ -163,30 +95,11 @@ export interface SendParamsWithTokenInfos extends BaseSendParams {
   destinationChainToken: TokenInfoWithChainDetails;
 }
 
-/**
- * @deprecated Please use {@link CheckAllowanceParamsWithTokenInfo} instead
- */
-export interface CheckAllowanceParamsWithTokenAddress extends GetAllowanceParamsWithTokenAddress {
-  /**
-   * The float amount of tokens to check the allowance.
-   */
-  amount: string | number | Big;
-}
-
 export interface CheckAllowanceParamsWithTokenInfo extends GetAllowanceParamsWithTokenInfo {
   /**
    * The float amount of tokens to check the allowance.
    */
   amount: string | number | Big;
-}
-
-/**
- * @deprecated Please use {@link GetAllowanceParamsWithTokenInfo} instead
- */
-export interface GetAllowanceParamsWithTokenAddress {
-  chainSymbol: ChainSymbol;
-  tokenAddress: string;
-  owner: string;
 }
 
 export interface GetAllowanceParamsWithTokenInfo {
