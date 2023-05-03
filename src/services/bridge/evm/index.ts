@@ -6,6 +6,9 @@ import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { FeePaymentMethod, GetTokenBalanceParamsWithTokenInfo } from "../../../models";
 import { RawTransaction } from "../../models";
+import abi from "../../models/abi/Bridge.json";
+import { Bridge as BridgeContract } from "../../models/abi/types/Bridge";
+import { BaseContract, PayableTransactionObject } from "../../models/abi/types/types";
 import {
   ApproveParamsDto,
   Bridge,
@@ -15,11 +18,6 @@ import {
   TxSendParams,
 } from "../models";
 import { amountToHex, checkIsGasPaymentMethodSupported, getNonce, prepareTxSendParams } from "../utils";
-import abi from "./abi/Abi.json";
-import payerAbi from "./abi/payer-contract.json";
-import { Abi as BridgeContract } from "./types/Abi";
-import { PayerContract } from "./types/PayerContract";
-import { BaseContract, PayableTransactionObject } from "./types/types";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
@@ -83,9 +81,10 @@ export class EvmBridge extends Bridge {
     const nonce = new BN(getNonce());
     let swapAndBridgeMethod: PayableTransactionObject<void>;
     let value: string;
+    const bridgeContract = this.getBridgeContract(contractAddress);
+
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      const payerContract = this.getPayerContract(contractAddress);
-      swapAndBridgeMethod = payerContract.methods.swapAndBridge(
+      swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
         fromTokenAddress,
         amount,
         toAccountAddress,
@@ -97,7 +96,6 @@ export class EvmBridge extends Bridge {
       );
       value = "0";
     } else {
-      const bridgeContract = this.getBridgeContract(contractAddress);
       swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
         fromTokenAddress,
         amount,
@@ -200,9 +198,5 @@ export class EvmBridge extends Bridge {
 
   private getBridgeContract(contractAddress: string): BridgeContract {
     return this.getContract<BridgeContract>(abi as AbiItem[], contractAddress);
-  }
-
-  private getPayerContract(contractAddress: string): PayerContract {
-    return this.getContract<PayerContract>(payerAbi as AbiItem[], contractAddress);
   }
 }
