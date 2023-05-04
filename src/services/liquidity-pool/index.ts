@@ -16,8 +16,8 @@ export class LiquidityPoolService {
 
   async getAmountToBeDeposited(amount: string, token: TokenInfoWithChainDetails, provider?: Provider): Promise<string> {
     const poolInfo = await this.getPoolInfo(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } = poolInfo;
-    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount);
+    const { vUsdBalance, tokenBalance, aValue, dValue } = poolInfo;
+    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
     return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
   }
 
@@ -28,8 +28,7 @@ export class LiquidityPoolService {
     provider?: Provider
   ): Promise<string> {
     const poolInfo = await this.getPoolInfo(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue, totalLpAmount } = poolInfo;
-    const tokenAmountInSP = vUsdToWithdrawalAmount(amount, aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount);
+    const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);
     const userBalanceInfo = await this.getUserBalanceInfo(accountAddress, token, provider);
     const earned = userBalanceInfo.earned(poolInfo) || "0";
