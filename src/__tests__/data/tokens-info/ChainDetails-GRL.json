@@ -5,7 +5,6 @@
   "name": "Goerli",
   "allbridgeChainId": 2,
   "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-  "stablePayAddress": "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5",
   "txTime": {
     "1": {
       "in": 30000,
@@ -31,7 +30,6 @@
       "chainId": "0x5",
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-      "stablePayAddress": "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5",
       "txTime": {
         "1": {
           "in": 30000,
@@ -58,7 +56,6 @@
       "chainId": "0x5",
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-      "stablePayAddress": "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5",
       "txTime": {
         "1": {
           "in": 30000,

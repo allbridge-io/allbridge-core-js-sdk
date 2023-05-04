@@ -9,8 +9,7 @@ import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { FeePaymentMethod, GasFeeOptions } from "../../models";
 import { ChainDetailsMap, TokenInfoWithChainDetails } from "../../tokens-info";
-import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
-import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
+import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SendParamsWithTokenInfos, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
@@ -106,7 +105,7 @@ export function checkIsGasPaymentMethodSupported(
   gasFeePaymentMethod: FeePaymentMethod | undefined,
   sourceTokenInfo: TokenInfoWithChainDetails
 ) {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN && !sourceTokenInfo.stablePayAddress) {
+  if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN && sourceTokenInfo.chainSymbol == ChainSymbol.SOL) {
     throw Error(
       `Gas fee payment method '${gasFeePaymentMethod}' is not supported on source chain ${sourceTokenInfo.chainSymbol}`
     );
@@ -133,7 +132,7 @@ export async function prepareTxSendParams(
   checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceTokenInfo);
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    txSendParams.contractAddress = sourceTokenInfo.stablePayAddress;
+    txSendParams.contractAddress = sourceTokenInfo.bridgeAddress;
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
   } else {
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
@@ -185,11 +184,11 @@ export async function getGasFeeOptions(
     [FeePaymentMethod.WITH_NATIVE_CURRENCY]: transactionCostResponse.fee,
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
-    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
-      new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
-      EVM_NATIVE_TOKEN_PRECISION,
-      sourceChainTokenDecimals
-    ).toFixed(0, Big.roundDown);
+    let stableCoinFee = new Big(transactionCostResponse.fee)
+      .mul(transactionCostResponse.sourceNativeTokenPrice)
+      .toFixed(0, Big.roundUp);
+    stableCoinFee = stableCoinFee === "0" ? "1" : stableCoinFee;
+    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = stableCoinFee;
   }
 
   return gasFeeOptions;

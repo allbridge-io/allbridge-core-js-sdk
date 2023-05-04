@@ -24,11 +24,8 @@ export class TronBridge extends Bridge {
   }
 
   async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      throw Error(`Gas fee payment method '${params.gasFeePaymentMethod}' is not supported`);
-    }
     const {
-      tokenInfo: { tokenAddress, poolAddress: spender },
+      tokenInfo: { tokenAddress, bridgeAddress: spender },
       owner,
     } = params;
     const tokenContract = await this.getContract(tokenAddress);
@@ -63,22 +60,39 @@ export class TronBridge extends Bridge {
       toTokenAddress,
       messenger,
       fee,
+      gasFeePaymentMethod,
     } = params;
 
     const nonce = getNonce().toJSON().data;
-    const parameter = [
-      { type: "bytes32", value: fromTokenAddress },
-      { type: "uint256", value: amount },
-      { type: "bytes32", value: toAccountAddress },
-      { type: "uint8", value: toChainId },
-      { type: "bytes32", value: toTokenAddress },
-      { type: "uint256", value: nonce },
-      { type: "uint8", value: messenger },
-    ];
-    const value = fee;
-    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)";
-
-    return this.buildRawTransaction(contractAddress, methodSignature, parameter, value, fromAccountAddress);
+    let parameters;
+    let value: string;
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      parameters = [
+        { type: "bytes32", value: fromTokenAddress },
+        { type: "uint256", value: amount },
+        { type: "bytes32", value: toAccountAddress },
+        { type: "uint256", value: toChainId },
+        { type: "bytes32", value: toTokenAddress },
+        { type: "uint256", value: nonce },
+        { type: "uint8", value: messenger },
+        { type: "uint256", value: fee },
+      ];
+      value = "0";
+    } else {
+      parameters = [
+        { type: "bytes32", value: fromTokenAddress },
+        { type: "uint256", value: amount },
+        { type: "bytes32", value: toAccountAddress },
+        { type: "uint256", value: toChainId },
+        { type: "bytes32", value: toTokenAddress },
+        { type: "uint256", value: nonce },
+        { type: "uint8", value: messenger },
+        { type: "uint256", value: 0 },
+      ];
+      value = fee;
+    }
+    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
+    return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
@@ -96,7 +110,6 @@ export class TronBridge extends Bridge {
     ];
     const value = "0";
     const methodSignature = "approve(address,uint256)";
-
     return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
   }
 
@@ -128,7 +141,7 @@ export class TronBridge extends Bridge {
   private async buildRawTransaction(
     contractAddress: string,
     methodSignature: string,
-    parameter: SmartContractMethodParameter[],
+    parameters: SmartContractMethodParameter[],
     value: string,
     fromAddress: string
   ): Promise<RawTransaction> {
@@ -138,7 +151,7 @@ export class TronBridge extends Bridge {
       {
         callValue: value,
       },
-      parameter,
+      parameters,
       fromAddress
     );
     if (!transactionObject?.result?.result) {

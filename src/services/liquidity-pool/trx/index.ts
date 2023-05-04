@@ -16,11 +16,9 @@ export class TronPool extends Pool {
 
   async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
     const contract = await this.getContract(token.poolAddress);
-    const userInfoData = await contract.userInfo(accountAddress).call();
-    return new UserBalanceInfo({
-      lpAmount: userInfoData.lpAmount.toString(),
-      rewardDebt: userInfoData.rewardDebt.toString(),
-    });
+    const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
+    const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
   async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
@@ -31,7 +29,7 @@ export class TronPool extends Pool {
       poolContract.methods.d().call(),
       poolContract.methods.tokenBalance().call(),
       poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalLpAmount().call(),
+      poolContract.methods.totalSupply().call(),
       poolContract.methods.accRewardPerShareP().call(),
     ]);
 

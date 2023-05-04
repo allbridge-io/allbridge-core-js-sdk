@@ -33,13 +33,8 @@ export class EvmBridge extends Bridge {
   getAllowance(params: GetAllowanceParamsDto): Promise<string> {
     const tokenAddress = params.tokenInfo.tokenAddress;
     const owner = params.owner;
-    let spender;
     checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, params.tokenInfo);
-    if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      spender = params.tokenInfo.stablePayAddress;
-    } else {
-      spender = params.tokenInfo.poolAddress;
-    }
+    const spender = params.tokenInfo.bridgeAddress;
     return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
   }
 

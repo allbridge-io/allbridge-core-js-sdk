@@ -331,7 +331,7 @@ describe("SDK", () => {
         /* cSpell:disable */
         const tokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
         const poolAddress = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
-        const stablePayAddress = "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5";
+        const bridgeAddress = "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5";
         /* cSpell:enable */
         const tokenDecimals = 18;
         const provider = new Web3();
@@ -376,7 +376,6 @@ describe("SDK", () => {
               decimals: tokenDecimals,
               tokenAddress,
               poolAddress,
-              stablePayAddress,
             },
             owner: owner,
             gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
@@ -398,14 +397,13 @@ describe("SDK", () => {
               decimals: tokenDecimals,
               tokenAddress,
               poolAddress,
-              stablePayAddress,
             },
             owner: owner,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
           };
 
           const actual = await sdk.getAllowance(provider, params);
-          expect(allowanceMocked).toBeCalledWith(owner, stablePayAddress);
+          expect(allowanceMocked).toBeCalledWith(owner, params.tokenInfo.bridgeAddress);
           expect(allowanceMocked).toHaveBeenCalledOnce();
           expect(methodCallMock).toHaveBeenCalledOnce();
           expect(actual).toEqual(tokensAmount);
@@ -466,19 +464,19 @@ describe("SDK", () => {
             amount: tokensAmount,
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: stablePayAddress,
+            expectedContractAddress: bridgeAddress,
           },
           {
             amount: "99.9",
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: stablePayAddress,
+            expectedContractAddress: bridgeAddress,
           },
           {
             amount: "1000",
             expected: false,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: stablePayAddress,
+            expectedContractAddress: bridgeAddress,
           },
         ])(
           `☀️ checkAllowance should return true only when amount is less than or equal to amount of approved tokens (CheckAllowanceParamsWithTokenInfo) (amount: $amount, pay with: $gasFeePaymentMethod) }`,
@@ -489,7 +487,6 @@ describe("SDK", () => {
                 decimals: tokenDecimals,
                 tokenAddress,
                 poolAddress,
-                stablePayAddress,
               },
               owner,
               gasFeePaymentMethod,
@@ -847,7 +844,7 @@ describe("SDK", () => {
         expect(methodSendRawTransactionSpy).toHaveBeenCalledOnce();
         expect(methodSendRawTransactionSpy).toHaveBeenCalledWith({
           from: fromAccountAddress,
-          to: grlChainToken.stablePayAddress,
+          to: grlChainToken.bridgeAddress,
           value: "0",
           data: expectedData,
         });

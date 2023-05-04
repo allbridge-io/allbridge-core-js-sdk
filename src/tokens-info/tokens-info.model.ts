@@ -9,7 +9,6 @@ export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 export interface ChainDetails extends BasicChainProperties {
   allbridgeChainId: number;
   bridgeAddress: string;
-  stablePayAddress: string;
   transferTime: TransferTime;
   confirmations: number;
 }

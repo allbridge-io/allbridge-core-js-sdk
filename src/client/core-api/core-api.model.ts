@@ -7,7 +7,6 @@ export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
   bridgeAddress: string;
-  stablePayAddress: string;
   transferTime: TransferTimeDTO;
   confirmations: number;
 }

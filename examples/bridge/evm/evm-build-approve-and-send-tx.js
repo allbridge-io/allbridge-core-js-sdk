@@ -26,11 +26,12 @@ async function runExample() {
 
   // authorize the bridge to transfer tokens from sender's address
   const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(web3, {
-    tokenAddress: sourceTokenInfo.tokenAddress,
+    token: sourceTokenInfo,
     owner: fromAddress,
-    spender: sourceTokenInfo.poolAddress,
+    spender: sourceTokenInfo.bridgeAddress,
   });
-  await sendRawTransaction(web3, rawTransactionApprove);
+  const approveTxReceipt = await sendRawTransaction(web3, rawTransactionApprove);
+  console.log("approve tx id:", approveTxReceipt.transactionHash);
 
   // initiate transfer
   const rawTransactionTransfer = await sdk.rawTransactionBuilder.send(

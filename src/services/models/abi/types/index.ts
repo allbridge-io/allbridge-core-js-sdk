@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Pool } from "./Pool";
+export type { Bridge } from "./Bridge";

@@ -43,7 +43,6 @@
     "chainId": 2,
     "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
     "swapAddress": "0x012e5E19485539E917070315Bc16f86F5589D618",
-    "stablePayAddress": "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5",
     "transferTime": {
       "ETH": {
         "allbridge": 120000,
