@@ -105,19 +105,9 @@ describe("EvmPool", () => {
     const mockNode = nock(LOCAL_NODE_URL);
     mockNode
       .post("/")
-      .reply(
-        200,
-        rpcReply(
-          "0x0000000000000000000000000000000000000000000000000000000000000000"
-        )
-      )
+      .reply(200, rpcReply("0x0000000000000000000000000000000000000000000000000000000000000000"))
       .post("/")
-      .reply(
-        200,
-        rpcReply(
-          "0x000000000000000000000000000000000000000000000000000000000bebc200"
-        )
-      );
+      .reply(200, rpcReply("0x000000000000000000000000000000000000000000000000000000000bebc200"));
 
     const userBalanceInfo = await evmPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 
