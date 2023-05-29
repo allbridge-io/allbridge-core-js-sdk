@@ -1,42 +1,39 @@
-import { Big } from "big.js";
+// @ts-expect-error import tron
+import TronWeb from "tronweb";
+import {Big} from "big.js";
 import BN from "bn.js";
-import nock, { cleanAll as nockCleanAll } from "nock";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import nock, {cleanAll as nockCleanAll} from "nock";
+
 
 import Web3 from "web3";
+import {ReceiveTransactionCostRequest, ReceiveTransactionCostResponse,} from "../client/core-api/core-api.model";
 import {
-  Messenger,
-  ReceiveTransactionCostRequest,
-  ReceiveTransactionCostResponse,
-} from "../client/core-api/core-api.model";
-import {
-  AllbridgeCoreSdk,
+  AllbridgeCoreSdk, AllbridgeCoreSdkOptions,
   ChainDetailsMap,
   ChainSymbol,
   ChainType,
   CheckAllowanceParamsWithTokenInfo,
   FeePaymentMethod,
   GasFeeOptions,
-  GetAllowanceParamsWithTokenInfo,
+  GetAllowanceParamsWithTokenInfo, GetTokenBalanceParamsWithTokenInfo,
   Messenger,
   PoolInfo,
   SendParamsWithTokenInfos,
   TokenInfoWithChainDetails,
 } from "../index";
-import { formatAddress } from "../services/bridge/utils";
+import {formatAddress} from "../services/bridge/utils";
 
-import { getFeePercent } from "../utils/calculation";
+import {getFeePercent} from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
-import tokenInfoWithChainDetailsGRL from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
+import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
+import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockBridgeService_getTokenBalance, mockedTokenBalance } from "./mock/bridge";
-import { mockEvmContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
-import { mockTronContract, mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
-import { mockNonce } from "./mock/bridge/utils";
+import {mockBridgeService_getTokenBalance, mockedTokenBalance} from "./mock/bridge";
+import {mockEvmContract, mockEvmSendRawTransaction} from "./mock/bridge/evm/evm-bridge";
+import {mockTronContract, mockTronVerifyTx} from "./mock/bridge/trx/trx-bridge";
+import {mockNonce} from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
-/* eslint-disable-next-line */
-const TronWeb = require("tronweb");
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenInfoWithChainDetails;
 const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenInfoWithChainDetails;
@@ -44,10 +41,11 @@ const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenInfo
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
 
-  const testConfig = {
-    apiUrl: "http://localhost",
+  const testConfig: AllbridgeCoreSdkOptions = {
+    polygonApiUrl: "",
+    coreApiUrl: "http://localhost",
     solanaRpcUrl: "solanaRpcUrl",
-    wormholeMessengerProgramId: "wormholeMessengerProgramId",
+    wormholeMessengerProgramId: "wormholeMessengerProgramId"
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testConfig);
@@ -58,24 +56,25 @@ describe("SDK", () => {
 
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+     chainSymbol: ChainSymbol.GRL,
       decimals: 18,
       feeShare: "0",
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "TRX",
+      chainSymbol: ChainSymbol.TRX,
       decimals: 6,
       feeShare: "0",
     };
 
-    const poolInfo = {
+    const poolInfo: PoolInfo = {
       aValue: "20",
       dValue: "200001",
       tokenBalance: "100000",
       vUsdBalance: "100000",
       totalLpAmount: "",
       accRewardPerShareP: "",
+      p: 0,
     };
     const amountToSend = "100";
     const amountToReceive = "84.18";
@@ -98,7 +97,7 @@ describe("SDK", () => {
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
       const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
-      expect(actual).toBeCloseTo(+amountToSend, 2);
+      expect(+actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
   });
@@ -107,21 +106,22 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+      chainSymbol: ChainSymbol.GRL,
       decimals: 6,
       feeShare: "0",
     };
-    const sourcePoolInfo = {
+    const sourcePoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "204253",
       tokenBalance: "17684",
       vUsdBalance: "191863",
       totalLpAmount: "",
       accRewardPerShareP: "",
+      p: 0,
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "TRX",
+      chainSymbol: ChainSymbol.TRX,
       decimals: 18,
       feeShare: "0",
     };
@@ -132,6 +132,7 @@ describe("SDK", () => {
       vUsdBalance: "12487",
       totalLpAmount: "",
       accRewardPerShareP: "",
+      p: 0,
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -154,7 +155,7 @@ describe("SDK", () => {
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
       const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
-      expect(actual).toBeCloseTo(+amountToSend, 2);
+      expect(+actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
   });
@@ -163,21 +164,22 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+     chainSymbol: ChainSymbol.GRL,
       decimals: 18,
       feeShare: "0.003",
     };
-    const sourcePoolInfo = {
+    const sourcePoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "200000001",
       tokenBalance: "100166280",
       vUsdBalance: "99833728",
       totalLpAmount: "",
       accRewardPerShareP: "",
+      p: 0,
     };
     const destinationChainToken: TokenInfoWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "TRX",
+      chainSymbol: ChainSymbol.TRX,
       decimals: 18,
       feeShare: "0.003",
     };
@@ -188,6 +190,7 @@ describe("SDK", () => {
       vUsdBalance: "100261169",
       totalLpAmount: "",
       accRewardPerShareP: "",
+      p: 0,
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -316,9 +319,9 @@ describe("SDK", () => {
       });
 
       test("☀️ tokensByChain(GRL) returns a list of TokenInfoWithChainDetails on Goerli chain", async () => {
-        const expectedTokenInfoWithChainDetailsGRL =
-          tokenInfoWithChainDetailsGRL as unknown as TokenInfoWithChainDetails[];
-        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGRL);
+        const expectedtokenInfoWithChainDetailsGrl =
+          tokenInfoWithChainDetailsGrl as unknown as TokenInfoWithChainDetails[];
+        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(expectedtokenInfoWithChainDetailsGrl);
       });
     });
 
@@ -331,7 +334,8 @@ describe("SDK", () => {
         /* cSpell:disable */
         const tokenAddress = "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43";
         const poolAddress = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
-        const bridgeAddress = "0x0436d4645d3Efd81c2159f63bd1b851EC1AAdcf5";
+        const bridgeAddress = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
+        const grlTokenInfo = tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails;
         /* cSpell:enable */
         const tokenDecimals = 18;
         const provider = new Web3();
@@ -340,12 +344,12 @@ describe("SDK", () => {
         let allowanceMocked: any;
 
         beforeEach(() => {
-          methodCallMock = vi.fn(() => {
+          methodCallMock = jest.fn(() => {
             return Big(tokensAmount)
               .mul(10 ** tokenDecimals)
               .toFixed();
           });
-          allowanceMocked = vi.fn(() => {
+          allowanceMocked = jest.fn(() => {
             return {
               call: methodCallMock,
             };
@@ -356,14 +360,14 @@ describe("SDK", () => {
         });
 
         test("☀️ getAllowance should return float. amount of approved tokens", async () => {
+          const tokenInfo = tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails;
           const actual = await sdk.getAllowance(provider, {
+            tokenInfo: tokenInfo,
             owner: owner,
-            chainSymbol: chainSymbol,
-            tokenAddress: tokenAddress,
           });
-          expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
-          expect(allowanceMocked).toHaveBeenCalledOnce();
-          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(allowanceMocked).toBeCalledWith(owner, tokenInfo.bridgeAddress);
+          expect(allowanceMocked).toHaveBeenCalledTimes(1);
+          expect(methodCallMock).toHaveBeenCalledTimes(1);
           expect(actual).toEqual(tokensAmount);
 
           scope.done();
@@ -382,9 +386,9 @@ describe("SDK", () => {
           };
 
           const actual = await sdk.getAllowance(provider, params);
-          expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
-          expect(allowanceMocked).toHaveBeenCalledOnce();
-          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(allowanceMocked).toBeCalledWith(owner, bridgeAddress);
+          expect(allowanceMocked).toHaveBeenCalledTimes(1);
+          expect(methodCallMock).toHaveBeenCalledTimes(1);
           expect(actual).toEqual(tokensAmount);
 
           scope.done();
@@ -404,8 +408,8 @@ describe("SDK", () => {
 
           const actual = await sdk.getAllowance(provider, params);
           expect(allowanceMocked).toBeCalledWith(owner, params.tokenInfo.bridgeAddress);
-          expect(allowanceMocked).toHaveBeenCalledOnce();
-          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(allowanceMocked).toHaveBeenCalledTimes(1);
+          expect(methodCallMock).toHaveBeenCalledTimes(1);
           expect(actual).toEqual(tokensAmount);
 
           scope.done();
@@ -428,14 +432,13 @@ describe("SDK", () => {
           `☀️ checkAllowance should return true only when amount is less than or equal to amount of approved tokens (amount: $amount)`,
           async ({ amount, expected }) => {
             const actual = await sdk.checkAllowance(provider, {
+              tokenInfo: grlTokenInfo,
               owner: owner,
-              chainSymbol: chainSymbol,
-              tokenAddress: tokenAddress,
               amount: amount,
             });
-            expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
-            expect(allowanceMocked).toHaveBeenCalledOnce();
-            expect(methodCallMock).toHaveBeenCalledOnce();
+            expect(allowanceMocked).toBeCalledWith(owner, grlTokenInfo.bridgeAddress);
+            expect(allowanceMocked).toHaveBeenCalledTimes(1);
+            expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
           }
@@ -446,37 +449,37 @@ describe("SDK", () => {
             amount: tokensAmount,
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
-            expectedContractAddress: poolAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
           {
             amount: "99.9",
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
-            expectedContractAddress: poolAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
           {
             amount: "1000",
             expected: false,
             gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
-            expectedContractAddress: poolAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
           {
             amount: tokensAmount,
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: bridgeAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
           {
             amount: "99.9",
             expected: true,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: bridgeAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
           {
             amount: "1000",
             expected: false,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-            expectedContractAddress: bridgeAddress,
+            expectedContractAddress: grlTokenInfo.bridgeAddress,
           },
         ])(
           `☀️ checkAllowance should return true only when amount is less than or equal to amount of approved tokens (CheckAllowanceParamsWithTokenInfo) (amount: $amount, pay with: $gasFeePaymentMethod) }`,
@@ -495,8 +498,8 @@ describe("SDK", () => {
 
             const actual = await sdk.checkAllowance(provider, params);
             expect(allowanceMocked).toBeCalledWith(owner, expectedContractAddress);
-            expect(allowanceMocked).toHaveBeenCalledOnce();
-            expect(methodCallMock).toHaveBeenCalledOnce();
+            expect(allowanceMocked).toHaveBeenCalledTimes(1);
+            expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
           }
@@ -504,11 +507,7 @@ describe("SDK", () => {
       });
 
       describe("Given Tron bridge", () => {
-        const chainSymbol = ChainSymbol.TRX;
-        /* cSpell:disable */
-        const tokenAddress = "TYjmrhFaFMNKE8RheRUCQUWJHpRbY8Q9zy";
-        const poolAddress = "TYZmD6XgFNRNkDthZ8y7o2D9wPTqex7eRD";
-        /* cSpell:enable */
+        const trxTokenInfo = tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails;
         const tokenDecimals = 18;
 
         const provider = new TronWeb("mock", "mock");
@@ -517,12 +516,12 @@ describe("SDK", () => {
         let allowanceMocked: any;
 
         beforeEach(() => {
-          methodCallMock = vi.fn(() => {
+          methodCallMock = jest.fn(() => {
             return Big(tokensAmount)
               .mul(10 ** tokenDecimals)
               .toFixed();
           });
-          allowanceMocked = vi.fn(() => {
+          allowanceMocked = jest.fn(() => {
             return {
               call: methodCallMock,
             };
@@ -535,12 +534,11 @@ describe("SDK", () => {
         test("☀️ getAllowance should return float. amount of approved tokens", async () => {
           const actual = await sdk.getAllowance(provider, {
             owner: owner,
-            chainSymbol: chainSymbol,
-            tokenAddress: tokenAddress,
+            tokenInfo: trxTokenInfo,
           });
-          expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
-          expect(allowanceMocked).toHaveBeenCalledOnce();
-          expect(methodCallMock).toHaveBeenCalledOnce();
+          expect(allowanceMocked).toBeCalledWith(owner, trxTokenInfo.bridgeAddress);
+          expect(allowanceMocked).toHaveBeenCalledTimes(1);
+          expect(methodCallMock).toHaveBeenCalledTimes(1);
           expect(actual).toEqual(tokensAmount);
 
           scope.done();
@@ -563,14 +561,13 @@ describe("SDK", () => {
           `☀️ checkAllowance should return true when amount is less than or equal to amount of approved tokens`,
           async ({ amount, expected }) => {
             const actual = await sdk.checkAllowance(provider, {
+              tokenInfo: trxTokenInfo,
               owner: owner,
-              chainSymbol: chainSymbol,
-              tokenAddress: tokenAddress,
               amount: amount,
             });
-            expect(allowanceMocked).toBeCalledWith(owner, poolAddress);
-            expect(allowanceMocked).toHaveBeenCalledOnce();
-            expect(methodCallMock).toHaveBeenCalledOnce();
+            expect(allowanceMocked).toBeCalledWith(owner, trxTokenInfo.bridgeAddress);
+            expect(allowanceMocked).toHaveBeenCalledTimes(1);
+            expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
           }
@@ -587,7 +584,7 @@ describe("SDK", () => {
       allbridgeChainId: 2,
       chainSymbol: ChainSymbol.GRL,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-      tokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
+      tokenAddress: "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
       decimals: 18,
       feeShare: "0.003",
     };
@@ -615,6 +612,7 @@ describe("SDK", () => {
       });
       afterAll(() => {
         nockCleanAll();
+        jest.clearAllMocks();
       });
 
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
@@ -630,31 +628,27 @@ describe("SDK", () => {
         scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
         const toAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cSpell:disable-line
-
-        const sendParams: SendParamsWithChainSymbols = {
-          amount: tokensAmount,
-
-          fromChainSymbol: grlChainToken.chainSymbol,
-          fromTokenAddress: grlChainToken.tokenAddress,
-          fromAccountAddress: fromAccountAddress,
-
-          toChainSymbol: trxChainToken.chainSymbol,
-          toTokenAddress: trxChainToken.tokenAddress,
-          toAccountAddress: toAccountAddress,
-
-          messenger: Messenger.ALLBRIDGE,
-        };
+        
+        const sendParams: SendParamsWithTokenInfos =
+          {
+            amount: tokensAmount,
+            fromAccountAddress: fromAccountAddress,
+            toAccountAddress: toAccountAddress,
+            sourceChainToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
+            destinationChainToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails,
+            messenger: Messenger.ALLBRIDGE,
+          };
 
         const gas = 100000;
-        const estimateGasMocked = vi.fn(() => {
+        const estimateGasMocked = jest.fn(() => {
           return gas;
         });
         const transactionHash = "1234567890";
         const expectedData = "data";
-        const encodeABIMocked = vi.fn(() => {
+        const encodeABIMocked = jest.fn(() => {
           return expectedData;
         });
-        const swapAndBridgeMocked = vi.fn(() => {
+        const swapAndBridgeMocked = jest.fn(() => {
           return {
             estimateGas: estimateGasMocked,
             encodeABI: encodeABIMocked,
@@ -668,7 +662,7 @@ describe("SDK", () => {
         const transactionResponse = await sdk.send(new Web3(), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(methodSendRawTransactionSpy).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledTimes(1);
         expect(methodSendRawTransactionSpy).toHaveBeenCalledWith({
           from: fromAccountAddress,
           to: grlChainToken.bridgeAddress,
@@ -686,7 +680,8 @@ describe("SDK", () => {
           trxChainToken.allbridgeChainId,
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           new BN(nonceBuffer),
-          Messenger.ALLBRIDGE
+          Messenger.ALLBRIDGE,
+          0
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
@@ -703,23 +698,20 @@ describe("SDK", () => {
         const fromAccountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
         const toAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
         /* cSpell:enable */
-        const sendParams: SendParamsWithChainSymbols = {
-          amount: tokensAmount,
+        const sendParams: SendParamsWithTokenInfos =
+          {
+            amount: tokensAmount,
+            fromAccountAddress: fromAccountAddress,
+            toAccountAddress: toAccountAddress,
+            sourceChainToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails,
+            destinationChainToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
+            messenger: Messenger.ALLBRIDGE,
+          };
 
-          fromChainSymbol: trxChainToken.chainSymbol,
-          fromTokenAddress: trxChainToken.tokenAddress,
-          fromAccountAddress: fromAccountAddress,
-
-          toChainSymbol: grlChainToken.chainSymbol,
-          toTokenAddress: grlChainToken.tokenAddress,
-          toAccountAddress: toAccountAddress,
-
-          messenger: Messenger.ALLBRIDGE,
-        };
 
         const transactionHash = "1234567890";
         const rawTx = "rawTx";
-        const methodTriggerSmartContractMock = vi.fn(() => {
+        const methodTriggerSmartContractMock = jest.fn(() => {
           return {
             result: {
               result: true,
@@ -728,13 +720,13 @@ describe("SDK", () => {
           };
         });
         const signedTx = { signature: "signature" };
-        const methodSignMock = vi.fn(() => {
+        const methodSignMock = jest.fn(() => {
           return signedTx;
         });
-        const methodSendRawTransactionMock = vi.fn(() => {
+        const methodSendRawTransactionMock = jest.fn(() => {
           return { transaction: { txID: transactionHash } };
         });
-        const tronWebMock = {
+        const tronWebMock: TronWeb = {
           transactionBuilder: {
             triggerSmartContract: methodTriggerSmartContractMock,
           },
@@ -746,13 +738,13 @@ describe("SDK", () => {
 
         const verifyTxMocked = mockTronVerifyTx();
         const transactionResponse = await sdk.send(tronWebMock, sendParams);
-        expect(methodTriggerSmartContractMock).toHaveBeenCalledOnce();
+        expect(methodTriggerSmartContractMock).toHaveBeenCalledTimes(1);
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** trxChainToken.decimals)
           .toFixed();
         expect(methodTriggerSmartContractMock).toBeCalledWith(
           trxChainToken.bridgeAddress,
-          "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)",
+          "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)",
           { callValue: fee },
           [
             {
@@ -764,21 +756,22 @@ describe("SDK", () => {
               type: "bytes32",
               value: formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
             },
-            { type: "uint8", value: grlChainToken.allbridgeChainId },
+            { type: "uint256", value: grlChainToken.allbridgeChainId },
             {
               type: "bytes32",
               value: formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.TRX),
             },
             { type: "uint256", value: nonceBuffer.toJSON().data },
             { type: "uint8", value: Messenger.ALLBRIDGE },
+            { type: "uint256", value: 0 },
           ],
           fromAccountAddress
         );
-        expect(methodSignMock).toHaveBeenCalledOnce();
+        expect(methodSignMock).toHaveBeenCalledTimes(1);
         expect(methodSignMock).toBeCalledWith(rawTx);
-        expect(methodSendRawTransactionMock).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionMock).toHaveBeenCalledTimes(1);
         expect(methodSendRawTransactionMock).toBeCalledWith(signedTx);
-        expect(verifyTxMocked).toHaveBeenCalledOnce();
+        expect(verifyTxMocked).toHaveBeenCalledTimes(1);
         expect(verifyTxMocked).toBeCalledWith(transactionHash);
 
         expect(transactionResponse).toEqual({ txId: transactionHash });
@@ -789,6 +782,7 @@ describe("SDK", () => {
     describe("when paying gas fee with stablecoins", () => {
       afterEach(() => {
         nockCleanAll();
+        jest.clearAllMocks();
       });
 
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
@@ -819,15 +813,15 @@ describe("SDK", () => {
         };
 
         const gas = 100000;
-        const estimateGasMocked = vi.fn(() => {
+        const estimateGasMocked = jest.fn(() => {
           return gas;
         });
         const transactionHash = "1234567890";
         const expectedData = "data";
-        const encodeABIMocked = vi.fn(() => {
+        const encodeABIMocked = jest.fn(() => {
           return expectedData;
         });
-        const swapAndBridgeMocked = vi.fn(() => {
+        const swapAndBridgeMocked = jest.fn(() => {
           return {
             estimateGas: estimateGasMocked,
             encodeABI: encodeABIMocked,
@@ -841,7 +835,7 @@ describe("SDK", () => {
         const transactionResponse = await sdk.send(new Web3(), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
-        expect(methodSendRawTransactionSpy).toHaveBeenCalledOnce();
+        expect(methodSendRawTransactionSpy).toHaveBeenCalledTimes(1);
         expect(methodSendRawTransactionSpy).toHaveBeenCalledWith({
           from: fromAccountAddress,
           to: grlChainToken.bridgeAddress,
@@ -875,9 +869,9 @@ describe("SDK", () => {
     test("should delegate call to bridge service", async () => {
       mockBridgeService_getTokenBalance();
 
-      const getTokenBalanceParams: GetTokenBalanceParamsWithTokenAddress = {
+      const getTokenBalanceParams: GetTokenBalanceParamsWithTokenInfo= {
         account: "account",
-        tokenAddress: "tokenAddress",
+        tokenInfo: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails
       };
 
       const tokenBalance = await sdk.getTokenBalance(getTokenBalanceParams);
@@ -911,7 +905,7 @@ describe("SDK", () => {
 
       const expected: GasFeeOptions = {
         [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
-        [FeePaymentMethod.WITH_STABLECOIN]: "30020000",
+        [FeePaymentMethod.WITH_STABLECOIN]: "30020000000000000000",
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);

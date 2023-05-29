@@ -1,15 +1,15 @@
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { ChainType } from "../../../../chains";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
-import { Messenger } from "../../../../client/core-api/core-api.model";
-import { ApproveParamsDto } from "../../../../services/bridge/models";
-import { MAX_AMOUNT, TronBridge } from "../../../../services/bridge/trx";
-import { formatAddress } from "../../../../services/bridge/utils";
-import { mockNonce } from "../../../mock/bridge/utils";
+import {ChainSymbol, ChainType} from "../../../../chains";
+import {AllbridgeCoreClient} from "../../../../client/core-api";
+import {Messenger} from "../../../../client/core-api/core-api.model";
+import {ApproveParamsDto, TxSendParams} from "../../../../services/bridge/models";
+import {MAX_AMOUNT, TronBridge} from "../../../../services/bridge/trx";
+import {formatAddress} from "../../../../services/bridge/utils";
+import {mockNonce} from "../../../mock/bridge/utils";
 import triggerSmartContractApproveResponse from "../../../mock/tron-web/trigger-smart-contract-approve.json";
 import triggerSmartContractSendResponse from "../../../mock/tron-web/trigger-smart-contract-send.json";
+import {FeePaymentMethod} from "../../../../models";
 
 describe("TrxBridge", () => {
   let trxBridge: TronBridge;
@@ -21,14 +21,14 @@ describe("TrxBridge", () => {
   beforeEach(() => {
     tronWebMock = {
       transactionBuilder: {
-        triggerSmartContract: vi.fn(),
+        triggerSmartContract: jest.fn(),
       },
     };
     trxBridge = new TronBridge(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe("Given transfer params", () => {
@@ -49,15 +49,16 @@ describe("TrxBridge", () => {
       tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractApproveResponse);
 
       const approveData: ApproveParamsDto = {
+        chainSymbol: ChainSymbol.TRX,
         tokenAddress: tokenAddress,
         owner: from,
-        spender: poolAddress,
+        spender: poolAddress
       };
 
       const actual = await trxBridge.buildRawTransactionApprove(approveData);
 
       expect(actual).toEqual(triggerSmartContractApproveResponse.transaction);
-      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledTimes(1);
       expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         tokenAddress,
         "approve(address,uint256)",
@@ -76,22 +77,25 @@ describe("TrxBridge", () => {
     test("buildRawTransactionSend should return RawTransaction", async () => {
       tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractSendResponse);
 
-      const params = {
+      const params: TxSendParams = {
         contractAddress: bridgeAddress,
+        fromChainId: 2,
+        fromChainSymbol: ChainSymbol.ETH,
+        fromAccountAddress: from,
         fromTokenAddress: formatAddress(tokenAddress, ChainType.TRX, ChainType.TRX),
         toChainId: destinationChainId,
+        toAccountAddress: formatAddress(to, ChainType.EVM, ChainType.TRX),
         toTokenAddress: formatAddress(destinationTokenAddress, ChainType.EVM, ChainType.TRX),
         amount: amount,
         messenger: messenger,
-        fromAccountAddress: from,
         fee: gasFee,
-        toAccountAddress: formatAddress(to, ChainType.EVM, ChainType.TRX),
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY
       };
 
       const actual = await trxBridge.buildRawTransactionSendFromParams(params);
 
       expect(actual).toEqual(triggerSmartContractSendResponse.transaction);
-      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledOnce();
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledTimes(1);
       expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         bridgeAddress,
         "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)",

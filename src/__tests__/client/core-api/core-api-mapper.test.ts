@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import { mapChainDetailsResponseToChainDetailsMap } from "../../../client/core-api/core-api-mapper";
 import { ChainDetailsResponse } from "../../../client/core-api/core-api.model";
 import { ChainDetailsWithTokens, ChainDetailsMap } from "../../../tokens-info";

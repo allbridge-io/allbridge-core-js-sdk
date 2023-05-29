@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, TokenInfoWithChainDetails, TokensInfo } from "../../tokens-info";
 import tokensGroupedByChain from "../data/tokens-info/ChainDetailsMap.json";

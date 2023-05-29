@@ -24,23 +24,6 @@ export {
 
 export { testnet } from "../configs/testnet";
 
-export interface AmountsAndTxCost {
-  /**
-   * The amount of tokens to be sent.
-   */
-  amountToSendFloat: string;
-
-  /**
-   * The amount of tokens to be received.
-   */
-  amountToBeReceivedFloat: string;
-
-  /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
-   */
-  txCost: string;
-}
-
 export enum FeePaymentMethod {
   /**
    * The fee is paid in the native currency of the source chain.

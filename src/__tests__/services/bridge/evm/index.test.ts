@@ -1,21 +1,22 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-
 import Web3 from "web3";
-import { ChainSymbol } from "../../../../chains";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
-import { Messenger } from "../../../../client/core-api/core-api.model";
-import { EvmBridge } from "../../../../services/bridge/evm";
-import { ApproveParamsDto, TxSendParams } from "../../../../services/bridge/models";
-import { ChainDetailsMap } from "../../../../tokens-info";
+import {ChainSymbol} from "../../../../chains";
+import {AllbridgeCoreClient} from "../../../../client/core-api";
+import {Messenger} from "../../../../client/core-api/core-api.model";
+import {FeePaymentMethod} from "../../../../models";
+import {EvmBridge} from "../../../../services/bridge/evm";
+import {ApproveParamsDto, TxSendParams} from "../../../../services/bridge/models";
+import {ChainDetailsMap} from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
-import { mockEvmSendRawTransaction, mockGetAllowanceByTokenAddress } from "../../../mock/bridge/evm/evm-bridge";
-import { mockNonce } from "../../../mock/bridge/utils";
+import {mockEvmSendRawTransaction, mockGetAllowanceByTokenAddress} from "../../../mock/bridge/evm/evm-bridge";
+import {mockNonce} from "../../../mock/bridge/utils";
 
 describe("EvmBridge", () => {
   let evmBridge: EvmBridge;
 
   const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore enough for mock
   const api: AllbridgeCoreClient = {
     getChainDetailsMap: () =>
       new Promise((resolve) => {
@@ -36,9 +37,10 @@ describe("EvmBridge", () => {
 
     test("buildRawTransactionApprove should return RawTransaction", async () => {
       const approveData: ApproveParamsDto = {
+        chainSymbol: ChainSymbol.ETH,
         tokenAddress: tokenAddress,
         owner: from,
-        spender: poolAddress,
+        spender: poolAddress
       };
 
       const actual = await evmBridge.buildRawTransactionApprove(approveData);
@@ -66,6 +68,7 @@ describe("EvmBridge", () => {
         toTokenAddress: "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
         messenger: Messenger.ALLBRIDGE,
         fee: gasFee,
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
       };
 
       const actual = await evmBridge.buildRawTransactionSendFromParams(params);
@@ -73,7 +76,7 @@ describe("EvmBridge", () => {
         from: from,
         to: bridgeAddress,
         value: gasFee,
-        data: "0xf35e37d3000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000000000000000000000000000012751bf40f450000ba285a8f52601eabcc769706fcbde2645aa0af180000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b3b1200153e110000001b006132000000000000000000362600611e000000070c0000000000000000000000000000000000000000000000000000000000000001",
+        data: "0x4cd480bd000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000000000000000000000000000012751bf40f450000ba285a8f52601eabcc769706fcbde2645aa0af180000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b3b1200153e110000001b006132000000000000000000362600611e000000070c00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
       });
     });
 
@@ -82,15 +85,17 @@ describe("EvmBridge", () => {
       const owner = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
       const spender = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
       const params: ApproveParamsDto = {
+        chainSymbol: ChainSymbol.ETH,
         tokenAddress: usdtTokenAddress,
         owner: owner,
-        spender: spender,
+        spender: spender
       };
       const txHash = "transactionHash";
       const sendRawTxSpy = mockEvmSendRawTransaction(txHash);
 
       afterEach(() => {
         sendRawTxSpy.mockClear();
+        jest.clearAllMocks();
       });
 
       test("must first set 0 amount allowance if current allowance not 0", async () => {

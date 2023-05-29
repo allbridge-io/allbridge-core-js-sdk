@@ -1,12 +1,12 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-
 import Web3 from "web3";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
-import { ApproveData, ChainSymbol, Messenger } from "../index";
-
+import { Messenger, SendParamsWithTokenInfos, TokenInfoWithChainDetails} from "../index";
 import { RawTransactionBuilder } from "../raw-transaction-builder";
 import { BridgeService } from "../services/bridge";
+import { ApproveDataWithTokenInfo } from "../services/bridge/models";
 import { LiquidityPoolService } from "../services/liquidity-pool";
+import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
+import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawTransactionBuilder;
@@ -14,10 +14,10 @@ describe("RawTransactionBuilder", () => {
   let liquidityPoolService: any;
 
   beforeEach(() => {
-    const BridgeServiceMock = vi.fn();
-    BridgeServiceMock.prototype.buildRawTransactionApprove = vi.fn();
-    BridgeServiceMock.prototype.buildRawTransactionSend = vi.fn();
-    bridgeServiceMock = new BridgeServiceMock(new AllbridgeCoreClientImpl({ coreApiUrl: "coreApiUrl" }));
+    const BridgeServiceMock = jest.fn();
+    BridgeServiceMock.prototype.buildRawTransactionApprove = jest.fn();
+    BridgeServiceMock.prototype.buildRawTransactionSend = jest.fn();
+    bridgeServiceMock = new BridgeServiceMock(new AllbridgeCoreClientImpl({polygonApiUrl: "", coreApiUrl: "coreApiUrl" }));
     rawTransactionBuilder = new RawTransactionBuilder(
       bridgeServiceMock as BridgeService,
       liquidityPoolService as LiquidityPoolService
@@ -25,15 +25,15 @@ describe("RawTransactionBuilder", () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   test("approve should call buildRawTransactionApprove", async () => {
     const expectedApproveTransaction = "expectedApproveTransaction";
     bridgeServiceMock.buildRawTransactionApprove.mockResolvedValueOnce(expectedApproveTransaction);
 
-    const approveData: ApproveData = {
-      tokenAddress: "tokenAddress",
+    const approveData: ApproveDataWithTokenInfo = {
+      token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
       owner: "owner",
       spender: "spender",
     };
@@ -48,14 +48,13 @@ describe("RawTransactionBuilder", () => {
     const expectedSendTransaction = "expectedSendTransaction";
     bridgeServiceMock.buildRawTransactionSend.mockResolvedValueOnce(expectedSendTransaction);
 
-    const params: SendParamsWithChainSymbols = {
-      fromChainSymbol: ChainSymbol.GRL,
-      fromTokenAddress: "fromTokenAddress",
-      toChainSymbol: ChainSymbol.TRX,
-      toTokenAddress: "toTokenAddress",
+    const params: SendParamsWithTokenInfos =
+    {
       amount: "1.33",
       fromAccountAddress: "fromAccountAddress",
       toAccountAddress: "toAccountAddress",
+      sourceChainToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
+      destinationChainToken: tokenInfoWithChainDetailsTrx[0] as TokenInfoWithChainDetails,
       messenger: Messenger.ALLBRIDGE,
     };
     const web3 = new Web3();

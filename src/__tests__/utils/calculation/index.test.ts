@@ -1,5 +1,4 @@
 import { Big } from "big.js";
-import { describe, expect, test } from "vitest";
 import { TokenInfo } from "../../../tokens-info";
 import {
   aprInPercents,

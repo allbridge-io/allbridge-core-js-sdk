@@ -5,16 +5,6 @@
   "name": "Goerli",
   "allbridgeChainId": 2,
   "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-  "txTime": {
-    "1": {
-      "in": 30000,
-      "out": 120000
-    },
-    "2": {
-      "in": 30000,
-      "out": 120000
-    }
-  },
   "confirmations": 5,
   "tokens": [
     {
@@ -30,16 +20,6 @@
       "chainId": "0x5",
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-      "txTime": {
-        "1": {
-          "in": 30000,
-          "out": 120000
-        },
-        "2": {
-          "in": 30000,
-          "out": 120000
-        }
-      },
       "confirmations": 5,
       "chainName": "Goerli"
     },
@@ -56,16 +36,6 @@
       "chainId": "0x5",
       "allbridgeChainId": 2,
       "bridgeAddress": "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-      "txTime": {
-        "1": {
-          "in": 30000,
-          "out": 120000
-        },
-        "2": {
-          "in": 30000,
-          "out": 120000
-        }
-      },
       "confirmations": 5,
       "chainName": "Goerli"
     }
