@@ -1,52 +1,22 @@
 import BN from "bn.js";
-import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, GetTokenBalanceParamsWithTokenInfo } from "../../../models";
+import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Bridge.json";
 import { Bridge as BridgeContract } from "../../models/abi/types/Bridge";
 import { BaseContract, PayableTransactionObject } from "../../models/abi/types/types";
-import {
-  ApproveParamsDto,
-  Bridge,
-  GetAllowanceParamsDto,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-  TxSendParams,
-} from "../models";
-import { amountToHex, checkIsGasPaymentMethodSupported, getNonce, prepareTxSendParams } from "../utils";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
+import { getNonce, prepareTxSendParams } from "../utils";
 
-export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-
-const USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7";
-
-export class EvmBridge extends Bridge {
+export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
 
   constructor(public web3: Web3, public api: AllbridgeCoreClient) {
     super();
-  }
-
-  getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    const tokenAddress = params.tokenInfo.tokenAddress;
-    const owner = params.owner;
-    checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, params.tokenInfo);
-    const spender = params.tokenInfo.bridgeAddress;
-    return this.getAllowanceByTokenAddress(tokenAddress, owner, spender);
-  }
-
-  getAllowanceByTokenAddress(tokenAddress: string, owner: string, spender: string): Promise<string> {
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
-    return tokenContract.methods.allowance(owner, spender).call();
-  }
-
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
-    return await this.getContract(erc20abi as AbiItem[], params.tokenInfo.tokenAddress)
-      .methods.balanceOf(params.account)
-      .call();
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
@@ -54,7 +24,7 @@ export class EvmBridge extends Bridge {
     return this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return await this.buildRawTransactionSendFromParams(txSendParams);
   }
@@ -112,54 +82,6 @@ export class EvmBridge extends Bridge {
     };
 
     if (params.fromChainSymbol == ChainSymbol.POL) {
-      const gasInfo = await this.api.getPolygonGasInfo();
-
-      return {
-        ...tx,
-        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
-        maxFeePerGas: gasInfo.maxFee,
-      };
-    }
-
-    return tx;
-  }
-
-  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    if (this.isUsdt(params.tokenAddress)) {
-      const allowance = await this.getAllowanceByTokenAddress(params.tokenAddress, params.owner, params.spender);
-      if (allowance !== "0") {
-        const rawTransaction = await this.buildRawTransactionApprove({
-          ...params,
-          amount: "0",
-        });
-        await this.sendRawTransaction(rawTransaction);
-      }
-    }
-    const rawTransaction = await this.buildRawTransactionApprove(params);
-    return await this.sendRawTransaction(rawTransaction);
-  }
-
-  isUsdt(tokenAddress: string): boolean {
-    return tokenAddress.toLowerCase() === USDT_TOKEN_ADDRESS;
-  }
-
-  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner, amount } = params;
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
-
-    const approveMethod = await tokenContract.methods.approve(
-      spender,
-      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
-    );
-
-    const tx = {
-      from: owner,
-      to: tokenAddress,
-      value: "0",
-      data: approveMethod.encodeABI(),
-    };
-
-    if (params.chainSymbol == ChainSymbol.POL) {
       const gasInfo = await this.api.getPolygonGasInfo();
 
       return {

@@ -2,24 +2,19 @@ import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { FeePaymentMethod } from "../../../models";
-import { TokenInfoWithChainDetails } from "../../../tokens-info";
+import { TokenWithChainDetails } from "../../../tokens-info";
 
-export interface ApproveDataWithTokenInfo {
+export interface ApproveParams {
   /**
    * The token info
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
 
   /**
    *  The address of the token owner who is granting permission to use tokens
    *  to the spender
    */
   owner: string;
-
-  /**
-   *  The address of the contract that is being granted permission to use tokens
-   */
-  spender: string;
 
   /**
    * The integer amount of tokens to approve.
@@ -29,16 +24,12 @@ export interface ApproveDataWithTokenInfo {
   amount?: string | number | Big;
 }
 
-export interface GetTokenBalanceParamsWithTokenInfo {
+export interface GetTokenBalanceParams {
   /**
    *  The address for which we will find out the token balance
    */
   account: string;
-  tokenInfo: TokenInfoWithChainDetails;
-}
-
-export interface TransactionResponse {
-  txId: string;
+  token: TokenWithChainDetails;
 }
 
 /**
@@ -84,30 +75,31 @@ export interface BaseSendParams {
   gasFeePaymentMethod?: FeePaymentMethod;
 }
 
-export interface SendParamsWithTokenInfos extends BaseSendParams {
+export interface SendParams extends BaseSendParams {
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} on the source chain.
+   * {@link TokenWithChainDetails |The token info object} on the source chain.
    */
-  sourceChainToken: TokenInfoWithChainDetails;
+  sourceToken: TokenWithChainDetails;
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} on the destination chain.
+   * {@link TokenWithChainDetails |The token info object} on the destination chain.
    */
-  destinationChainToken: TokenInfoWithChainDetails;
+  destinationToken: TokenWithChainDetails;
 }
 
-export interface CheckAllowanceParamsWithTokenInfo extends GetAllowanceParamsWithTokenInfo {
+export interface GetAllowanceParams {
+  token: TokenWithChainDetails;
+  owner: string;
+  gasFeePaymentMethod?: FeePaymentMethod;
+}
+
+export type GetAllowanceParamsDto = GetAllowanceParams;
+
+export interface CheckAllowanceParams extends GetAllowanceParams {
   /**
    * The float amount of tokens to check the allowance.
    */
   amount: string | number | Big;
 }
-
-export interface GetAllowanceParamsWithTokenInfo {
-  tokenInfo: TokenInfoWithChainDetails;
-  owner: string;
-  gasFeePaymentMethod?: FeePaymentMethod;
-}
-
 type AccountAddress = string | number[];
 
 /**
@@ -126,27 +118,4 @@ export interface TxSendParams {
   messenger: Messenger;
   fee: string;
   gasFeePaymentMethod: FeePaymentMethod;
-}
-
-export interface ApproveParamsDto {
-  tokenAddress: string;
-  chainSymbol: ChainSymbol;
-  owner: string;
-  spender: string;
-  /**
-   * Integer amount of tokens to approve.
-   */
-  amount?: string;
-}
-
-export type GetAllowanceParamsDto = GetAllowanceParamsWithTokenInfo;
-
-/**
- * @internal
- */
-export interface CheckAllowanceParamsDto extends GetAllowanceParamsDto {
-  /**
-   * The integer amount of tokens to check the allowance.
-   */
-  amount: string | number | Big;
 }

@@ -2,14 +2,15 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { Pool, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
 import { BaseContract } from "../../models/abi/types/types";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
-export class EvmPool extends Pool {
+export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
   private P = 52;
 
@@ -17,13 +18,13 @@ export class EvmPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
     const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
+  async getPool(token: TokenWithChainDetails): Promise<Pool> {
     const poolContract = this.getPoolContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),

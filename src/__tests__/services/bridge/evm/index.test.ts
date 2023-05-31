@@ -1,14 +1,14 @@
 import Web3 from "web3";
-import {ChainSymbol} from "../../../../chains";
-import {AllbridgeCoreClient} from "../../../../client/core-api";
-import {Messenger} from "../../../../client/core-api/core-api.model";
-import {FeePaymentMethod} from "../../../../models";
-import {EvmBridge} from "../../../../services/bridge/evm";
-import {ApproveParamsDto, TxSendParams} from "../../../../services/bridge/models";
-import {ChainDetailsMap} from "../../../../tokens-info";
+import { ChainSymbol } from "../../../../chains";
+import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { Messenger } from "../../../../client/core-api/core-api.model";
+import { FeePaymentMethod } from "../../../../models";
+import { EvmBridge } from "../../../../services/bridge/evm";
+import { ApproveParamsDto, TxSendParams } from "../../../../services/bridge/models";
+import { ChainDetailsMap } from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
-import {mockEvmSendRawTransaction, mockGetAllowanceByTokenAddress} from "../../../mock/bridge/evm/evm-bridge";
-import {mockNonce} from "../../../mock/bridge/utils";
+import { mockEvmSendRawTransaction, mockGetAllowanceByTokenAddress } from "../../../mock/bridge/evm/evm-bridge";
+import { mockNonce } from "../../../mock/bridge/utils";
 
 describe("EvmBridge", () => {
   let evmBridge: EvmBridge;
@@ -16,7 +16,7 @@ describe("EvmBridge", () => {
   const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore enough for mock
+  // @ts-expect-error enough for mock
   const api: AllbridgeCoreClient = {
     getChainDetailsMap: () =>
       new Promise((resolve) => {
@@ -40,7 +40,7 @@ describe("EvmBridge", () => {
         chainSymbol: ChainSymbol.ETH,
         tokenAddress: tokenAddress,
         owner: from,
-        spender: poolAddress
+        spender: poolAddress,
       };
 
       const actual = await evmBridge.buildRawTransactionApprove(approveData);
@@ -88,7 +88,7 @@ describe("EvmBridge", () => {
         chainSymbol: ChainSymbol.ETH,
         tokenAddress: usdtTokenAddress,
         owner: owner,
-        spender: spender
+        spender: spender,
       };
       const txHash = "transactionHash";
       const sendRawTxSpy = mockEvmSendRawTransaction(txHash);

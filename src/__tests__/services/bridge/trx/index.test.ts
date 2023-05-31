@@ -1,15 +1,15 @@
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
-import {ChainSymbol, ChainType} from "../../../../chains";
-import {AllbridgeCoreClient} from "../../../../client/core-api";
-import {Messenger} from "../../../../client/core-api/core-api.model";
-import {ApproveParamsDto, TxSendParams} from "../../../../services/bridge/models";
-import {MAX_AMOUNT, TronBridge} from "../../../../services/bridge/trx";
-import {formatAddress} from "../../../../services/bridge/utils";
-import {mockNonce} from "../../../mock/bridge/utils";
+import { ChainSymbol, ChainType } from "../../../../chains";
+import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { Messenger } from "../../../../client/core-api/core-api.model";
+import { FeePaymentMethod } from "../../../../models";
+import { ApproveParamsDto, TxSendParams } from "../../../../services/bridge/models";
+import { MAX_AMOUNT, TronBridge } from "../../../../services/bridge/trx";
+import { formatAddress } from "../../../../services/bridge/utils";
+import { mockNonce } from "../../../mock/bridge/utils";
 import triggerSmartContractApproveResponse from "../../../mock/tron-web/trigger-smart-contract-approve.json";
 import triggerSmartContractSendResponse from "../../../mock/tron-web/trigger-smart-contract-send.json";
-import {FeePaymentMethod} from "../../../../models";
 
 describe("TrxBridge", () => {
   let trxBridge: TronBridge;
@@ -52,7 +52,7 @@ describe("TrxBridge", () => {
         chainSymbol: ChainSymbol.TRX,
         tokenAddress: tokenAddress,
         owner: from,
-        spender: poolAddress
+        spender: poolAddress,
       };
 
       const actual = await trxBridge.buildRawTransactionApprove(approveData);
@@ -89,7 +89,7 @@ describe("TrxBridge", () => {
         amount: amount,
         messenger: messenger,
         fee: gasFee,
-        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
       };
 
       const actual = await trxBridge.buildRawTransactionSendFromParams(params);

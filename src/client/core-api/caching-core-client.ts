@@ -1,25 +1,25 @@
 import Cache from "timed-cache";
 import { ChainSymbol } from "../../chains";
-import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
+import { ChainDetailsMap, Pool, PoolMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
 export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
   private readonly client;
-  private readonly poolInfoCache;
+  private readonly poolCache;
 
   constructor(client: AllbridgeCoreClientImpl) {
     this.client = client;
-    this.poolInfoCache = new PoolInfoCache();
+    this.poolCache = new PoolCache();
   }
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
-    const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-    this.poolInfoCache.putAll(result.poolInfoMap);
+    const result = await this.client.getChainDetailsMapAndPoolMap();
+    this.poolCache.putAll(result.poolMap);
     return result.chainDetailsMap;
   }
-  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+  async tokens(): Promise<TokenWithChainDetails[]> {
     return await this.client.tokens();
   }
 
@@ -49,39 +49,39 @@ export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
     return this.client.getReceiveTransactionCost(args);
   }
 
-  async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
-    const poolInfo = this.poolInfoCache.get(poolKeyObject);
+  async getPoolByKey(poolKeyObject: PoolKeyObject): Promise<Pool> {
+    const pool = this.poolCache.get(poolKeyObject);
     /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-    if (poolInfo) {
-      return poolInfo;
+    if (pool) {
+      return pool;
     } else {
-      const poolInfoMap = await this.client.getPoolInfoMap(poolKeyObject);
-      this.poolInfoCache.putAll(poolInfoMap);
-      return poolInfoMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
+      const poolMap = await this.client.getPoolMap(poolKeyObject);
+      this.poolCache.putAll(poolMap);
+      return poolMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
     }
   }
 
-  async refreshPoolInfo(): Promise<void> {
-    const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-    const poolInfoMap = await this.client.getPoolInfoMap(mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap));
-    this.poolInfoCache.putAll(poolInfoMap);
+  async refreshPools(): Promise<void> {
+    const result = await this.client.getChainDetailsMapAndPoolMap();
+    const poolMap = await this.client.getPoolMap(mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap));
+    this.poolCache.putAll(poolMap);
   }
 }
 
-class PoolInfoCache {
+class PoolCache {
   private cache;
 
   constructor() {
-    this.cache = new Cache<PoolInfo>({ defaultTtl: 120 * 1000 });
+    this.cache = new Cache<Pool>({ defaultTtl: 120 * 1000 });
   }
 
-  putAll(poolInfoMap: PoolInfoMap) {
-    for (const [key, value] of Object.entries(poolInfoMap)) {
+  putAll(poolMap: PoolMap) {
+    for (const [key, value] of Object.entries(poolMap)) {
       this.cache.put(key, value);
     }
   }
 
-  get(poolKeyObject: PoolKeyObject): PoolInfo | undefined {
+  get(poolKeyObject: PoolKeyObject): Pool | undefined {
     const key = mapPoolKeyObjectToPoolKey(poolKeyObject);
     return this.cache.get(key);
   }

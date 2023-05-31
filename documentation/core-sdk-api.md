@@ -26,16 +26,16 @@ If the current allowance is not 0, this function will perform an additional tran
 _Params_:
 
 * provider: Provider - provider
-* approveData: ApproveDataWithTokenInfo - required data for approving
+* approveData: ApproveParams - required data for approving
 
-ApproveDataWithTokenInfo:
+ApproveParams:
 
 ```js
 {
   /**
    * The token info
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
 
   /**
    *  The address of the token owner who is granting permission to use tokens 
@@ -100,7 +100,7 @@ Sends tokens through the bridge
 _Params_:
 
 * provider: Provider - provider
-* sendParams: SendParamsWithTokenInfos
+* sendParams: SendParams
 
 ##### sendParams:
 ```typescript
@@ -156,8 +156,8 @@ const sendParams = {
   fromAccountAddress: fromAccountAddress,
   toAccountAddress: toAccountAddress,
 
-  sourceChainToken: sourceTokenInfoWithChainDetails, // see [Get Tokens Info]
-  destinationChainToken: destinationTokenInfoWithChainDetails, // see [Get Tokens Info]
+  sourceToken: sourceTokenInfoWithChainDetails, // see [Get Tokens Info]
+  destinationToken: destinationTokenInfoWithChainDetails, // see [Get Tokens Info]
 
   messenger: Messenger.ALLBRIDGE,
   gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
@@ -191,9 +191,9 @@ Gets a list of all supported tokens.
 
 _Returns_:
 
-* TokenInfoWithChainDetails[] — a list of all supported tokens.
+* TokenWithChainDetails[] — a list of all supported tokens.
 
-TokenInfoWithChainDetails:
+TokenWithChainDetails:
 ```js
 {
   // token symbol, e.g. "USDT"
@@ -204,7 +204,7 @@ TokenInfoWithChainDetails:
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
-  poolInfo: PoolInfo;
+  poolInfo: Pool;
   feeShare: string;
   apr: number;
   lpRate: number;
@@ -218,7 +218,7 @@ TokenInfoWithChainDetails:
   chainName: string;
   // Unique chain identifier
   allbridgeChainId: number;
-  // Bridge address on chain
+  // ChainBridgeService address on chain
   bridgeAddress: string;
   transferTime: TransferTime;
   confirmations: number;
@@ -243,7 +243,7 @@ _Params_:
 
 _Returns_:
 
-* TokenInfoWithChainDetails[] — a list of supported tokens on a given chain
+* TokenWithChainDetails[] — a list of supported tokens on a given chain
 
 _Example_:
 
@@ -313,7 +313,7 @@ Calculates the percentage of fee from the initial amount that is charged when tr
 _Params_:
 
 * amountFloat: string | number | Big — initial amount of tokens to swap
-* sourceChainToken: TokenInfo — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* sourceToken: Token — the source chain token info, see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
 
@@ -337,8 +337,8 @@ Calculates the percentage of fee that is charged when transferring to the given 
 _Params_:
 
 * amountFloat: string | number | Big — initial amount of tokens to swap
-* sourceChainToken: TokenInfo — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfo — the destination chain token info
+* sourceToken: Token — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: Token — the destination chain token info
 
 _Returns_:
 
@@ -362,8 +362,8 @@ Calculates the amount of tokens the receiving party will get as a result of the 
 _Params_:
 
 * amountToBeReceivedFloat: string | number | Big — the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
@@ -389,8 +389,8 @@ result of the swap.
 _Params_:
 
 * amountToBeReceivedFloat: string | number | Big — the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 
 _Returns_:
@@ -416,8 +416,8 @@ as well as the amount of gas fee needed for the bridge to complete a transfer on
 
 _Params_:
 
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info
 * messenger: Messenger
 
 _Returns_:
@@ -448,8 +448,8 @@ See [Get amount to be received](#get-amount-to-be-received), [Get gas fee amount
 _Params_:
 
 * amountToBeReceivedFloat: string | number | Big — the amount of tokens that will be sent
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
@@ -496,8 +496,8 @@ See [Get amount to send](#get-amount-to-send), [Get gas fee amount](#get-gas-fee
 _Params_:
 
 * amountToBeReceivedFloat: string | number | Big — the amount of tokens that should be received
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
@@ -543,8 +543,8 @@ Gets the average time in ms to complete a transfer for given tokens and messenge
 
 _Params_:
 
-* sourceChainToken: TokenInfoWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
-* destinationChainToken: TokenInfoWithChainDetails — the destination chain token info,
+* sourceToken: TokenWithChainDetails — the source chain token info, see [Get Tokens Info](#get-tokens-info)
+* destinationToken: TokenWithChainDetails — the destination chain token info,
   see [Get Tokens Info](#get-tokens-info)
 * messenger: Messenger
 
@@ -564,7 +564,7 @@ const transferTimeMs = sdk.getAverageTransferTime(
 ```
 
 ## Refresh pool information
-_Method_: refreshPoolInfo
+_Method_: refreshPools
 
 Forces refresh of cached information about the state of liquidity pools.
 Outdated cache leads to calculated amounts being less accurate.
@@ -574,7 +574,7 @@ _Example_:
 
 ```js
 // update the state of liquidity pools
-await sdk.refreshPoolInfo();
+await sdk.refreshPools();
 // calculate amount to be received using updated information
 const amountToBeReceived = await sdk.getAmountToBeReceived(
   amount,

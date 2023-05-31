@@ -5,8 +5,9 @@ import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
   ApproveParamsDto,
   Bridge,
-  GetAllowanceParamsDto, GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithTokenInfos,
+  GetAllowanceParamsDto,
+  GetTokenBalanceParams,
+  SendParams,
   TransactionResponse,
   TxSendParams,
 } from "../../../../services/bridge/models";
@@ -20,6 +21,7 @@ export function createTestBridge(): Bridge {
 
 export function mockBridge_getTokenBalance(bridge: Bridge, tokenBalance: string) {
   const getTokenBalance = jest.spyOn(bridge, "getTokenBalance");
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   getTokenBalance.mockImplementation(() => {
     return Promise.resolve(tokenBalance);
   });
@@ -40,7 +42,7 @@ export class TestBridge extends Bridge {
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
+  buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
@@ -49,7 +51,7 @@ export class TestBridge extends Bridge {
     return Promise.resolve("");
   }
 
-  getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
+  getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     return Promise.resolve("");
   }
 

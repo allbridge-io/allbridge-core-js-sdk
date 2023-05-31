@@ -1,16 +1,16 @@
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { Pool, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "./pool.model";
 
-export abstract class Pool {
+export abstract class ChainPoolService {
   abstract chainType: ChainType;
   abstract api: AllbridgeCoreClient;
 
-  abstract getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo>;
+  abstract getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo>;
 
-  abstract getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo>;
+  abstract getPool(token: TokenWithChainDetails): Promise<Pool>;
 
   abstract buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction>;
 

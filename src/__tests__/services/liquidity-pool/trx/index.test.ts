@@ -3,7 +3,7 @@ import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
 import TronWeb from "tronweb";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { TronPool } from "../../../../services/liquidity-pool/trx";
-import { TokenInfoWithChainDetails } from "../../../../tokens-info";
+import { TokenWithChainDetails } from "../../../../tokens-info";
 
 import triggerSmartContractClaimRewardsResponse from "../../../mock/tron-web/trigger-smart-contract-claim-rewards.json";
 import triggerSmartContractDepositResponse from "../../../mock/tron-web/trigger-smart-contract-deposit.json";
@@ -12,7 +12,7 @@ import triggerSmartContractWithdrawResponse from "../../../mock/tron-web/trigger
 const ACCOUNT_ADDRESS = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
 const POOL_ADDRESS = "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd";
 // @ts-expect-error enough
-const TOKEN_INFO: TokenInfoWithChainDetails = { poolAddress: POOL_ADDRESS };
+const TOKEN_INFO: TokenWithChainDetails = { poolAddress: POOL_ADDRESS };
 const LOCAL_NODE_URL = "https://local-test.com";
 
 describe("TronPool", () => {

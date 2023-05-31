@@ -14,10 +14,10 @@ export interface ChainDetails extends BasicChainProperties {
 }
 
 export interface ChainDetailsWithTokens extends ChainDetails {
-  tokens: TokenInfoWithChainDetails[];
+  tokens: TokenWithChainDetails[];
 }
 
-export interface TokenInfo {
+export interface Token {
   symbol: string;
   name: string;
   decimals: number;
@@ -28,11 +28,11 @@ export interface TokenInfo {
   lpRate: number;
 }
 
-export interface TokenInfoWithChainDetails extends TokenInfo, Omit<ChainDetails, "name"> {
+export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name"> {
   chainName: string;
 }
 
-export interface PoolInfo {
+export interface Pool {
   aValue: string;
   dValue: string;
   tokenBalance: string;
@@ -40,6 +40,7 @@ export interface PoolInfo {
   totalLpAmount: string;
   accRewardPerShareP: string;
   p: number;
+  imbalance?: string;
 }
 
 /**
@@ -58,4 +59,4 @@ export interface PoolKeyObject {
   poolAddress: string;
 }
 
-export type PoolInfoMap = Record<string, PoolInfo>;
+export type PoolMap = Record<string, Pool>;

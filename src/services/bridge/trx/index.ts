@@ -2,41 +2,20 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, GetTokenBalanceParamsWithTokenInfo } from "../../../models";
+import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import {
-  ApproveParamsDto,
-  Bridge,
-  GetAllowanceParamsDto,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-  TxSendParams,
-} from "../models";
-import { amountToHex, getNonce, prepareTxSendParams, sleep } from "../utils";
+import { sleep } from "../../utils";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
+import { getNonce, prepareTxSendParams } from "../utils";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
-export class TronBridge extends Bridge {
+export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
     super();
-  }
-
-  async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    const {
-      tokenInfo: { tokenAddress, bridgeAddress: spender },
-      owner,
-    } = params;
-    const tokenContract = await this.getContract(tokenAddress);
-    const allowance = await tokenContract.methods.allowance(owner, spender).call();
-    return allowance.toString();
-  }
-
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
-    const contract = await this.getContract(params.tokenInfo.tokenAddress);
-    const balance = await contract.balanceOf(params.account).call();
-    return balance.toString();
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
@@ -44,7 +23,7 @@ export class TronBridge extends Bridge {
     return await this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return this.buildRawTransactionSendFromParams(txSendParams);
   }
@@ -93,28 +72,6 @@ export class TronBridge extends Bridge {
     }
     const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
     return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
-  }
-
-  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    const rawTransaction = await this.buildRawTransactionApprove(params);
-    return await this.sendRawTransaction(rawTransaction);
-  }
-
-  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner, amount } = params;
-    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
-
-    const parameter = [
-      { type: "address", value: spender },
-      { type: "uint256", value: amountHex },
-    ];
-    const value = "0";
-    const methodSignature = "approve(address,uint256)";
-    return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
-  }
-
-  private getContract(contractAddress: string): Promise<any> {
-    return this.tronWeb.contract().at(contractAddress);
   }
 
   private async verifyTx(txId: string, timeout = 10000): Promise<any> {

@@ -14,3 +14,7 @@ export interface SmartContractMethodParameter {
   type: string;
   value: string | number | number[];
 }
+
+export interface TransactionResponse {
+  txId: string;
+}

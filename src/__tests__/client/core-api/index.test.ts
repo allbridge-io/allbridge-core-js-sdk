@@ -7,11 +7,11 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
-import poolInfoMap from "../../data/pool-info/pool-info-map.json";
+import { ChainDetailsMap, PoolMap, PoolKeyObject } from "../../../tokens-info";
+import poolMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
-import poolInfoResponse from "../../mock/core-api/pool-info.json";
+import poolResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 import polygonApiUrlResponse from "../../mock/polygon-api/polygon-api.json";
@@ -94,13 +94,13 @@ describe("AllbridgeCoreClient", () => {
     beforeEach(() => {
       scope = nock("http://localhost")
         .post("/pool-info", getRequestBodyMatcher({ pools: [poolKey] }))
-        .reply(201, poolInfoResponse);
+        .reply(201, poolResponse);
     });
 
-    it("☀️ getPoolInfoMap() returns PoolInfoMap", async () => {
-      const expectedPoolInfoMap = poolInfoMap as unknown as PoolInfoMap;
+    it("☀️ getPoolMap() returns PoolMap", async () => {
+      const expectedPoolInfoMap = poolMap as unknown as PoolMap;
 
-      const actual = await api.getPoolInfoMap([poolKey]);
+      const actual = await api.getPoolMap([poolKey]);
       expect(actual).toEqual(expectedPoolInfoMap);
 
       scope.done();

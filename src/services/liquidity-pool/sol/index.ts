@@ -2,7 +2,7 @@ import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { Pool, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getTokenAccountData } from "../../utils/sol";
@@ -13,7 +13,8 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
 export interface SolanaPoolParams {
   solanaRpcUrl: string;
@@ -35,7 +36,7 @@ interface LPTransactionData {
   preInstructions: TransactionInstruction[];
 }
 
-export class SolanaPool extends Pool {
+export class SolanaPoolService extends ChainPoolService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   private P = 48;
 
@@ -43,7 +44,7 @@ export class SolanaPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const provider = this.buildAnchorProvider(accountAddress);
     const bridge = this.getBridge(token.bridgeAddress, provider);
     const poolAccount = new PublicKey(token.poolAddress);
@@ -64,7 +65,7 @@ export class SolanaPool extends Pool {
     }
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
+  async getPool(token: TokenWithChainDetails): Promise<Pool> {
     const provider = this.buildAnchorProvider(token.bridgeAddress);
     const pool = await this.getBridge(token.bridgeAddress, provider).account.pool.fetch(token.poolAddress);
     return {

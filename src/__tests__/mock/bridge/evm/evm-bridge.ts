@@ -22,7 +22,7 @@ export function mockEvmSendRawTransaction(transactionHash: string) {
 export function mockGetAllowanceByTokenAddress(allowance: string) {
   // prettier-ignore
   return jest.spyOn(EvmBridge.prototype, "getAllowanceByTokenAddress")
-    /* eslint-disable-next-line  @typescript-eslint/require-await */
+    /* eslint-disable-next-line @typescript-eslint/require-await,@typescript-eslint/no-misused-promises */
     .mockImplementation(async () => {
       return allowance;
     });

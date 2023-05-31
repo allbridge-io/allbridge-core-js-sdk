@@ -7,7 +7,7 @@
         "tokenAddress": "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
         "decimals": 18,
         "symbol": "YUSD",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "200000001",
           "tokenBalance": "100469776",
@@ -26,7 +26,7 @@
         "tokenAddress": "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         "decimals": 18,
         "symbol": "YARO",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "200000001",
           "tokenBalance": "100131102",
@@ -71,7 +71,7 @@
         "tokenAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
         "decimals": 6,
         "symbol": "USDC",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "101518623",
           "tokenBalance": "51851977",
@@ -90,7 +90,7 @@
         "tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
         "decimals": 6,
         "symbol": "USDT",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "101172063",
           "tokenBalance": "50170874",
@@ -135,7 +135,7 @@
         "tokenAddress": "TYjmrhFaFMNKE8RheRUCQUWJHpRbY8Q9zy",
         "decimals": 18,
         "symbol": "USDY",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "200002007",
           "tokenBalance": "99733829",
@@ -154,7 +154,7 @@
         "tokenAddress": "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         "decimals": 18,
         "symbol": "YARO",
-        "poolInfo": {
+        "pool": {
           "aValue": "20",
           "dValue": "200000001",
           "tokenBalance": "99770715",

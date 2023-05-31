@@ -4,9 +4,9 @@ import {
   ChainDetailsMap,
   ChainDetailsWithTokens,
   MessengerTransferTime,
-  PoolInfoMap,
+  PoolMap,
   PoolKeyObject,
-  TokenInfoWithChainDetails,
+  TokenWithChainDetails,
   TransferTime,
 } from "../../tokens-info";
 import {
@@ -15,7 +15,7 @@ import {
   Messenger,
   MessengerKeyDTO,
   MessengerTransferTimeDTO,
-  PoolInfoResponse,
+  PoolResponse,
   TokenDTO,
   TransferTimeDTO,
 } from "./core-api.model";
@@ -32,8 +32,8 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
   }, {});
 }
 
-export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
-  const poolInfoMap: PoolInfoMap = {};
+export function mapChainDetailsResponseToPoolMap(response: ChainDetailsResponse): PoolMap {
+  const poolMap: PoolMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const token of chainDetailsDTO.tokens) {
@@ -41,15 +41,15 @@ export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsRespo
         chainSymbol,
         poolAddress: token.poolAddress,
       });
-      poolInfoMap[poolKey] = token.poolInfo;
+      poolMap[poolKey] = token.pool;
     }
   }
-  return poolInfoMap;
+  return poolMap;
 }
 
-function mapTokenInfoWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenInfoWithChainDetails {
+function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetails {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
-  const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
+  const { pool: _pool, ...dtoWithoutPoolInfo } = dto;
   return {
     ...dtoWithoutPoolInfo,
     ...chainDetailsWithoutName,
@@ -100,7 +100,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
   };
   return {
     ...chainDetails,
-    tokens: dto.tokens.map((tokenDto) => mapTokenInfoWithChainDetailsFromDto(chainDetails, tokenDto)),
+    tokens: dto.tokens.map((tokenDto) => mapTokenWithChainDetailsFromDto(chainDetails, tokenDto)),
   };
 }
 
@@ -130,13 +130,13 @@ export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetails
   return result;
 }
 
-export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
-  const poolInfoMap: PoolInfoMap = {};
-  for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
+export function mapPoolResponseToPoolMap(responseBody: PoolResponse): PoolMap {
+  const poolMap: PoolMap = {};
+  for (const [chainSymbolValue, poolByAddress] of Object.entries(responseBody)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
-    for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
-      poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;
+    for (const [poolAddress, pool] of Object.entries(poolByAddress)) {
+      poolMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = pool;
     }
   }
-  return poolInfoMap;
+  return poolMap;
 }

@@ -1,15 +1,76 @@
 {
   "name": "allbridge-core-sdk-examples",
   "private": true,
+  "main": "index.js",
   "description": "",
   "scripts": {
+    "pnpmi": "rm -rf node_modules && pnpm i",
+    "compile": "tsc",
+    "prettier": "prettier \"src/**/*.ts\" --write",
+    "lint": "eslint src --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pnpmi": "rm -rf node_modules && pnpm i"
+
+    "run:getTokensInfo": "ts-node src/examples/get-tokens-info.ts",
+
+    "run:bridge:evm:approveAndSend": "ts-node src/examples/bridge/evm/evm-build-approve-and-send-tx.ts",
+    "run:bridge:evm:approveAndSendWithStables": "ts-node src/examples/bridge/evm/evm-build-approve-and-send-tx-gas-fee-with-stables.ts",
+    "run:bridge:evm:checkAllowance": "ts-node src/examples/bridge/evm/evm-check-allowance.ts",
+    "run:bridge:evm:fullExample": "ts-node src/examples/bridge/evm/evm-send-full-example.ts",
+    "run:bridge:evm:sendTokens": "ts-node src/examples/bridge/evm/evm-send-tokens.ts",
+    "run:bridge:solana:send": "ts-node src/examples/bridge/solana/sol-build-send-tx.ts",
+    "run:bridge:trx:approveAndSend": "ts-node src/examples/bridge/trx/trx-build-approve-and-send-tx.ts",
+    "run:bridge:trx:approveAndSendWithStables": "ts-node src/examples/bridge/trx/trx-build-approve-and-send-tx-gas-fee-with-stables.ts",
+    "run:bridge:trx:send": "ts-node src/examples/bridge/trx/trx-send-tokens.ts",
+    "run:bridge:calculateAmount": "ts-node src/examples/bridge/calculate-amount.ts",
+    "run:bridge:getAvetageTransferTime": "ts-node src/examples/bridge/get-average-transfer-time.ts",
+    "run:bridge:getFeePervent": "ts-node src/examples/bridge/get-fee-percent.ts",
+    "run:bridge:getTransferStatus": "ts-node src/examples/bridge/get-transfer-status.ts",
+
+    "run:general:evm:bsc:approveTokens": "ts-node src/examples/general/evm/bsc/bsc-approve-tokens.ts",
+    "run:general:evm:bsc:getTokenBalance": "ts-node src/examples/general/evm/bsc/bsc-get-token-balance.ts",
+    "run:general:evm:pol:approveTokens": "ts-node src/examples/general/evm/pol/pol-approve-tokens.ts",
+    "run:general:evm:pol:getTokenBalance": "ts-node src/examples/general/evm/pol/pol-get-token-balance.ts",
+    "run:general:evm:approveTokens": "ts-node src/examples/general/evm/evm-approve-tokens.ts",
+    "run:general:evm:getTokenBalance": "ts-node src/examples/general/evm/evm-get-token-balance.ts",
+    "run:general:solana:getTokenBalance": "ts-node src/examples/general/solana/sol-get-token-balance.ts",
+    "run:general:trx:approveTokens": "ts-node src/examples/general/trx/trx-approve-tokens.ts",
+    "run:general:trx:getTokenBalance": "ts-node src/examples/general/trx/trx-get-token-balance.ts",
+
+    "run:liquidity-pool:evm:claimRewards": "ts-node src/examples/liquidity-pool/evm/evm-build-claim-rewards-tx.ts",
+    "run:liquidity-pool:evm:deposit": "ts-node src/examples/liquidity-pool/evm/evm-build-deposit-tx.ts",
+    "run:liquidity-pool:evm:withdraw": "ts-node src/examples/liquidity-pool/evm/evm-build-withdraw-tx.ts",
+    "run:liquidity-pool:evm:getAmountToBeWithdrawn": "ts-node src/examples/liquidity-pool/evm/get-amount-to-be-withdrawn.ts",
+    "run:liquidity-pool:evm:getBalance": "ts-node src/examples/liquidity-pool/evm/get-liquidity-balance.ts",
+    "run:liquidity-pool:evm:getLPamountOnDeposit": "ts-node src/examples/liquidity-pool/evm/get-lp-amount-on-deposit.ts",
+    "run:liquidity-pool:solana:claimRewards": "ts-node src/examples/liquidity-pool/solana/sol-build-claim-rewards-tx.ts",
+    "run:liquidity-pool:solana:deposit": "ts-node src/examples/liquidity-pool/solana/sol-build-deposit-tx.ts",
+    "run:liquidity-pool:solana:withdraw": "ts-node src/examples/liquidity-pool/solana/sol-build-withdraw-tx.ts",
+    "run:liquidity-pool:solana:getAmountToBeWithdrawn": "ts-node src/examples/liquidity-pool/solana/get-amount-to-be-withdrawn.ts",
+    "run:liquidity-pool:solana:getBalance": "ts-node src/examples/liquidity-pool/solana/get-liquidity-balance.ts",
+    "run:liquidity-pool:solana:getLPamountOnDeposit": "ts-node src/examples/liquidity-pool/solana/get-lp-amount-on-deposit.ts",
+    "run:liquidity-pool:trx:claimRewards": "ts-node src/examples/liquidity-pool/trx/trx-build-claim-rewards-tx.ts",
+    "run:liquidity-pool:trx:deposit": "ts-node src/examples/liquidity-pool/trx/trx-build-deposit-tx.ts",
+    "run:liquidity-pool:trx:withdraw": "ts-node src/examples/liquidity-pool/trx/trx-build-withdraw-tx.ts",
+    "run:liquidity-pool:trx:getAmountToBeWithdrawn": "ts-node src/examples/liquidity-pool/trx/get-amount-to-be-withdrawn.ts",
+    "run:liquidity-pool:trx:getBalance": "ts-node src/examples/liquidity-pool/trx/get-liquidity-balance.ts",
+    "run:liquidity-pool:trx:getLPamountOnDeposit": "ts-node src/examples/liquidity-pool/trx/get-lp-amount-on-deposit.ts"
   },
   "dependencies": {
-    "@allbridge/bridge-core-sdk": "file:../"
+    "@allbridge/bridge-core-sdk": "file:../",
+    "web3": "^1.9.0",
+    "web3-core": "^1.9.0",
+    "web3-eth-contract": "^1.9.0",
+    "web3-utils": "^1.9.0"
   },
   "devDependencies": {
-    "bs58": "^5.0.0"
+    "bs58": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "dotenv": "^16.0.3",
+    "prettier": "^2.8.8",
+    "eslint": "^8.39.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-jest": "^27.2.1",
+    "eslint-plugin-prettier": "^4.2.1"
   }
 }

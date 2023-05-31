@@ -1,5 +1,5 @@
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
-import { GetTokenBalanceParamsWithTokenInfo, TokenInfoWithChainDetails } from "../../../index";
+import { GetTokenBalanceParams, TokenWithChainDetails } from "../../../index";
 import { BridgeService } from "../../../services/bridge";
 import { SolanaBridgeParams } from "../../../services/bridge/sol";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
@@ -12,7 +12,7 @@ describe("BridgeService", () => {
   beforeEach(() => {
     const apiClient = new AllbridgeCoreClientImpl({
       polygonApiUrl: "",
-      coreApiUrl: "coreApiUrl"
+      coreApiUrl: "coreApiUrl",
     });
     const solParams: SolanaBridgeParams = {
       solanaRpcUrl: "solanaRpcUrl",
@@ -27,9 +27,9 @@ describe("BridgeService", () => {
       mockBridgeService_getBridge(mockBridge);
       mockBridge_getTokenBalance(mockBridge, "1234567890");
 
-      const getTokenBalanceParams: GetTokenBalanceParamsWithTokenInfo = {
+      const getTokenBalanceParams: GetTokenBalanceParams = {
         account: "account",
-        tokenInfo: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
+        token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
       };
       const tokenBalance = await bridgeService.getTokenBalance(getTokenBalanceParams);
       expect(tokenBalance).toEqual("12345.6789");

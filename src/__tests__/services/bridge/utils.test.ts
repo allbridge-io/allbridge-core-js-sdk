@@ -9,7 +9,7 @@ import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
-import {FeePaymentMethod, SendParamsWithTokenInfos, TokenInfoWithChainDetails} from "../../../models";
+import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../models";
 import { TxSendParams } from "../../../services/bridge/models";
 import { prepareTxSendParams } from "../../../services/bridge/utils";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
@@ -17,7 +17,7 @@ import tokenInfoWithChainDetailsSol from "../../data/tokens-info/TokenInfoWithCh
 import tokenInfoWithChainDetailsTrx from "../../data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 
-describe("Bridge Utils", () => {
+describe("ChainBridgeService Utils", () => {
   let api: AllbridgeCoreClient;
   let scope: nock.Scope;
 
@@ -42,15 +42,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-          toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-          sourceChainToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsTrx[0] as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        sourceToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsTrx[0] as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.EVM, sendParams, api);
 
@@ -83,15 +82,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-          toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-          sourceChainToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        sourceToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.EVM, sendParams, api);
 
@@ -124,15 +122,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-          toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-          sourceChainToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.TRX, sendParams, api);
 
@@ -165,15 +162,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-          toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-          sourceChainToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.TRX, sendParams, api);
 
@@ -206,15 +202,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-          toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-          sourceChainToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.SOLANA, sendParams, api);
 
@@ -247,16 +242,14 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithTokenInfos =
-        {
-          amount: "1.33",
-          fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-          toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-          sourceChainToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenInfoWithChainDetails,
-          destinationChainToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenInfoWithChainDetails,
-          messenger: Messenger.ALLBRIDGE,
-        };
-
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
+        toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        messenger: Messenger.ALLBRIDGE,
+      };
 
       const txSendParams = await prepareTxSendParams(ChainType.SOLANA, sendParams, api);
 
