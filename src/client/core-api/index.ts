@@ -1,6 +1,6 @@
 import axios, { Axios } from "axios";
 import { Big } from "big.js";
-import package_json from "../../../package.json";
+import { version } from "../../../package.json";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/utils";
 import { ChainDetailsMap, PoolMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
@@ -54,7 +54,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
       headers: {
         Accept: "application/json",
         ...params.coreApiHeaders,
-        "User-Agent": "AllbridgeCoreSDK/" + package_json.version,
+        "User-Agent": "AllbridgeCoreSDK/" + version,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;

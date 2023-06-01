@@ -19,7 +19,7 @@ const main = async () => {
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const userBalanceInfo = await sdk.pool.getUserBalanceInfo(accountAddress, tokenInfo, web3);
-  const poolInfo = await sdk.pool.getPoolInfo(tokenInfo, web3);
+  const poolInfo = await sdk.pool.getPool(tokenInfo, web3);
 
   console.log("Evm User balance: ", userBalanceInfo.userLiquidity);
   console.log("Evm User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
