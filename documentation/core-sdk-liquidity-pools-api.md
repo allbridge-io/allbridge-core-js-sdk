@@ -20,8 +20,8 @@ _Method_: getLiquidityBalanceInfo
 
 Get User Balance info
 
-```js
-const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
+```ts
+const userBalanceInfo = await sdk.pool.getUserBalanceInfo(
         accountAddress,
         token,
         web3
@@ -36,8 +36,8 @@ const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
+```ts
+const userBalanceInfo = await sdk.pool.getUserBalanceInfo(
         accountAddress,
         token
 );
@@ -59,7 +59,7 @@ _Method_: aprInPercents
 
 Convert apr:number to apr string percentage view
 
-```js
+```ts
   const aprPercentageStr = sdk.aprInPercents(apr)
 ```
 
@@ -75,7 +75,7 @@ _Method_: getPool
 
 Get Pool info by token info
 
-```js
+```ts
   const poolInfo = await sdk.getPool(token, web3);
 
 ```
@@ -88,7 +88,7 @@ Get Pool info by token info
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
+```ts
   const poolInfo = await sdk.getPool(token);
 ```
 
@@ -107,8 +107,8 @@ _Method_: getLPAmountOnDeposit
 
 Calculates the amount of LP tokens that will be deposited
 
-```js
-const estimatedAmount = await sdk.getLPAmountOnDeposit(
+```ts
+const estimatedAmount = await sdk.pool.getAmountToBeDeposited(
         amount,
         token,
         web3
@@ -123,8 +123,8 @@ const estimatedAmount = await sdk.getLPAmountOnDeposit(
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const estimatedAmount = await sdk.getLPAmountOnDeposit(
+```ts
+const estimatedAmount = await sdk.pool.getAmountToBeDeposited(
         amount,
         token
 );
@@ -146,8 +146,8 @@ _Method_: getAmountToBeWithdrawn
 
 Calculates the amount of tokens will be withdrawn
 
-```js
-const estimatedAmount = await sdk.getAmountToBeWithdrawn(
+```ts
+const estimatedAmount = await sdk.pool.getAmountToBeWithdrawn(
         amount,
         accountAddress,
         token,
@@ -163,8 +163,8 @@ const estimatedAmount = await sdk.getAmountToBeWithdrawn(
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const estimatedAmount = await sdk.getAmountToBeWithdrawn(
+```ts
+const estimatedAmount = await sdk.pool.getAmountToBeWithdrawn(
         amount,
         accountAddress,
         token
@@ -190,10 +190,10 @@ _Method_: deposit
 
 Deposit tokens to liquidity pool
 
-SDK method `rawTransactionBuilder.deposit` can be used to create raw deposit Transaction.
+SDK method `pool.rawTxBuilder.deposit` can be used to create raw deposit Transaction.
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.deposit(depositParams, web3);
+```ts
+const rawTransactionDeposit = await sdk.pool.deposit(depositParams, web3);
 ```
 
 **TIPs:** </br>
@@ -204,8 +204,8 @@ const rawTransactionDeposit = await sdk.rawTransactionBuilder.deposit(depositPar
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.deposit(depositParams);
+```ts
+const rawTransactionDeposit = await sdk.pool.rawTxBuilder.deposit(depositParams);
 ```
 
 _Params_:
@@ -215,14 +215,14 @@ _Params_:
 
 LiquidityPoolsParamsWithAmount:
 
-```js
+```ts
 {
   /**
    * The account address to operate tokens with.
    */
   accountAddress: string;
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} of operation token.
+   * {@link TokenWithChainDetails |The token object} of operation token.
    */
   token: TokenWithChainDetails;
   /**
@@ -242,10 +242,10 @@ _Method_: withdraw
 
 Withdraw tokens from liquidity pool
 
-SDK method `rawTransactionBuilder.withdraw` can be used to create raw withdraw Transaction.
+SDK method `pool.rawTxBuilder.withdraw` can be used to create raw withdraw Transaction.
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.withdraw(withdrawParams, web3);
+```ts
+const rawTransactionDeposit = await sdk.pool.rawTxBuilder.withdraw(withdrawParams, web3);
 ```
 
 **TIPs:** </br>
@@ -256,8 +256,8 @@ const rawTransactionDeposit = await sdk.rawTransactionBuilder.withdraw(withdrawP
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.withdraw(withdrawParams);
+```ts
+const rawTransactionDeposit = await sdk.pool.rawTxBuilder.withdraw(withdrawParams);
 ```
 
 _Params_:
@@ -267,14 +267,14 @@ _Params_:
 
 LiquidityPoolsParamsWithAmount:
 
-```js
+```ts
 {
   /**
    * The account address to operate tokens with.
    */
   accountAddress: string;
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} of operation token.
+   * {@link TokenWithChainDetails |The token object} of operation token.
    */
   token: TokenWithChainDetails;
   /**
@@ -294,10 +294,10 @@ _Method_: claimReward
 
 Claim tokens rewards from liquidity pool
 
-SDK method `rawTransactionBuilder.claimRewards` can be used to create raw claim rewards Transaction.
+SDK method `pool.rawTxBuilder.claimRewards` can be used to create raw claim rewards Transaction.
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.claimRewards(claimRewardsParams, web3);
+```ts
+const rawTransactionDeposit = await sdk.pool.rawTxBuilder.claimRewards(claimRewardsParams, web3);
 ```
 
 **TIPs:** </br>
@@ -308,8 +308,8 @@ const rawTransactionDeposit = await sdk.rawTransactionBuilder.claimRewards(claim
 - To interact with the **Solana** blockchain: </br>
   do not pass provider:
 
-```js
-const rawTransactionDeposit = await sdk.rawTransactionBuilder.claimRewards(claimRewardsParams);
+```ts
+const rawTransactionDeposit = await sdk.pool.rawTxBuilder.claimRewards(claimRewardsParams);
 ```
 
 _Params_:
@@ -319,14 +319,14 @@ _Params_:
 
 LiquidityPoolsParams:
 
-```js
+```ts
 {
   /**
    * The account address to operate tokens with.
    */
   accountAddress: string;
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} of operation token.
+   * {@link TokenWithChainDetails | The token object} of operation token.
    */
   token: TokenWithChainDetails;
 }

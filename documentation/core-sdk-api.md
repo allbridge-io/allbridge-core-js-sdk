@@ -30,7 +30,7 @@ _Params_:
 
 ApproveParams:
 
-```js
+```ts
 {
   /**
    * The token info
@@ -38,16 +38,9 @@ ApproveParams:
   token: TokenWithChainDetails;
 
   /**
-   *  The address of the token owner who is granting permission to use tokens 
-   *  to the spender
+   *  The address of the token owner who is granting permission to use tokens
    */
   owner: string;
-
-  /**
-   *  The address of the contract that is being granted permission to use tokens
-   */
-  spender: string;
-
   /**
    * The integer amount of tokens to approve.
    * Optional.
@@ -63,7 +56,7 @@ _Returns_:
 
 TransactionResponse:
 
-```js
+```ts
 {
   txId: string;
 }
@@ -73,21 +66,19 @@ _Examples:_
 
 Setting contract at `poolAddress`
 as spender enables the owner to pay gas fees for the transfer with native tokens:
-```js
+```ts
 const approveData = {
   token: sourceTokenInfo,
-  owner: accountAddress,
-  spender: sourceTokenInfo.poolAddress,
+  owner: accountAddress
 };
-const response = await sdk.approve(web3, approveData);
+const response = await sdk.bridge.approve(web3, approveData);
 ```
 Setting contract at `stablePayAddress`
 as spender enables the owner to pay gas fees for the transfer with stablecoins:  
-```js
+```ts
 const approveData = {
   token: sourceTokenInfo,
   owner: accountAddress,
-  spender: sourceTokenInfo.stablePayAddress,
 };
 const response = await sdk.approve(web3, approveData);
 ```
@@ -149,21 +140,21 @@ _Params_:
 
 Example: 
 
-```js
+```ts
 const sendParams = {
   amount: "1.33",
 
   fromAccountAddress: fromAccountAddress,
   toAccountAddress: toAccountAddress,
 
-  sourceToken: sourceTokenInfoWithChainDetails, // see [Get Tokens Info]
-  destinationToken: destinationTokenInfoWithChainDetails, // see [Get Tokens Info]
+  sourceToken: sourceToken, // see [Get Tokens Info]
+  destinationToken: destinationToken, // see [Get Tokens Info]
 
   messenger: Messenger.ALLBRIDGE,
   gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
 };
 ```
-To get sourceTokenInfoWithChainDetails or destinationTokenInfoWithChainDetails, see [Get Tokens Info](#get-tokens-info).
+To get sourceToken or destinationToken, see [Get Tokens Info](#get-tokens-info).
 
 _Returns_:
 
@@ -171,7 +162,7 @@ _Returns_:
 
 TransactionResponse:
 
-```js
+```ts
 {
   txId: string;
 }
@@ -179,8 +170,8 @@ TransactionResponse:
 
 _Example_:
 
-```js
-const response = await sdk.send(web3, sendParams);
+```ts
+const response = await sdk.bridge.send(web3, sendParams);
 ```
 
 ## Get tokens
@@ -194,7 +185,7 @@ _Returns_:
 * TokenWithChainDetails[] — a list of all supported tokens.
 
 TokenWithChainDetails:
-```js
+```ts
 {
   // token symbol, e.g. "USDT"
   symbol: string;
@@ -227,7 +218,7 @@ TokenWithChainDetails:
 
 _Example_:
 
-```js
+```ts
 const tokens = await sdk.tokens();
 ```
 
@@ -247,7 +238,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const tokensOnTRX = await sdk.tokensByChain(ChainSymbol.TRX);
 ```
 
@@ -262,7 +253,7 @@ _Returns_:
 * ChainDetailsMap — an object where key is the Chain Symbol and value is the corresponding chain details
 
 ChainDetailsMap
-```js
+```ts
 const chainDetailsMapExample = {
   "BSC": {
     "chainSymbol": "BSC",
@@ -294,7 +285,7 @@ const chainDetailsMapExample = {
 
 _Example_:
 
-```js
+```ts
 const chainDetailsMap = await sdk.chainDetailsMap();
 // get details about chain ETH
 const ethChainDetails = chainDetailsMap[ChainSymbol.ETH];
@@ -321,7 +312,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
  const sourceFeePercent = await sdk.calculateFeePercentOnSourceChain(
   amount,
   sourceToken
@@ -346,7 +337,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const destinationFeePercent = await sdk.calculateFeePercentOnDestinationChain(
   amount,
   sourceToken,
@@ -372,7 +363,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const amountToBeReceived = await sdk.getAmountToBeReceived(
   amount,
   sourceToken,
@@ -399,7 +390,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const amountToSend = await sdk.getAmountToSend(
   amount,
   sourceToken,
@@ -430,10 +421,10 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const { native, stablecoin } = await sdk.getGasFeeOptions(
-  sourceTokenInfoWithChainDetails,
-  destinationTokenInfoWithChainDetails,
+  sourceTokenWithChainDetails,
+  destinationTokenWithChainDetails,
   Messenger.ALLBRIDGE
 );
 console.log(native); // Output: "10000000000000000" (0.01 ETH)
@@ -457,7 +448,7 @@ _Returns_:
 
 * AmountsAndGasFeeOptions:
 
-```js
+```ts
 {
   /**
    * The floating point amount of tokens to be sent (not including gas fee).
@@ -478,7 +469,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const {amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions} =
   await sdk.getAmountToBeReceivedAndGasFeeOptions(
     amount,
@@ -505,7 +496,7 @@ _Returns_:
 
 * AmountsAndGasFeeOptions:
 
-```js
+```ts
 {
   /**
    * The floating point amount of tokens to be sent (not including gas fee).
@@ -526,7 +517,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const {amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions} =
   await sdk.getAmountToSendAndGasFeeOptions(
     amount,
@@ -555,7 +546,7 @@ _Returns_:
 
 _Example_:
 
-```js
+```ts
 const transferTimeMs = sdk.getAverageTransferTime(
   sourceToken,
   destinationToken,
@@ -572,7 +563,7 @@ The cache is invalidated at regular intervals, but it can be forced to be refres
 
 _Example_:
 
-```js
+```ts
 // update the state of liquidity pools
 await sdk.refreshPools();
 // calculate amount to be received using updated information

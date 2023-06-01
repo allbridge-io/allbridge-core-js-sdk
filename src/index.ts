@@ -55,6 +55,9 @@ export class AllbridgeCoreSdk {
    * @internal
    */
   private readonly api: AllbridgeCachingCoreClient;
+  /**
+   * @internal
+   */
   private readonly tokenService: TokenService;
 
   readonly params: AllbridgeCoreSdkOptions;
