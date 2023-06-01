@@ -35,9 +35,12 @@
     "test:coverage": "jest --coverage",
     "spell:check": "cspell \"{README.md,CODE_OF_CONDUCT.md,CONTRIBUTING.md,.github/*.md,src/**/*.ts}\"",
     "cz": "cz",
-    "semantic-release": "semantic-release",
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
-    "tsdoc": "typedoc --excludeInternal src/index.ts"
+    "tsdoc": "typedoc --excludeInternal src/index.ts",
+    "semantic-release": "semantic-release",
+    "prepack": "npm run updateVersion",
+    "prepare": "npm run build",
+    "updateVersion": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts"
   },
   "repository": {
     "type": "git",
