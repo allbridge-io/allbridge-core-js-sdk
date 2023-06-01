@@ -70,7 +70,7 @@ If the current allowance is not 0,
 this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 ```js
-const response = await sdk.approve(web3, {
+const response = await sdk.bridge.approve(web3, {
   token: sourceTokenInfo,
   owner: accountAddress,
   spender: sourceTokenInfo.poolAddress,
