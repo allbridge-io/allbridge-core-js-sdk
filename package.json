@@ -21,7 +21,6 @@
     "access": "public"
   },
   "scripts": {
-    "prebuild": "npm run version",
     "build": "npm run clean && npm run type:dts && tsc && npm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
@@ -38,8 +37,7 @@
     "cz": "cz",
     "semantic-release": "semantic-release",
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
-    "tsdoc": "typedoc --excludeInternal src/index.ts",
-    "version": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts"
+    "tsdoc": "typedoc --excludeInternal src/index.ts"
   },
   "repository": {
     "type": "git",
