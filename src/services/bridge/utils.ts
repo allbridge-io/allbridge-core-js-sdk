@@ -1,6 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
 import { Big } from "big.js";
-import BN from "bn.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
@@ -8,10 +7,9 @@ import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { FeePaymentMethod, GasFeeOptions } from "../../models";
-import { ChainDetailsMap, TokenInfoWithChainDetails } from "../../tokens-info";
-import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
-import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
-import { SendParamsWithTokenInfos, TxSendParams } from "./models";
+import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
+import { convertFloatAmountToInt } from "../../utils/calculation";
+import { SendParams, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;
@@ -84,18 +82,18 @@ function bufferToSize(buffer: Buffer, size: number): Buffer {
   return result;
 }
 
-export function getTokenInfoByTokenAddress(
+export function getTokenByTokenAddress(
   chainDetailsMap: ChainDetailsMap,
   chainSymbol: ChainSymbol,
   tokenAddress: string
-): TokenInfoWithChainDetails {
-  const tokenInfo = chainDetailsMap[chainSymbol].tokens.find(
+): TokenWithChainDetails {
+  const token = chainDetailsMap[chainSymbol].tokens.find(
     (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
   );
-  if (!tokenInfo) {
+  if (!token) {
     throw new Error("Cannot find token info about token " + tokenAddress + " on chain " + chainSymbol);
   }
-  return tokenInfo;
+  return token;
 }
 
 export function getNonce(): Buffer {
@@ -104,53 +102,53 @@ export function getNonce(): Buffer {
 
 export function checkIsGasPaymentMethodSupported(
   gasFeePaymentMethod: FeePaymentMethod | undefined,
-  sourceTokenInfo: TokenInfoWithChainDetails
+  sourceToken: TokenWithChainDetails
 ) {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN && !sourceTokenInfo.stablePayAddress) {
+  if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN && sourceToken.chainSymbol == ChainSymbol.SOL) {
     throw Error(
-      `Gas fee payment method '${gasFeePaymentMethod}' is not supported on source chain ${sourceTokenInfo.chainSymbol}`
+      `Gas fee payment method '${gasFeePaymentMethod}' is not supported on source chain ${sourceToken.chainSymbol}`
     );
   }
 }
 
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
-  params: SendParamsWithTokenInfos,
+  params: SendParams,
   api: AllbridgeCoreClient
 ): Promise<TxSendParams> {
   const txSendParams = {} as TxSendParams;
 
-  txSendParams.fromChainId = params.sourceChainToken.allbridgeChainId;
-  txSendParams.fromChainSymbol = params.sourceChainToken.chainSymbol;
-  const toChainType = chainProperties[params.destinationChainToken.chainSymbol].chainType;
-  txSendParams.contractAddress = params.sourceChainToken.bridgeAddress;
-  txSendParams.fromTokenAddress = params.sourceChainToken.tokenAddress;
+  txSendParams.fromChainId = params.sourceToken.allbridgeChainId;
+  txSendParams.fromChainSymbol = params.sourceToken.chainSymbol;
+  const toChainType = chainProperties[params.destinationToken.chainSymbol].chainType;
+  txSendParams.contractAddress = params.sourceToken.bridgeAddress;
+  txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
 
-  txSendParams.toChainId = params.destinationChainToken.allbridgeChainId;
-  txSendParams.toTokenAddress = params.destinationChainToken.tokenAddress;
-  const sourceTokenInfo = params.sourceChainToken;
+  txSendParams.toChainId = params.destinationToken.allbridgeChainId;
+  txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
+  const sourceToken = params.sourceToken;
 
-  checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceTokenInfo);
+  checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceToken);
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    txSendParams.contractAddress = sourceTokenInfo.stablePayAddress;
+    txSendParams.contractAddress = sourceToken.bridgeAddress;
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
   } else {
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
-    txSendParams.contractAddress = sourceTokenInfo.bridgeAddress;
+    txSendParams.contractAddress = sourceToken.bridgeAddress;
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
 
   txSendParams.messenger = params.messenger;
   txSendParams.fromAccountAddress = params.fromAccountAddress;
-  txSendParams.amount = convertFloatAmountToInt(params.amount, sourceTokenInfo.decimals).toFixed();
+  txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
 
   let { fee } = params;
   if (fee == null) {
     const gasFeeOptions = await getGasFeeOptions(
       txSendParams.fromChainId,
       txSendParams.toChainId,
-      sourceTokenInfo.decimals,
+      sourceToken.decimals,
       txSendParams.messenger,
       api
     );
@@ -185,20 +183,12 @@ export async function getGasFeeOptions(
     [FeePaymentMethod.WITH_NATIVE_CURRENCY]: transactionCostResponse.fee,
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
-    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
-      new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
-      EVM_NATIVE_TOKEN_PRECISION,
-      sourceChainTokenDecimals
-    ).toFixed(0, Big.roundDown);
+    let stableCoinFee = new Big(transactionCostResponse.fee)
+      .mul(transactionCostResponse.sourceNativeTokenPrice)
+      .toFixed(0, Big.roundUp);
+    stableCoinFee = stableCoinFee === "0" ? "1" : stableCoinFee;
+    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = stableCoinFee;
   }
 
   return gasFeeOptions;
-}
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(() => resolve(), ms));
-}
-
-export function amountToHex(amount: string): string {
-  return "0x" + new BN(amount).toString("hex");
 }

@@ -2,11 +2,12 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { Pool, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
-export class TronPool extends Pool {
+export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private P = 52;
 
@@ -14,16 +15,14 @@ export class TronPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const contract = await this.getContract(token.poolAddress);
-    const userInfoData = await contract.userInfo(accountAddress).call();
-    return new UserBalanceInfo({
-      lpAmount: userInfoData.lpAmount.toString(),
-      rewardDebt: userInfoData.rewardDebt.toString(),
-    });
+    const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
+    const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
+  async getPool(token: TokenWithChainDetails): Promise<Pool> {
     const poolContract = await this.getContract(token.poolAddress);
 
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
@@ -31,7 +30,7 @@ export class TronPool extends Pool {
       poolContract.methods.d().call(),
       poolContract.methods.tokenBalance().call(),
       poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalLpAmount().call(),
+      poolContract.methods.totalSupply().call(),
       poolContract.methods.accRewardPerShareP().call(),
     ]);
 

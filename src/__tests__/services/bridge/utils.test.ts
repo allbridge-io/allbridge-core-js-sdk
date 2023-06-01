@@ -2,7 +2,6 @@
 
 import bs58 from "bs58";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { beforeEach, describe, expect, it } from "vitest";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "../../../client/core-api";
 import {
@@ -10,12 +9,15 @@ import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../models";
 import { TxSendParams } from "../../../services/bridge/models";
 import { prepareTxSendParams } from "../../../services/bridge/utils";
+import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
+import tokenInfoWithChainDetailsSol from "../../data/tokens-info/TokenInfoWithChainDetails-SOL.json";
+import tokenInfoWithChainDetailsTrx from "../../data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 
-describe("Bridge Utils", () => {
+describe("ChainBridgeService Utils", () => {
   let api: AllbridgeCoreClient;
   let scope: nock.Scope;
 
@@ -40,17 +42,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.GRL,
-        fromTokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-
-        toChainSymbol: ChainSymbol.TRX,
-        toTokenAddress: "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-
+        sourceToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsTrx[0] as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -85,17 +82,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.GRL,
-        fromTokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-
-        toChainSymbol: ChainSymbol.SOL,
-        toTokenAddress: "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-
+        sourceToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -105,7 +97,7 @@ describe("Bridge Utils", () => {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
         fromChainSymbol: ChainSymbol.GRL,
-        fromTokenAddress: "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
+        fromTokenAddress: "0x000000000000000000000000ddac3cb57dea3fbeff4997d78215535eb5787117",
         toChainId: 5,
         toTokenAddress: "0x09c0917b1690e4929808fbc5378d9619a1ff49b3aaff441b2fa4bd58ab035a33",
         amount: "1330000000000000000",
@@ -130,17 +122,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.TRX,
-        fromTokenAddress: "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-
-        toChainSymbol: ChainSymbol.GRL,
-        toTokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-
+        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -175,17 +162,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.TRX,
-        fromTokenAddress: "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-
-        toChainSymbol: ChainSymbol.SOL,
-        toTokenAddress: "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-
+        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -220,17 +202,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.SOL,
-        fromTokenAddress: "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-
-        toChainSymbol: ChainSymbol.GRL,
-        toTokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
         toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-
+        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -265,17 +242,12 @@ describe("Bridge Utils", () => {
         .reply(201, receiveFeeResponse)
         .persist();
 
-      const sendParams: SendParamsWithChainSymbols = {
+      const sendParams: SendParams = {
         amount: "1.33",
-
-        fromChainSymbol: ChainSymbol.SOL,
-        fromTokenAddress: "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-
-        toChainSymbol: ChainSymbol.TRX,
-        toTokenAddress: "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
         toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-
+        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 

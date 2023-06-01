@@ -296,7 +296,7 @@ export interface Bridge {
         },
         {
           name: "messengerGasUsage";
-          isMut: true;
+          isMut: false;
           isSigner: false;
         },
         {
@@ -379,7 +379,7 @@ export interface Bridge {
         },
         {
           name: "config";
-          isMut: false;
+          isMut: true;
           isSigner: false;
         },
         {
@@ -459,7 +459,7 @@ export interface Bridge {
         },
         {
           name: "messengerGasUsage";
-          isMut: true;
+          isMut: false;
           isSigner: false;
         },
         {
@@ -908,7 +908,7 @@ export interface Bridge {
       args: [];
     },
     {
-      name: "setCanSwap";
+      name: "startBridge";
       accounts: [
         {
           name: "admin";
@@ -923,16 +923,18 @@ export interface Bridge {
       ];
       args: [
         {
-          name: "canSwap";
-          type: "bool";
+          name: "actionType";
+          type: {
+            defined: "ActionType";
+          };
         }
       ];
     },
     {
-      name: "setCanDeposit";
+      name: "stopBridge";
       accounts: [
         {
-          name: "admin";
+          name: "stopAuthority";
           isMut: false;
           isSigner: true;
         },
@@ -944,29 +946,10 @@ export interface Bridge {
       ];
       args: [
         {
-          name: "canDeposit";
-          type: "bool";
-        }
-      ];
-    },
-    {
-      name: "setCanWithdraw";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        }
-      ];
-      args: [
-        {
-          name: "canWithdraw";
-          type: "bool";
+          name: "actionType";
+          type: {
+            defined: "ActionType";
+          };
         }
       ];
     },
@@ -980,12 +963,33 @@ export interface Bridge {
         },
         {
           name: "config";
-          isMut: false;
+          isMut: true;
           isSigner: false;
         },
         {
           name: "rebalancer";
           isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: "setStopAuthority";
+      accounts: [
+        {
+          name: "admin";
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: "newAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "config";
+          isMut: true;
           isSigner: false;
         }
       ];
@@ -1077,6 +1081,32 @@ export interface Bridge {
         {
           name: "feeShareBp";
           type: "u64";
+        }
+      ];
+    },
+    {
+      name: "setBalanceRatioMin";
+      accounts: [
+        {
+          name: "admin";
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: "config";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "pool";
+          isMut: true;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "balanceRatioMinBp";
+          type: "u16";
         }
       ];
     },
@@ -1240,6 +1270,57 @@ export interface Bridge {
         }
       ];
       args: [];
+    },
+    {
+      name: "adjustTotalLpAmount";
+      accounts: [
+        {
+          name: "admin";
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: "mint";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "config";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "pool";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "bridgeToken";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "userToken";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "userDeposit";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "bridgeAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
     }
   ];
   accounts: [
@@ -1288,6 +1369,10 @@ export interface Bridge {
           },
           {
             name: "rebalancer";
+            type: "publicKey";
+          },
+          {
+            name: "stopAuthority";
             type: "publicKey";
           },
           {
@@ -1687,6 +1772,23 @@ export interface Bridge {
           }
         ];
       };
+    },
+    {
+      name: "ActionType";
+      type: {
+        kind: "enum";
+        variants: [
+          {
+            name: "Deposit";
+          },
+          {
+            name: "Withdraw";
+          },
+          {
+            name: "Swap";
+          }
+        ];
+      };
     }
   ];
   errors: [
@@ -1749,6 +1851,11 @@ export interface Bridge {
       code: 6011;
       name: "ForbiddenAction";
       msg: "ForbiddenAction";
+    },
+    {
+      code: 6012;
+      name: "ValueTooHigh";
+      msg: "Value is too high";
     }
   ];
 }
@@ -2051,7 +2158,7 @@ export const IDL: Bridge = {
         },
         {
           name: "messengerGasUsage",
-          isMut: true,
+          isMut: false,
           isSigner: false,
         },
         {
@@ -2134,7 +2241,7 @@ export const IDL: Bridge = {
         },
         {
           name: "config",
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -2214,7 +2321,7 @@ export const IDL: Bridge = {
         },
         {
           name: "messengerGasUsage",
-          isMut: true,
+          isMut: false,
           isSigner: false,
         },
         {
@@ -2663,7 +2770,7 @@ export const IDL: Bridge = {
       args: [],
     },
     {
-      name: "setCanSwap",
+      name: "startBridge",
       accounts: [
         {
           name: "admin",
@@ -2678,16 +2785,18 @@ export const IDL: Bridge = {
       ],
       args: [
         {
-          name: "canSwap",
-          type: "bool",
+          name: "actionType",
+          type: {
+            defined: "ActionType",
+          },
         },
       ],
     },
     {
-      name: "setCanDeposit",
+      name: "stopBridge",
       accounts: [
         {
-          name: "admin",
+          name: "stopAuthority",
           isMut: false,
           isSigner: true,
         },
@@ -2699,29 +2808,10 @@ export const IDL: Bridge = {
       ],
       args: [
         {
-          name: "canDeposit",
-          type: "bool",
-        },
-      ],
-    },
-    {
-      name: "setCanWithdraw",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "canWithdraw",
-          type: "bool",
+          name: "actionType",
+          type: {
+            defined: "ActionType",
+          },
         },
       ],
     },
@@ -2735,12 +2825,33 @@ export const IDL: Bridge = {
         },
         {
           name: "config",
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: "rebalancer",
           isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: "setStopAuthority",
+      accounts: [
+        {
+          name: "admin",
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: "newAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "config",
+          isMut: true,
           isSigner: false,
         },
       ],
@@ -2832,6 +2943,32 @@ export const IDL: Bridge = {
         {
           name: "feeShareBp",
           type: "u64",
+        },
+      ],
+    },
+    {
+      name: "setBalanceRatioMin",
+      accounts: [
+        {
+          name: "admin",
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: "config",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "pool",
+          isMut: true,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "balanceRatioMinBp",
+          type: "u16",
         },
       ],
     },
@@ -2996,6 +3133,57 @@ export const IDL: Bridge = {
       ],
       args: [],
     },
+    {
+      name: "adjustTotalLpAmount",
+      accounts: [
+        {
+          name: "admin",
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: "mint",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "config",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "pool",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "bridgeToken",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "userToken",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "userDeposit",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "bridgeAuthority",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
   ],
   accounts: [
     {
@@ -3043,6 +3231,10 @@ export const IDL: Bridge = {
           },
           {
             name: "rebalancer",
+            type: "publicKey",
+          },
+          {
+            name: "stopAuthority",
             type: "publicKey",
           },
           {
@@ -3443,6 +3635,23 @@ export const IDL: Bridge = {
         ],
       },
     },
+    {
+      name: "ActionType",
+      type: {
+        kind: "enum",
+        variants: [
+          {
+            name: "Deposit",
+          },
+          {
+            name: "Withdraw",
+          },
+          {
+            name: "Swap",
+          },
+        ],
+      },
+    },
   ],
   errors: [
     {
@@ -3504,6 +3713,11 @@ export const IDL: Bridge = {
       code: 6011,
       name: "ForbiddenAction",
       msg: "ForbiddenAction",
+    },
+    {
+      code: 6012,
+      name: "ValueTooHigh",
+      msg: "Value is too high",
     },
   ],
 };

@@ -1,45 +1,24 @@
 export {
-  TransactionResponse,
+  ApproveParams,
   BaseSendParams,
-  CheckAllowanceParamsWithTokenInfo,
-  GetAllowanceParamsWithTokenInfo,
-  GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithTokenInfos,
+  CheckAllowanceParams,
+  GetAllowanceParams,
+  GetTokenBalanceParams,
+  SendParams,
 } from "../services/bridge/models/bridge.model";
+export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
-export {
-  TokenInfoWithChainDetails,
-  TransferTime,
-  MessengerTransferTime,
-  PoolInfo,
-} from "../tokens-info/tokens-info.model";
-export { RawTransactionBuilder } from "../raw-transaction-builder";
+export { TokenWithChainDetails, TransferTime, MessengerTransferTime, Pool } from "../tokens-info/tokens-info.model";
 export {
   UserBalanceInfo,
   UserBalanceInfoDTO,
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
 } from "../services/liquidity-pool/models/pool.model";
+export { RawTransaction } from "../services/models/index";
 
 export { testnet } from "../configs/testnet";
-
-export interface AmountsAndTxCost {
-  /**
-   * The amount of tokens to be sent.
-   */
-  amountToSendFloat: string;
-
-  /**
-   * The amount of tokens to be received.
-   */
-  amountToBeReceivedFloat: string;
-
-  /**
-   * The amount of gas fee to pay for the transfer in the smallest denomination of the source chain currency.
-   */
-  txCost: string;
-}
 
 export enum FeePaymentMethod {
   /**

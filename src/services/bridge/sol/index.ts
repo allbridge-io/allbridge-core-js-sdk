@@ -6,7 +6,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { RawTransaction } from "../../models";
+import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
@@ -22,15 +22,8 @@ import {
   getPriceAccount,
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
-import {
-  ApproveParamsDto,
-  Bridge,
-  GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-  TxSendParams,
-} from "../models";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams } from "../utils";
 
 export interface SolanaBridgeParams {
@@ -38,22 +31,14 @@ export interface SolanaBridgeParams {
   wormholeMessengerProgramId: string;
 }
 
-export class SolanaBridge extends Bridge {
+export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
 
   constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
     super();
   }
 
-  approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  async buildRawTransactionSend(params: SendParamsWithTokenInfos): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     params.fee = "";
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
 
@@ -71,10 +56,10 @@ export class SolanaBridge extends Bridge {
     }
   }
 
-  private prepareSolTxSendParams(params: SendParamsWithTokenInfos, txSendParams: TxSendParams): SolTxSendParams {
+  private prepareSolTxSendParams(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
     return {
       ...txSendParams,
-      poolAddress: params.sourceChainToken.poolAddress,
+      poolAddress: params.sourceToken.poolAddress,
     };
   }
 
@@ -347,17 +332,6 @@ export class SolanaBridge extends Bridge {
         commitment: "finalized",
       }
     );
-  }
-
-  getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenInfo): Promise<string> {
-    const { account, tokenInfo } = params;
-    const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(tokenInfo.tokenAddress));
-    const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
-    return accountData.amount.toString();
   }
 
   sendTx(params: TxSendParams): Promise<TransactionResponse> {

@@ -38,6 +38,8 @@ export type ReceiveFee = ContractEventLog<{
   1: string;
 }>;
 export type Received = ContractEventLog<{
+  sender: string;
+  amount: string;
   0: string;
   1: string;
 }>;
@@ -86,19 +88,15 @@ export interface Bridge extends BaseContract {
   constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Bridge;
   clone(): Bridge;
   methods: {
-    accumulatedFee(arg0: string): NonPayableTransactionObject<string>;
-
-    addBridgeToken(chainId_: number | string | BN, tokenAddress_: string | number[]): NonPayableTransactionObject<void>;
+    addBridgeToken(_chainId: number | string | BN, tokenAddress: string | number[]): NonPayableTransactionObject<void>;
 
     addPool(pool: string, token: string | number[]): NonPayableTransactionObject<void>;
-
-    allbridgeMessenger(): NonPayableTransactionObject<string>;
 
     canSwap(): NonPayableTransactionObject<string>;
 
     chainId(): NonPayableTransactionObject<string>;
 
-    gasUsage(arg0: number | string | BN): NonPayableTransactionObject<string>;
+    gasUsage(chainId: number | string | BN): NonPayableTransactionObject<string>;
 
     getBridgingCostInTokens(
       destinationChainId: number | string | BN,
@@ -108,7 +106,12 @@ export interface Bridge extends BaseContract {
 
     getMessageCost(chainId: number | string | BN, protocol: number | string | BN): NonPayableTransactionObject<string>;
 
-    getTransactionCost(chainId_: number | string | BN): NonPayableTransactionObject<string>;
+    getMessageGasUsage(
+      chainId: number | string | BN,
+      protocol: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
+    getTransactionCost(chainId: number | string | BN): NonPayableTransactionObject<string>;
 
     hasReceivedMessage(
       message: string | number[],
@@ -127,17 +130,18 @@ export interface Bridge extends BaseContract {
       messenger: number | string | BN
     ): NonPayableTransactionObject<string>;
 
-    otherBridgeTokens(arg0: number | string | BN, arg1: string | number[]): NonPayableTransactionObject<boolean>;
+    otherBridgeTokens(
+      chainId: number | string | BN,
+      tokenAddress: string | number[]
+    ): NonPayableTransactionObject<boolean>;
 
-    otherBridges(arg0: number | string | BN): NonPayableTransactionObject<string>;
+    otherBridges(chainId: number | string | BN): NonPayableTransactionObject<string>;
 
     owner(): NonPayableTransactionObject<string>;
 
-    pools(arg0: string | number[]): NonPayableTransactionObject<string>;
+    pools(tokenId: string | number[]): NonPayableTransactionObject<string>;
 
-    processedMessages(arg0: string | number[]): NonPayableTransactionObject<string>;
-
-    rebalancer(): NonPayableTransactionObject<string>;
+    processedMessages(messageHash: string | number[]): NonPayableTransactionObject<string>;
 
     receiveTokens(
       amount: number | string | BN,
@@ -149,31 +153,32 @@ export interface Bridge extends BaseContract {
       receiveAmountMin: number | string | BN
     ): PayableTransactionObject<void>;
 
-    registerBridge(
-      chainId_: number | string | BN,
-      bridgeAddress_: string | number[]
-    ): NonPayableTransactionObject<void>;
+    registerBridge(_chainId: number | string | BN, bridgeAddress: string | number[]): NonPayableTransactionObject<void>;
 
     removeBridgeToken(
-      chainId_: number | string | BN,
-      tokenAddress_: string | number[]
+      _chainId: number | string | BN,
+      tokenAddress: string | number[]
     ): NonPayableTransactionObject<void>;
 
     renounceOwnership(): NonPayableTransactionObject<void>;
 
-    sentMessages(arg0: string | number[]): NonPayableTransactionObject<string>;
+    sentMessages(messageHash: string | number[]): NonPayableTransactionObject<string>;
 
     setAllbridgeMessenger(_allbridgeMessenger: string): NonPayableTransactionObject<void>;
 
-    setCanSwap(_canDeposit: boolean): NonPayableTransactionObject<void>;
+    setGasOracle(_gasOracle: string): NonPayableTransactionObject<void>;
 
-    setGasOracle(gasOracle_: string): NonPayableTransactionObject<void>;
-
-    setGasUsage(chainId_: number | string | BN, gasUsage_: number | string | BN): NonPayableTransactionObject<void>;
+    setGasUsage(chainId: number | string | BN, gasAmount: number | string | BN): NonPayableTransactionObject<void>;
 
     setRebalancer(_rebalancer: string): NonPayableTransactionObject<void>;
 
+    setStopAuthority(_stopAuthority: string): NonPayableTransactionObject<void>;
+
     setWormholeMessenger(_wormholeMessenger: string): NonPayableTransactionObject<void>;
+
+    startSwap(): NonPayableTransactionObject<void>;
+
+    stopSwap(): NonPayableTransactionObject<void>;
 
     swap(
       amount: number | string | BN,
@@ -199,8 +204,6 @@ export interface Bridge extends BaseContract {
     withdrawBridgingFeeInTokens(token: string): NonPayableTransactionObject<void>;
 
     withdrawGasTokens(amount: number | string | BN): NonPayableTransactionObject<void>;
-
-    wormholeMessenger(): NonPayableTransactionObject<string>;
   };
   events: {
     BridgingFeeFromTokens(cb?: Callback<BridgingFeeFromTokens>): EventEmitter;

@@ -12,7 +12,7 @@
 
 # Allbridge Core SDK
 
-Provides an easy integration with the Allbridge Core Bridge for DApps in the browser or Node.js
+Provides an easy integration with the Allbridge Core ChainBridgeService for DApps in the browser or Node.js
 
 ## Table of Contents
 
@@ -58,7 +58,7 @@ const supportedChains = await sdk.chainDetailsMap();
 // extract information about ETH chain
 const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 // Choose one of the tokens supported on ETH
-const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
+const usdtOnEthTokenInfo = tokens.find(token => token.symbol === 'USDT');
 ```
 
 ### 3.1 Approve the transfer of tokens
@@ -89,8 +89,8 @@ await sdk.send(web3, {
   amount: '1.01',
   fromAccountAddress: senderAddress,
   toAccountAddress: recipientAddress,
-  sourceChainToken: usdtOnEthTokenInfo,
-  destinationChainToken: usdtOnTrxTokenInfo,
+  sourceToken: usdtOnEthTokenInfo,
+  destinationToken: usdtOnTrxTokenInfo,
   messenger: Messenger.ALLBRIDGE,
 });
 ```
@@ -128,10 +128,10 @@ async function runExample() {
   const chains = await sdk.chainDetailsMap();
 
   const bscChain = chains[ChainSymbol.BSC];
-  const busdTokenInfo = bscChain.tokens.find(tokenInfo => tokenInfo.symbol === 'BUSD');
+  const busdTokenInfo = bscChain.tokens.find(token => token.symbol === 'BUSD');
 
   const trxChain = chains[ChainSymbol.TRX];
-  const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
+  const usdtTokenInfo = trxChain.tokens.find(token => token.symbol === 'USDT');
 
   // authorize a transfer of tokens from sender's address
   await sdk.approve(web3, {
@@ -145,8 +145,8 @@ async function runExample() {
     amount: "1.01",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
-    sourceChainToken: busdTokenInfo,
-    destinationChainToken: usdtTokenInfo,
+    sourceToken: busdTokenInfo,
+    destinationToken: usdtTokenInfo,
     messenger: Messenger.ALLBRIDGE,
   });
   console.log("Tokens sent:", response.txId);

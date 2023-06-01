@@ -90,8 +90,6 @@ export interface Pool extends BaseContract {
   constructor(jsonInterface: any[], address?: string, options?: ContractOptions): Pool;
   clone(): Pool;
   methods: {
-    PP(): NonPayableTransactionObject<string>;
-
     a(): NonPayableTransactionObject<string>;
 
     accRewardPerShareP(): NonPayableTransactionObject<string>;
@@ -138,7 +136,7 @@ export interface Pool extends BaseContract {
 
     owner(): NonPayableTransactionObject<string>;
 
-    pendingReward(user_: string): NonPayableTransactionObject<string>;
+    pendingReward(user: string): NonPayableTransactionObject<string>;
 
     renounceOwnership(): NonPayableTransactionObject<void>;
 
@@ -150,13 +148,19 @@ export interface Pool extends BaseContract {
 
     setBalanceRatioMinBP(_balanceRatioMinBP: number | string | BN): NonPayableTransactionObject<void>;
 
-    setCanDeposit(_canDeposit: boolean): NonPayableTransactionObject<void>;
-
-    setCanWithdraw(_canWithdraw: boolean): NonPayableTransactionObject<void>;
-
     setFeeShare(_feeShareBP: number | string | BN): NonPayableTransactionObject<void>;
 
     setRouter(_router: string): NonPayableTransactionObject<void>;
+
+    setStopAuthority(_stopAuthority: string): NonPayableTransactionObject<void>;
+
+    startDeposit(): NonPayableTransactionObject<void>;
+
+    startWithdraw(): NonPayableTransactionObject<void>;
+
+    stopDeposit(): NonPayableTransactionObject<void>;
+
+    stopWithdraw(): NonPayableTransactionObject<void>;
 
     swapFromVUsd(
       user: string,
@@ -181,7 +185,7 @@ export interface Pool extends BaseContract {
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
 
-    userRewardDebt(arg0: string): NonPayableTransactionObject<string>;
+    userRewardDebt(user: string): NonPayableTransactionObject<string>;
 
     vUsdBalance(): NonPayableTransactionObject<string>;
 

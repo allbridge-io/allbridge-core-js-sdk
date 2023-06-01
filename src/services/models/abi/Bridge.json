@@ -7,6 +7,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "_chainPrecision",
+        "type": "uint256"
+      },
+      {
         "internalType": "contract Messenger",
         "name": "_allbridgeMessenger",
         "type": "address"
@@ -82,13 +87,13 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "",
+        "name": "sender",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -225,32 +230,13 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "accumulatedFee",
-    "outputs": [
-      {
         "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "chainId_",
+        "name": "_chainId",
         "type": "uint256"
       },
       {
         "internalType": "bytes32",
-        "name": "tokenAddress_",
+        "name": "tokenAddress",
         "type": "bytes32"
       }
     ],
@@ -275,19 +261,6 @@
     "name": "addPool",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "allbridgeMessenger",
-    "outputs": [
-      {
-        "internalType": "contract Messenger",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -320,7 +293,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "chainId",
         "type": "uint256"
       }
     ],
@@ -328,7 +301,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -392,7 +365,31 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "chainId_",
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum MessengerProtocol",
+        "name": "protocol",
+        "type": "uint8"
+      }
+    ],
+    "name": "getMessageGasUsage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "chainId",
         "type": "uint256"
       }
     ],
@@ -503,12 +500,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "chainId",
         "type": "uint256"
       },
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "tokenAddress",
         "type": "bytes32"
       }
     ],
@@ -516,7 +513,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isSupported",
         "type": "bool"
       }
     ],
@@ -527,7 +524,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "chainId",
         "type": "uint256"
       }
     ],
@@ -535,7 +532,7 @@
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "bridgeAddress",
         "type": "bytes32"
       }
     ],
@@ -559,7 +556,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "tokenId",
         "type": "bytes32"
       }
     ],
@@ -578,7 +575,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "messageHash",
         "type": "bytes32"
       }
     ],
@@ -586,21 +583,8 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "isProcessed",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "rebalancer",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -653,12 +637,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "chainId_",
+        "name": "_chainId",
         "type": "uint256"
       },
       {
         "internalType": "bytes32",
-        "name": "bridgeAddress_",
+        "name": "bridgeAddress",
         "type": "bytes32"
       }
     ],
@@ -671,12 +655,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "chainId_",
+        "name": "_chainId",
         "type": "uint256"
       },
       {
         "internalType": "bytes32",
-        "name": "tokenAddress_",
+        "name": "tokenAddress",
         "type": "bytes32"
       }
     ],
@@ -696,7 +680,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "messageHash",
         "type": "bytes32"
       }
     ],
@@ -704,7 +688,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "isSent",
         "type": "uint256"
       }
     ],
@@ -727,21 +711,8 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "_canDeposit",
-        "type": "bool"
-      }
-    ],
-    "name": "setCanSwap",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IGasOracle",
-        "name": "gasOracle_",
+        "name": "_gasOracle",
         "type": "address"
       }
     ],
@@ -754,12 +725,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "chainId_",
+        "name": "chainId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "gasUsage_",
+        "name": "gasAmount",
         "type": "uint256"
       }
     ],
@@ -784,12 +755,39 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_stopAuthority",
+        "type": "address"
+      }
+    ],
+    "name": "setStopAuthority",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract WormholeMessenger",
         "name": "_wormholeMessenger",
         "type": "address"
       }
     ],
     "name": "setWormholeMessenger",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "startSwap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stopSwap",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -891,7 +889,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract ERC20",
+        "internalType": "contract IERC20",
         "name": "token",
         "type": "address"
       }
@@ -912,19 +910,6 @@
     "name": "withdrawGasTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "wormholeMessenger",
-    "outputs": [
-      {
-        "internalType": "contract WormholeMessenger",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

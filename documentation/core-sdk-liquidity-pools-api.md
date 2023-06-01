@@ -22,9 +22,9 @@ Get User Balance info
 
 ```js
 const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
-  accountAddress,
-  tokenInfo,
-  web3
+        accountAddress,
+        token,
+        web3
 );
 ```
 
@@ -38,15 +38,15 @@ const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
 
 ```js
 const userBalanceInfo = await sdk.getLiquidityBalanceInfo(
-  accountAddress,
-  tokenInfo
+        accountAddress,
+        token
 );
 ```
 
 _Params_:
 
 * accountAddress:
-* token: TokenInfo
+* token: Token
 * provider: Provider
 
 _Returns_:
@@ -71,12 +71,12 @@ _Returns_:
 
 ### Get Pool info
 
-_Method_: getPoolInfo
+_Method_: getPool
 
 Get Pool info by token info
 
 ```js
-  const poolInfo = await sdk.getPoolInfo(tokenInfo, web3);
+  const poolInfo = await sdk.getPool(token, web3);
 
 ```
 
@@ -89,17 +89,17 @@ Get Pool info by token info
   do not pass provider:
 
 ```js
-  const poolInfo = await sdk.getPoolInfo(tokenInfo);
+  const poolInfo = await sdk.getPool(token);
 ```
 
 _Params_:
 
-* token: TokenInfo
+* token: Token
 * provider: Provider
 
 _Returns_:
 
-* poolInfo: PoolInfo
+* poolInfo: Pool
 
 ### Calculate LP amount will be deposited
 
@@ -109,9 +109,9 @@ Calculates the amount of LP tokens that will be deposited
 
 ```js
 const estimatedAmount = await sdk.getLPAmountOnDeposit(
-  amount,
-  tokenInfo,
-  web3
+        amount,
+        token,
+        web3
 );
 ```
 
@@ -125,15 +125,15 @@ const estimatedAmount = await sdk.getLPAmountOnDeposit(
 
 ```js
 const estimatedAmount = await sdk.getLPAmountOnDeposit(
-  amount,
-  tokenInfo
+        amount,
+        token
 );
 ```
 
 _Params_:
 
 * amount: - The float amount of tokens that will be sent
-* token: TokenInfo
+* token: Token
 * provider: Provider
 
 _Returns_:
@@ -148,10 +148,10 @@ Calculates the amount of tokens will be withdrawn
 
 ```js
 const estimatedAmount = await sdk.getAmountToBeWithdrawn(
-  amount,
-  accountAddress,
-  tokenInfo,
-  web3
+        amount,
+        accountAddress,
+        token,
+        web3
 );
 ```
 
@@ -165,9 +165,9 @@ const estimatedAmount = await sdk.getAmountToBeWithdrawn(
 
 ```js
 const estimatedAmount = await sdk.getAmountToBeWithdrawn(
-  amount,
-  accountAddress,
-  tokenInfo
+        amount,
+        accountAddress,
+        token
 );
 ```
 
@@ -175,7 +175,7 @@ _Params_:
 
 * amount: - The float amount of tokens that will be requested
 * accountAddress: - Account address
-* token: TokenInfo
+* token: Token
 * provider: Provider
 
 _Returns_:
@@ -224,7 +224,7 @@ LiquidityPoolsParamsWithAmount:
   /**
    * {@link TokenInfoWithChainDetails |The token info object} of operation token.
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
   /**
    * The float amount of tokens.
    */
@@ -276,7 +276,7 @@ LiquidityPoolsParamsWithAmount:
   /**
    * {@link TokenInfoWithChainDetails |The token info object} of operation token.
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
   /**
    * The float amount of tokens.
    */
@@ -328,7 +328,7 @@ LiquidityPoolsParams:
   /**
    * {@link TokenInfoWithChainDetails |The token info object} of operation token.
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
 }
 ```
 

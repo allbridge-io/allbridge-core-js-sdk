@@ -1,19 +1,16 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../tokens-info";
+import { Pool, TokenWithChainDetails } from "../../tokens-info";
 
 export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
   return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
 }
 
-export function mockPoolInfoEndpoint(
-  scope: nock.Scope,
-  pools: { token: TokenInfoWithChainDetails; poolInfo: PoolInfo }[]
-) {
+export function mockPoolInfoEndpoint(scope: nock.Scope, pools: { token: TokenWithChainDetails; pool: Pool }[]) {
   let result = {};
   for (const pool of pools) {
     const poolResponse = {
       [pool.token.chainSymbol]: {
-        [pool.token.poolAddress]: pool.poolInfo,
+        [pool.token.poolAddress]: pool.pool,
       },
     };
     result = {

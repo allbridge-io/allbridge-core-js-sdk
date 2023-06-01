@@ -1,17 +1,17 @@
 import axios, { Axios } from "axios";
 import { Big } from "big.js";
+import package_json from "../../../package.json";
 import { ChainSymbol } from "../../chains";
-import { sleep } from "../../services/bridge/utils";
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenInfoWithChainDetails } from "../../tokens-info";
-import { VERSION } from "../../version";
+import { sleep } from "../../services/utils";
+import { ChainDetailsMap, PoolMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import {
   mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolInfoMap,
-  mapPoolInfoResponseToPoolInfoMap,
+  mapChainDetailsResponseToPoolMap,
+  mapPoolResponseToPoolMap,
 } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
-  PoolInfoResponse,
+  PoolResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -25,7 +25,7 @@ export interface AllbridgeCoreClientParams {
 
 export interface AllbridgeCoreClient {
   getChainDetailsMap(): Promise<ChainDetailsMap>;
-  tokens(): Promise<TokenInfoWithChainDetails[]>;
+  tokens(): Promise<TokenWithChainDetails[]>;
 
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
 
@@ -54,7 +54,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
       headers: {
         Accept: "application/json",
         ...params.coreApiHeaders,
-        "User-Agent": "AllbridgeCoreSDK/" + VERSION,
+        "User-Agent": "AllbridgeCoreSDK/" + package_json.version,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;
@@ -65,19 +65,19 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     return mapChainDetailsResponseToChainDetailsMap(data);
   }
 
-  async tokens(): Promise<TokenInfoWithChainDetails[]> {
+  async tokens(): Promise<TokenWithChainDetails[]> {
     const map = await this.getChainDetailsMap();
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
   }
 
-  async getChainDetailsMapAndPoolInfoMap(): Promise<{
+  async getChainDetailsMapAndPoolMap(): Promise<{
     chainDetailsMap: ChainDetailsMap;
-    poolInfoMap: PoolInfoMap;
+    poolMap: PoolMap;
   }> {
     const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
     return {
       chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
-      poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
+      poolMap: mapChainDetailsResponseToPoolMap(data),
     };
   }
 
@@ -150,9 +150,9 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     };
   }
 
-  async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
+  async getPoolMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolMap> {
     const poolKeys = pools instanceof Array ? pools : [pools];
-    const { data } = await this.api.post<PoolInfoResponse>(
+    const { data } = await this.api.post<PoolResponse>(
       "/pool-info",
       { pools: poolKeys },
       {
@@ -161,6 +161,6 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
         },
       }
     );
-    return mapPoolInfoResponseToPoolInfoMap(data);
+    return mapPoolResponseToPoolMap(data);
   }
 }
