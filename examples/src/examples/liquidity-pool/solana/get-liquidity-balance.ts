@@ -11,7 +11,7 @@ const main = async () => {
   const sdk = new AllbridgeCoreSdk();
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
   const userBalanceInfo = await sdk.pool.getUserBalanceInfo(accountAddress, tokenInfo);
-  const poolInfo = await sdk.pool.getPoolInfo(tokenInfo);
+  const poolInfo = await sdk.pool.getPool(tokenInfo);
 
   console.log("Solana User balance: ", userBalanceInfo.userLiquidity);
   console.log("Solana User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));

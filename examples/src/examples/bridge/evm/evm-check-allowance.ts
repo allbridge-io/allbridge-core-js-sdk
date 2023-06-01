@@ -41,7 +41,7 @@ const main = async () => {
   if (
     // check if tokens already approved
     await sdk.bridge.checkAllowance(web3, {
-      tokenInfo: sourceTokenInfo,
+      token: sourceTokenInfo,
       owner: fromAddress,
       gasFeePaymentMethod: gasFeePaymentMethod,
       amount: totalAmountFloat,
