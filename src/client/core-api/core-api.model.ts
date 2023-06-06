@@ -1,5 +1,5 @@
 import { ChainSymbol } from "../../chains";
-import { Pool } from "../../tokens-info";
+import { PoolInfo } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
 
@@ -17,13 +17,13 @@ export interface TokenDTO {
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
-  pool: PoolDTO;
+  poolInfo: PoolInfoDTO;
   feeShare: string;
   apr: number;
   lpRate: number;
 }
 
-export interface PoolDTO {
+export interface PoolInfoDTO {
   aValue: string;
   dValue: string;
   tokenBalance: string;
@@ -109,8 +109,8 @@ export interface BridgeTransaction {
   confirmationsNeeded: number;
 }
 
-export type PoolResponse = {
+export type PoolInfoResponse = {
   [chainSymbol in ChainSymbol]?: {
-    string: Pool;
+    string: PoolInfo;
   };
 };

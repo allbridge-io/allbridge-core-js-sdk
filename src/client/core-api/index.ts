@@ -2,16 +2,16 @@ import axios, { Axios } from "axios";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { sleep } from "../../services/utils";
-import { ChainDetailsMap, PoolMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
+import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolMap,
-  mapPoolResponseToPoolMap,
+  mapChainDetailsResponseToPoolInfoMap,
+  mapPoolInfoResponseToPoolInfoMap,
 } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
-  PoolResponse,
+  PoolInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -70,14 +70,14 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
   }
 
-  async getChainDetailsMapAndPoolMap(): Promise<{
+  async getChainDetailsMapAndPoolInfoMap(): Promise<{
     chainDetailsMap: ChainDetailsMap;
-    poolMap: PoolMap;
+    poolInfoMap: PoolInfoMap;
   }> {
     const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
     return {
       chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
-      poolMap: mapChainDetailsResponseToPoolMap(data),
+      poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
     };
   }
 
@@ -150,9 +150,9 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     };
   }
 
-  async getPoolMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolMap> {
+  async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     const poolKeys = pools instanceof Array ? pools : [pools];
-    const { data } = await this.api.post<PoolResponse>(
+    const { data } = await this.api.post<PoolInfoResponse>(
       "/pool-info",
       { pools: poolKeys },
       {
@@ -161,6 +161,6 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
         },
       }
     );
-    return mapPoolResponseToPoolMap(data);
+    return mapPoolInfoResponseToPoolInfoMap(data);
   }
 }

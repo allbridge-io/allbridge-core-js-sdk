@@ -20,7 +20,7 @@ export class TokenService {
   constructor(public api: AllbridgeCoreClient, public solParams: SolanaTokenParams) {}
 
   /**
-   * Get amount of tokens approved for pool
+   * Get amount of tokens approved for poolInfo
    * @param provider
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns the amount of approved tokens

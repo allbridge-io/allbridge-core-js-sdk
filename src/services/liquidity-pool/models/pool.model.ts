@@ -1,6 +1,6 @@
 import { Big } from "big.js";
 import { FeePaymentMethod } from "../../../models";
-import { Pool, TokenWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { convertIntAmountToFloat, getEarned } from "../../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../../utils/calculation/constants";
 
@@ -75,8 +75,8 @@ export class UserBalanceInfo implements UserBalanceInfoDTO {
     return convertIntAmountToFloat(this.lpAmount, SYSTEM_PRECISION).toFixed();
   }
 
-  earned(pool: Pool, decimals?: number): string {
-    const earned = getEarned(this.lpAmount, this.rewardDebt, pool.accRewardPerShareP, pool.p);
+  earned(poolInfo: PoolInfo, decimals?: number): string {
+    const earned = getEarned(this.lpAmount, this.rewardDebt, poolInfo.accRewardPerShareP, poolInfo.p);
     if (decimals) {
       return convertIntAmountToFloat(earned, decimals).toString();
     }

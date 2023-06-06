@@ -71,12 +71,12 @@ _Returns_:
 
 ### Get Pool info
 
-_Method_: getPool
+_Method_: getPoolInfo
 
 Get Pool info by token info
 
 ```ts
-  const poolInfo = await sdk.getPool(token, web3);
+  const poolInfo = await sdk.getPoolInfo(token, web3);
 
 ```
 
@@ -89,7 +89,7 @@ Get Pool info by token info
   do not pass provider:
 
 ```ts
-  const poolInfo = await sdk.getPool(token);
+  const poolInfo = await sdk.getPoolInfo(token);
 ```
 
 _Params_:
@@ -99,7 +99,7 @@ _Params_:
 
 _Returns_:
 
-* poolInfo: Pool
+* poolInfo: PoolInfo
 
 ### Calculate LP amount will be deposited
 

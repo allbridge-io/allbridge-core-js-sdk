@@ -23,7 +23,7 @@ const main = async () => {
 
   console.log("Tron User balance: ", userBalanceInfo.userLiquidity);
   console.log("Tron User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
-  console.log("Tron Pool APR: ", sdk.aprInPercents(tokenInfo.apr));
+  console.log("Tron PoolInfo APR: ", sdk.aprInPercents(tokenInfo.apr));
 };
 
 main()

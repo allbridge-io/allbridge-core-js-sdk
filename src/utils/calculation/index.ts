@@ -1,7 +1,7 @@
 import { Big, BigSource } from "big.js";
 import BN from "bn.js";
 import { AllbridgeCachingCoreClient } from "../../client/core-api/caching-core-client";
-import { Pool, Token, TokenWithChainDetails } from "../../tokens-info";
+import { PoolInfo, Token, TokenWithChainDetails } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
 export function getFeePercent(input: BigSource, output: BigSource): number {
@@ -33,8 +33,8 @@ export function convertIntAmountToFloat(amountInt: BigSource, decimals: number):
   return Big(amountInt).div(toPowBase10(decimals));
 }
 
-export async function getPoolByToken(api: AllbridgeCachingCoreClient, sourceChainToken: TokenWithChainDetails) {
-  return await api.getPoolByKey({
+export async function getPoolInfoByToken(api: AllbridgeCachingCoreClient, sourceChainToken: TokenWithChainDetails) {
+  return await api.getPoolInfoByKey({
     chainSymbol: sourceChainToken.chainSymbol,
     poolAddress: sourceChainToken.poolAddress,
   });
@@ -49,19 +49,19 @@ export interface SwapToVUsdCalcResult {
 export function swapToVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  pool: Omit<Pool, "p">
+  poolInfo: Omit<PoolInfo, "p">
 ): SwapToVUsdCalcResult {
   const amountValue = Big(amount);
   const fee = amountValue.times(feeShare);
   const amountWithoutFee = amountValue.minus(fee);
   return {
     bridgeFeeInTokenPrecision: fee.round().toFixed(),
-    amountIncludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountWithoutFee, decimals), pool),
-    amountExcludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountValue, decimals), pool),
+    amountIncludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountWithoutFee, decimals), poolInfo),
+    amountExcludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountValue, decimals), poolInfo),
   };
 }
 
-function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<Pool, "p">): string {
+function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "p">): string {
   const tokenBalance = Big(poolInfo.tokenBalance).plus(amountInSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
   return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round().toFixed();
@@ -76,12 +76,12 @@ export interface SwapFromVUsdCalcResult {
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  pool: Pool
+  poolInfo: PoolInfo
 ): SwapFromVUsdCalcResult {
   const amountValue = Big(amount);
-  const vUsdBalance = amountValue.plus(pool.vUsdBalance);
-  const newAmount = getY(vUsdBalance, pool.aValue, pool.dValue);
-  const result = fromSystemPrecision(Big(pool.tokenBalance).minus(newAmount), decimals);
+  const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
+  const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
+  const result = fromSystemPrecision(Big(poolInfo.tokenBalance).minus(newAmount), decimals);
   const fee = Big(result).times(feeShare);
   const resultWithoutFee = Big(result).minus(fee).round();
   return {
@@ -94,35 +94,38 @@ export function swapFromVUsd(
 export function swapToVUsdReverse(
   amountInTokenPrecision: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  pool: Pool
+  poolInfo: PoolInfo
 ): SwapToVUsdCalcResult {
   const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
   const fee = Big(amountInTokenPrecision).times(reversedFeeShare);
   const amountWithFee = Big(amountInTokenPrecision).plus(fee);
   return {
     bridgeFeeInTokenPrecision: fee.round().toFixed(),
-    amountIncludingCommissionInSystemPrecision: calcSwapToVUsdReverse(toSystemPrecision(amountWithFee, decimals), pool),
+    amountIncludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
+      toSystemPrecision(amountWithFee, decimals),
+      poolInfo
+    ),
     amountExcludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
       toSystemPrecision(amountInTokenPrecision, decimals),
-      pool
+      poolInfo
     ),
   };
 }
 
-function calcSwapToVUsdReverse(amountInSystemPrecision: Big, pool: Pool): string {
-  const tokenBalance = Big(pool.tokenBalance).minus(amountInSystemPrecision);
-  const vUsdNewAmount = getY(tokenBalance.toFixed(), pool.aValue, pool.dValue);
-  return Big(vUsdNewAmount).minus(pool.vUsdBalance).round().toFixed();
+function calcSwapToVUsdReverse(amountInSystemPrecision: Big, poolInfo: PoolInfo): string {
+  const tokenBalance = Big(poolInfo.tokenBalance).minus(amountInSystemPrecision);
+  const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
+  return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round().toFixed();
 }
 
 export function swapFromVUsdReverse(
   amountInSystemPrecision: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  pool: Pool
+  poolInfo: PoolInfo
 ): SwapFromVUsdCalcResult {
-  const vUsdNewAmount = Big(pool.vUsdBalance).minus(amountInSystemPrecision);
-  const tokenBalance = getY(vUsdNewAmount.toFixed(), pool.aValue, pool.dValue);
-  const inSystemPrecision = Big(tokenBalance).minus(pool.tokenBalance);
+  const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amountInSystemPrecision);
+  const tokenBalance = getY(vUsdNewAmount.toFixed(), poolInfo.aValue, poolInfo.dValue);
+  const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
   const amountWithoutFee = fromSystemPrecision(inSystemPrecision.toFixed(), decimals);
   const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
   const fee = Big(amountWithoutFee).times(reversedFeeShare);

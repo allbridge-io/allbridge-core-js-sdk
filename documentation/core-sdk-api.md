@@ -195,7 +195,7 @@ TokenWithChainDetails:
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
-  poolInfo: Pool;
+  poolInfo: PoolInfo;
   feeShare: string;
   apr: number;
   lpRate: number;
@@ -555,7 +555,7 @@ const transferTimeMs = sdk.getAverageTransferTime(
 ```
 
 ## Refresh pool information
-_Method_: refreshPools
+_Method_: refreshPoolInfo
 
 Forces refresh of cached information about the state of liquidity pools.
 Outdated cache leads to calculated amounts being less accurate.
@@ -565,7 +565,7 @@ _Example_:
 
 ```ts
 // update the state of liquidity pools
-await sdk.refreshPools();
+await sdk.refreshPoolInfo();
 // calculate amount to be received using updated information
 const amountToBeReceived = await sdk.getAmountToBeReceived(
   amount,

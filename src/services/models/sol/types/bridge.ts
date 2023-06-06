@@ -1815,7 +1815,7 @@ export interface Bridge {
     {
       code: 6004;
       name: "PoolOverflow";
-      msg: "Pool overflow";
+      msg: "PoolInfo overflow";
     },
     {
       code: 6005;
@@ -3677,7 +3677,7 @@ export const IDL: Bridge = {
     {
       code: 6004,
       name: "PoolOverflow",
-      msg: "Pool overflow",
+      msg: "PoolInfo overflow",
     },
     {
       code: 6005,

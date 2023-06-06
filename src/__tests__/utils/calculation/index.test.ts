@@ -92,7 +92,7 @@ describe("Calculation", () => {
       lpRate: 0,
     };
 
-    describe("Given token with a balanced pool", () => {
+    describe("Given token with a balanced poolInfo", () => {
       const token: Token = {
         ...basicTokenInfo,
         decimals: 18,
@@ -125,7 +125,7 @@ describe("Calculation", () => {
       });
     });
 
-    describe("Given token with more vUsd in the pool", () => {
+    describe("Given token with more vUsd in the poolInfo", () => {
       const token: Token = {
         ...basicTokenInfo,
         decimals: 18,
@@ -150,7 +150,7 @@ describe("Calculation", () => {
       });
     });
 
-    describe("Given token with more tokens in the pool", () => {
+    describe("Given token with more tokens in the poolInfo", () => {
       const token: Token = {
         ...basicTokenInfo,
         decimals: 18,

@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { Pool, TokenWithChainDetails } from "../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
@@ -25,7 +25,7 @@ export class LiquidityPoolService {
   }
 
   /**
-   * Get amount of tokens approved for pool
+   * Get amount of tokens approved for poolInfo
    * @param provider
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns the amount of approved tokens
@@ -68,7 +68,7 @@ export class LiquidityPoolService {
    * @returns amount
    */
   async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
-    const pool = await this.getPool(token, provider);
+    const pool = await this.getPoolInfo(token, provider);
     const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
     const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
     return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
@@ -88,7 +88,7 @@ export class LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
-    const pool = await this.getPool(token, provider);
+    const pool = await this.getPoolInfo(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);
     const userBalanceInfo = await this.getUserBalanceInfo(accountAddress, token, provider);
@@ -98,7 +98,7 @@ export class LiquidityPoolService {
   }
 
   /**
-   * Get User Balance Info on Liquidity pool
+   * Get User Balance Info on Liquidity poolInfo
    * @param accountAddress
    * @param token
    * @param provider
@@ -113,13 +113,13 @@ export class LiquidityPoolService {
   }
 
   /**
-   * Gets information about the pool by token
+   * Gets information about the poolInfo by token
    * @param token
    * @param provider
    * @returns pool
    */
-  async getPool(token: TokenWithChainDetails, provider?: Provider): Promise<Required<Pool>> {
-    const pool = await getChainPoolService(this.api, this.solParams, provider).getPool(token);
+  async getPoolInfo(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
+    const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfo(token);
     const imbalance = convertIntAmountToFloat(
       Big(pool.tokenBalance).minus(pool.vUsdBalance).toFixed(),
       SYSTEM_PRECISION

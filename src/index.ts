@@ -21,7 +21,7 @@ import {
   convertIntAmountToFloat,
   fromSystemPrecision,
   getFeePercent,
-  getPoolByToken,
+  getPoolInfoByToken,
   swapFromVUsd,
   swapFromVUsdReverse,
   swapToVUsd,
@@ -150,7 +150,7 @@ export class AllbridgeCoreSdk {
     const vUsdInSystemPrecision = swapToVUsd(
       amountInt,
       sourceChainToken,
-      await getPoolByToken(this.api, sourceChainToken)
+      await getPoolInfoByToken(this.api, sourceChainToken)
     ).amountIncludingCommissionInSystemPrecision;
     const vUsdInSourcePrecision = fromSystemPrecision(vUsdInSystemPrecision, sourceChainToken.decimals);
     return getFeePercent(amountInt, vUsdInSourcePrecision);
@@ -177,12 +177,12 @@ export class AllbridgeCoreSdk {
     const vUsdInSystemPrecision = swapToVUsd(
       amountInt,
       sourceChainToken,
-      await getPoolByToken(this.api, sourceChainToken)
+      await getPoolInfoByToken(this.api, sourceChainToken)
     ).amountIncludingCommissionInSystemPrecision;
     const usd = swapFromVUsd(
       vUsdInSystemPrecision,
       destinationChainToken,
-      await getPoolByToken(this.api, destinationChainToken)
+      await getPoolInfoByToken(this.api, destinationChainToken)
     ).amountIncludingCommissionInTokenPrecision;
     const vUsdInDestinationPrecision = fromSystemPrecision(vUsdInSystemPrecision, destinationChainToken.decimals);
     return getFeePercent(vUsdInDestinationPrecision, usd);
@@ -250,12 +250,12 @@ export class AllbridgeCoreSdk {
     const vUsd = swapToVUsd(
       amountToSend,
       sourceChainToken,
-      await getPoolByToken(this.api, sourceChainToken)
+      await getPoolInfoByToken(this.api, sourceChainToken)
     ).amountIncludingCommissionInSystemPrecision;
     const resultInt = swapFromVUsd(
       vUsd,
       destinationChainToken,
-      await getPoolByToken(this.api, destinationChainToken)
+      await getPoolInfoByToken(this.api, destinationChainToken)
     ).amountIncludingCommissionInTokenPrecision;
     if (Big(resultInt).lte(0)) {
       throw new InsufficientPoolLiquidity();
@@ -279,12 +279,12 @@ export class AllbridgeCoreSdk {
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
       destinationChainToken,
-      await getPoolByToken(this.api, destinationChainToken)
+      await getPoolInfoByToken(this.api, destinationChainToken)
     ).amountIncludingCommissionInTokenPrecision;
     const resultInt = swapToVUsdReverse(
       vUsd,
       sourceChainToken,
-      await getPoolByToken(this.api, sourceChainToken)
+      await getPoolInfoByToken(this.api, sourceChainToken)
     ).amountIncludingCommissionInSystemPrecision;
     if (Big(resultInt).lte(0)) {
       throw new InsufficientPoolLiquidity();
@@ -336,8 +336,8 @@ export class AllbridgeCoreSdk {
    * Outdated cache leads to calculated amounts being less accurate.
    * The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
    */
-  async refreshPools(): Promise<void> {
-    return this.api.refreshPools();
+  async refreshPoolInfo(): Promise<void> {
+    return this.api.refreshPoolInfo();
   }
 
   /**

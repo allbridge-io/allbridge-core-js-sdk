@@ -2,7 +2,7 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { Pool, TokenWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
@@ -22,7 +22,7 @@ export class TronPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPool(token: TokenWithChainDetails): Promise<Pool> {
+  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = await this.getContract(token.poolAddress);
 
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([

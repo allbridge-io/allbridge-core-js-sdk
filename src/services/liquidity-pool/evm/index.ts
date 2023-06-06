@@ -2,7 +2,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { Pool, TokenWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
@@ -24,7 +24,7 @@ export class EvmPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPool(token: TokenWithChainDetails): Promise<Pool> {
+  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getPoolContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),

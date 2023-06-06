@@ -7,7 +7,7 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
-import { ChainDetailsMap, PoolMap, PoolKeyObject } from "../../../tokens-info";
+import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
 import poolMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
@@ -83,7 +83,7 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 
-  describe("given /pool-info endpoint", () => {
+  describe("given /poolInfo-info endpoint", () => {
     let scope: nock.Scope;
 
     const poolKey: PoolKeyObject = {
@@ -97,10 +97,10 @@ describe("AllbridgeCoreClient", () => {
         .reply(201, poolResponse);
     });
 
-    it("☀️ getPoolMap() returns PoolMap", async () => {
-      const expectedPoolInfoMap = poolMap as unknown as PoolMap;
+    it("☀️ getPoolInfoMap() returns PoolInfoMap", async () => {
+      const expectedPoolInfoMap = poolMap as unknown as PoolInfoMap;
 
-      const actual = await api.getPoolMap([poolKey]);
+      const actual = await api.getPoolInfoMap([poolKey]);
       expect(actual).toEqual(expectedPoolInfoMap);
 
       scope.done();

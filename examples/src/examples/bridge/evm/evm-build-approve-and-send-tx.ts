@@ -18,14 +18,14 @@ const main = async () => {
   web3.eth.accounts.wallet.add(account);
 
   // const sdk = new AllbridgeCoreSdk();
-  const sdk = new AllbridgeCoreSdk(testnet);
+  const sdk = new AllbridgeCoreSdk();
 
   const chains = await sdk.chainDetailsMap();
 
-  const sourceChain = chains[ChainSymbol.ETH];
+  const sourceChain = chains[ChainSymbol.GRL];
   const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
 
-  const destinationChain = chains[ChainSymbol.TRX];
+  const destinationChain = chains[ChainSymbol.MUM];
   const destinationTokenInfo = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
 
   const amount = "1.01";

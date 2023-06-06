@@ -1,4 +1,4 @@
-import { Pool } from "../../tokens-info";
+import { PoolInfo } from "../../tokens-info";
 import {
   swapFromVUsd,
   SwapFromVUsdCalcResult,
@@ -11,7 +11,7 @@ import {
 export interface SwapPoolInfo {
   decimals: number;
   feeShare: string;
-  pool: Pool;
+  poolInfo: PoolInfo;
 }
 
 export interface SwapAndBridgeCalculationData {
@@ -27,12 +27,12 @@ export function swapAndBridgeFeeCalculation(
   const swapToVUsdCalcResult = swapToVUsd(
     amountInTokenPrecision,
     { decimals: sourcePoolInfo.decimals, feeShare: sourcePoolInfo.feeShare },
-    sourcePoolInfo.pool
+    sourcePoolInfo.poolInfo
   );
   const swapFromVUsdCalcResult = swapFromVUsd(
     swapToVUsdCalcResult.amountIncludingCommissionInSystemPrecision,
     { decimals: destinationPoolInfo.decimals, feeShare: destinationPoolInfo.feeShare },
-    destinationPoolInfo.pool
+    destinationPoolInfo.poolInfo
   );
   return { swapToVUsdCalcResult, swapFromVUsdCalcResult };
 }
@@ -45,12 +45,12 @@ export function swapAndBridgeFeeCalculationReverse(
   const swapToVUsdCalcResult = swapToVUsdReverse(
     amountInTokenPrecision,
     { decimals: destinationPoolInfo.decimals, feeShare: destinationPoolInfo.feeShare },
-    destinationPoolInfo.pool
+    destinationPoolInfo.poolInfo
   );
   const swapFromVUsdCalcResult = swapFromVUsdReverse(
     swapToVUsdCalcResult.amountIncludingCommissionInSystemPrecision,
     { decimals: sourcePoolInfo.decimals, feeShare: sourcePoolInfo.feeShare },
-    sourcePoolInfo.pool
+    sourcePoolInfo.poolInfo
   );
   return {
     swapToVUsdCalcResult,

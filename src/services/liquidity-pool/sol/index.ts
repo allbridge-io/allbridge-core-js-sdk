@@ -2,7 +2,7 @@ import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { Pool, TokenWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getTokenAccountData } from "../../utils/sol";
@@ -65,7 +65,7 @@ export class SolanaPoolService extends ChainPoolService {
     }
   }
 
-  async getPool(token: TokenWithChainDetails): Promise<Pool> {
+  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
     const provider = this.buildAnchorProvider(token.bridgeAddress);
     const pool = await this.getBridge(token.bridgeAddress, provider).account.pool.fetch(token.poolAddress);
     return {

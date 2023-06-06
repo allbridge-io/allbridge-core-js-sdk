@@ -18,7 +18,7 @@ import {
   GetAllowanceParams,
   GetTokenBalanceParams,
   Messenger,
-  Pool,
+  PoolInfo,
   SendParams,
   TokenWithChainDetails,
 } from "../index";
@@ -68,7 +68,7 @@ describe("SDK", () => {
       feeShare: "0",
     };
 
-    const pool: Pool = {
+    const poolInfo: PoolInfo = {
       aValue: "20",
       dValue: "200001",
       tokenBalance: "100000",
@@ -82,8 +82,8 @@ describe("SDK", () => {
 
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
-        { token: sourceChainToken, pool },
-        { token: destinationChainToken, pool },
+        { token: sourceChainToken, poolInfo: poolInfo },
+        { token: destinationChainToken, poolInfo: poolInfo },
       ]);
     });
     afterAll(() => {
@@ -103,7 +103,7 @@ describe("SDK", () => {
     });
   });
 
-  describe("Given tokens with imbalanced pool", () => {
+  describe("Given tokens with imbalanced poolInfo", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
@@ -111,7 +111,7 @@ describe("SDK", () => {
       decimals: 6,
       feeShare: "0",
     };
-    const sourcePoolInfo: Pool = {
+    const sourcePoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "204253",
       tokenBalance: "17684",
@@ -126,7 +126,7 @@ describe("SDK", () => {
       decimals: 18,
       feeShare: "0",
     };
-    const destinationPoolInfo: Pool = {
+    const destinationPoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "206649",
       tokenBalance: "202486",
@@ -137,8 +137,8 @@ describe("SDK", () => {
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
-        { token: sourceChainToken, pool: sourcePoolInfo },
-        { token: destinationChainToken, pool: destinationPoolInfo },
+        { token: sourceChainToken, poolInfo: sourcePoolInfo },
+        { token: destinationChainToken, poolInfo: destinationPoolInfo },
       ]);
     });
     afterAll(() => {
@@ -169,7 +169,7 @@ describe("SDK", () => {
       decimals: 18,
       feeShare: "0.003",
     };
-    const sourcePoolInfo: Pool = {
+    const sourcePoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "200000001",
       tokenBalance: "100166280",
@@ -184,7 +184,7 @@ describe("SDK", () => {
       decimals: 18,
       feeShare: "0.003",
     };
-    const destinationPoolInfo: Pool = {
+    const destinationPoolInfo: PoolInfo = {
       aValue: "20",
       dValue: "200000001",
       tokenBalance: "99738849",
@@ -195,8 +195,8 @@ describe("SDK", () => {
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
-        { token: sourceChainToken, pool: sourcePoolInfo },
-        { token: destinationChainToken, pool: destinationPoolInfo },
+        { token: sourceChainToken, poolInfo: sourcePoolInfo },
+        { token: destinationChainToken, poolInfo: destinationPoolInfo },
       ]);
     });
     afterAll(() => {
@@ -372,7 +372,7 @@ describe("SDK", () => {
           scope.done();
         });
 
-        test("☀️ getAllowance should return float. amount of approved tokens for Pool contract when called with GetAllowanceParams", async () => {
+        test("☀️ getAllowance should return float. amount of approved tokens for PoolInfo contract when called with GetAllowanceParams", async () => {
           const params: GetAllowanceParams = {
             token: {
               ...basicTokenInfoWithChainDetails,

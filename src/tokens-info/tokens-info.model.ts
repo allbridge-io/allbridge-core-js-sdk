@@ -32,7 +32,7 @@ export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name">
   chainName: string;
 }
 
-export interface Pool {
+export interface PoolInfo {
   aValue: string;
   dValue: string;
   tokenBalance: string;
@@ -59,4 +59,4 @@ export interface PoolKeyObject {
   poolAddress: string;
 }
 
-export type PoolMap = Record<string, Pool>;
+export type PoolInfoMap = Record<string, PoolInfo>;

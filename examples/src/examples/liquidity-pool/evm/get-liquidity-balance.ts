@@ -23,7 +23,7 @@ const main = async () => {
 
   console.log("Evm User balance: ", userBalanceInfo.userLiquidity);
   console.log("Evm User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
-  console.log("Evm Pool APR: ", sdk.aprInPercents(tokenInfo.apr));
+  console.log("Evm PoolInfo APR: ", sdk.aprInPercents(tokenInfo.apr));
 };
 
 main()

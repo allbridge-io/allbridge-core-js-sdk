@@ -15,7 +15,7 @@ const main = async () => {
 
   console.log("Solana User balance: ", userBalanceInfo.userLiquidity);
   console.log("Solana User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
-  console.log("Solana Pool APR: ", sdk.aprInPercents(tokenInfo.apr));
+  console.log("Solana PoolInfo APR: ", sdk.aprInPercents(tokenInfo.apr));
 };
 
 main()

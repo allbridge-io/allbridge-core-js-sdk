@@ -4,7 +4,7 @@ import {
   ChainDetailsMap,
   ChainDetailsWithTokens,
   MessengerTransferTime,
-  PoolMap,
+  PoolInfoMap,
   PoolKeyObject,
   TokenWithChainDetails,
   TransferTime,
@@ -15,7 +15,7 @@ import {
   Messenger,
   MessengerKeyDTO,
   MessengerTransferTimeDTO,
-  PoolResponse,
+  PoolInfoResponse,
   TokenDTO,
   TransferTimeDTO,
 } from "./core-api.model";
@@ -32,8 +32,8 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
   }, {});
 }
 
-export function mapChainDetailsResponseToPoolMap(response: ChainDetailsResponse): PoolMap {
-  const poolMap: PoolMap = {};
+export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
+  const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const token of chainDetailsDTO.tokens) {
@@ -41,15 +41,15 @@ export function mapChainDetailsResponseToPoolMap(response: ChainDetailsResponse)
         chainSymbol,
         poolAddress: token.poolAddress,
       });
-      poolMap[poolKey] = token.pool;
+      poolInfoMap[poolKey] = token.poolInfo;
     }
   }
-  return poolMap;
+  return poolInfoMap;
 }
 
 function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetails {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
-  const { pool: _pool, ...dtoWithoutPoolInfo } = dto;
+  const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
     ...dtoWithoutPoolInfo,
     ...chainDetailsWithoutName,
@@ -130,13 +130,13 @@ export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetails
   return result;
 }
 
-export function mapPoolResponseToPoolMap(responseBody: PoolResponse): PoolMap {
-  const poolMap: PoolMap = {};
-  for (const [chainSymbolValue, poolByAddress] of Object.entries(responseBody)) {
+export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
+  const poolInfoMap: PoolInfoMap = {};
+  for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
-    for (const [poolAddress, pool] of Object.entries(poolByAddress)) {
-      poolMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = pool;
+    for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
+      poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;
     }
   }
-  return poolMap;
+  return poolInfoMap;
 }
