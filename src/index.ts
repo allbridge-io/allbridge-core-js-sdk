@@ -14,7 +14,7 @@ import { LiquidityPoolService } from "./services/liquidity-pool";
 import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
 import { TokenService } from "./services/token";
-import { ChainDetailsMap, TokenWithChainDetails } from "./tokens-info";
+import { ChainDetailsMap, PoolInfo, TokenWithChainDetails } from "./tokens-info";
 import { getPoolInfoByToken } from "./utils";
 import {
   aprInPercents,
@@ -348,6 +348,10 @@ export class AllbridgeCoreSdk {
    */
   aprInPercents(apr: number): string {
     return aprInPercents(apr);
+  }
+
+  async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
+    return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
   }
 
   async calculateSwapToVUsd(amount: BigSource, token: TokenWithChainDetails): Promise<SwapToVUsdCalcResult> {

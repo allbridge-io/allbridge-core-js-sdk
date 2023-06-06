@@ -24,7 +24,7 @@ export class EvmPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getPoolContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),

@@ -65,7 +65,7 @@ export class SolanaPoolService extends ChainPoolService {
     }
   }
 
-  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const provider = this.buildAnchorProvider(token.bridgeAddress);
     const pool = await this.getBridge(token.bridgeAddress, provider).account.pool.fetch(token.poolAddress);
     return {

@@ -71,12 +71,12 @@ _Returns_:
 
 ### Get Pool info
 
-_Method_: getPoolInfo
+_Method_: getPoolInfoFromChain
 
 Get Pool info by token info
 
 ```ts
-  const poolInfo = await sdk.getPoolInfo(token, web3);
+  const poolInfo = await sdk.getPoolInfoFromChain(token, web3);
 
 ```
 
@@ -89,7 +89,7 @@ Get Pool info by token info
   do not pass provider:
 
 ```ts
-  const poolInfo = await sdk.getPoolInfo(token);
+  const poolInfo = await sdk.getPoolInfoFromChain(token);
 ```
 
 _Params_:

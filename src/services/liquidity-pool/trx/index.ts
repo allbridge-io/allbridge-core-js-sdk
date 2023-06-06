@@ -22,7 +22,7 @@ export class TronPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo> {
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = await this.getContract(token.poolAddress);
 
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([

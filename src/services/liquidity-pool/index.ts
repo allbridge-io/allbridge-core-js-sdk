@@ -119,7 +119,7 @@ export class LiquidityPoolService {
    * @returns pool
    */
   async getPoolInfo(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
-    const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfo(token);
+    const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfoFromChain(token);
     const imbalance = convertIntAmountToFloat(
       Big(pool.tokenBalance).minus(pool.vUsdBalance).toFixed(),
       SYSTEM_PRECISION

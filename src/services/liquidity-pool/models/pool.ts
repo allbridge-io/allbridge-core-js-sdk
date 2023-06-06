@@ -10,7 +10,7 @@ export abstract class ChainPoolService {
 
   abstract getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo>;
 
-  abstract getPoolInfo(token: TokenWithChainDetails): Promise<PoolInfo>;
+  abstract getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo>;
 
   abstract buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction>;
 
