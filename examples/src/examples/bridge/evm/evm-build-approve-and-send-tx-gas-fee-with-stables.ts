@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger, testnet } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
@@ -11,22 +11,22 @@ const main = async () => {
   // sender address
   const fromAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
   // recipient address
-  const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
+  const toAddress = getEnvVar("POL_ACCOUNT_ADDRESS");
 
   // configure web3
   const web3 = new Web3(getEnvVar("GRL_WEB3_PROVIDER_URL"));
   const account = web3.eth.accounts.privateKeyToAccount(getEnvVar("ETH_PRIVATE_KEY"));
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk(testnet);
+  const sdk = new AllbridgeCoreSdk();
 
   const chains = await sdk.chainDetailsMap();
 
-  const sourceChain = chains[ChainSymbol.GRL];
-  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const sourceChain = chains[ChainSymbol.ETH];
+  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChain = chains[ChainSymbol.SPL];
-  const destinationTokenInfo = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const destinationChain = chains[ChainSymbol.POL];
+  const destinationTokenInfo = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   const amountToSendFloat = "5";
   const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);

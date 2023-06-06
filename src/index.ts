@@ -1,4 +1,4 @@
-import { Big } from "big.js";
+import { Big, BigSource } from "big.js";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
@@ -15,23 +15,24 @@ import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
 import { TokenService } from "./services/token";
 import { ChainDetailsMap, TokenWithChainDetails } from "./tokens-info";
+import { getPoolInfoByToken } from "./utils";
 import {
   aprInPercents,
   convertFloatAmountToInt,
   convertIntAmountToFloat,
   fromSystemPrecision,
   getFeePercent,
-  getPoolInfoByToken,
   swapFromVUsd,
+  SwapFromVUsdCalcResult,
   swapFromVUsdReverse,
   swapToVUsd,
+  SwapToVUsdCalcResult,
   swapToVUsdReverse,
 } from "./utils/calculation";
 import {
   swapAndBridgeFeeCalculation,
   swapAndBridgeFeeCalculationReverse,
   SwapAndBridgeCalculationData,
-  SwapPoolInfo,
 } from "./utils/calculation/swap-and-bridge-fee-calc";
 
 export * from "./configs/mainnet";
@@ -349,18 +350,51 @@ export class AllbridgeCoreSdk {
     return aprInPercents(apr);
   }
 
-  swapAndBridgeFeeCalculation(
-    amountInTokenPrecision: string,
-    sourcePoolInfo: SwapPoolInfo,
-    destinationPoolInfo: SwapPoolInfo
-  ): SwapAndBridgeCalculationData {
-    return swapAndBridgeFeeCalculation(amountInTokenPrecision, sourcePoolInfo, destinationPoolInfo);
+  async calculateSwapToVUsd(amount: BigSource, token: TokenWithChainDetails): Promise<SwapToVUsdCalcResult> {
+    return swapToVUsd(amount, token, await getPoolInfoByToken(this.api, token));
   }
-  swapAndBridgeFeeCalculationReverse(
+
+  async calculateSwapFromVUsd(amount: BigSource, token: TokenWithChainDetails): Promise<SwapFromVUsdCalcResult> {
+    return swapFromVUsd(amount, token, await getPoolInfoByToken(this.api, token));
+  }
+
+  async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
-    sourcePoolInfo: SwapPoolInfo,
-    destinationPoolInfo: SwapPoolInfo
-  ): SwapAndBridgeCalculationData {
-    return swapAndBridgeFeeCalculationReverse(amountInTokenPrecision, sourcePoolInfo, destinationPoolInfo);
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<SwapAndBridgeCalculationData> {
+    return swapAndBridgeFeeCalculation(
+      amountInTokenPrecision,
+      {
+        decimals: sourceToken.decimals,
+        feeShare: sourceToken.feeShare,
+        poolInfo: await getPoolInfoByToken(this.api, sourceToken),
+      },
+      {
+        decimals: destToken.decimals,
+        feeShare: destToken.feeShare,
+        poolInfo: await getPoolInfoByToken(this.api, destToken),
+      }
+    );
+  }
+
+  async swapAndBridgeFeeCalculationReverse(
+    amountInTokenPrecision: string,
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<SwapAndBridgeCalculationData> {
+    return swapAndBridgeFeeCalculationReverse(
+      amountInTokenPrecision,
+      {
+        decimals: sourceToken.decimals,
+        feeShare: sourceToken.feeShare,
+        poolInfo: await getPoolInfoByToken(this.api, sourceToken),
+      },
+      {
+        decimals: destToken.decimals,
+        feeShare: destToken.feeShare,
+        poolInfo: await getPoolInfoByToken(this.api, destToken),
+      }
+    );
   }
 }

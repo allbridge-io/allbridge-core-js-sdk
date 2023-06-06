@@ -1,7 +1,6 @@
 import { Big, BigSource } from "big.js";
 import BN from "bn.js";
-import { AllbridgeCachingCoreClient } from "../../client/core-api/caching-core-client";
-import { PoolInfo, Token, TokenWithChainDetails } from "../../tokens-info";
+import { PoolInfo, Token } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
 export function getFeePercent(input: BigSource, output: BigSource): number {
@@ -31,13 +30,6 @@ export function convertFloatAmountToInt(amountFloat: BigSource, decimals: number
 
 export function convertIntAmountToFloat(amountInt: BigSource, decimals: number): Big {
   return Big(amountInt).div(toPowBase10(decimals));
-}
-
-export async function getPoolInfoByToken(api: AllbridgeCachingCoreClient, sourceChainToken: TokenWithChainDetails) {
-  return await api.getPoolInfoByKey({
-    chainSymbol: sourceChainToken.chainSymbol,
-    poolAddress: sourceChainToken.poolAddress,
-  });
 }
 
 export interface SwapToVUsdCalcResult {

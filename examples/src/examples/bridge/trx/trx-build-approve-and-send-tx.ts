@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, RawTransaction, testnet } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, RawTransaction } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -19,15 +19,15 @@ const main = async () => {
     getEnvVar("TRONWEB_PROVIDER_URL"),
     getEnvVar("TRX_PRIVATE_KEY")
   );
-  const sdk = new AllbridgeCoreSdk(testnet);
+  const sdk = new AllbridgeCoreSdk();
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.TRX];
-  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT"));
 
-  const destinationChain = chains[ChainSymbol.SPL];
-  const destinationTokenInfo = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const destinationChain = chains[ChainSymbol.ETH];
+  const destinationTokenInfo = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // authorize the bridge to transfer tokens from sender's address
   const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(tronWeb, {

@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, testnet } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -10,18 +10,17 @@ dotenv.config({ path: ".env" });
 const fromAddress = getEnvVar("SOL_ACCOUNT_ADDRESS");
 const privateKey = getEnvVar("SOL_PRIVATE_KEY");
 const toAddressEth = getEnvVar("ETH_ACCOUNT_ADDRESS");
-const toAddressTrx = getEnvVar("TRX_ACCOUNT_ADDRESS");
 
 const exampleViaWormhole = async () => {
-  const sdk = new AllbridgeCoreSdk(testnet);
+  const sdk = new AllbridgeCoreSdk();
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.SOL];
-  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChainEth = chains[ChainSymbol.MUM];
-  const destinationTokenInfoEth = ensure(destinationChainEth.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const destinationChainEth = chains[ChainSymbol.POL];
+  const destinationTokenInfoEth = ensure(destinationChainEth.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.WORMHOLE
   // @ts-ignore
@@ -43,15 +42,15 @@ const exampleViaWormhole = async () => {
 };
 
 const exampleViaAllbridge = async () => {
-  const sdk = new AllbridgeCoreSdk(testnet);
+  const sdk = new AllbridgeCoreSdk();
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.SOL];
-  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChainTrx = chains[ChainSymbol.MUM];
-  const destinationTokenInfoTrx = ensure(destinationChainTrx.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
+  const destinationChainTrx = chains[ChainSymbol.POL];
+  const destinationTokenInfoTrx = ensure(destinationChainTrx.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.ALLBRIDGE
   // @ts-ignore

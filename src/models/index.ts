@@ -11,10 +11,14 @@ export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
-export { TokenWithChainDetails, TransferTime, MessengerTransferTime, PoolInfo } from "../tokens-info/tokens-info.model";
+export {
+  TokenWithChainDetails,
+  TransferTime,
+  TxCostAmount,
+  MessengerTransferTime,
+} from "../tokens-info/tokens-info.model";
 export {
   UserBalanceInfo,
-  UserBalanceInfoDTO,
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
 } from "../services/liquidity-pool/models/pool.model";
