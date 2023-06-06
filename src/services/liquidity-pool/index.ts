@@ -113,10 +113,10 @@ export class LiquidityPoolService {
   }
 
   /**
-   * Gets information about the poolInfo by token
+   * Gets information about the poolInfo from chain
    * @param token
    * @param provider
-   * @returns pool
+   * @returns poolInfo
    */
   async getPoolInfo(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
     const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfoFromChain(token);

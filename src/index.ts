@@ -350,6 +350,11 @@ export class AllbridgeCoreSdk {
     return aprInPercents(apr);
   }
 
+  /**
+   * Gets information about the poolInfo by token
+   * @param token
+   * @returns poolInfo
+   */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
     return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
   }
