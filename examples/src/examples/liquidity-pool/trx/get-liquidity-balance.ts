@@ -19,7 +19,7 @@ const main = async () => {
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const userBalanceInfo = await sdk.pool.getUserBalanceInfo(accountAddress, tokenInfo, tronWeb);
-  const poolInfo = await sdk.pool.getPool(tokenInfo, tronWeb);
+  const poolInfo = await sdk.pool.getPoolInfo(tokenInfo, tronWeb);
 
   console.log("Tron User balance: ", userBalanceInfo.userLiquidity);
   console.log("Tron User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));

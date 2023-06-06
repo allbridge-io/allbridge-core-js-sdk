@@ -8,6 +8,7 @@ export interface ChainDetailsDTO {
   chainId: number;
   bridgeAddress: string;
   transferTime: TransferTimeDTO;
+  txCostAmount: TxCostAmountDTO;
   confirmations: number;
 }
 
@@ -41,6 +42,12 @@ export enum MessengerKeyDTO {
 export type TransferTimeDTO = {
   [chain in ChainSymbol]: MessengerTransferTimeDTO;
 };
+
+export interface TxCostAmountDTO {
+  maxAmount: string;
+  swap: string;
+  transfer: string;
+}
 
 export type MessengerTransferTimeDTO = {
   [messenger in MessengerKeyDTO]: number;

@@ -96,6 +96,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
+    txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,
   };
   return {

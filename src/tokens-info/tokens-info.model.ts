@@ -10,6 +10,7 @@ export interface ChainDetails extends BasicChainProperties {
   allbridgeChainId: number;
   bridgeAddress: string;
   transferTime: TransferTime;
+  txCostAmount: TxCostAmount;
   confirmations: number;
 }
 
@@ -57,6 +58,12 @@ export type MessengerTransferTime = {
 export interface PoolKeyObject {
   chainSymbol: ChainSymbol;
   poolAddress: string;
+}
+
+export interface TxCostAmount {
+  maxAmount: string;
+  swap: string;
+  transfer: string;
 }
 
 export type PoolInfoMap = Record<string, PoolInfo>;
