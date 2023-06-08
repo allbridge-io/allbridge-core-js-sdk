@@ -65,7 +65,7 @@ export class TokenService {
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
     const tokenBalance = await this.getChainTokenService(provider).getTokenBalance(params);
     if (params.token.decimals) {
-      return convertIntAmountToFloat(tokenBalance, params.token.decimals).toString();
+      return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
     }
     return tokenBalance;
   }

@@ -78,7 +78,7 @@ export class UserBalanceInfo implements UserBalanceInfoDTO {
   earned(poolInfo: PoolInfo, decimals?: number): string {
     const earned = getEarned(this.lpAmount, this.rewardDebt, poolInfo.accRewardPerShareP, poolInfo.p);
     if (decimals) {
-      return convertIntAmountToFloat(earned, decimals).toString();
+      return convertIntAmountToFloat(earned, decimals).toFixed();
     }
     return earned;
   }

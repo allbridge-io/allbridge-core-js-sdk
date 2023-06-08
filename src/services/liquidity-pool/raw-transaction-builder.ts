@@ -42,7 +42,7 @@ export class RawTransactionBuilder {
    * @param provider
    */
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
-    params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toString();
+    params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
     return getChainPoolService(this.api, this.solParams, provider).buildRawTransactionWithdraw(params);
   }
 

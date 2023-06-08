@@ -26,8 +26,8 @@ export function depositAmountToVUsd(
     newTokenBalance = Big(tokenBalance).plus(amountSPBig.mul(tokenBalance).div(oldBalance));
     newVUsdBalance = Big(vUsdBalance).plus(amountSPBig.mul(vUsdBalance).div(oldBalance));
   }
-  const newD = Big(getD(aValue, newTokenBalance.toString(), newVUsdBalance.toString()));
-  return newD.minus(oldD).toString();
+  const newD = Big(getD(aValue, newTokenBalance.toFixed(), newVUsdBalance.toFixed()));
+  return newD.minus(oldD).toFixed();
 }
 
 export function vUsdToWithdrawalAmount(lpAmount: string): string {
