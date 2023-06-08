@@ -172,7 +172,7 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 SDK method `bridge.rawTxBuilder.approve` can be used to create approve Transaction.
 
 ```ts
-const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(web3, approveParams);
+const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(web3, approveParams);
 ```
 
 **TIP:** To interact with the **Tron** blockchain: </br>

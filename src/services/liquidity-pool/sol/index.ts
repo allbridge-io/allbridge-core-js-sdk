@@ -3,6 +3,7 @@ import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getTokenAccountData } from "../../utils/sol";
@@ -68,14 +69,18 @@ export class SolanaPoolService extends ChainPoolService {
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const provider = this.buildAnchorProvider(token.bridgeAddress);
     const pool = await this.getBridge(token.bridgeAddress, provider).account.pool.fetch(token.poolAddress);
+    const vUsdBalance = pool.vUsdBalance.toString();
+    const tokenBalance = pool.tokenBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
     return {
       dValue: pool.d.toString(),
       aValue: pool.a.toString(),
       totalLpAmount: pool.totalLpAmount.toString(),
-      vUsdBalance: pool.vUsdBalance.toString(),
-      tokenBalance: pool.tokenBalance.toString(),
+      vUsdBalance,
+      tokenBalance,
       accRewardPerShareP: pool.accRewardPerShareP.toString(),
       p: this.P,
+      imbalance,
     };
   }
 

@@ -2,7 +2,7 @@ import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
-import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
+import { calculatePoolInfoImbalance, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -120,13 +120,8 @@ export class LiquidityPoolService {
    */
   async getPoolInfo(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
     const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfoFromChain(token);
-    const imbalance = convertIntAmountToFloat(
-      Big(pool.tokenBalance).minus(pool.vUsdBalance).toFixed(),
-      SYSTEM_PRECISION
-    )
-      .div(2)
-      .toFixed();
-    return { ...pool, imbalance: imbalance };
+    const imbalance = calculatePoolInfoImbalance(pool);
+    return { ...pool, imbalance };
   }
 }
 

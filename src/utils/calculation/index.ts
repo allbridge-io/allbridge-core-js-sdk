@@ -32,6 +32,12 @@ export function convertIntAmountToFloat(amountInt: BigSource, decimals: number):
   return Big(amountInt).div(toPowBase10(decimals));
 }
 
+export function calculatePoolInfoImbalance(poolInfo: Pick<PoolInfo, "tokenBalance" | "vUsdBalance">): string {
+  return convertIntAmountToFloat(Big(poolInfo.tokenBalance).minus(poolInfo.vUsdBalance).toFixed(), SYSTEM_PRECISION)
+    .div(2)
+    .toFixed();
+}
+
 export interface SwapToVUsdCalcResult {
   bridgeFeeInTokenPrecision: string;
   amountIncludingCommissionInSystemPrecision: string;
@@ -41,7 +47,7 @@ export interface SwapToVUsdCalcResult {
 export function swapToVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "p">
+  poolInfo: Omit<PoolInfo, "p" | "imbalance">
 ): SwapToVUsdCalcResult {
   const amountValue = Big(amount);
   const fee = amountValue.times(feeShare);
@@ -53,7 +59,7 @@ export function swapToVUsd(
   };
 }
 
-function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "p">): string {
+function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "p" | "imbalance">): string {
   const tokenBalance = Big(poolInfo.tokenBalance).plus(amountInSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
   return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round().toFixed();

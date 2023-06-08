@@ -41,7 +41,7 @@ export interface PoolInfo {
   totalLpAmount: string;
   accRewardPerShareP: string;
   p: number;
-  imbalance?: string;
+  imbalance: string;
 }
 
 /**

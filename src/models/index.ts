@@ -12,6 +12,7 @@ export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
 export {
+  PoolInfo,
   TokenWithChainDetails,
   TransferTime,
   TxCostAmount,
@@ -22,7 +23,7 @@ export {
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
 } from "../services/liquidity-pool/models/pool.model";
-export { RawTransaction } from "../services/models/index";
+export { Provider, RawTransaction } from "../services/models/index";
 
 export { testnet } from "../configs/testnet";
 

@@ -9,6 +9,7 @@ import {
   TokenWithChainDetails,
   TransferTime,
 } from "../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../utils/calculation";
 import {
   ChainDetailsDTO,
   ChainDetailsResponse,
@@ -41,7 +42,8 @@ export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsRespo
         chainSymbol,
         poolAddress: token.poolAddress,
       });
-      poolInfoMap[poolKey] = token.poolInfo;
+      const imbalance = calculatePoolInfoImbalance(token.poolInfo);
+      poolInfoMap[poolKey] = { ...token.poolInfo, imbalance };
     }
   }
   return poolInfoMap;

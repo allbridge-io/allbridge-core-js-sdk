@@ -3,6 +3,7 @@ import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
@@ -34,6 +35,7 @@ export class EvmPoolService extends ChainPoolService {
       poolContract.methods.totalSupply().call(),
       poolContract.methods.accRewardPerShareP().call(),
     ]);
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
 
     return {
       aValue,
@@ -43,6 +45,7 @@ export class EvmPoolService extends ChainPoolService {
       totalLpAmount,
       accRewardPerShareP,
       p: this.P,
+      imbalance,
     };
   }
 

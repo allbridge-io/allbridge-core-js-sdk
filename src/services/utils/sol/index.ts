@@ -20,7 +20,7 @@ export async function getVUsdAmount(
   const poolAccountInfo = await bridge.account.pool.fetch(poolAccount);
   const decimals = poolAccountInfo.decimals;
   const feeShare = Big(poolAccountInfo.feeShareBp.toString()).div(10000).toFixed();
-  const poolInfo: Omit<PoolInfo, "p"> = {
+  const poolInfo: Omit<PoolInfo, "p" | "imbalance"> = {
     aValue: poolAccountInfo.a.toString(),
     dValue: poolAccountInfo.d.toString(),
     totalLpAmount: poolAccountInfo.totalLpAmount.toString(),

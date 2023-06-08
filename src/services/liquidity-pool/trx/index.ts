@@ -3,6 +3,7 @@ import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
@@ -33,15 +34,18 @@ export class TronPoolService extends ChainPoolService {
       poolContract.methods.totalSupply().call(),
       poolContract.methods.accRewardPerShareP().call(),
     ]);
-
+    const tokenBalanceStr = tokenBalance.toString();
+    const vUsdBalanceStr = vUsdBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
     return {
       aValue: aValue.toString(),
       dValue: dValue.toString(),
-      tokenBalance: tokenBalance.toString(),
-      vUsdBalance: vUsdBalance.toString(),
+      tokenBalance: tokenBalanceStr,
+      vUsdBalance: vUsdBalanceStr,
       totalLpAmount: totalLpAmount.toString(),
       accRewardPerShareP: accRewardPerShareP.toString(),
       p: this.P,
+      imbalance,
     };
   }
 
