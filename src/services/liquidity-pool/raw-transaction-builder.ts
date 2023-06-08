@@ -32,7 +32,7 @@ export class RawTransactionBuilder {
    * @param provider
    */
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
-    params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toString();
+    params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
     return getChainPoolService(this.api, this.solParams, provider).buildRawTransactionDeposit(params);
   }
 
