@@ -31,11 +31,10 @@ export class LiquidityPoolService {
    * @returns the amount of approved tokens
    */
   async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    const allowanceInt = await this.tokenService.getAllowance(provider, {
+    return await this.tokenService.getAllowance(provider, {
       ...params,
       spender: params.token.poolAddress,
     });
-    return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
 
   /**
