@@ -89,16 +89,10 @@ export class EvmTokenService extends ChainTokenService {
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
-    // @ts-expect-error access raw transaction field
-    const account = this.web3.eth.accounts.wallet[rawTransaction.from];
-    const signTxReceipt = await account.signTransaction({
+    const { transactionHash } = await this.web3.eth.sendTransaction({
       ...rawTransaction,
       gas: estimateGas,
     });
-    const { transactionHash } = await this.web3.eth.sendSignedTransaction(
-      // @ts-expect-error access signTxReceipt field
-      signTxReceipt.rawTransaction
-    );
     return { txId: transactionHash };
   }
 
