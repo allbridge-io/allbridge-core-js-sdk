@@ -67,7 +67,7 @@ export class LiquidityPoolService {
    * @returns amount
    */
   async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
-    const pool = await this.getPoolInfo(token, provider);
+    const pool = await this.getPoolInfoFromChain(token, provider);
     const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
     const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
     return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
@@ -87,7 +87,7 @@ export class LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
-    const pool = await this.getPoolInfo(token, provider);
+    const pool = await this.getPoolInfoFromChain(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);
     const userBalanceInfo = await this.getUserBalanceInfo(accountAddress, token, provider);
@@ -117,7 +117,7 @@ export class LiquidityPoolService {
    * @param provider
    * @returns poolInfo
    */
-  async getPoolInfo(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
+  async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
     const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfoFromChain(token);
     const imbalance = calculatePoolInfoImbalance(pool);
     return { ...pool, imbalance };

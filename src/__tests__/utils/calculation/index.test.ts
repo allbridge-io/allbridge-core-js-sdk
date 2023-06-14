@@ -112,7 +112,9 @@ describe("Calculation", () => {
         [30000000000000000, 28],
         [1000000000000000000000, 999998],
       ])("☀️ swapToVUsd amount: %s -> %d", (amount, expectedAmount) => {
-        expect(swapToVUsd(amount, token, pool).amountIncludingCommissionInSystemPrecision).toEqual(Big(expectedAmount));
+        expect(Big(swapToVUsd(amount, token, pool).amountIncludingCommissionInSystemPrecision)).toEqual(
+          Big(expectedAmount)
+        );
       });
 
       test.each([
@@ -142,11 +144,15 @@ describe("Calculation", () => {
       };
 
       test("☀️ swapToVUsd near-zero amount", () => {
-        expect(swapToVUsd(10000000000000000, token, pool).amountIncludingCommissionInSystemPrecision).toEqual(Big(22));
+        expect(Big(swapToVUsd(10000000000000000, token, pool).amountIncludingCommissionInSystemPrecision)).toEqual(
+          Big(22)
+        );
       });
 
       test("☀️ swapFromVUsd near-zero amount", () => {
-        expect(swapFromVUsd(22, token, pool).amountIncludingCommissionInTokenPrecision).toEqual(Big(10000000000000000));
+        expect(Big(swapFromVUsd(22, token, pool).amountIncludingCommissionInTokenPrecision)).toEqual(
+          Big(10000000000000000)
+        );
       });
     });
 
@@ -170,14 +176,16 @@ describe("Calculation", () => {
         [1, 0],
         [10000000000000000, 5],
       ])("☀️ swapToVUsd amount: %d -> %d", (amount, expectedAmount) => {
-        expect(swapToVUsd(amount, token, pool).amountIncludingCommissionInSystemPrecision).toEqual(Big(expectedAmount));
+        expect(Big(swapToVUsd(amount, token, pool).amountIncludingCommissionInSystemPrecision)).toEqual(
+          Big(expectedAmount)
+        );
       });
 
       test.each([
         [0, 0],
         [5, 11000000000000000],
       ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
-        expect(swapFromVUsd(amount, token, pool).amountIncludingCommissionInTokenPrecision).toEqual(
+        expect(Big(swapFromVUsd(amount, token, pool).amountIncludingCommissionInTokenPrecision)).toEqual(
           Big(expectedAmount)
         );
       });
@@ -216,13 +224,13 @@ describe("Calculation", () => {
 
       test("☀️ swapToVUsd 10 tokens", () => {
         expect(
-          swapToVUsd(10000000000000000000, sourceToken, sourcePoolInfo).amountIncludingCommissionInSystemPrecision
+          Big(swapToVUsd(10000000000000000000, sourceToken, sourcePoolInfo).amountIncludingCommissionInSystemPrecision)
         ).toEqual(Big(9969));
       });
 
       test("☀️ swapFromVUsd almost 10 tokens", () => {
         expect(
-          swapFromVUsd(9969, destinationToken, destinationPoolInfo).amountIncludingCommissionInTokenPrecision
+          Big(swapFromVUsd(9969, destinationToken, destinationPoolInfo).amountIncludingCommissionInTokenPrecision)
         ).toEqual(Big(9938096000000000000));
       });
     });

@@ -74,7 +74,7 @@ export interface SwapFromVUsdCalcResult {
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: PoolInfo
+  poolInfo: Omit<PoolInfo, "imbalance">
 ): SwapFromVUsdCalcResult {
   const amountValue = Big(amount);
   const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);

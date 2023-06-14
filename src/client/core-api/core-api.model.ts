@@ -76,6 +76,7 @@ export interface TransferStatusResponse {
   destinationChainSymbol: ChainSymbol;
 
   sendAmount: string;
+  sendAmountFormatted: number;
 
   sourceTokenAddress: string;
   destinationTokenAddress: string;
@@ -97,7 +98,9 @@ export interface BridgeTransaction {
   destinationChainId: number;
 
   fee: string;
+  feeFormatted: number;
   amount: string;
+  amountFormatted: number;
   virtualAmount: string;
 
   bridgeContract: string;
@@ -110,7 +113,7 @@ export interface BridgeTransaction {
   messenger: Messenger;
 
   blockTime: number;
-  blockId: number;
+  blockId: string;
 
   confirmations: number;
   confirmationsNeeded: number;
