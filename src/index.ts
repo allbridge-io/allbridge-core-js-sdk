@@ -1,8 +1,10 @@
 import { Big, BigSource } from "big.js";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
-import { AllbridgeCachingCoreClient } from "./client/core-api/caching-core-client";
+import { ApiClientImpl } from "./client/core-api/api-client";
+import { ApiClientTokenInfoCaching } from "./client/core-api/api-client-token-info-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
+import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import { AmountsAndGasFeeOptions, GasFeeOptions, GetTokenBalanceParams, Messenger } from "./models";
@@ -55,7 +57,7 @@ export class AllbridgeCoreSdk {
   /**
    * @internal
    */
-  private readonly api: AllbridgeCachingCoreClient;
+  private readonly api: AllbridgeCoreClientPoolInfoCaching;
   /**
    * @internal
    */
@@ -73,16 +75,15 @@ export class AllbridgeCoreSdk {
    * If not defined, the default {@link mainnet} parameters are used.
    */
   constructor(params: AllbridgeCoreSdkOptions = mainnet) {
-    const apiClient = new AllbridgeCoreClientImpl({
-      coreApiUrl: params.coreApiUrl,
-      coreApiHeaders: params.coreApiHeaders,
-      polygonApiUrl: params.polygonApiUrl,
-    });
+    const apiClient = new ApiClientImpl(params);
+    const apiClientTokenInfoCaching = new ApiClientTokenInfoCaching(apiClient);
+    const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
+    this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
+
     const solBridgeParams: SolanaBridgeParams = {
       solanaRpcUrl: params.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
     };
-    this.api = new AllbridgeCachingCoreClient(apiClient);
     this.tokenService = new TokenService(this.api, solBridgeParams);
     this.bridge = new BridgeService(this.api, solBridgeParams, this.tokenService);
     const solPoolParams: SolanaPoolParams = {

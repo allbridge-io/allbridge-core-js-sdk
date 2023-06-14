@@ -5,12 +5,10 @@ import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from ".
 import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
-export class AllbridgeCachingCoreClient implements AllbridgeCoreClient {
-  private readonly client;
+export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   private readonly poolInfoCache;
 
-  constructor(client: AllbridgeCoreClientImpl) {
-    this.client = client;
+  constructor(private readonly client: AllbridgeCoreClientImpl) {
     this.poolInfoCache = new PoolInfoCache();
   }
 

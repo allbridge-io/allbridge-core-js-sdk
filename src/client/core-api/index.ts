@@ -1,21 +1,8 @@
-import axios, { Axios } from "axios";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
-import { sleep } from "../../services/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
-import { VERSION } from "../../version";
-import {
-  mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolInfoMap,
-  mapPoolInfoResponseToPoolInfoMap,
-} from "./core-api-mapper";
-import {
-  ChainDetailsResponse,
-  PoolInfoResponse,
-  ReceiveTransactionCostRequest,
-  ReceiveTransactionCostResponse,
-  TransferStatusResponse,
-} from "./core-api.model";
+import { ApiClient } from "./api-client";
+import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
 
 export interface AllbridgeCoreClientParams {
   coreApiUrl: string;
@@ -45,24 +32,10 @@ export interface AllbridgeCoreClient {
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
-  private api: Axios;
-  private readonly polygonApiUrl: string;
-
-  constructor(params: AllbridgeCoreClientParams) {
-    this.api = axios.create({
-      baseURL: params.coreApiUrl,
-      headers: {
-        Accept: "application/json",
-        ...params.coreApiHeaders,
-        "User-Agent": "AllbridgeCoreSDK/" + VERSION,
-      },
-    });
-    this.polygonApiUrl = params.polygonApiUrl;
-  }
+  constructor(private apiClient: ApiClient) {}
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
-    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
-    return mapChainDetailsResponseToChainDetailsMap(data);
+    return (await this.apiClient.getTokenInfo()).chainDetailsMap;
   }
 
   async tokens(): Promise<TokenWithChainDetails[]> {
@@ -74,16 +47,11 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     chainDetailsMap: ChainDetailsMap;
     poolInfoMap: PoolInfoMap;
   }> {
-    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
-    return {
-      chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
-      poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
-    };
+    return await this.apiClient.getTokenInfo();
   }
 
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
-    const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
-    return data;
+    return await this.apiClient.getTransferStatus(chainSymbol, txId);
   }
 
   async getPolygonMaxPriorityFee(): Promise<string> {
@@ -113,54 +81,17 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     maxPriorityFee: number;
     maxFee: number;
   }> {
-    let errorMessage = "no message";
-    const attempts = 5;
-    for (let i = 0; i < attempts; i++) {
-      try {
-        const { data } = await axios.get(this.polygonApiUrl);
-        if (!data[level]) {
-          throw new Error(`No data for ${level} level`);
-        }
-        return data[level];
-      } catch (e) {
-        errorMessage =
-          e instanceof Error
-            ? `Cannot get polygon gas: ${e.message}`
-            : `Cannot get polygon gas: ${e?.toString() ?? "some error occurred"}`;
-        if (i < attempts - 1) {
-          await sleep(1000);
-        }
-      }
-    }
-    throw new Error(errorMessage);
+    return await this.apiClient.getPolygonGasInfoFromGasStation(level);
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
     fee: string;
     sourceNativeTokenPrice?: string;
   }> {
-    const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    return {
-      fee: data.fee,
-      sourceNativeTokenPrice: data.sourceNativeTokenPrice,
-    };
+    return await this.apiClient.getReceiveTransactionCost(args);
   }
 
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
-    const poolKeys = pools instanceof Array ? pools : [pools];
-    const { data } = await this.api.post<PoolInfoResponse>(
-      "/pool-info",
-      { pools: poolKeys },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return mapPoolInfoResponseToPoolInfoMap(data);
+    return await this.apiClient.getPoolInfoMap(pools);
   }
 }
