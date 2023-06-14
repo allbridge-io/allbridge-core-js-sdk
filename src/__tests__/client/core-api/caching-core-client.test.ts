@@ -1,14 +1,14 @@
 import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
-import { AllbridgeCachingCoreClient } from "../../../client/core-api/caching-core-client";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClientPoolInfoCaching } from "../../../client/core-api/core-client-pool-info-caching";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap } from "../../../tokens-info";
 import poolGRL from "../../data/pool-info/pool-info-GRL.json";
 import poolMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 
 describe("AllbridgeCachingCoreClient", () => {
-  let client: AllbridgeCachingCoreClient;
+  let client: AllbridgeCoreClientPoolInfoCaching;
   let apiMock: any;
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe("AllbridgeCachingCoreClient", () => {
     ApiMock.prototype.getReceiveTransactionCost = jest.fn();
     ApiMock.prototype.getPoolInfoMap = jest.fn();
     apiMock = new ApiMock();
-    client = new AllbridgeCachingCoreClient(apiMock as AllbridgeCoreClientImpl);
+    client = new AllbridgeCoreClientPoolInfoCaching(apiMock as AllbridgeCoreClientImpl);
   });
 
   afterEach(() => {
