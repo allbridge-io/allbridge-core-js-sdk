@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, testnet } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -9,7 +9,7 @@ dotenv.config({ path: ".env" });
 
 const fromAddress = getEnvVar("SOL_ACCOUNT_ADDRESS");
 const privateKey = getEnvVar("SOL_PRIVATE_KEY");
-const toAddressEth = getEnvVar("ETH_ACCOUNT_ADDRESS");
+const toAddressEth = getEnvVar("TRX_ACCOUNT_ADDRESS");
 
 const exampleViaWormhole = async () => {
   const sdk = new AllbridgeCoreSdk();
@@ -23,8 +23,7 @@ const exampleViaWormhole = async () => {
   const destinationTokenInfoEth = ensure(destinationChainEth.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.WORMHOLE
-  // @ts-ignore
-  const { transaction, signer } = await sdk.bridge.rawTxBuilder.send({
+  const transaction = await sdk.bridge.rawTxBuilder.send({
     amount: "3.3",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressEth,
@@ -36,25 +35,24 @@ const exampleViaWormhole = async () => {
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
 
   const connection = new solanaWeb3.Connection(sdk.params.solanaRpcUrl, "confirmed");
-  const signature = await sendAndConfirmTransaction(connection, transaction, [keypair, signer]);
+  const signature = await sendAndConfirmTransaction(connection, transaction as any, [keypair]);
 
   console.log("Signature via WORMHOLE:", signature);
 };
 
 const exampleViaAllbridge = async () => {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(testnet);
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.SOL];
   const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChainTrx = chains[ChainSymbol.POL];
+  const destinationChainTrx = chains[ChainSymbol.TRX];
   const destinationTokenInfoTrx = ensure(destinationChainTrx.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.ALLBRIDGE
-  // @ts-ignore
-  const { transaction } = await sdk.bridge.rawTxBuilder.send({
+  const transaction = await sdk.bridge.rawTxBuilder.send({
     amount: "4.4",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressEth,
@@ -62,11 +60,10 @@ const exampleViaAllbridge = async () => {
     destinationToken: destinationTokenInfoTrx,
     messenger: Messenger.ALLBRIDGE,
   });
-
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
 
   const connection = new solanaWeb3.Connection(sdk.params.solanaRpcUrl, "confirmed");
-  const signature = await sendAndConfirmTransaction(connection, transaction, [keypair]);
+  const signature = await sendAndConfirmTransaction(connection, transaction as any, [keypair]);
 
   console.log("Signature via ALLBRIDGE:", signature);
 };

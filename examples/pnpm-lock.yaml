@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@allbridge/bridge-core-sdk': file:../
+  '@solana/web3.js': ^1.77.3
   '@typescript-eslint/eslint-plugin': ^5.59.1
   '@typescript-eslint/parser': ^5.59.1
   bs58: ^5.0.0
@@ -18,6 +19,7 @@ specifiers:
 
 dependencies:
   '@allbridge/bridge-core-sdk': file:..
+  '@solana/web3.js': 1.77.3
   web3: 1.10.0
   web3-core: 1.10.0
   web3-eth-contract: 1.10.0
@@ -66,7 +68,7 @@ packages:
       '@certusone/wormhole-sdk-proto-web': 0.0.1
       '@certusone/wormhole-sdk-wasm': 0.0.1
       '@solana/spl-token': 0.1.8
-      '@solana/web3.js': 1.66.2
+      '@solana/web3.js': 1.77.3
       '@terra-money/terra.js': 3.1.7
       algosdk: 1.23.1
       axios: 0.24.0
@@ -77,6 +79,7 @@ packages:
       - debug
       - encoding
       - google-protobuf
+      - supports-color
       - utf-8-validate
     dev: false
 
@@ -490,16 +493,15 @@ packages:
       browser-headers: 0.4.1
     dev: false
 
-  /@noble/ed25519/1.7.1:
-    resolution: {integrity: sha512-Rk4SkJFaXZiznFyC/t77Q0NKS4FL7TLJJsVG2V2oiEq3kJVeTdxysEe/yRWSpnWMe808XRDJ+VFh5pt/FN5plw==}
+  /@noble/curves/1.1.0:
+    resolution: {integrity: sha512-091oBExgENk/kGj3AZmtBDMpxQPDtxQABR2B9lb1JbVTs6ytdzZNwvhxQ4MWasRNEzlbEH8jCWFCwhF/Obj5AA==}
+    dependencies:
+      '@noble/hashes': 1.3.1
     dev: false
 
-  /@noble/hashes/1.1.3:
-    resolution: {integrity: sha512-CE0FCR57H2acVI5UOzIGSSIYxZ6v/HOhDR0Ro9VLyhnzLwx0o8W1mmgaqlEUx4049qJDlIBRztv5k+MM8vbO3A==}
-    dev: false
-
-  /@noble/secp256k1/1.7.0:
-    resolution: {integrity: sha512-kbacwGSsH/CTout0ZnZWxnW1B+jH/7r/WAAKLBtrRJ/+CUH7lgmQzl3GTrQua3SGKWNSDsS6lmjnDpIJ5Dxyaw==}
+  /@noble/hashes/1.3.1:
+    resolution: {integrity: sha512-EbqwksQwz9xDRGfDST86whPBgM65E0OH/pCgqW0GBVzO22bNE+NuIbeTb714+IfSjU3aRk47EUvXIb5bTsenKA==}
+    engines: {node: '>= 16'}
     dev: false
 
   /@nodelib/fs.scandir/2.1.5:
@@ -527,8 +529,8 @@ packages:
     resolution: {integrity: sha512-E6A5Y/ijqpfMJ5psJvbw0kVTzLZFUcOFgs6eSM2M2iWE1lVRF18T6hWZVNl6zqZsoz98jgnNHtVGJMs+ds9A7A==}
     engines: {node: '>=11'}
     dependencies:
-      '@project-serum/borsh': 0.2.5_@solana+web3.js@1.66.2
-      '@solana/web3.js': 1.66.2
+      '@project-serum/borsh': 0.2.5_@solana+web3.js@1.77.3
+      '@solana/web3.js': 1.77.3
       base64-js: 1.5.1
       bn.js: 5.2.1
       bs58: 4.0.1
@@ -545,16 +547,17 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - encoding
+      - supports-color
       - utf-8-validate
     dev: false
 
-  /@project-serum/borsh/0.2.5_@solana+web3.js@1.66.2:
+  /@project-serum/borsh/0.2.5_@solana+web3.js@1.77.3:
     resolution: {integrity: sha512-UmeUkUoKdQ7rhx6Leve1SssMR/Ghv8qrEiyywyxSWg7ooV7StdpPBhciiy5eB3T0qU1BXvdRNC8TdrkxK7WC5Q==}
     engines: {node: '>=10'}
     peerDependencies:
       '@solana/web3.js': ^1.2.0
     dependencies:
-      '@solana/web3.js': 1.66.2
+      '@solana/web3.js': 1.77.3
       bn.js: 5.2.1
       buffer-layout: 1.2.2
     dev: false
@@ -619,7 +622,7 @@ packages:
     engines: {node: '>= 10'}
     dependencies:
       '@babel/runtime': 7.20.1
-      '@solana/web3.js': 1.66.2
+      '@solana/web3.js': 1.77.3
       bn.js: 5.2.1
       buffer: 6.0.3
       buffer-layout: 1.2.2
@@ -627,31 +630,32 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - encoding
+      - supports-color
       - utf-8-validate
     dev: false
 
-  /@solana/web3.js/1.66.2:
-    resolution: {integrity: sha512-RyaHMR2jGmaesnYP045VLeBGfR/gAW3cvZHzMFGg7bkO+WOYOYp1nEllf0/la4U4qsYGKCsO9eEevR5fhHiVHg==}
-    engines: {node: '>=12.20.0'}
+  /@solana/web3.js/1.77.3:
+    resolution: {integrity: sha512-PHaO0BdoiQRPpieC1p31wJsBaxwIOWLh8j2ocXNKX8boCQVldt26Jqm2tZE4KlrvnCIV78owPLv1pEUgqhxZ3w==}
     dependencies:
       '@babel/runtime': 7.20.1
-      '@noble/ed25519': 1.7.1
-      '@noble/hashes': 1.1.3
-      '@noble/secp256k1': 1.7.0
+      '@noble/curves': 1.1.0
+      '@noble/hashes': 1.3.1
       '@solana/buffer-layout': 4.0.0
+      agentkeepalive: 4.3.0
       bigint-buffer: 1.1.5
       bn.js: 5.2.1
       borsh: 0.7.0
       bs58: 4.0.1
-      buffer: 6.0.1
+      buffer: 6.0.3
       fast-stable-stringify: 1.0.0
-      jayson: 3.7.0
+      jayson: 4.1.0
       node-fetch: 2.6.7
-      rpc-websockets: 7.5.0
+      rpc-websockets: 7.5.1
       superstruct: 0.14.2
     transitivePeerDependencies:
       - bufferutil
       - encoding
+      - supports-color
       - utf-8-validate
     dev: false
 
@@ -957,6 +961,17 @@ packages:
 
   /aes-js/3.0.0:
     resolution: {integrity: sha512-H7wUZRn8WpTq9jocdxQ2c8x2sKo9ZVmzfRE13GiNJXfp7NcKYEdvl3vspKjXox6RIG2VtaRe4JFvxG4rqp2Zuw==}
+    dev: false
+
+  /agentkeepalive/4.3.0:
+    resolution: {integrity: sha512-7Epl1Blf4Sy37j4v9f9FjICCh4+KAQOyXgHEwlyBiAQLbhKdq/i2QQU3amQalS/wPhdPzDXPL5DMR5bkn+YeWg==}
+    engines: {node: '>= 8.0.0'}
+    dependencies:
+      debug: 4.3.4
+      depd: 2.0.0
+      humanize-ms: 1.2.1
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /ajv/6.12.6:
@@ -1286,13 +1301,6 @@ packages:
       ieee754: 1.2.1
     dev: false
 
-  /buffer/6.0.1:
-    resolution: {integrity: sha512-rVAXBwEcEoYtxnHSO5iWyhzV/O1WMtkUYWlfdLS7FjU4PnSJJHEfHXi/uHPI5EwltmOA794gN3bm3/pzuctWjQ==}
-    dependencies:
-      base64-js: 1.5.1
-      ieee754: 1.2.1
-    dev: false
-
   /buffer/6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
     dependencies:
@@ -1548,7 +1556,6 @@ packages:
         optional: true
     dependencies:
       ms: 2.1.2
-    dev: true
 
   /decimal.js/10.4.2:
     resolution: {integrity: sha512-ic1yEvwT6GuvaYwBLLY6/aFFgjZdySKTE8en/fkU3QICTmRtgtSlFn0u0BXN06InZwtfCelR7j8LRiDI/02iGA==}
@@ -2492,6 +2499,12 @@ packages:
       resolve-alpn: 1.2.1
     dev: false
 
+  /humanize-ms/1.2.1:
+    resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
+    dependencies:
+      ms: 2.1.3
+    dev: false
+
   /iconv-lite/0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
     engines: {node: '>=0.10.0'}
@@ -2636,8 +2649,8 @@ packages:
     resolution: {integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g==}
     dev: false
 
-  /jayson/3.7.0:
-    resolution: {integrity: sha512-tfy39KJMrrXJ+mFcMpxwBvFDetS8LAID93+rycFglIQM4kl3uNR3W4lBLE/FFhsoUCEox5Dt2adVpDm/XtebbQ==}
+  /jayson/4.1.0:
+    resolution: {integrity: sha512-R6JlbyLN53Mjku329XoRT2zJAE6ZgOQ8f91ucYdMCD4nkGCF9kZSrcGXpHIU4jeKj58zUZke2p+cdQchU7Ly7A==}
     engines: {node: '>=8'}
     hasBin: true
     dependencies:
@@ -2651,7 +2664,6 @@ packages:
       eyes: 0.1.8
       isomorphic-ws: 4.0.1_ws@7.5.9
       json-stringify-safe: 5.0.1
-      lodash: 4.17.21
       uuid: 8.3.2
       ws: 7.5.9
     transitivePeerDependencies:
@@ -2941,7 +2953,6 @@ packages:
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
-    dev: true
 
   /ms/2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -3426,8 +3437,8 @@ packages:
       bn.js: 5.2.1
     dev: false
 
-  /rpc-websockets/7.5.0:
-    resolution: {integrity: sha512-9tIRi1uZGy7YmDjErf1Ax3wtqdSSLIlnmL5OtOzgd5eqPKbsPpwDP5whUDO2LQay3Xp0CcHlcNSGzacNRluBaQ==}
+  /rpc-websockets/7.5.1:
+    resolution: {integrity: sha512-kGFkeTsmd37pHPMaHIgN1LVKXMi0JD782v4Ds9ZKtLlwdTKjn+CxM9A9/gLT2LaOuEcEFGL98h1QWQtlOIdW0w==}
     dependencies:
       '@babel/runtime': 7.20.1
       eventemitter3: 4.0.7
@@ -4410,7 +4421,7 @@ packages:
     dependencies:
       '@certusone/wormhole-sdk': 0.5.0
       '@project-serum/anchor': 0.25.0
-      '@solana/web3.js': 1.66.2
+      '@solana/web3.js': 1.77.3
       '@types/big.js': 6.1.6
       assert: 2.0.0
       axios: 1.1.3

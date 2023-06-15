@@ -190,13 +190,14 @@ const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams, web3);
 To interact with the **Tron** blockchain: </br>
 use ```tronWeb``` instead of ```web3``` </p>
 
-##### Solana Blockchain
-
-To create send transaction on **Solana** blockchain: </br>
+**TIP:** </br>
+To interact with the **Solana** blockchain: </br>
+do not pass provider param </p>
 
 ```ts
-const { transaction, signer } = await sdk.bridge.rawTxBuilder.send(sendParams);
+const transaction = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
+
 
 ***TIP:***
 For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)

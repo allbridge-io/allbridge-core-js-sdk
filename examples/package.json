@@ -57,20 +57,21 @@
   },
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:../",
+    "@solana/web3.js": "^1.77.3",
     "web3": "^1.9.0",
     "web3-core": "^1.9.0",
     "web3-eth-contract": "^1.9.0",
     "web3-utils": "^1.9.0"
   },
   "devDependencies": {
-    "bs58": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
+    "bs58": "^5.0.0",
     "dotenv": "^16.0.3",
-    "prettier": "^2.8.8",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jest": "^27.2.1",
-    "eslint-plugin-prettier": "^4.2.1"
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.8"
   }
 }

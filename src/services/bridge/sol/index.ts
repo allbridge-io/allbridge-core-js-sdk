@@ -176,40 +176,42 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const sentMessageAccount = await getSendMessageAccount(message, allbridgeMessengerProgramId);
 
-    return {
-      transaction: await bridge.methods
-        .swapAndBridge({
-          vusdAmount,
-          nonce,
-          destinationChainId,
-          recipient,
-          receiveToken,
-        })
-        .accounts({
-          mint,
-          user: userAccount,
-          config,
-          lock: lockAccount,
-          pool: poolAccount,
-          gasPrice,
-          thisGasPrice,
-          bridgeAuthority,
-          userToken,
-          bridgeToken: bridgeTokenAccount,
-          chainBridge: chainBridgeAccount,
-          messenger: allbridgeMessengerProgramId,
-          messengerGasUsage: messengerGasUsageAccount,
-          messengerConfig,
-          sentMessageAccount,
-          otherBridgeToken: otherBridgeTokenAccount,
-        })
-        .preInstructions([
-          web3.ComputeBudgetProgram.setComputeUnitLimit({
-            units: 1000000,
-          }),
-        ])
-        .transaction(),
-    };
+    const transaction = await bridge.methods
+      .swapAndBridge({
+        vusdAmount,
+        nonce,
+        destinationChainId,
+        recipient,
+        receiveToken,
+      })
+      .accounts({
+        mint,
+        user: userAccount,
+        config,
+        lock: lockAccount,
+        pool: poolAccount,
+        gasPrice,
+        thisGasPrice,
+        bridgeAuthority,
+        userToken,
+        bridgeToken: bridgeTokenAccount,
+        chainBridge: chainBridgeAccount,
+        messenger: allbridgeMessengerProgramId,
+        messengerGasUsage: messengerGasUsageAccount,
+        messengerConfig,
+        sentMessageAccount,
+        otherBridgeToken: otherBridgeTokenAccount,
+      })
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: 1000000,
+        }),
+      ])
+      .transaction();
+    transaction.recentBlockhash = (
+      await this.buildAnchorProvider(userAccount.toString()).connection.getLatestBlockhash()
+    ).blockhash;
+    return transaction;
   }
 
   private async buildSwapAndBridgeWormholeTransaction(
@@ -296,26 +298,26 @@ export class SolanaBridgeService extends ChainBridgeService {
       clock: web3.SYSVAR_CLOCK_PUBKEY,
     };
 
-    return {
-      transaction: await bridge.methods
-        .swapAndBridgeWormhole({
-          vusdAmount,
-          nonce: nonce,
-          destinationChainId,
-          recipient,
-          receiveToken,
-        })
-        .accounts(accounts)
-        .preInstructions([
-          web3.ComputeBudgetProgram.setComputeUnitLimit({
-            units: 1000000,
-          }),
-          feeInstruction,
-        ])
-        .signers([messageAccount])
-        .transaction(),
-      signer: messageAccount,
-    };
+    const transaction = await bridge.methods
+      .swapAndBridgeWormhole({
+        vusdAmount,
+        nonce: nonce,
+        destinationChainId,
+        recipient,
+        receiveToken,
+      })
+      .accounts(accounts)
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: 1000000,
+        }),
+        feeInstruction,
+      ])
+      .signers([messageAccount])
+      .transaction();
+    transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
+    transaction.sign(messageAccount);
+    return transaction;
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {

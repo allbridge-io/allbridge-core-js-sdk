@@ -87,37 +87,49 @@ export class SolanaPoolService extends ChainPoolService {
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods
+    const tx = await bridge.methods
       .deposit(new BN(params.amount))
       .accounts(accounts)
       .preInstructions(preInstructions)
       .transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    return tx;
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods
+    const tx = await bridge.methods
       .withdraw(new BN(params.amount))
       .accounts(accounts)
       .preInstructions(preInstructions)
       .transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    return tx;
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods.claimRewards().accounts(accounts).preInstructions(preInstructions).transaction();
+    const tx = await bridge.methods.claimRewards().accounts(accounts).preInstructions(preInstructions).transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    return tx;
   }
 
-  private async prepareDataForTransaction(data: LiquidityPoolsParams) {
-    const provider = this.buildAnchorProvider(data.accountAddress);
-    const bridge = this.getBridge(data.token.bridgeAddress, provider);
+  private async prepareDataForTransaction(params: LiquidityPoolsParams) {
+    const provider = this.buildAnchorProvider(params.accountAddress);
+    const bridge = this.getBridge(params.token.bridgeAddress, provider);
 
     const { accounts, preInstructions } = await this._getLPTransactionData(
       bridge,
-      data.token.poolAddress,
-      data.accountAddress,
+      params.token.poolAddress,
+      params.accountAddress,
       provider
     );
     return { bridge, accounts, preInstructions };
