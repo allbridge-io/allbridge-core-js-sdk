@@ -24,7 +24,9 @@
     "stablecoins",
     "Sepolia",
     "Rebalancer",
-    "rebalancer"
+    "rebalancer",
+    "blockhash",
+    "Blockhash"
   ],
   "flagWords": [],
   "ignorePaths": [
