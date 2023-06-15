@@ -138,6 +138,7 @@ export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse)
   for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
+      poolInfo.imbalance = calculatePoolInfoImbalance(poolInfo);
       poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;
     }
   }
