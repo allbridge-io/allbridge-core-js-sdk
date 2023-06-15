@@ -211,6 +211,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     transaction.recentBlockhash = (
       await this.buildAnchorProvider(userAccount.toString()).connection.getLatestBlockhash()
     ).blockhash;
+    transaction.feePayer = userAccount;
     return transaction;
   }
 
@@ -316,6 +317,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .signers([messageAccount])
       .transaction();
     transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
+    transaction.feePayer = userAccount;
     transaction.sign(messageAccount);
     return transaction;
   }

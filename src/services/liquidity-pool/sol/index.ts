@@ -95,6 +95,7 @@ export class SolanaPoolService extends ChainPoolService {
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
     return tx;
   }
 
@@ -109,6 +110,7 @@ export class SolanaPoolService extends ChainPoolService {
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
     return tx;
   }
 
@@ -119,6 +121,7 @@ export class SolanaPoolService extends ChainPoolService {
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
     return tx;
   }
 
