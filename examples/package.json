@@ -9,9 +9,7 @@
     "prettier": "prettier \"src/**/*.ts\" --write",
     "lint": "eslint src --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-
     "run:getTokensInfo": "ts-node src/examples/get-tokens-info.ts",
-
     "run:bridge:evm:approveAndSend": "ts-node src/examples/bridge/evm/evm-build-approve-and-send-tx.ts",
     "run:bridge:evm:approveAndSendWithStables": "ts-node src/examples/bridge/evm/evm-build-approve-and-send-tx-gas-fee-with-stables.ts",
     "run:bridge:evm:checkAllowance": "ts-node src/examples/bridge/evm/evm-check-allowance.ts",
@@ -58,6 +56,7 @@
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:../",
     "@solana/web3.js": "^1.77.3",
+    "tronweb": "^4.4.0",
     "web3": "^1.9.0",
     "web3-core": "^1.9.0",
     "web3-eth-contract": "^1.9.0",

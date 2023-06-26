@@ -19,9 +19,10 @@ export class LiquidityPoolService {
   constructor(
     private api: AllbridgeCoreClient,
     private solParams: SolanaPoolParams,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private tronRpcUrl: string
   ) {
-    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, this, tokenService);
+    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, tronRpcUrl, this, tokenService);
   }
 
   /**
@@ -108,7 +109,10 @@ export class LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return getChainPoolService(this.api, this.solParams, provider).getUserBalanceInfo(accountAddress, token);
+    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getUserBalanceInfo(
+      accountAddress,
+      token
+    );
   }
 
   /**
@@ -118,7 +122,9 @@ export class LiquidityPoolService {
    * @returns poolInfo
    */
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
-    const pool = await getChainPoolService(this.api, this.solParams, provider).getPoolInfoFromChain(token);
+    const pool = await getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getPoolInfoFromChain(
+      token
+    );
     const imbalance = calculatePoolInfoImbalance(pool);
     return { ...pool, imbalance };
   }
@@ -127,13 +133,14 @@ export class LiquidityPoolService {
 export function getChainPoolService(
   api: AllbridgeCoreClient,
   solParams: SolanaPoolParams,
+  tronRpcUrl: string,
   provider?: Provider
 ): ChainPoolService {
   if (!provider) {
     return new SolanaPoolService(solParams, api);
   }
   if (isTronWeb(provider)) {
-    return new TronPoolService(provider, api);
+    return new TronPoolService(provider, api, tronRpcUrl);
   } else {
     // Web3
     return new EvmPoolService(provider as unknown as Web3, api);

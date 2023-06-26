@@ -49,6 +49,7 @@ export interface AllbridgeCoreSdkOptions {
   coreApiHeaders?: Record<string, string>;
   solanaRpcUrl: string;
   polygonApiUrl: string;
+  tronRpcUrl: string;
 
   wormholeMessengerProgramId: string;
 }
@@ -89,7 +90,7 @@ export class AllbridgeCoreSdk {
     const solPoolParams: SolanaPoolParams = {
       solanaRpcUrl: params.solanaRpcUrl,
     };
-    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService);
+    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService, params.tronRpcUrl);
     this.params = params;
   }
 
