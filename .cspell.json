@@ -26,7 +26,9 @@
     "Rebalancer",
     "rebalancer",
     "blockhash",
-    "Blockhash"
+    "Blockhash",
+    "Lamports",
+    "lamports"
   ],
   "flagWords": [],
   "ignorePaths": [

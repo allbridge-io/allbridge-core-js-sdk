@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { setDefaultWasm, solana } from "@certusone/wormhole-sdk";
 import { AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
@@ -241,39 +240,40 @@ export class SolanaBridgeService extends ChainBridgeService {
       message,
     } = swapAndBridgeData;
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
+
+    const [whBridgeAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Bridge")],
+      new PublicKey(wormholeProgramId)
+    );
+    const [whFeeCollectorAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("fee_collector")],
+      new PublicKey(wormholeProgramId)
+    );
+    const [whSequenceAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Sequence"), bridgeAuthority.toBuffer()],
+      new PublicKey(wormholeProgramId)
+    );
+
     const messengerGasUsageAccount = await getGasUsageAccount(
       destinationChainId,
       configAccountInfo.wormholeMessengerProgramId
     );
-    setDefaultWasm("node");
-    const core = await solana.importCoreWasm();
     const wormholeMessengerConfigAccount = await getConfigAccount(configAccountInfo.wormholeMessengerProgramId);
     const messageAccount = Keypair.generate();
 
-    const instruction = solana.ixFromRust(
-      await core.post_message_ix(
-        wormholeProgramId,
-        userAccount.toBase58(),
-        bridgeAuthority.toBase58(),
-        messageAccount.publicKey.toBase58(),
-        0,
-        message,
-        "FINALIZED"
-      )
-    );
-
-    const [
-      whBridgeAccount,
-      whMessageAccount,
-      whEmitterAccount,
-      whSequenceAccount,
-      whPayerAccount,
-      whFeeCollectorAccount,
-    ] = instruction.keys.map((v) => v.pubkey);
-
     const provider = this.buildAnchorProvider(userAccount.toString());
 
-    const feeInstruction = await solana.getBridgeFeeIx(provider.connection, wormholeProgramId, userAccount.toBase58());
+    const bridgeAccountInfo = await provider.connection.getAccountInfo(whBridgeAccount);
+    if (bridgeAccountInfo == null) {
+      throw new Error("Cannot fetch wormhole bridge account info");
+    }
+    const feeLamports = new BN(bridgeAccountInfo.data.slice(16, 24), "le").toString();
+
+    const feeInstruction = SystemProgram.transfer({
+      fromPubkey: userAccount,
+      toPubkey: whFeeCollectorAccount,
+      lamports: +feeLamports,
+    });
 
     const accounts = {
       mint,
@@ -291,7 +291,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       messengerGasUsage: messengerGasUsageAccount,
       wormholeProgram: wormholeProgramId,
       bridge: whBridgeAccount,
-      message: whMessageAccount,
+      message: messageAccount.publicKey,
       wormholeMessenger: configAccountInfo.wormholeMessengerProgramId,
       sequence: whSequenceAccount,
       feeCollector: whFeeCollectorAccount,
@@ -318,7 +318,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .transaction();
     transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
-    transaction.sign(messageAccount);
+    transaction.partialSign(messageAccount);
     return transaction;
   }
 
