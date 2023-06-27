@@ -46,7 +46,6 @@ export class ApiClientImpl implements ApiClient {
       headers: {
         Accept: "application/json",
         ...params.coreApiHeaders,
-        "x-Sdk-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
     this.polygonApiUrl = params.polygonApiUrl;
