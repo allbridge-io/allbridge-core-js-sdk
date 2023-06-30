@@ -9,6 +9,7 @@ import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
+import { promisify } from "../../utils";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
@@ -41,8 +42,8 @@ export class TronPoolService extends ChainPoolService {
       promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
     );
     batch.execute();
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
 
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
     const tokenBalanceStr = tokenBalance.toString();
     const vUsdBalanceStr = vUsdBalance.toString();
     const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
@@ -111,15 +112,3 @@ export class TronPoolService extends ChainPoolService {
     return this.tronWeb.contract().at(contractAddress);
   }
 }
-
-const promisify =
-  // prettier-ignore
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  (func: Function) =>
-  (...args: any[]) =>
-    new Promise<any>(
-      (resolve, reject) =>
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        func(...args, (err: Error, result: any) => (err ? reject(err) : resolve(result)))
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    );

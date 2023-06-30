@@ -5,9 +5,10 @@ import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
-import abi from "../../models/abi/Pool.json";
+import PoolAbi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
 import { BaseContract } from "../../models/abi/types/types";
+import { promisify } from "../../utils";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
@@ -20,30 +21,35 @@ export class EvmPoolService extends ChainPoolService {
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
-    const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
-    const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
+    const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName](accountAddress).call.request({}, cb)))()
+    );
+    batch.execute();
+    const [rewardDebt, lpAmount] = await Promise.all(arr);
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
-    const poolContract = this.getPoolContract(token.poolAddress);
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
-      poolContract.methods.a().call(),
-      poolContract.methods.d().call(),
-      poolContract.methods.tokenBalance().call(),
-      poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalSupply().call(),
-      poolContract.methods.accRewardPerShareP().call(),
-    ]);
-    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
+    const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
+    );
+    batch.execute();
 
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
+    const tokenBalanceStr = tokenBalance.toString();
+    const vUsdBalanceStr = vUsdBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
     return {
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount,
-      accRewardPerShareP,
+      aValue: aValue.toString(),
+      dValue: dValue.toString(),
+      tokenBalance: tokenBalanceStr,
+      vUsdBalance: vUsdBalanceStr,
+      totalLpAmount: totalLpAmount.toString(),
+      accRewardPerShareP: accRewardPerShareP.toString(),
       p: this.P,
       imbalance,
     };
@@ -95,6 +101,6 @@ export class EvmPoolService extends ChainPoolService {
   }
 
   private getPoolContract(contractAddress: string): PoolContract {
-    return this.getContract<PoolContract>(abi as AbiItem[], contractAddress);
+    return this.getContract<PoolContract>(PoolAbi as AbiItem[], contractAddress);
   }
 }
