@@ -1,5 +1,6 @@
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
+import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -13,6 +14,7 @@ import { ChainTokenService } from "../models/token";
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 const USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+const POLYGON_GAS_LIMIT = 100_000;
 
 export class EvmTokenService extends ChainTokenService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -47,11 +49,11 @@ export class EvmTokenService extends ChainTokenService {
           ...params,
           amount: "0",
         });
-        await this.sendRawTransaction(rawTransaction);
+        await this.sendRawTransaction(rawTransaction, params.chainSymbol);
       }
     }
     const rawTransaction = await this.buildRawTransactionApprove(params);
-    return await this.sendRawTransaction(rawTransaction);
+    return await this.sendRawTransaction(rawTransaction, params.chainSymbol);
   }
 
   isUsdt(tokenAddress: string): boolean {
@@ -87,12 +89,14 @@ export class EvmTokenService extends ChainTokenService {
     return tx;
   }
 
-  private async sendRawTransaction(rawTransaction: RawTransaction) {
-    const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
-    const { transactionHash } = await this.web3.eth.sendTransaction({
-      ...rawTransaction,
-      gas: estimateGas,
-    });
+  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {
+    const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
+    if (chainSymbol == ChainSymbol.POL) {
+      transactionConfig.gas = POLYGON_GAS_LIMIT;
+    } else {
+      transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction);
+    }
+    const { transactionHash } = await this.web3.eth.sendTransaction(transactionConfig);
     return { txId: transactionHash };
   }
 
