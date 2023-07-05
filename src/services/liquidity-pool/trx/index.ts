@@ -1,48 +1,61 @@
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
+import Web3 from "web3";
+import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
+import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
+import PoolAbi from "../../models/abi/Pool.json";
+import { promisify } from "../../utils";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
-export class TronPool extends Pool {
+export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private P = 52;
+  private web3: Web3;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
+  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronRpcUrl: string) {
     super();
+    this.web3 = new Web3(tronRpcUrl);
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
-    const contract = await this.getContract(token.poolAddress);
-    const userInfoData = await contract.userInfo(accountAddress).call();
-    return new UserBalanceInfo({
-      lpAmount: userInfoData.lpAmount.toString(),
-      rewardDebt: userInfoData.rewardDebt.toString(),
-    });
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
+    const userAccount = tronAddressToEthAddress(accountAddress);
+    const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName](userAccount).call.request({}, cb)))()
+    );
+    batch.execute();
+    const [rewardDebt, lpAmount] = await Promise.all(arr);
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
-    const poolContract = await this.getContract(token.poolAddress);
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
+    const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
+    );
+    batch.execute();
 
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
-      poolContract.methods.a().call(),
-      poolContract.methods.d().call(),
-      poolContract.methods.tokenBalance().call(),
-      poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalLpAmount().call(),
-      poolContract.methods.accRewardPerShareP().call(),
-    ]);
-
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
+    const tokenBalanceStr = tokenBalance.toString();
+    const vUsdBalanceStr = vUsdBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
     return {
       aValue: aValue.toString(),
       dValue: dValue.toString(),
-      tokenBalance: tokenBalance.toString(),
-      vUsdBalance: vUsdBalance.toString(),
+      tokenBalance: tokenBalanceStr,
+      vUsdBalance: vUsdBalanceStr,
       totalLpAmount: totalLpAmount.toString(),
       accRewardPerShareP: accRewardPerShareP.toString(),
       p: this.P,
+      imbalance,
     };
   }
 

@@ -1,172 +1,84 @@
-import { Big } from "big.js";
 import Web3 from "web3";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { Provider, RawTransaction } from "../models";
-import { EvmBridge } from "./evm";
-import {
-  ApproveData,
-  ApproveDataWithTokenInfo,
-  ApproveParamsDto,
-  Bridge,
-  CheckAllowanceParamsDto,
-  CheckAllowanceParamsWithTokenAddress,
-  CheckAllowanceParamsWithTokenInfo,
-  GetAllowanceParamsDto,
-  GetAllowanceParamsWithTokenAddress,
-  GetAllowanceParamsWithTokenInfo,
-  GetTokenBalanceParamsWithTokenAddress,
-  GetTokenBalanceParamsWithTokenInfo,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-} from "./models";
-import { SolanaBridge, SolanaBridgeParams } from "./sol";
-import { TronBridge } from "./trx";
-import {
-  getTokenInfoByTokenAddress,
-  isApproveDataWithTokenInfo,
-  isGetAllowanceParamsWithTokenInfo,
-  isGetTokenBalanceParamsWithTokenInfo,
-} from "./utils";
+import { Provider, TransactionResponse } from "../models";
+import { TokenService } from "../token";
+import { EvmBridgeService } from "./evm";
+import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
+import { ChainBridgeService } from "./models/bridge";
+import { RawTransactionBuilder } from "./raw-transaction-builder";
+import { SolanaBridgeParams, SolanaBridgeService } from "./sol";
+import { TronBridgeService } from "./trx";
 
 export class BridgeService {
-  constructor(public api: AllbridgeCoreClient, public solParams: SolanaBridgeParams) {}
+  public rawTxBuilder: RawTransactionBuilder;
 
-  async getAllowance(
-    provider: Provider,
-    params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
-  ): Promise<string> {
-    const getAllowanceParams = await this.prepareGetAllowanceParams(params);
-    const allowanceInt = await this.getBridge(provider).getAllowance(getAllowanceParams);
-    return convertIntAmountToFloat(allowanceInt, getAllowanceParams.tokenInfo.decimals).toFixed();
+  constructor(
+    private api: AllbridgeCoreClient,
+    private solParams: SolanaBridgeParams,
+    private tokenService: TokenService
+  ) {
+    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, this, tokenService);
   }
 
-  async checkAllowance(
-    provider: Provider,
-    params: CheckAllowanceParamsWithTokenAddress | CheckAllowanceParamsWithTokenInfo
-  ): Promise<boolean> {
-    return this.getBridge(provider).checkAllowance(await this.prepareCheckAllowanceParams(params));
+  /**
+   * Get amount of tokens approved to be sent by the bridge
+   * @param provider
+   * @param params See {@link GetAllowanceParams | GetAllowanceParams}
+   * @returns the amount of approved tokens
+   */
+  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
+    return await this.tokenService.getAllowance(provider, { ...params, spender: params.token.bridgeAddress });
   }
 
-  async approve(provider: Provider, approveData: ApproveData | ApproveDataWithTokenInfo): Promise<TransactionResponse> {
-    return this.getBridge(provider).approve(await this.prepareApproveParams(approveData));
+  /**
+   * Check if the amount of approved tokens is enough to make a transfer
+   * @param provider
+   * @param params See {@link GetAllowanceParams | GetAllowanceParams}
+   * @returns true if the amount of approved tokens is enough to make a transfer
+   */
+  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.bridgeAddress });
   }
 
-  async buildRawTransactionApprove(
-    provider: Provider,
-    approveData: ApproveData | ApproveDataWithTokenInfo
-  ): Promise<RawTransaction> {
-    return this.getBridge(provider).buildRawTransactionApprove(await this.prepareApproveParams(approveData));
+  /**
+   * Approve tokens usage by another address on chains
+   * <p>
+   * For ETH/USDT: due to specificity of the USDT contract:<br/>
+   * If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
+   * @param provider
+   * @param approveData
+   */
+  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
+    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.bridgeAddress });
   }
 
-  async send(
-    provider: Provider,
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<TransactionResponse> {
-    return this.getBridge(provider).send(params);
+  /**
+   * Send tokens through the ChainBridgeService
+   * @param provider
+   * @param params
+   */
+  async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
+    return getChainBridgeService(this.api, this.solParams, provider).send(params);
   }
+}
 
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
-    provider?: Provider
-  ): Promise<RawTransaction> {
-    return this.getBridge(provider).buildRawTransactionSend(params);
+export function getChainBridgeService(
+  api: AllbridgeCoreClient,
+  solParams: SolanaBridgeParams,
+  provider?: Provider
+): ChainBridgeService {
+  if (!provider) {
+    return new SolanaBridgeService(solParams, api);
   }
-
-  async getTokenBalance(
-    params: GetTokenBalanceParamsWithTokenAddress | GetTokenBalanceParamsWithTokenInfo,
-    provider?: Provider
-  ): Promise<string> {
-    let tokenBalanceParams: GetTokenBalanceParamsWithTokenAddress;
-
-    if (isGetTokenBalanceParamsWithTokenInfo(params)) {
-      tokenBalanceParams = {
-        account: params.account,
-        tokenAddress: params.tokenInfo.tokenAddress,
-        tokenDecimals: params.tokenInfo.decimals,
-      };
-    } else {
-      tokenBalanceParams = params;
-    }
-
-    const tokenBalance = await this.getBridge(provider).getTokenBalance(tokenBalanceParams);
-    if (tokenBalanceParams.tokenDecimals) {
-      return convertIntAmountToFloat(tokenBalance, tokenBalanceParams.tokenDecimals).toString();
-    }
-    return tokenBalance;
+  if (isTronWeb(provider)) {
+    return new TronBridgeService(provider, api);
+  } else {
+    // Web3
+    return new EvmBridgeService(provider as unknown as Web3, api);
   }
+}
 
-  private getBridge(provider?: Provider): Bridge {
-    if (!provider) {
-      return new SolanaBridge(this.solParams, this.api);
-    }
-    if (this.isTronWeb(provider)) {
-      return new TronBridge(provider, this.api);
-    } else {
-      // Web3
-      return new EvmBridge(provider as unknown as Web3, this.api);
-    }
-  }
-
-  private isTronWeb(params: Provider): boolean {
-    // @ts-expect-error get existing trx property
-    return (params as TronWeb).trx !== undefined;
-  }
-
-  async prepareGetAllowanceParams(
-    params: GetAllowanceParamsWithTokenAddress | GetAllowanceParamsWithTokenInfo
-  ): Promise<GetAllowanceParamsDto> {
-    if (isGetAllowanceParamsWithTokenInfo(params)) {
-      return params as GetAllowanceParamsDto;
-    } else {
-      const tokenInfo = getTokenInfoByTokenAddress(
-        await this.api.getChainDetailsMap(),
-        (params as GetAllowanceParamsWithTokenAddress).chainSymbol,
-        (params as GetAllowanceParamsWithTokenAddress).tokenAddress
-      );
-      return {
-        tokenInfo,
-        owner: params.owner,
-      };
-    }
-  }
-
-  async prepareCheckAllowanceParams(
-    params: CheckAllowanceParamsWithTokenAddress | CheckAllowanceParamsWithTokenInfo
-  ): Promise<CheckAllowanceParamsDto> {
-    const getAllowanceParams = await this.prepareGetAllowanceParams(params);
-    return {
-      ...getAllowanceParams,
-      amount: convertFloatAmountToInt(params.amount, getAllowanceParams.tokenInfo.decimals),
-    };
-  }
-
-  private async prepareApproveParams(approveData: ApproveData | ApproveDataWithTokenInfo): Promise<ApproveParamsDto> {
-    if (isApproveDataWithTokenInfo(approveData)) {
-      approveData = approveData as ApproveDataWithTokenInfo;
-      return {
-        tokenAddress: approveData.token.tokenAddress,
-        owner: approveData.owner,
-        spender: approveData.spender,
-        chainSymbol: approveData.token.chainSymbol,
-        amount: approveData.amount == undefined ? undefined : Big(approveData.amount).toFixed(),
-      };
-    } else {
-      approveData = approveData as ApproveData;
-      const chainSymbol = (await this.api.tokens()).find(
-        (tokenInfo) => tokenInfo.tokenAddress === (approveData as ApproveData).tokenAddress
-      )?.chainSymbol;
-      if (!chainSymbol) {
-        throw Error(`Unknown chain by token address ${approveData.tokenAddress}`);
-      }
-      return {
-        tokenAddress: approveData.tokenAddress,
-        owner: approveData.owner,
-        spender: approveData.spender,
-        chainSymbol: chainSymbol,
-        amount: approveData.amount == undefined ? undefined : Big(approveData.amount).toFixed(),
-      };
-    }
-  }
+function isTronWeb(params: Provider): boolean {
+  // @ts-expect-error get existing trx property
+  return (params as TronWeb).trx !== undefined;
 }

@@ -1,15 +1,14 @@
 import * as nock from "nock";
-import { beforeAll, describe, expect, test, afterAll } from "vitest";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { SolanaPoolParams, SolanaPool } from "../../../../services/liquidity-pool/sol";
-import { TokenInfoWithChainDetails } from "../../../../tokens-info";
+import { TokenWithChainDetails } from "../../../../tokens-info";
 import { CLAIM_REWARDS_RAW_TX, DEPOSIT_RAW_TX, WITHDRAW_RAW_TX } from "./data/expected";
 
 const ACCOUNT_ADDRESS = "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr";
 const POOL_ADDRESS = "6J9DNoMFciheb28kRbrtHjuKUgrfcAeq6AbSKNAJZJpE";
 const BRIDGE_ADDRESS = "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r";
 // @ts-expect-error enough
-const TOKEN_INFO: TokenInfoWithChainDetails = {
+const TOKEN_INFO: TokenWithChainDetails = {
   poolAddress: POOL_ADDRESS,
   bridgeAddress: BRIDGE_ADDRESS,
 };

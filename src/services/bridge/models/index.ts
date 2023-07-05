@@ -1,2 +1,2 @@
 export * from "./bridge.model";
-export { Bridge } from "./bridge";
+export { ChainBridgeService } from "./bridge";

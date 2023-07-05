@@ -2,7 +2,8 @@ import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getTokenAccountData } from "../../utils/sol";
@@ -13,7 +14,8 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
 export interface SolanaPoolParams {
   solanaRpcUrl: string;
@@ -35,7 +37,7 @@ interface LPTransactionData {
   preInstructions: TransactionInstruction[];
 }
 
-export class SolanaPool extends Pool {
+export class SolanaPoolService extends ChainPoolService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   private P = 48;
 
@@ -43,7 +45,7 @@ export class SolanaPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const provider = this.buildAnchorProvider(accountAddress);
     const bridge = this.getBridge(token.bridgeAddress, provider);
     const poolAccount = new PublicKey(token.poolAddress);
@@ -64,54 +66,73 @@ export class SolanaPool extends Pool {
     }
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const provider = this.buildAnchorProvider(token.bridgeAddress);
     const pool = await this.getBridge(token.bridgeAddress, provider).account.pool.fetch(token.poolAddress);
+    const vUsdBalance = pool.vUsdBalance.toString();
+    const tokenBalance = pool.tokenBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
     return {
       dValue: pool.d.toString(),
       aValue: pool.a.toString(),
       totalLpAmount: pool.totalLpAmount.toString(),
-      vUsdBalance: pool.vUsdBalance.toString(),
-      tokenBalance: pool.tokenBalance.toString(),
+      vUsdBalance,
+      tokenBalance,
       accRewardPerShareP: pool.accRewardPerShareP.toString(),
       p: this.P,
+      imbalance,
     };
   }
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods
+    const tx = await bridge.methods
       .deposit(new BN(params.amount))
       .accounts(accounts)
       .preInstructions(preInstructions)
       .transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
+    return tx;
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods
+    const tx = await bridge.methods
       .withdraw(new BN(params.amount))
       .accounts(accounts)
       .preInstructions(preInstructions)
       .transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
+    return tx;
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    return await bridge.methods.claimRewards().accounts(accounts).preInstructions(preInstructions).transaction();
+    const tx = await bridge.methods.claimRewards().accounts(accounts).preInstructions(preInstructions).transaction();
+    tx.recentBlockhash = (
+      await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
+    ).blockhash;
+    tx.feePayer = new PublicKey(params.accountAddress);
+    return tx;
   }
 
-  private async prepareDataForTransaction(data: LiquidityPoolsParams) {
-    const provider = this.buildAnchorProvider(data.accountAddress);
-    const bridge = this.getBridge(data.token.bridgeAddress, provider);
+  private async prepareDataForTransaction(params: LiquidityPoolsParams) {
+    const provider = this.buildAnchorProvider(params.accountAddress);
+    const bridge = this.getBridge(params.token.bridgeAddress, provider);
 
     const { accounts, preInstructions } = await this._getLPTransactionData(
       bridge,
-      data.token.poolAddress,
-      data.accountAddress,
+      params.token.poolAddress,
+      params.accountAddress,
       provider
     );
     return { bridge, accounts, preInstructions };

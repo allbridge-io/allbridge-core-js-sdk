@@ -7,8 +7,8 @@ export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
   bridgeAddress: string;
-  stablePayAddress: string;
   transferTime: TransferTimeDTO;
+  txCostAmount: TxCostAmountDTO;
   confirmations: number;
 }
 
@@ -43,6 +43,12 @@ export type TransferTimeDTO = {
   [chain in ChainSymbol]: MessengerTransferTimeDTO;
 };
 
+export interface TxCostAmountDTO {
+  maxAmount: string;
+  swap: string;
+  transfer: string;
+}
+
 export type MessengerTransferTimeDTO = {
   [messenger in MessengerKeyDTO]: number;
 };
@@ -70,6 +76,7 @@ export interface TransferStatusResponse {
   destinationChainSymbol: ChainSymbol;
 
   sendAmount: string;
+  sendAmountFormatted: number;
 
   sourceTokenAddress: string;
   destinationTokenAddress: string;
@@ -91,7 +98,9 @@ export interface BridgeTransaction {
   destinationChainId: number;
 
   fee: string;
+  feeFormatted: number;
   amount: string;
+  amountFormatted: number;
   virtualAmount: string;
 
   bridgeContract: string;
@@ -104,7 +113,7 @@ export interface BridgeTransaction {
   messenger: Messenger;
 
   blockTime: number;
-  blockId: number;
+  blockId: string;
 
   confirmations: number;
   confirmationsNeeded: number;

@@ -1,40 +1,38 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-
 import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
-import { AllbridgeCachingCoreClient } from "../../../client/core-api/caching-core-client";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClientPoolInfoCaching } from "../../../client/core-api/core-client-pool-info-caching";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap } from "../../../tokens-info";
-import poolInfoGRL from "../../data/pool-info/pool-info-GRL.json";
-import poolInfoMap from "../../data/pool-info/pool-info-map.json";
+import poolGRL from "../../data/pool-info/pool-info-GRL.json";
+import poolMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 
 describe("AllbridgeCachingCoreClient", () => {
-  let client: AllbridgeCachingCoreClient;
+  let client: AllbridgeCoreClientPoolInfoCaching;
   let apiMock: any;
 
   beforeEach(() => {
-    const ApiMock = vi.fn();
-    ApiMock.prototype.getChainDetailsMapAndPoolInfoMap = vi.fn();
-    ApiMock.prototype.getTransferStatus = vi.fn();
-    ApiMock.prototype.getReceiveTransactionCost = vi.fn();
-    ApiMock.prototype.getPoolInfoMap = vi.fn();
+    const ApiMock = jest.fn();
+    ApiMock.prototype.getChainDetailsMapAndPoolInfoMap = jest.fn();
+    ApiMock.prototype.getTransferStatus = jest.fn();
+    ApiMock.prototype.getReceiveTransactionCost = jest.fn();
+    ApiMock.prototype.getPoolInfoMap = jest.fn();
     apiMock = new ApiMock();
-    client = new AllbridgeCachingCoreClient(apiMock as AllbridgeCoreClientImpl);
+    client = new AllbridgeCoreClientPoolInfoCaching(apiMock as AllbridgeCoreClientImpl);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe("Given ChainDetailsMap", () => {
     const expectedChainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
-    const expectedPoolInfoMap = poolInfoMap as unknown as PoolInfoMap;
+    const expectedPoolInfoMap = poolMap as unknown as PoolInfoMap;
 
     beforeEach(() => {
       apiMock.getChainDetailsMapAndPoolInfoMap.mockResolvedValueOnce({
         chainDetailsMap: expectedChainDetailsMap,
-        poolInfoMap: expectedPoolInfoMap,
+        poolMap: expectedPoolInfoMap,
       });
     });
 
@@ -42,7 +40,7 @@ describe("AllbridgeCachingCoreClient", () => {
       const actual = await client.getChainDetailsMap();
       expect(actual).toEqual(expectedChainDetailsMap);
 
-      expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledOnce();
+      expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
     });
 
     describe("Given PoolInfoMap", () => {
@@ -50,31 +48,31 @@ describe("AllbridgeCachingCoreClient", () => {
         chainSymbol: ChainSymbol.GRL,
         poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
       };
-      const expectedPoolInfo = poolInfoGRL as unknown as PoolInfo;
+      const expectedPoolInfo = poolGRL as unknown as PoolInfo;
 
       beforeEach(() => {
         apiMock.getPoolInfoMap.mockResolvedValue(expectedPoolInfoMap);
       });
 
-      test("☀ getPoolInfoByKey should return Pool Info", async () => {
+      test("☀ getPoolInfoByKey should return PoolInfo Info", async () => {
         const actual = await client.getPoolInfoByKey(poolKeyObject);
         expect(actual).toEqual(expectedPoolInfo);
-        expect(apiMock.getPoolInfoMap).toHaveBeenCalledOnce();
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
       });
 
-      test("☀ getPoolInfoByKey should cache returned Pool Info", async () => {
+      test("☀ getPoolInfoByKey should cache returned PoolInfo Info", async () => {
         await client.getPoolInfoByKey(poolKeyObject);
         const actual = await client.getPoolInfoByKey(poolKeyObject);
         expect(actual).toEqual(expectedPoolInfo);
-        expect(apiMock.getPoolInfoMap).toHaveBeenCalledOnce();
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
       });
 
       test("☀ refreshPoolInfo should call getChainDetailsMapAndPoolInfoMap", async () => {
         await client.refreshPoolInfo();
-        expect(apiMock.getPoolInfoMap).toHaveBeenCalledOnce();
-        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledOnce();
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -90,7 +88,7 @@ describe("AllbridgeCachingCoreClient", () => {
       const actual = await client.getTransferStatus(ChainSymbol.GRL, "txId");
       expect(actual).toEqual(expected);
 
-      expect(apiMock.getTransferStatus).toHaveBeenCalledOnce();
+      expect(apiMock.getTransferStatus).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -109,7 +107,7 @@ describe("AllbridgeCachingCoreClient", () => {
       });
       expect(actual).toEqual(expected);
 
-      expect(apiMock.getReceiveTransactionCost).toHaveBeenCalledOnce();
+      expect(apiMock.getReceiveTransactionCost).toHaveBeenCalledTimes(1);
     });
   });
 });

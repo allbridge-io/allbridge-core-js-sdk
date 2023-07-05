@@ -1,6 +1,43 @@
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { Big } from "big.js";
+import { FeePaymentMethod } from "../../../models";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { convertIntAmountToFloat, getEarned } from "../../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../../utils/calculation/constants";
+
+export interface ApproveParams {
+  /**
+   * The token info
+   */
+  token: TokenWithChainDetails;
+
+  /**
+   *  The address of the token owner who is granting permission to use tokens
+   *  to the spender
+   */
+  owner: string;
+
+  /**
+   * The integer amount of tokens to approve.
+   * Optional.
+   * The maximum amount by default.
+   */
+  amount?: string | number | Big;
+}
+
+export interface GetAllowanceParams {
+  token: TokenWithChainDetails;
+  owner: string;
+  gasFeePaymentMethod?: FeePaymentMethod;
+}
+
+export type GetAllowanceParamsDto = GetAllowanceParams;
+
+export interface CheckAllowanceParams extends GetAllowanceParams {
+  /**
+   * The float amount of tokens to check the allowance.
+   */
+  amount: string | number | Big;
+}
 
 export interface LiquidityPoolsParams {
   /**
@@ -8,9 +45,9 @@ export interface LiquidityPoolsParams {
    */
   accountAddress: string;
   /**
-   * {@link TokenInfoWithChainDetails |The token info object} of operation token.
+   * {@link TokenWithChainDetails |The token info object} of operation token.
    */
-  token: TokenInfoWithChainDetails;
+  token: TokenWithChainDetails;
 }
 
 export interface LiquidityPoolsParamsWithAmount extends LiquidityPoolsParams {
@@ -41,7 +78,7 @@ export class UserBalanceInfo implements UserBalanceInfoDTO {
   earned(poolInfo: PoolInfo, decimals?: number): string {
     const earned = getEarned(this.lpAmount, this.rewardDebt, poolInfo.accRewardPerShareP, poolInfo.p);
     if (decimals) {
-      return convertIntAmountToFloat(earned, decimals).toString();
+      return convertIntAmountToFloat(earned, decimals).toFixed();
     }
     return earned;
   }

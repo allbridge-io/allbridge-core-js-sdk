@@ -22,7 +22,14 @@
     "keccak",
     "Gwei",
     "stablecoins",
-    "Sepolia"
+    "Sepolia",
+    "Rebalancer",
+    "rebalancer",
+    "blockhash",
+    "Blockhash",
+    "Lamports",
+    "lamports",
+    "Arbitrum"
   ],
   "flagWords": [],
   "ignorePaths": [

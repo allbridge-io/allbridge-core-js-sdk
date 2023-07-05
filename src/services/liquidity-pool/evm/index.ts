@@ -2,14 +2,17 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { PoolInfo, TokenInfoWithChainDetails } from "../../../tokens-info";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, Pool, UserBalanceInfo } from "../models";
-import abi from "./abi/abi.json";
-import { Abi as PoolContract } from "./types/Abi";
-import { BaseContract } from "./types/types";
+import PoolAbi from "../../models/abi/Pool.json";
+import { Pool as PoolContract } from "../../models/abi/types/Pool";
+import { BaseContract } from "../../models/abi/types/types";
+import { promisify } from "../../utils";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
-export class EvmPool extends Pool {
+export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
   private P = 52;
 
@@ -17,29 +20,38 @@ export class EvmPool extends Pool {
     super();
   }
 
-  async getUserBalanceInfo(accountAddress: string, token: TokenInfoWithChainDetails): Promise<UserBalanceInfo> {
-    return new UserBalanceInfo(await this.getPoolContract(token.poolAddress).methods.userInfo(accountAddress).call());
+  async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
+    const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName](accountAddress).call.request({}, cb)))()
+    );
+    batch.execute();
+    const [rewardDebt, lpAmount] = await Promise.all(arr);
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
-  async getPoolInfo(token: TokenInfoWithChainDetails): Promise<PoolInfo> {
-    const poolContract = this.getPoolContract(token.poolAddress);
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
-      poolContract.methods.a().call(),
-      poolContract.methods.d().call(),
-      poolContract.methods.tokenBalance().call(),
-      poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalLpAmount().call(),
-      poolContract.methods.accRewardPerShareP().call(),
-    ]);
+  async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
+    const batch = new this.web3.BatchRequest();
+    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
+    const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
+      promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
+    );
+    batch.execute();
 
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
+    const tokenBalanceStr = tokenBalance.toString();
+    const vUsdBalanceStr = vUsdBalance.toString();
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
     return {
-      aValue,
-      dValue,
-      tokenBalance,
-      vUsdBalance,
-      totalLpAmount,
-      accRewardPerShareP,
+      aValue: aValue.toString(),
+      dValue: dValue.toString(),
+      tokenBalance: tokenBalanceStr,
+      vUsdBalance: vUsdBalanceStr,
+      totalLpAmount: totalLpAmount.toString(),
+      accRewardPerShareP: accRewardPerShareP.toString(),
       p: this.P,
+      imbalance,
     };
   }
 
@@ -89,6 +101,6 @@ export class EvmPool extends Pool {
   }
 
   private getPoolContract(contractAddress: string): PoolContract {
-    return this.getContract<PoolContract>(abi as AbiItem[], contractAddress);
+    return this.getContract<PoolContract>(PoolAbi as AbiItem[], contractAddress);
   }
 }

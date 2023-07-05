@@ -1,4 +1,3 @@
-import { vi } from "vitest";
 import { TronBridge } from "../../../../services/bridge/trx";
 
 export function mockTronContract(methods: any) {
@@ -6,14 +5,14 @@ export function mockTronContract(methods: any) {
     methods: methods,
   };
 
-  const getContract = vi.spyOn(TronBridge.prototype as any, "getContract");
+  const getContract = jest.spyOn(TronBridge.prototype as any, "getContract");
   getContract.mockImplementation(() => {
     return bridgeMocked;
   });
 }
 
 export function mockTronVerifyTx() {
-  const verifyTxMocked = vi.spyOn(TronBridge.prototype as any, "verifyTx");
+  const verifyTxMocked = jest.spyOn(TronBridge.prototype as any, "verifyTx");
   verifyTxMocked.mockImplementation(() => {
     return;
   });
