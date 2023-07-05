@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Yaroslav token",
+    "poolAddress": "6J9DNoMFciheb28kRbrtHjuKUgrfcAeq6AbSKNAJZJpE",
+    "tokenAddress": "f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L",
+    "decimals": 9,
+    "symbol": "YARO",
+    "feeShare": "0.003",
+    "apr": "51.739745973369194549",
+    "lpRate": "0.99883244162470286635",
+    "chainSymbol": "SOL",
+    "chainType": "SOLANA",
+    "allbridgeChainId": 5,
+    "bridgeAddress": "DYUD8BuYGmtBeYbuWpEomGk9A6H2amyakSUw46vmQf8r",
+    "transferTime": {
+      "BSC": {
+        "1": 120000,
+        "2": 120000
+      },
+      "ETH": {
+        "1": 120000,
+        "2": 120000
+      },
+      "POL": {
+        "1": 120000,
+        "2": 120000
+      },
+      "TRX": {
+        "1": 120000,
+        "2": null
+      }
+    },
+    "confirmations": 32,
+    "chainName": "Solana"
+  }
+]

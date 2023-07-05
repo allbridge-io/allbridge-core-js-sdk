@@ -1,2 +1,2 @@
 export * from "./pool.model";
-export { Pool } from "./pool";
+export { ChainPoolService } from "./pool";

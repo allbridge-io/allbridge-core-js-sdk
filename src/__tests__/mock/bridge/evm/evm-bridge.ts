@@ -1,4 +1,3 @@
-import { vi } from "vitest";
 import { EvmBridge } from "../../../../services/bridge/evm";
 
 export function mockEvmContract(methods: any) {
@@ -6,14 +5,14 @@ export function mockEvmContract(methods: any) {
     methods: methods,
   };
 
-  const methodGetContract = vi.spyOn(EvmBridge.prototype as any, "getContract");
+  const methodGetContract = jest.spyOn(EvmBridge.prototype as any, "getContract");
   methodGetContract.mockImplementation(() => {
     return contractMocked;
   });
 }
 
 export function mockEvmSendRawTransaction(transactionHash: string) {
-  const methodSendRawTransaction = vi.spyOn(EvmBridge.prototype as any, "sendRawTransaction");
+  const methodSendRawTransaction = jest.spyOn(EvmBridge.prototype as any, "sendRawTransaction");
   methodSendRawTransaction.mockImplementation(() => {
     return { txId: transactionHash };
   });
@@ -22,8 +21,8 @@ export function mockEvmSendRawTransaction(transactionHash: string) {
 
 export function mockGetAllowanceByTokenAddress(allowance: string) {
   // prettier-ignore
-  return vi.spyOn(EvmBridge.prototype, "getAllowanceByTokenAddress")
-    /* eslint-disable-next-line  @typescript-eslint/require-await */
+  return jest.spyOn(EvmBridge.prototype, "getAllowanceByTokenAddress")
+    /* eslint-disable-next-line @typescript-eslint/require-await,@typescript-eslint/no-misused-promises */
     .mockImplementation(async () => {
       return allowance;
     });

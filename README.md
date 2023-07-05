@@ -12,7 +12,7 @@
 
 # Allbridge Core SDK
 
-Provides an easy integration with the Allbridge Core Bridge for DApps in the browser or Node.js
+Provides an easy integration with the Allbridge Core ChainBridgeService for DApps in the browser or Node.js
 
 ## Table of Contents
 
@@ -46,19 +46,19 @@ $ npm install @allbridge/bridge-core-sdk
 
 ### 1. Initialize SDK instance
 
-```js
-const { AllbridgeCoreSdk } = require("@allbridge/bridge-core-sdk");
+```ts
+import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
 const sdk = new AllbridgeCoreSdk();
 ```
 
 ### 2. Get the list of supported tokens
 
-```js
+```ts
 const supportedChains = await sdk.chainDetailsMap();
 // extract information about ETH chain
 const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 // Choose one of the tokens supported on ETH
-const usdtOnEthTokenInfo = tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
+const usdtOnEthToken = tokens.find(token => token.symbol === 'USDT');
 ```
 
 ### 3.1 Approve the transfer of tokens
@@ -69,11 +69,10 @@ For Ethereum USDT - due to specificity of the USDT contract:<br/>
 If the current allowance is not 0,
 this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
-```js
-const response = await sdk.approve(web3, {
-  token: sourceTokenInfo,
-  owner: accountAddress,
-  spender: sourceTokenInfo.poolAddress,
+```ts
+const response = await sdk.bridge.approve(web3, {
+  token: sourceToken,
+  owner: accountAddress
 });
 ```
 
@@ -84,13 +83,13 @@ use ```tronWeb``` instead of ```web3```
 
 Initiate the transfer of tokens with `send` method on SDK instance.
 
-```js
-await sdk.send(web3, {
-  amount: '1.01',
-  fromAccountAddress: senderAddress,
-  toAccountAddress: recipientAddress,
-  sourceChainToken: usdtOnEthTokenInfo,
-  destinationChainToken: usdtOnTrxTokenInfo,
+```ts
+sdk.bridge.send(web3, {
+  amount: "1.01",
+  fromAccountAddress: fromAddress,
+  toAccountAddress: toAddress,
+  sourceToken: sourceToken,
+  destinationToken: destinationToken,
   messenger: Messenger.ALLBRIDGE,
 });
 ```
@@ -102,14 +101,15 @@ use ```tronWeb``` instead of ```web3```
 
 Swap BUSD on BSC chain to USDT on TRX chain
 
-```js
-const {
+```ts
+import {
   AllbridgeCoreSdk,
   ChainSymbol,
   Messenger,
-} = require("@allbridge/bridge-core-sdk");
-const Web3 = require("web3");
-require("dotenv").config();
+} from "@allbridge/bridge-core-sdk";
+import Web3 from "web3";
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env" });
 
 async function runExample() {
   // sender address
@@ -128,25 +128,24 @@ async function runExample() {
   const chains = await sdk.chainDetailsMap();
 
   const bscChain = chains[ChainSymbol.BSC];
-  const busdTokenInfo = bscChain.tokens.find(tokenInfo => tokenInfo.symbol === 'BUSD');
+  const busdToken = bscChain.tokens.find(token => token.symbol === 'BUSD');
 
   const trxChain = chains[ChainSymbol.TRX];
-  const usdtTokenInfo = trxChain.tokens.find(tokenInfo => tokenInfo.symbol === 'USDT');
+  const usdtToken = trxChain.tokens.find(token => token.symbol === 'USDT');
 
   // authorize a transfer of tokens from sender's address
-  await sdk.approve(web3, {
-    tokenAddress: busdTokenInfo.tokenAddress,
-    owner: fromAddress,
-    spender: busdTokenInfo.poolAddress,
+  await sdk.bridge.approve(web3, {
+    token: busdToken,
+    owner: fromAddress
   });
 
   // initiate transfer
-  const response = await sdk.send(web3, {
+  const response = await sdk.bridge.send(web3, {
     amount: "1.01",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
-    sourceChainToken: busdTokenInfo,
-    destinationChainToken: usdtTokenInfo,
+    sourceToken: busdToken,
+    destinationToken: usdtToken,
     messenger: Messenger.ALLBRIDGE,
   });
   console.log("Tokens sent:", response.txId);
@@ -164,16 +163,16 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 
 SDK supports operation with **Liquidity Pools**<br/>
 For more details, see [***Docs***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/core-sdk-liquidity-pools-api.md)<br/>
-For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/liquidity-pool)
+For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
 
 ### Transaction builder
 
 #### Approve Transaction
 
-SDK method `rawTransactionBuilder.approve` can be used to create approve Transaction.
+SDK method `bridge.rawTxBuilder.approve` can be used to create approve Transaction.
 
-```js
-const rawTransactionApprove = await sdk.rawTransactionBuilder.approve(web3, approveData);
+```ts
+const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(web3, approveParams);
 ```
 
 **TIP:** To interact with the **Tron** blockchain: </br>
@@ -181,32 +180,33 @@ use ```tronWeb``` instead of ```web3```
 
 #### Send Transaction
 
-SDK method `rawTransactionBuilder.send` can be used to create send Transaction.
+SDK method `bridge.rawTxBuilder.send` can be used to create send Transaction.
 
-```js
-const rawTransactionSend = await sdk.rawTransactionBuilder.send(sendParams, web3);
+```ts
+const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams, web3);
 ```
 
 **TIP:** </br>
 To interact with the **Tron** blockchain: </br>
 use ```tronWeb``` instead of ```web3``` </p>
 
-##### Solana Blockchain
+**TIP:** </br>
+To interact with the **Solana** blockchain: </br>
+do not pass provider param </p>
 
-To create send transaction on **Solana** blockchain: </br>
-
-```js
-const { transaction, signer } = await sdk.rawTransactionBuilder.send(sendParams);
+```ts
+const transaction = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
 
+
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/bridge/solana/sol-build-send-tx.js)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)
 
 ### Get information about sent transaction
 
 SDK method `getTransferStatus` can be used to get information about tokens transfer.
 
-```js
+```ts
 const transferStatus = await sdk.getTransferStatus(chainSymbol, txId);
 ```
 
@@ -215,11 +215,11 @@ const transferStatus = await sdk.getTransferStatus(chainSymbol, txId);
 SDK method `getAmountToBeReceived` can be used to calculate the amount of tokens the receiving party will get after
 applying the bridging fee.
 
-```js
+```ts
 const amountToBeReceived = await sdk.getAmountToBeReceived(
   amountToSend,
-  sourceTokenInfo,
-  destinationTokenInfo
+  sourceToken,
+  destinationToken
 );
 ```
 
@@ -228,11 +228,11 @@ const amountToBeReceived = await sdk.getAmountToBeReceived(
 SDK method `getAmountToSend` can be used to calculate the amount of tokens to send based on the required amount of
 tokens the receiving party should get.
 
-```js
+```ts
 const amountToSend = await sdk.getAmountToSend(
   amountToBeReceived,
-  sourceTokenInfo,
-  destinationTokenInfo
+  sourceToken,
+  destinationToken
 );
 ```
 
@@ -249,10 +249,10 @@ The method returns an object with two properties:
 - stablecoin: (optional) The amount of gas fee, denominated in the smallest unit of the source token.
   If this property is not present, it indicates that the stablecoin payment method is not available.
 
-```js
+```ts
 const { native, stablecoin } = await sdk.getGasFeeOptions(
-  usdtOnEthTokenInfo, // from ETH
-  usdtOnTrxTokenInfo, // to TRX
+  usdtOnEthToken, // from ETH
+  usdtOnTrxToken, // to TRX
   Messenger.ALLBRIDGE
 );
 console.log(native); // Output: "10000000000000000" (0.01 ETH)
@@ -264,10 +264,10 @@ console.log(stablecoin); // Output: "10010000" (10.01 USDT)
 SDK method `getAverageTransferTime` can be used to get the average time in ms it takes to complete a transfer for a
 given combination of tokens and messenger.
 
-```js
+```ts
 const transferTimeMs = sdk.getAverageTransferTime(
-  sourceTokenInfo,
-  destinationTokenInfo,
+  sourceToken,
+  destinationToken,
   Messenger.ALLBRIDGE
 );
 ```

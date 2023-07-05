@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { setDefaultWasm, solana } from "@certusone/wormhole-sdk";
 import { AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { RawTransaction } from "../../models";
+import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
@@ -22,45 +21,27 @@ import {
   getPriceAccount,
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
-import {
-  ApproveParamsDto,
-  Bridge,
-  GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-  TxSendParams,
-} from "../models";
-import { getNonce, isSendParamsWithChainSymbol, prepareTxSendParams } from "../utils";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
+import { getNonce, prepareTxSendParams } from "../utils";
 
 export interface SolanaBridgeParams {
   solanaRpcUrl: string;
   wormholeMessengerProgramId: string;
 }
 
-export class SolanaBridge extends Bridge {
+export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
 
   constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
     super();
   }
 
-  approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     params.fee = "";
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
 
-    const solTxSendParams = await this.prepareSolTxSendParams(params, txSendParams);
+    const solTxSendParams = this.prepareSolTxSendParams(params, txSendParams);
 
     const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
     switch (txSendParams.messenger) {
@@ -74,22 +55,10 @@ export class SolanaBridge extends Bridge {
     }
   }
 
-  private async prepareSolTxSendParams(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos,
-    txSendParams: TxSendParams
-  ): Promise<SolTxSendParams> {
-    let poolAddress;
-    if (isSendParamsWithChainSymbol(params)) {
-      // @ts-expect-error
-      poolAddress = (await this.api.getChainDetailsMap())[params.fromChainSymbol].tokens.find(
-        (token) => token.tokenAddress === params.fromTokenAddress
-      ).poolAddress;
-    } else {
-      poolAddress = params.sourceChainToken.poolAddress;
-    }
+  private prepareSolTxSendParams(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
     return {
       ...txSendParams,
-      poolAddress,
+      poolAddress: params.sourceToken.poolAddress,
     };
   }
 
@@ -133,6 +102,7 @@ export class SolanaBridge extends Bridge {
     const configAccount = await getConfigAccount(bridge.programId);
     const configAccountInfo = await bridge.account.config.fetch(configAccount);
     const priceAccount = await getPriceAccount(destinationChainId, configAccountInfo.gasOracleProgramId);
+    const thisGasPriceAccount = await getPriceAccount(sourceChainId, configAccountInfo.gasOracleProgramId);
 
     const message = getMessage({
       amount: vUsdAmount,
@@ -168,6 +138,7 @@ export class SolanaBridge extends Bridge {
     swapAndBridgeData.config = configAccount;
     swapAndBridgeData.configAccountInfo = configAccountInfo;
     swapAndBridgeData.gasPrice = priceAccount;
+    swapAndBridgeData.thisGasPrice = thisGasPriceAccount;
     swapAndBridgeData.message = message;
 
     return swapAndBridgeData;
@@ -195,6 +166,7 @@ export class SolanaBridge extends Bridge {
       config,
       configAccountInfo,
       gasPrice,
+      thisGasPrice,
       message,
     } = swapAndBridgeData;
     const allbridgeMessengerProgramId = configAccountInfo.allbridgeMessengerProgramId;
@@ -203,39 +175,43 @@ export class SolanaBridge extends Bridge {
 
     const sentMessageAccount = await getSendMessageAccount(message, allbridgeMessengerProgramId);
 
-    return {
-      transaction: await bridge.methods
-        .swapAndBridge({
-          vusdAmount,
-          nonce,
-          destinationChainId,
-          recipient,
-          receiveToken,
-        })
-        .accounts({
-          mint,
-          user: userAccount,
-          config,
-          lock: lockAccount,
-          pool: poolAccount,
-          gasPrice,
-          bridgeAuthority,
-          userToken,
-          bridgeToken: bridgeTokenAccount,
-          chainBridge: chainBridgeAccount,
-          messenger: allbridgeMessengerProgramId,
-          messengerGasUsage: messengerGasUsageAccount,
-          messengerConfig,
-          sentMessageAccount,
-          otherBridgeToken: otherBridgeTokenAccount,
-        })
-        .preInstructions([
-          web3.ComputeBudgetProgram.setComputeUnitLimit({
-            units: 1000000,
-          }),
-        ])
-        .transaction(),
-    };
+    const transaction = await bridge.methods
+      .swapAndBridge({
+        vusdAmount,
+        nonce,
+        destinationChainId,
+        recipient,
+        receiveToken,
+      })
+      .accounts({
+        mint,
+        user: userAccount,
+        config,
+        lock: lockAccount,
+        pool: poolAccount,
+        gasPrice,
+        thisGasPrice,
+        bridgeAuthority,
+        userToken,
+        bridgeToken: bridgeTokenAccount,
+        chainBridge: chainBridgeAccount,
+        messenger: allbridgeMessengerProgramId,
+        messengerGasUsage: messengerGasUsageAccount,
+        messengerConfig,
+        sentMessageAccount,
+        otherBridgeToken: otherBridgeTokenAccount,
+      })
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: 1000000,
+        }),
+      ])
+      .transaction();
+    transaction.recentBlockhash = (
+      await this.buildAnchorProvider(userAccount.toString()).connection.getLatestBlockhash()
+    ).blockhash;
+    transaction.feePayer = userAccount;
+    return transaction;
   }
 
   private async buildSwapAndBridgeWormholeTransaction(
@@ -260,42 +236,44 @@ export class SolanaBridge extends Bridge {
       config,
       configAccountInfo,
       gasPrice,
+      thisGasPrice,
       message,
     } = swapAndBridgeData;
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
+
+    const [whBridgeAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Bridge")],
+      new PublicKey(wormholeProgramId)
+    );
+    const [whFeeCollectorAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("fee_collector")],
+      new PublicKey(wormholeProgramId)
+    );
+    const [whSequenceAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Sequence"), bridgeAuthority.toBuffer()],
+      new PublicKey(wormholeProgramId)
+    );
+
     const messengerGasUsageAccount = await getGasUsageAccount(
       destinationChainId,
       configAccountInfo.wormholeMessengerProgramId
     );
-    setDefaultWasm("node");
-    const core = await solana.importCoreWasm();
     const wormholeMessengerConfigAccount = await getConfigAccount(configAccountInfo.wormholeMessengerProgramId);
     const messageAccount = Keypair.generate();
 
-    const instruction = solana.ixFromRust(
-      await core.post_message_ix(
-        wormholeProgramId,
-        userAccount.toBase58(),
-        bridgeAuthority.toBase58(),
-        messageAccount.publicKey.toBase58(),
-        0,
-        message,
-        "FINALIZED"
-      )
-    );
-
-    const [
-      whBridgeAccount,
-      whMessageAccount,
-      whEmitterAccount,
-      whSequenceAccount,
-      whPayerAccount,
-      whFeeCollectorAccount,
-    ] = instruction.keys.map((v) => v.pubkey);
-
     const provider = this.buildAnchorProvider(userAccount.toString());
 
-    const feeInstruction = await solana.getBridgeFeeIx(provider.connection, wormholeProgramId, userAccount.toBase58());
+    const bridgeAccountInfo = await provider.connection.getAccountInfo(whBridgeAccount);
+    if (bridgeAccountInfo == null) {
+      throw new Error("Cannot fetch wormhole bridge account info");
+    }
+    const feeLamports = new BN(bridgeAccountInfo.data.slice(16, 24), "le").toString();
+
+    const feeInstruction = SystemProgram.transfer({
+      fromPubkey: userAccount,
+      toPubkey: whFeeCollectorAccount,
+      lamports: +feeLamports,
+    });
 
     const accounts = {
       mint,
@@ -304,6 +282,7 @@ export class SolanaBridge extends Bridge {
       lock: lockAccount,
       pool: poolAccount,
       gasPrice,
+      thisGasPrice,
       bridgeAuthority,
       userToken,
       bridgeToken: bridgeTokenAccount,
@@ -312,7 +291,7 @@ export class SolanaBridge extends Bridge {
       messengerGasUsage: messengerGasUsageAccount,
       wormholeProgram: wormholeProgramId,
       bridge: whBridgeAccount,
-      message: whMessageAccount,
+      message: messageAccount.publicKey,
       wormholeMessenger: configAccountInfo.wormholeMessengerProgramId,
       sequence: whSequenceAccount,
       feeCollector: whFeeCollectorAccount,
@@ -320,26 +299,27 @@ export class SolanaBridge extends Bridge {
       clock: web3.SYSVAR_CLOCK_PUBKEY,
     };
 
-    return {
-      transaction: await bridge.methods
-        .swapAndBridgeWormhole({
-          vusdAmount,
-          nonce: nonce,
-          destinationChainId,
-          recipient,
-          receiveToken,
-        })
-        .accounts(accounts)
-        .preInstructions([
-          web3.ComputeBudgetProgram.setComputeUnitLimit({
-            units: 1000000,
-          }),
-          feeInstruction,
-        ])
-        .signers([messageAccount])
-        .transaction(),
-      signer: messageAccount,
-    };
+    const transaction = await bridge.methods
+      .swapAndBridgeWormhole({
+        vusdAmount,
+        nonce: nonce,
+        destinationChainId,
+        recipient,
+        receiveToken,
+      })
+      .accounts(accounts)
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: 1000000,
+        }),
+        feeInstruction,
+      ])
+      .signers([messageAccount])
+      .transaction();
+    transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
+    transaction.feePayer = userAccount;
+    transaction.partialSign(messageAccount);
+    return transaction;
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
@@ -356,17 +336,6 @@ export class SolanaBridge extends Bridge {
         commitment: "finalized",
       }
     );
-  }
-
-  getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    throw new Error("NOT SUPPORTED");
-  }
-
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
-    const { account, tokenAddress } = params;
-    const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(tokenAddress));
-    const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
-    return accountData.amount.toString();
   }
 
   sendTx(params: TxSendParams): Promise<TransactionResponse> {

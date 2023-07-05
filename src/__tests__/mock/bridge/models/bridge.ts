@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
 
-import { vi } from "vitest";
 import { ChainType } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
-  ApproveData,
+  ApproveParamsDto,
   Bridge,
   GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
+  GetTokenBalanceParams,
+  SendParams,
   TransactionResponse,
   TxSendParams,
 } from "../../../../services/bridge/models";
@@ -22,7 +20,8 @@ export function createTestBridge(): Bridge {
 }
 
 export function mockBridge_getTokenBalance(bridge: Bridge, tokenBalance: string) {
-  const getTokenBalance = vi.spyOn(bridge, "getTokenBalance");
+  const getTokenBalance = jest.spyOn(bridge, "getTokenBalance");
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   getTokenBalance.mockImplementation(() => {
     return Promise.resolve(tokenBalance);
   });
@@ -33,17 +32,17 @@ export class TestBridge extends Bridge {
     super();
   }
 
-  approve(approveData: ApproveData): Promise<TransactionResponse> {
+  approve(approveData: ApproveParamsDto): Promise<TransactionResponse> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionApprove(approveData: ApproveData): Promise<RawTransaction> {
+  buildRawTransactionApprove(approveData: ApproveParamsDto): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionSend(params: SendParamsWithChainSymbols | SendParamsWithTokenInfos): Promise<RawTransaction> {
+  buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
@@ -52,7 +51,7 @@ export class TestBridge extends Bridge {
     return Promise.resolve("");
   }
 
-  getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
+  getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     return Promise.resolve("");
   }
 

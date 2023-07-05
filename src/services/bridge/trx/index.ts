@@ -2,46 +2,20 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import {
-  ApproveParamsDto,
-  Bridge,
-  GetAllowanceParamsDto,
-  GetTokenBalanceParamsWithTokenAddress,
-  SendParamsWithChainSymbols,
-  SendParamsWithTokenInfos,
-  TransactionResponse,
-  TxSendParams,
-} from "../models";
-import { amountToHex, getNonce, prepareTxSendParams, sleep } from "../utils";
+import { sleep } from "../../utils";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
+import { getNonce, prepareTxSendParams } from "../utils";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
-export class TronBridge extends Bridge {
+export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
     super();
-  }
-
-  async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      throw Error(`Gas fee payment method '${params.gasFeePaymentMethod}' is not supported`);
-    }
-    const {
-      tokenInfo: { tokenAddress, poolAddress: spender },
-      owner,
-    } = params;
-    const tokenContract = await this.getContract(tokenAddress);
-    const allowance = await tokenContract.methods.allowance(owner, spender).call();
-    return allowance.toString();
-  }
-
-  async getTokenBalance(params: GetTokenBalanceParamsWithTokenAddress): Promise<string> {
-    const contract = await this.getContract(params.tokenAddress);
-    const balance = await contract.balanceOf(params.account).call();
-    return balance.toString();
   }
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
@@ -49,9 +23,7 @@ export class TronBridge extends Bridge {
     return await this.sendRawTransaction(rawTransaction);
   }
 
-  async buildRawTransactionSend(
-    params: SendParamsWithChainSymbols | SendParamsWithTokenInfos
-  ): Promise<RawTransaction> {
+  async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     return this.buildRawTransactionSendFromParams(txSendParams);
   }
@@ -67,45 +39,39 @@ export class TronBridge extends Bridge {
       toTokenAddress,
       messenger,
       fee,
+      gasFeePaymentMethod,
     } = params;
 
     const nonce = getNonce().toJSON().data;
-    const parameter = [
-      { type: "bytes32", value: fromTokenAddress },
-      { type: "uint256", value: amount },
-      { type: "bytes32", value: toAccountAddress },
-      { type: "uint8", value: toChainId },
-      { type: "bytes32", value: toTokenAddress },
-      { type: "uint256", value: nonce },
-      { type: "uint8", value: messenger },
-    ];
-    const value = fee;
-    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint8,bytes32,uint256,uint8)";
-
-    return this.buildRawTransaction(contractAddress, methodSignature, parameter, value, fromAccountAddress);
-  }
-
-  async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    const rawTransaction = await this.buildRawTransactionApprove(params);
-    return await this.sendRawTransaction(rawTransaction);
-  }
-
-  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    const { tokenAddress, spender, owner, amount } = params;
-    const amountHex = amount == undefined ? MAX_AMOUNT : amountToHex(amount);
-
-    const parameter = [
-      { type: "address", value: spender },
-      { type: "uint256", value: amountHex },
-    ];
-    const value = "0";
-    const methodSignature = "approve(address,uint256)";
-
-    return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
-  }
-
-  private getContract(contractAddress: string): Promise<any> {
-    return this.tronWeb.contract().at(contractAddress);
+    let parameters;
+    let value: string;
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      parameters = [
+        { type: "bytes32", value: fromTokenAddress },
+        { type: "uint256", value: amount },
+        { type: "bytes32", value: toAccountAddress },
+        { type: "uint256", value: toChainId },
+        { type: "bytes32", value: toTokenAddress },
+        { type: "uint256", value: nonce },
+        { type: "uint8", value: messenger },
+        { type: "uint256", value: fee },
+      ];
+      value = "0";
+    } else {
+      parameters = [
+        { type: "bytes32", value: fromTokenAddress },
+        { type: "uint256", value: amount },
+        { type: "bytes32", value: toAccountAddress },
+        { type: "uint256", value: toChainId },
+        { type: "bytes32", value: toTokenAddress },
+        { type: "uint256", value: nonce },
+        { type: "uint8", value: messenger },
+        { type: "uint256", value: 0 },
+      ];
+      value = fee;
+    }
+    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
+    return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
   }
 
   private async verifyTx(txId: string, timeout = 10000): Promise<any> {
@@ -132,7 +98,7 @@ export class TronBridge extends Bridge {
   private async buildRawTransaction(
     contractAddress: string,
     methodSignature: string,
-    parameter: SmartContractMethodParameter[],
+    parameters: SmartContractMethodParameter[],
     value: string,
     fromAddress: string
   ): Promise<RawTransaction> {
@@ -142,7 +108,7 @@ export class TronBridge extends Bridge {
       {
         callValue: value,
       },
-      parameter,
+      parameters,
       fromAddress
     );
     if (!transactionObject?.result?.result) {

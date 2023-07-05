@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Yaro Stable",
+    "poolAddress": "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd",
+    "tokenAddress": "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
+    "decimals": 18,
+    "symbol": "YARO",
+    "feeShare": "0.003",
+    "apr": 0,
+    "lpRate": 1.00000007,
+    "chainSymbol": "TRX",
+    "chainType": "TRX",
+    "allbridgeChainId": 4,
+    "bridgeAddress": "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
+    "transferTime": {
+      "BSC": {
+        "1": 180000
+      },
+      "ETH": {
+        "1": 180000
+      },
+      "POL": {
+        "1": 180000
+      },
+      "SOL": {
+        "1": 180000
+      }
+    },
+    "confirmations": 20,
+    "chainName": "Tron"
+  }
+]

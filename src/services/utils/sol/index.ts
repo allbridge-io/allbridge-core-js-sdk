@@ -20,7 +20,7 @@ export async function getVUsdAmount(
   const poolAccountInfo = await bridge.account.pool.fetch(poolAccount);
   const decimals = poolAccountInfo.decimals;
   const feeShare = Big(poolAccountInfo.feeShareBp.toString()).div(10000).toFixed();
-  const poolInfo: Omit<PoolInfo, "p"> = {
+  const poolInfo: Omit<PoolInfo, "p" | "imbalance"> = {
     aValue: poolAccountInfo.a.toString(),
     dValue: poolAccountInfo.d.toString(),
     totalLpAmount: poolAccountInfo.totalLpAmount.toString(),
@@ -28,8 +28,7 @@ export async function getVUsdAmount(
     vUsdBalance: poolAccountInfo.vUsdBalance.toString(),
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
-  // @ts-expect-error enough params for TokenInfo
-  return swapToVUsd(amount, { decimals, feeShare }, poolInfo).toFixed();
+  return swapToVUsd(amount, { decimals, feeShare }, poolInfo).amountIncludingCommissionInSystemPrecision;
 }
 
 export function getMessage(args: {
@@ -53,7 +52,7 @@ export function getMessage(args: {
   const message = Web3.utils.encodePacked(
     { t: "uint256", v: amount },
     { t: "bytes32", v: recipient },
-    { t: "uint8", v: sourceChainId },
+    { t: "uint256", v: sourceChainId },
     { t: "bytes32", v: receiveToken },
     { t: "uint256", v: nonce },
     { t: "uint8", v: messenger }

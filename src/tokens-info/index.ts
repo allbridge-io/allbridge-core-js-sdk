@@ -1,5 +1,5 @@
 import { ChainSymbol } from "../chains";
-import { ChainDetailsMap, TokenInfoWithChainDetails } from "./tokens-info.model";
+import { ChainDetailsMap, TokenWithChainDetails } from "./tokens-info.model";
 
 export * from "./tokens-info.model";
 
@@ -25,16 +25,16 @@ export class TokensInfo {
   }
 
   /**
-   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens}.
+   * Returns a list of supported {@link TokenWithChainDetails | tokens}.
    */
-  tokens(): TokenInfoWithChainDetails[] {
+  tokens(): TokenWithChainDetails[] {
     return Object.values(this._map).flatMap((chainDetails) => chainDetails.tokens);
   }
 
   /**
-   * Returns a list of supported {@link TokenInfoWithChainDetails | tokens} on the selected chain.
+   * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    */
-  tokensByChain(chainSymbol: ChainSymbol): TokenInfoWithChainDetails[] {
+  tokensByChain(chainSymbol: ChainSymbol): TokenWithChainDetails[] {
     return this._map[chainSymbol].tokens;
   }
 }

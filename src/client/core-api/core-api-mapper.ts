@@ -6,9 +6,10 @@ import {
   MessengerTransferTime,
   PoolInfoMap,
   PoolKeyObject,
-  TokenInfoWithChainDetails,
+  TokenWithChainDetails,
   TransferTime,
 } from "../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../utils/calculation";
 import {
   ChainDetailsDTO,
   ChainDetailsResponse,
@@ -41,13 +42,14 @@ export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsRespo
         chainSymbol,
         poolAddress: token.poolAddress,
       });
-      poolInfoMap[poolKey] = token.poolInfo;
+      const imbalance = calculatePoolInfoImbalance(token.poolInfo);
+      poolInfoMap[poolKey] = { ...token.poolInfo, imbalance };
     }
   }
   return poolInfoMap;
 }
 
-function mapTokenInfoWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenInfoWithChainDetails {
+function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetails {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
   const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
@@ -95,13 +97,13 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
-    stablePayAddress: dto.stablePayAddress,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
+    txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,
   };
   return {
     ...chainDetails,
-    tokens: dto.tokens.map((tokenDto) => mapTokenInfoWithChainDetailsFromDto(chainDetails, tokenDto)),
+    tokens: dto.tokens.map((tokenDto) => mapTokenWithChainDetailsFromDto(chainDetails, tokenDto)),
   };
 }
 
@@ -136,6 +138,7 @@ export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse)
   for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
     const chainSymbol = chainSymbolValue as ChainSymbol;
     for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
+      poolInfo.imbalance = calculatePoolInfoImbalance(poolInfo);
       poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;
     }
   }
