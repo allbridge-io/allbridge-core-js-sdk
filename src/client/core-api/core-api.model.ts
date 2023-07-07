@@ -78,6 +78,9 @@ export interface TransferStatusResponse {
   sendAmount: string;
   sendAmountFormatted: number;
 
+  stableFee: string;
+  stableFeeFormatted: number;
+
   sourceTokenAddress: string;
   destinationTokenAddress: string;
 
@@ -99,6 +102,10 @@ export interface BridgeTransaction {
 
   fee: string;
   feeFormatted: number;
+
+  stableFee: string;
+  stableFeeFormatted: number;
+
   amount: string;
   amountFormatted: number;
   virtualAmount: string;
