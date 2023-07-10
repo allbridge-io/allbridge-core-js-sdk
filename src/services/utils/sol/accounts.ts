@@ -23,7 +23,7 @@ export async function getLockAccount(nonce: number[], bridgeProgramId: PublicKey
 
 export async function getPriceAccount(chainId: number, gasOracleProgramId: PublicKey): Promise<PublicKey> {
   const [pricePda] = await PublicKey.findProgramAddress(
-    [anchor.utils.bytes.utf8.encode("price"), Uint8Array.from([chainId])],
+    [anchor.utils.bytes.utf8.encode("price_v2"), Uint8Array.from([chainId])],
     gasOracleProgramId
   );
   return pricePda;
