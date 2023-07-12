@@ -75,7 +75,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         case FeePaymentMethod.WITH_STABLECOIN:
           extraGas = Big(txSendParams.amount).minus(fee).toFixed();
           txSendParams.amount = Big(txSendParams.amount).minus(extraGas).toFixed();
-          throw Error('Solana does not support extraGas feature for payment with Stable-coins yet.');
+          throw Error("Solana does not support extraGas feature for payment with Stable-coins yet.");
           break;
       }
     }
