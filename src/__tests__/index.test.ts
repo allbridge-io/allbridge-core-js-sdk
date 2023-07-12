@@ -883,6 +883,7 @@ describe("SDK", () => {
     const destinationChainToken: TokenWithChainDetails = basicTokenInfoWithChainDetails2;
     const fee = "20000000000000000";
     const sourceNativeTokenPrice = "1501.0000";
+    const feeInStablecoins = "30.02"; // $30.02
 
     const scope: nock.Scope = nock("http://localhost");
 
@@ -899,9 +900,12 @@ describe("SDK", () => {
         })
         .persist();
 
+      const expectedFeeAmountInStablecoin = Big(feeInStablecoins)
+        .mul(10 ** sourceChainToken.decimals)
+        .toFixed();
       const expected: GasFeeOptions = {
         [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
-        [FeePaymentMethod.WITH_STABLECOIN]: "30020000000000000000",
+        [FeePaymentMethod.WITH_STABLECOIN]: expectedFeeAmountInStablecoin,
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);
