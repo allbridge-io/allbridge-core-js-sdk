@@ -127,15 +127,14 @@ export async function prepareTxSendParams(
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
   const sourceToken = params.sourceToken;
+  txSendParams.contractAddress = sourceToken.bridgeAddress;
 
   checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceToken);
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    txSendParams.contractAddress = sourceToken.bridgeAddress;
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
   } else {
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
-    txSendParams.contractAddress = sourceToken.bridgeAddress;
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
 
@@ -144,7 +143,7 @@ export async function prepareTxSendParams(
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
 
   let { fee } = params;
-  if (fee == null) {
+  if (!fee) {
     const gasFeeOptions = await getGasFeeOptions(
       txSendParams.fromChainId,
       txSendParams.toChainId,

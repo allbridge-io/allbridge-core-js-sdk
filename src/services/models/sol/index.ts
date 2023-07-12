@@ -1,5 +1,5 @@
 import { BN, Program } from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { Bridge as BridgeType } from "./types/bridge";
 
 export interface SwapAndBridgeSolData {
@@ -24,6 +24,7 @@ export interface SwapAndBridgeSolData {
   gasPrice: PublicKey;
   thisGasPrice: PublicKey;
   message: Buffer;
+  extraGasInstruction?: TransactionInstruction;
 }
 
 interface ConfigAccountInfo {
