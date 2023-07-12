@@ -1,7 +1,7 @@
-// @ts-expect-error import tron
 import { Big } from "big.js";
 import BN from "bn.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
+// @ts-expect-error import tron
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
@@ -29,11 +29,11 @@ import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockBridgeService_getTokenBalance, mockedTokenBalance } from "./mock/bridge";
 import { mockEvmContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
 import { mockTronContract, mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
+import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
 import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithChainDetails;
@@ -46,6 +46,7 @@ describe("SDK", () => {
     polygonApiUrl: "",
     coreApiUrl: "http://localhost",
     solanaRpcUrl: "solanaRpcUrl",
+    tronRpcUrl: "tronRpcUrl",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
   };
   beforeEach(() => {
@@ -76,6 +77,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const amountToSend = "100";
     const amountToReceive = "84.18";
@@ -119,6 +121,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const destinationChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
@@ -134,6 +137,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -177,6 +181,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const destinationChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
@@ -192,6 +197,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -606,9 +612,6 @@ describe("SDK", () => {
     const tokensAmount = "1.33";
 
     describe("when paying gas fee with native tokens", () => {
-      beforeAll(() => {
-        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
-      });
       afterAll(() => {
         nockCleanAll();
         jest.clearAllMocks();
@@ -863,14 +866,14 @@ describe("SDK", () => {
 
   describe("getTokenBalance", () => {
     test("should delegate call to bridge service", async () => {
-      mockBridgeService_getTokenBalance();
+      mockTokenService_getTokenBalance();
 
       const getTokenBalanceParams: GetTokenBalanceParams = {
         account: "account",
         token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
       };
 
-      const tokenBalance = await sdk.bridge.getTokenBalance(getTokenBalanceParams);
+      const tokenBalance = await sdk.getTokenBalance(getTokenBalanceParams);
       expect(tokenBalance).toEqual(mockedTokenBalance);
     });
   });

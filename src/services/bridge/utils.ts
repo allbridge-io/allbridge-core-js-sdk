@@ -8,7 +8,8 @@ import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { FeePaymentMethod, GasFeeOptions } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
-import { convertFloatAmountToInt } from "../../utils/calculation";
+import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
+import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
 import { SendParams, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
@@ -182,11 +183,11 @@ export async function getGasFeeOptions(
     [FeePaymentMethod.WITH_NATIVE_CURRENCY]: transactionCostResponse.fee,
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
-    let stableCoinFee = new Big(transactionCostResponse.fee)
-      .mul(transactionCostResponse.sourceNativeTokenPrice)
-      .toFixed(0, Big.roundUp);
-    stableCoinFee = stableCoinFee === "0" ? "1" : stableCoinFee;
-    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = stableCoinFee;
+    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
+      new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
+      EVM_NATIVE_TOKEN_PRECISION,
+      sourceChainTokenDecimals
+    ).toFixed(0, Big.roundUp);
   }
 
   return gasFeeOptions;
