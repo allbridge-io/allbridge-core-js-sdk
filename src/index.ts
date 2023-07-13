@@ -1,4 +1,4 @@
-import { Big, BigSource } from "big.js";
+import { Big } from "big.js";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
@@ -25,10 +25,8 @@ import {
   fromSystemPrecision,
   getFeePercent,
   swapFromVUsd,
-  SwapFromVUsdCalcResult,
   swapFromVUsdReverse,
   swapToVUsd,
-  SwapToVUsdCalcResult,
   swapToVUsdReverse,
 } from "./utils/calculation";
 import {
@@ -154,7 +152,7 @@ export class AllbridgeCoreSdk {
       amountInt,
       sourceChainToken,
       await getPoolInfoByToken(this.api, sourceChainToken)
-    ).amountIncludingCommissionInSystemPrecision;
+    );
     const vUsdInSourcePrecision = fromSystemPrecision(vUsdInSystemPrecision, sourceChainToken.decimals);
     return getFeePercent(amountInt, vUsdInSourcePrecision);
   }
@@ -181,12 +179,12 @@ export class AllbridgeCoreSdk {
       amountInt,
       sourceChainToken,
       await getPoolInfoByToken(this.api, sourceChainToken)
-    ).amountIncludingCommissionInSystemPrecision;
+    );
     const usd = swapFromVUsd(
       vUsdInSystemPrecision,
       destinationChainToken,
       await getPoolInfoByToken(this.api, destinationChainToken)
-    ).amountIncludingCommissionInTokenPrecision;
+    );
     const vUsdInDestinationPrecision = fromSystemPrecision(vUsdInSystemPrecision, destinationChainToken.decimals);
     return getFeePercent(vUsdInDestinationPrecision, usd);
   }
@@ -250,16 +248,12 @@ export class AllbridgeCoreSdk {
   ): Promise<string> {
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
 
-    const vUsd = swapToVUsd(
-      amountToSend,
-      sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken)
-    ).amountIncludingCommissionInSystemPrecision;
+    const vUsd = swapToVUsd(amountToSend, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
     const resultInt = swapFromVUsd(
       vUsd,
       destinationChainToken,
       await getPoolInfoByToken(this.api, destinationChainToken)
-    ).amountIncludingCommissionInTokenPrecision;
+    );
     if (Big(resultInt).lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
@@ -283,12 +277,8 @@ export class AllbridgeCoreSdk {
       amountToBeReceived,
       destinationChainToken,
       await getPoolInfoByToken(this.api, destinationChainToken)
-    ).amountIncludingCommissionInTokenPrecision;
-    const resultInt = swapToVUsdReverse(
-      vUsd,
-      sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken)
-    ).amountIncludingCommissionInSystemPrecision;
+    );
+    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
     if (Big(resultInt).lte(0)) {
       throw new InsufficientPoolLiquidity();
     }
@@ -359,14 +349,6 @@ export class AllbridgeCoreSdk {
    */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
     return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
-  }
-
-  async calculateSwapToVUsd(amount: BigSource, token: TokenWithChainDetails): Promise<SwapToVUsdCalcResult> {
-    return swapToVUsd(amount, token, await getPoolInfoByToken(this.api, token));
-  }
-
-  async calculateSwapFromVUsd(amount: BigSource, token: TokenWithChainDetails): Promise<SwapFromVUsdCalcResult> {
-    return swapFromVUsd(amount, token, await getPoolInfoByToken(this.api, token));
   }
 
   async swapAndBridgeFeeCalculation(

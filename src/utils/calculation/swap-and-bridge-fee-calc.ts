@@ -1,12 +1,6 @@
-import { PoolInfo } from "../../tokens-info";
-import {
-  swapFromVUsd,
-  SwapFromVUsdCalcResult,
-  swapFromVUsdReverse,
-  swapToVUsd,
-  SwapToVUsdCalcResult,
-  swapToVUsdReverse,
-} from "./index";
+import { Big, BigSource } from "big.js";
+import { PoolInfo, Token } from "../../tokens-info";
+import { fromSystemPrecision, getY, toSystemPrecision } from "./index";
 
 export interface SwapPoolInfo {
   decimals: number;
@@ -17,6 +11,17 @@ export interface SwapPoolInfo {
 export interface SwapAndBridgeCalculationData {
   swapToVUsdCalcResult: SwapToVUsdCalcResult;
   swapFromVUsdCalcResult: SwapFromVUsdCalcResult;
+}
+
+export interface SwapToVUsdCalcResult {
+  bridgeFeeInTokenPrecision: string;
+  amountIncludingCommissionInSystemPrecision: string;
+  amountExcludingCommissionInSystemPrecision: string;
+}
+export interface SwapFromVUsdCalcResult {
+  bridgeFeeInTokenPrecision: string;
+  amountIncludingCommissionInTokenPrecision: string;
+  amountExcludingCommissionInTokenPrecision: string;
 }
 
 export function swapAndBridgeFeeCalculation(
@@ -55,5 +60,90 @@ export function swapAndBridgeFeeCalculationReverse(
   return {
     swapToVUsdCalcResult,
     swapFromVUsdCalcResult,
+  };
+}
+
+function swapToVUsd(
+  amount: BigSource,
+  { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
+  poolInfo: Omit<PoolInfo, "p" | "imbalance">
+): SwapToVUsdCalcResult {
+  const amountValue = Big(amount);
+  const fee = amountValue.times(feeShare);
+  const amountWithoutFee = amountValue.minus(fee);
+  return {
+    bridgeFeeInTokenPrecision: fee.round().toFixed(),
+    amountIncludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountWithoutFee, decimals), poolInfo),
+    amountExcludingCommissionInSystemPrecision: calcSwapToVUsd(toSystemPrecision(amountValue, decimals), poolInfo),
+  };
+}
+
+function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "p" | "imbalance">): string {
+  const tokenBalance = Big(poolInfo.tokenBalance).plus(amountInSystemPrecision);
+  const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
+  return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round().toFixed();
+}
+
+function swapFromVUsd(
+  amount: BigSource,
+  { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
+  poolInfo: Omit<PoolInfo, "imbalance">
+): SwapFromVUsdCalcResult {
+  const amountValue = Big(amount);
+  const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
+  const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
+  const result = fromSystemPrecision(Big(poolInfo.tokenBalance).minus(newAmount), decimals);
+  const fee = Big(result).times(feeShare);
+  const resultWithoutFee = Big(result).minus(fee).round();
+  return {
+    bridgeFeeInTokenPrecision: fee.round().toFixed(),
+    amountIncludingCommissionInTokenPrecision: resultWithoutFee.toFixed(),
+    amountExcludingCommissionInTokenPrecision: result.toFixed(),
+  };
+}
+
+function swapToVUsdReverse(
+  amountInTokenPrecision: BigSource,
+  { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
+  poolInfo: PoolInfo
+): SwapToVUsdCalcResult {
+  const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
+  const fee = Big(amountInTokenPrecision).times(reversedFeeShare);
+  const amountWithFee = Big(amountInTokenPrecision).plus(fee);
+  return {
+    bridgeFeeInTokenPrecision: fee.round().toFixed(),
+    amountIncludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
+      toSystemPrecision(amountWithFee, decimals),
+      poolInfo
+    ),
+    amountExcludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
+      toSystemPrecision(amountInTokenPrecision, decimals),
+      poolInfo
+    ),
+  };
+}
+
+function calcSwapToVUsdReverse(amountInSystemPrecision: Big, poolInfo: PoolInfo): string {
+  const tokenBalance = Big(poolInfo.tokenBalance).minus(amountInSystemPrecision);
+  const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
+  return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round().toFixed();
+}
+
+function swapFromVUsdReverse(
+  amountInSystemPrecision: BigSource,
+  { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
+  poolInfo: PoolInfo
+): SwapFromVUsdCalcResult {
+  const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amountInSystemPrecision);
+  const tokenBalance = getY(vUsdNewAmount.toFixed(), poolInfo.aValue, poolInfo.dValue);
+  const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
+  const amountWithoutFee = fromSystemPrecision(inSystemPrecision.toFixed(), decimals);
+  const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
+  const fee = Big(amountWithoutFee).times(reversedFeeShare);
+  const amount = Big(amountWithoutFee).plus(fee);
+  return {
+    bridgeFeeInTokenPrecision: fee.round().toFixed(),
+    amountIncludingCommissionInTokenPrecision: amount.round().toFixed(),
+    amountExcludingCommissionInTokenPrecision: amountWithoutFee.toFixed(),
   };
 }
