@@ -32,7 +32,7 @@ describe("AllbridgeCachingCoreClient", () => {
     beforeEach(() => {
       apiMock.getChainDetailsMapAndPoolInfoMap.mockResolvedValueOnce({
         chainDetailsMap: expectedChainDetailsMap,
-        poolMap: expectedPoolInfoMap,
+        poolInfoMap: expectedPoolInfoMap,
       });
     });
 

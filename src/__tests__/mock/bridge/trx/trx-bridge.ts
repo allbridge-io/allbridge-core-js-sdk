@@ -1,6 +1,6 @@
 import { TronBridgeService } from "../../../../services/bridge/trx";
 
-export function mockTronContract(methods: any) {
+export function mockTronBridgeContract(methods: any) {
   const bridgeMocked = {
     methods: methods,
   };

@@ -29,11 +29,13 @@ import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockEvmContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
-import { mockTronContract, mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
+import { mockEvmBridgeContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
+import { mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
+import { mockEvmTokenContract } from "./mock/token/evm/evm-token";
+import { mockTronTokenContract } from "./mock/token/trx/trx-token";
 import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithChainDetails;
@@ -307,14 +309,15 @@ describe("SDK", () => {
   describe("Given token info endpoint", () => {
     const scope: nock.Scope = nock("http://localhost");
 
-    beforeAll(() => {
-      scope.get("/token-info").reply(200, tokenInfoResponse).persist();
-    });
     afterAll(() => {
       nockCleanAll();
     });
 
     describe("Get tokens info", () => {
+      beforeAll(() => {
+        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+      });
+
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
         const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
         expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
@@ -359,7 +362,7 @@ describe("SDK", () => {
               call: methodCallMock,
             };
           });
-          mockEvmContract({
+          mockEvmTokenContract({
             allowance: allowanceMocked,
           });
         });
@@ -531,7 +534,7 @@ describe("SDK", () => {
               call: methodCallMock,
             };
           });
-          mockTronContract({
+          mockTronTokenContract({
             allowance: allowanceMocked,
           });
         });
@@ -655,7 +658,7 @@ describe("SDK", () => {
             encodeABI: encodeABIMocked,
           };
         });
-        mockEvmContract({
+        mockEvmBridgeContract({
           swapAndBridge: swapAndBridgeMocked,
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
@@ -826,7 +829,7 @@ describe("SDK", () => {
             encodeABI: encodeABIMocked,
           };
         });
-        mockEvmContract({
+        mockEvmBridgeContract({
           swapAndBridge: swapAndBridgeMocked,
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);

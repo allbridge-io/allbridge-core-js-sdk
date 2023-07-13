@@ -2,7 +2,7 @@ import nock, { abortPendingRequests, cleanAll, disableNetConnect } from "nock";
 import Web3 from "web3";
 import { ChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
-import { EvmPool } from "../../../../services/liquidity-pool/evm";
+import { EvmPoolService } from "../../../../services/liquidity-pool/evm";
 import { TokenWithChainDetails } from "../../../../tokens-info";
 import { rpcReply } from "../../../mock/utils";
 
@@ -25,7 +25,7 @@ describe("EvmPool", () => {
       }),
   };
 
-  const evmPool = new EvmPool(new Web3(LOCAL_NODE_URL), api);
+  const evmPool = new EvmPoolService(new Web3(LOCAL_NODE_URL), api);
 
   beforeAll(() => {
     disableNetConnect();
