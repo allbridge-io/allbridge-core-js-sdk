@@ -59,8 +59,8 @@ jobs:
       - name: Spell check
         run: pnpm run spell:check
 
-#      - name: Test
-#        run: pnpm run test
+      - name: Test
+        run: pnpm run test
 
       - name: Release
         env:

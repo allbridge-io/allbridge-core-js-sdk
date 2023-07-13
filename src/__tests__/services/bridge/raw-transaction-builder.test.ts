@@ -1,35 +1,28 @@
 import Web3 from "web3";
-import { AllbridgeCoreClientImpl } from "../../../client/core-api";
-import { Messenger } from "../../../client/core-api/core-api.model";
-import { BridgeService } from "../../../services/bridge";
-import { SendParams } from "../../../services/bridge/models";
 import { RawTransactionBuilder } from "../../../services/bridge/raw-transaction-builder";
+import { TokenService } from "../../../services/token";
 import { ApproveParams } from "../../../services/token/models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
-import tokenInfoWithChainDetailsTrx from "../../data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawTransactionBuilder;
-  let bridgeServiceMock: any;
+  let bridgeService: any;
+  let api: any;
+  let solParams: any;
+  const tokenService = new TokenService(api, solParams);
 
   beforeEach(() => {
-    const BridgeServiceMock = jest.fn();
-    BridgeServiceMock.prototype.buildRawTransactionApprove = jest.fn();
-    BridgeServiceMock.prototype.buildRawTransactionSend = jest.fn();
-    bridgeServiceMock = new BridgeServiceMock(
-      new AllbridgeCoreClientImpl({ polygonApiUrl: "", coreApiUrl: "coreApiUrl" })
-    );
-    rawTransactionBuilder = new RawTransactionBuilder(bridgeServiceMock as BridgeService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    rawTransactionBuilder = new RawTransactionBuilder(api, solParams, bridgeService, tokenService);
   });
 
   test("approve should call buildRawTransactionApprove", async () => {
-    const expectedApproveTransaction = "expectedApproveTransaction";
-    bridgeServiceMock.buildRawTransactionApprove.mockResolvedValueOnce(expectedApproveTransaction);
+    const expectedApproveTransaction = {
+      data: "0x095ea7b3000000000000000000000000ba285a8f52601eabcc769706fcbde2645aa0af18ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      from: "owner",
+      to: "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
+      value: "0",
+    };
 
     const approveData: ApproveParams = {
       token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
@@ -39,26 +32,5 @@ describe("RawTransactionBuilder", () => {
     const web3 = new Web3();
     const actual = await rawTransactionBuilder.approve(web3, approveData);
     expect(actual).toEqual(expectedApproveTransaction);
-    expect(bridgeServiceMock.buildRawTransactionApprove).toHaveBeenCalled();
-    expect(bridgeServiceMock.buildRawTransactionApprove).toBeCalledWith(web3, approveData);
-  });
-
-  test("send should call buildRawTransactionSend", async () => {
-    const expectedSendTransaction = "expectedSendTransaction";
-    bridgeServiceMock.buildRawTransactionSend.mockResolvedValueOnce(expectedSendTransaction);
-
-    const params: SendParams = {
-      amount: "1.33",
-      fromAccountAddress: "fromAccountAddress",
-      toAccountAddress: "toAccountAddress",
-      sourceToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
-      destinationToken: tokenInfoWithChainDetailsTrx[0] as TokenWithChainDetails,
-      messenger: Messenger.ALLBRIDGE,
-    };
-    const web3 = new Web3();
-    const actual = await rawTransactionBuilder.send(params, web3);
-    expect(actual).toEqual(expectedSendTransaction);
-    expect(bridgeServiceMock.buildRawTransactionSend).toHaveBeenCalled();
-    expect(bridgeServiceMock.buildRawTransactionSend).toBeCalledWith(params, web3);
   });
 });

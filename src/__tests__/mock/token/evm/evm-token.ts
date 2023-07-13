@@ -1,19 +1,18 @@
-import { EvmBridgeService } from "../../../../services/bridge/evm";
 import { EvmTokenService } from "../../../../services/token/evm";
 
-export function mockEvmBridgeContract(methods: any) {
+export function mockEvmTokenContract(methods: any) {
   const contractMocked = {
     methods: methods,
   };
 
-  const methodGetContract = jest.spyOn(EvmBridgeService.prototype as any, "getContract");
+  const methodGetContract = jest.spyOn(EvmTokenService.prototype as any, "getContract");
   methodGetContract.mockImplementation(() => {
     return contractMocked;
   });
 }
 
 export function mockEvmSendRawTransaction(transactionHash: string) {
-  const methodSendRawTransaction = jest.spyOn(EvmBridgeService.prototype as any, "sendRawTransaction");
+  const methodSendRawTransaction = jest.spyOn(EvmTokenService.prototype as any, "sendRawTransaction");
   methodSendRawTransaction.mockImplementation(() => {
     return { txId: transactionHash };
   });

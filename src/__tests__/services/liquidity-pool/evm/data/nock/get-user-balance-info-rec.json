@@ -1,0 +1,61 @@
+[
+  {
+    "scope": "https://goerli.infura.io:443",
+    "method": "POST",
+    "path": "/",
+    "body": [
+      {
+        "jsonrpc": "2.0",
+        "id": 8551125359729656,
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x4bf6f9e7000000000000000000000000b3a88d47eeda762610c4d86ea6c8562288d53dfa",
+            "to": "0x57fb363e8e96b086cc16e0f35b369a14b1ac1ac2"
+          },
+          "latest"
+        ]
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 8551125359729657,
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x70a08231000000000000000000000000b3a88d47eeda762610c4d86ea6c8562288d53dfa",
+            "to": "0x57fb363e8e96b086cc16e0f35b369a14b1ac1ac2"
+          },
+          "latest"
+        ]
+      }
+    ],
+    "status": 200,
+    "response": [
+      {
+        "jsonrpc": "2.0",
+        "id": 8551125359729656,
+        "result": "0x000000000000000000000000000000000000000000000000000e3a80f4aa9219"
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 8551125359729657,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000002702"
+      }
+    ],
+    "rawHeaders": [
+      "Date",
+      "Thu, 13 Jul 2023 07:34:18 GMT",
+      "Content-Type",
+      "application/json",
+      "Content-Length",
+      "237",
+      "Connection",
+      "keep-alive",
+      "Vary",
+      "Origin",
+      "Vary",
+      "Accept-Encoding"
+    ],
+    "responseIsBinary": false
+  }
+]

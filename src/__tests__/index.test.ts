@@ -1,7 +1,7 @@
-// @ts-expect-error import tron
 import { Big } from "big.js";
 import BN from "bn.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
+// @ts-expect-error import tron
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
@@ -29,11 +29,13 @@ import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
-import { mockBridgeService_getTokenBalance, mockedTokenBalance } from "./mock/bridge";
-import { mockEvmContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
-import { mockTronContract, mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
+import { mockEvmBridgeContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
+import { mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
+import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
+import { mockEvmTokenContract } from "./mock/token/evm/evm-token";
+import { mockTronTokenContract } from "./mock/token/trx/trx-token";
 import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithChainDetails;
@@ -46,6 +48,7 @@ describe("SDK", () => {
     polygonApiUrl: "",
     coreApiUrl: "http://localhost",
     solanaRpcUrl: "solanaRpcUrl",
+    tronRpcUrl: "tronRpcUrl",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
   };
   beforeEach(() => {
@@ -76,6 +79,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const amountToSend = "100";
     const amountToReceive = "84.18";
@@ -119,6 +123,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const destinationChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
@@ -134,6 +139,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -177,6 +183,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     const destinationChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
@@ -192,6 +199,7 @@ describe("SDK", () => {
       totalLpAmount: "",
       accRewardPerShareP: "",
       p: 0,
+      imbalance: "0",
     };
     beforeAll(() => {
       mockPoolInfoEndpoint(scope, [
@@ -301,14 +309,15 @@ describe("SDK", () => {
   describe("Given token info endpoint", () => {
     const scope: nock.Scope = nock("http://localhost");
 
-    beforeAll(() => {
-      scope.get("/token-info").reply(200, tokenInfoResponse).persist();
-    });
     afterAll(() => {
       nockCleanAll();
     });
 
     describe("Get tokens info", () => {
+      beforeAll(() => {
+        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+      });
+
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
         const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
         expect(await sdk.chainDetailsMap()).toEqual(chainDetailsMap);
@@ -353,7 +362,7 @@ describe("SDK", () => {
               call: methodCallMock,
             };
           });
-          mockEvmContract({
+          mockEvmTokenContract({
             allowance: allowanceMocked,
           });
         });
@@ -525,7 +534,7 @@ describe("SDK", () => {
               call: methodCallMock,
             };
           });
-          mockTronContract({
+          mockTronTokenContract({
             allowance: allowanceMocked,
           });
         });
@@ -606,9 +615,6 @@ describe("SDK", () => {
     const tokensAmount = "1.33";
 
     describe("when paying gas fee with native tokens", () => {
-      beforeAll(() => {
-        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
-      });
       afterAll(() => {
         nockCleanAll();
         jest.clearAllMocks();
@@ -652,7 +658,7 @@ describe("SDK", () => {
             encodeABI: encodeABIMocked,
           };
         });
-        mockEvmContract({
+        mockEvmBridgeContract({
           swapAndBridge: swapAndBridgeMocked,
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
@@ -823,7 +829,7 @@ describe("SDK", () => {
             encodeABI: encodeABIMocked,
           };
         });
-        mockEvmContract({
+        mockEvmBridgeContract({
           swapAndBridge: swapAndBridgeMocked,
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
@@ -863,14 +869,14 @@ describe("SDK", () => {
 
   describe("getTokenBalance", () => {
     test("should delegate call to bridge service", async () => {
-      mockBridgeService_getTokenBalance();
+      mockTokenService_getTokenBalance();
 
       const getTokenBalanceParams: GetTokenBalanceParams = {
         account: "account",
         token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
       };
 
-      const tokenBalance = await sdk.bridge.getTokenBalance(getTokenBalanceParams);
+      const tokenBalance = await sdk.getTokenBalance(getTokenBalanceParams);
       expect(tokenBalance).toEqual(mockedTokenBalance);
     });
   });
@@ -883,6 +889,7 @@ describe("SDK", () => {
     const destinationChainToken: TokenWithChainDetails = basicTokenInfoWithChainDetails2;
     const fee = "20000000000000000";
     const sourceNativeTokenPrice = "1501.0000";
+    const feeInStablecoins = "30.02"; // $30.02
 
     const scope: nock.Scope = nock("http://localhost");
 
@@ -899,9 +906,12 @@ describe("SDK", () => {
         })
         .persist();
 
+      const expectedFeeAmountInStablecoin = Big(feeInStablecoins)
+        .mul(10 ** sourceChainToken.decimals)
+        .toFixed();
       const expected: GasFeeOptions = {
         [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
-        [FeePaymentMethod.WITH_STABLECOIN]: "30020000000000000000",
+        [FeePaymentMethod.WITH_STABLECOIN]: expectedFeeAmountInStablecoin,
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);

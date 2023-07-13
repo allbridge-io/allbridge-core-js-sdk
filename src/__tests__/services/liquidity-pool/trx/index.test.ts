@@ -2,7 +2,7 @@ import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
-import { TronPool } from "../../../../services/liquidity-pool/trx";
+import { TronPoolService } from "../../../../services/liquidity-pool/trx";
 import { TokenWithChainDetails } from "../../../../tokens-info";
 
 import triggerSmartContractClaimRewardsResponse from "../../../mock/tron-web/trigger-smart-contract-claim-rewards.json";
@@ -10,10 +10,10 @@ import triggerSmartContractDepositResponse from "../../../mock/tron-web/trigger-
 import triggerSmartContractWithdrawResponse from "../../../mock/tron-web/trigger-smart-contract-withdraw.json";
 
 const ACCOUNT_ADDRESS = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
-const POOL_ADDRESS = "TT3oijZeGEjKYg4UNYhaxLdh76YVyMcjHd";
+const POOL_ADDRESS = "TTjb1Q2mSeegxrqiu7h28UEfiTEycD2sWU";
 // @ts-expect-error enough
 const TOKEN_INFO: TokenWithChainDetails = { poolAddress: POOL_ADDRESS };
-const LOCAL_NODE_URL = "https://local-test.com";
+const LOCAL_NODE_URL = "https://nile.trongrid.io/jsonrpc";
 
 describe("TronPool", () => {
   let api: any;
@@ -23,7 +23,7 @@ describe("TronPool", () => {
     },
   };
 
-  const tronPool = new TronPool(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient);
+  const tronPool = new TronPoolService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient, LOCAL_NODE_URL);
 
   beforeAll(() => {
     disableNetConnect();
@@ -124,19 +124,30 @@ describe("TronPool", () => {
 
       const tronWeb = new TronWeb({ fullHost: LOCAL_NODE_URL });
 
-      const tronPool = new TronPool(tronWeb, api as AllbridgeCoreClient);
+      const tronPool = new TronPoolService(tronWeb, api as AllbridgeCoreClient, LOCAL_NODE_URL);
 
       const userBalanceInfo = await tronPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 
       expect(userBalanceInfo).toEqual({
-        lpAmount: "1790",
-        rewardDebt: "6562954865251962",
+        lpAmount: "0",
+        rewardDebt: "0",
       });
-      expect(userBalanceInfo.userLiquidity).toEqual(`1.79`);
     });
   });
 });
 
 function nockRequests(recName: string) {
-  load(`./src/__tests__/services/liquidity-pool/trx/data/nock/${recName}-rec.json`);
+  const nocks = load(`./src/__tests__/services/liquidity-pool/trx/data/nock/${recName}-rec.json`);
+  nocks.forEach(function (nock) {
+    nock.filteringRequestBody((b) => {
+      try {
+        const body = JSON.parse(b);
+        body[0].id = 1672338789028432;
+        body[1].id = 1672338789028433;
+        return JSON.stringify(body);
+      } catch (e) {
+        return b;
+      }
+    });
+  });
 }

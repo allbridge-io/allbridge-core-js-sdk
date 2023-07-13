@@ -1,6 +1,7 @@
 import nock from "nock";
 import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
+import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
@@ -22,10 +23,12 @@ const expectedTransferStatus = transferStatus as unknown as TransferStatusRespon
 
 describe("AllbridgeCoreClient", () => {
   const POLYGON_API_URL = "http://localhost/pol";
-  const api = new AllbridgeCoreClientImpl({
-    coreApiUrl: "http://localhost",
-    polygonApiUrl: POLYGON_API_URL,
-  });
+  const api = new AllbridgeCoreClientImpl(
+    new ApiClientImpl({
+      coreApiUrl: "http://localhost",
+      polygonApiUrl: POLYGON_API_URL,
+    })
+  );
 
   describe("given /token-info endpoint", () => {
     let scope: nock.Scope;
@@ -131,11 +134,13 @@ describe("AllbridgeCoreClient", () => {
 
   describe("Custom headers", () => {
     const customHeaders = { "secret-waf-header": "secret-waf-header-value" };
-    const api = new AllbridgeCoreClientImpl({
-      coreApiUrl: "http://localhost",
-      polygonApiUrl: POLYGON_API_URL,
-      coreApiHeaders: customHeaders,
-    });
+    const api = new AllbridgeCoreClientImpl(
+      new ApiClientImpl({
+        coreApiUrl: "http://localhost",
+        polygonApiUrl: POLYGON_API_URL,
+        coreApiHeaders: customHeaders,
+      })
+    );
 
     it("☀️ should be present", async () => {
       const nockOptions = { reqheaders: customHeaders }; // cSpell:disable-line

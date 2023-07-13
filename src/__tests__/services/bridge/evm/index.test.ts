@@ -3,15 +3,14 @@ import { ChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { FeePaymentMethod } from "../../../../models";
-import { EvmBridge } from "../../../../services/bridge/evm";
-import { ApproveParamsDto, TxSendParams } from "../../../../services/bridge/models";
+import { EvmBridgeService } from "../../../../services/bridge/evm";
+import { TxSendParams } from "../../../../services/bridge/models";
 import { ChainDetailsMap } from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
-import { mockEvmSendRawTransaction, mockGetAllowanceByTokenAddress } from "../../../mock/bridge/evm/evm-bridge";
 import { mockNonce } from "../../../mock/bridge/utils";
 
 describe("EvmBridge", () => {
-  let evmBridge: EvmBridge;
+  let evmBridge: EvmBridgeService;
 
   const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
 
@@ -25,33 +24,13 @@ describe("EvmBridge", () => {
   };
 
   beforeEach(() => {
-    evmBridge = new EvmBridge(new Web3(), api);
+    evmBridge = new EvmBridgeService(new Web3(), api);
   });
 
   describe("Given transfer params", () => {
     const from = "0x01237296aaF2ba01AC9a819813E260Bb4Ad6642d";
     const bridgeAddress = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
-    const tokenAddress = "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117";
-    const poolAddress = "0xEc46d2b11e68A31026673D63B345B889AB37C0Bc";
     const gasFee = "20000000000000000";
-
-    test("buildRawTransactionApprove should return RawTransaction", async () => {
-      const approveData: ApproveParamsDto = {
-        chainSymbol: ChainSymbol.ETH,
-        tokenAddress: tokenAddress,
-        owner: from,
-        spender: poolAddress,
-      };
-
-      const actual = await evmBridge.buildRawTransactionApprove(approveData);
-
-      expect(actual).toEqual({
-        from: from,
-        to: tokenAddress,
-        value: "0",
-        data: "0x095ea7b3000000000000000000000000ec46d2b11e68a31026673d63b345b889ab37c0bcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-      });
-    });
 
     test("buildRawTransactionSend should return RawTransaction", async () => {
       mockNonce();
@@ -77,49 +56,6 @@ describe("EvmBridge", () => {
         to: bridgeAddress,
         value: gasFee,
         data: "0x4cd480bd000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000000000000000000000000000012751bf40f450000ba285a8f52601eabcc769706fcbde2645aa0af180000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b3b1200153e110000001b006132000000000000000000362600611e000000070c00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
-      });
-    });
-
-    describe("approve for ETH/USDT", () => {
-      const usdtTokenAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-      const owner = "0xba285A8F52601EabCc769706FcBDe2645aa0AF18";
-      const spender = "0x727e10f9E750C922bf9dee7620B58033F566b34F";
-      const params: ApproveParamsDto = {
-        chainSymbol: ChainSymbol.ETH,
-        tokenAddress: usdtTokenAddress,
-        owner: owner,
-        spender: spender,
-      };
-      const txHash = "transactionHash";
-      const sendRawTxSpy = mockEvmSendRawTransaction(txHash);
-
-      afterEach(() => {
-        sendRawTxSpy.mockClear();
-        jest.clearAllMocks();
-      });
-
-      test("must first set 0 amount allowance if current allowance not 0", async () => {
-        const currentAllowance = "1";
-        const getAllowanceSpy = mockGetAllowanceByTokenAddress(currentAllowance);
-
-        const tx = await evmBridge.approve(params);
-
-        expect(tx).toEqual({ txId: txHash });
-        expect(getAllowanceSpy).toHaveBeenCalledTimes(1);
-        expect(getAllowanceSpy).toHaveBeenCalledWith(usdtTokenAddress, owner, spender);
-        expect(sendRawTxSpy).toHaveBeenCalledTimes(2);
-      });
-
-      test("must directly set amount if current allowance is 0", async () => {
-        const currentAllowance = "0";
-        const getAllowanceSpy = mockGetAllowanceByTokenAddress(currentAllowance);
-
-        const tx = await evmBridge.approve(params);
-
-        expect(tx).toEqual({ txId: txHash });
-        expect(getAllowanceSpy).toHaveBeenCalledTimes(1);
-        expect(getAllowanceSpy).toHaveBeenCalledWith(usdtTokenAddress, owner, spender);
-        expect(sendRawTxSpy).toHaveBeenCalledTimes(1);
       });
     });
   });
