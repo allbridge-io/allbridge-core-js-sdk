@@ -28,7 +28,7 @@ export async function getVUsdAmount(
     vUsdBalance: poolAccountInfo.vUsdBalance.toString(),
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
-  return swapToVUsd(amount, { decimals, feeShare }, poolInfo).amountIncludingCommissionInSystemPrecision;
+  return swapToVUsd(amount, { decimals, feeShare }, poolInfo);
 }
 
 export function getMessage(args: {

@@ -4,6 +4,7 @@ import bs58 from "bs58";
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "../../../client/core-api";
+import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
@@ -22,7 +23,9 @@ describe("ChainBridgeService Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" });
+    api = new AllbridgeCoreClientImpl(
+      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" })
+    );
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
 
