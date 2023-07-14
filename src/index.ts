@@ -272,7 +272,6 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<string> {
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
-
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
       destinationChainToken,
