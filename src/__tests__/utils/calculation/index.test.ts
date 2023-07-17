@@ -6,8 +6,10 @@ import {
   convertIntAmountToFloat,
   fromSystemPrecision,
   getFeePercent,
-  swapFromVUsd, swapFromVUsdReverse,
-  swapToVUsd, swapToVUsdReverse,
+  swapFromVUsd,
+  swapFromVUsdReverse,
+  swapToVUsd,
+  swapToVUsdReverse,
   toSystemPrecision,
 } from "../../../utils/calculation";
 

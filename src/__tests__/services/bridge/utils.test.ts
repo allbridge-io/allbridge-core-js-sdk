@@ -31,7 +31,9 @@ describe("ChainBridgeService Utils", () => {
 
   describe("prepareTxSendParams()", () => {
     const fee = "20000000000000000";
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
+    const exchangeRate = "0.12550590438537169016";
+    const sourceNativeTokenPrice = "241.26";
+    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, exchangeRate, sourceNativeTokenPrice };
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
       const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {

@@ -63,12 +63,13 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
     const fee = "20000000000000000";
     const sourceNativeTokenPrice = "1501";
+    const exchangeRate = "0.12550590438537169016";
     const receiveFeeRequest: ReceiveTransactionCostRequest = {
       sourceChainId: 2,
       destinationChainId: 4,
       messenger: Messenger.ALLBRIDGE,
     };
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, sourceNativeTokenPrice };
+    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, sourceNativeTokenPrice, exchangeRate };
 
     beforeEach(() => {
       scope = nock("http://localhost")
@@ -79,6 +80,7 @@ describe("AllbridgeCoreClient", () => {
     it("☀️ getReceiveTransactionCost returns fee", async () => {
       const actual = await api.getReceiveTransactionCost(receiveFeeRequest);
       expect(actual).toEqual({
+        exchangeRate: "0.12550590438537169016",
         fee: "20000000000000000",
         sourceNativeTokenPrice: "1501",
       });

@@ -2,7 +2,11 @@ import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { ApiClient } from "./api-client";
-import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
+import {
+  ReceiveTransactionCostRequest,
+  ReceiveTransactionCostResponse,
+  TransferStatusResponse,
+} from "./core-api.model";
 
 export interface AllbridgeCoreClientParams {
   coreApiUrl: string;
@@ -25,10 +29,7 @@ export interface AllbridgeCoreClient {
 
   getPolygonMaxFee(): Promise<string>;
 
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -84,10 +85,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     return await this.apiClient.getPolygonGasInfoFromGasStation(level);
   }
 
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return await this.apiClient.getReceiveTransactionCost(args);
   }
 

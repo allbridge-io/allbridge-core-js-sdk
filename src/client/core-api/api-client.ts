@@ -29,10 +29,7 @@ export interface ApiClient {
     maxPriorityFee: number;
     maxFee: number;
   }>;
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
@@ -91,16 +88,14 @@ export class ApiClientImpl implements ApiClient {
     throw new Error(errorMessage);
   }
 
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
       headers: {
         "Content-Type": "application/json",
       },
     });
     return {
+      exchangeRate: data.exchangeRate,
       fee: data.fee,
       sourceNativeTokenPrice: data.sourceNativeTokenPrice,
     };
