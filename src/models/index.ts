@@ -25,7 +25,7 @@ export {
 } from "../services/liquidity-pool/models/pool.model";
 export { Provider, RawTransaction } from "../services/models/index";
 
-export { testnet } from "../configs/testnet";
+export { testnet, testnetNodeUrlsDefault } from "../configs/testnet";
 
 export enum FeePaymentMethod {
   /**

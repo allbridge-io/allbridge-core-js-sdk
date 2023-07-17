@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -12,7 +12,7 @@ const privateKey = getEnvVar("SOL_PRIVATE_KEY");
 const toAddressPol = getEnvVar("POL_ACCOUNT_ADDRESS");
 
 const exampleViaWormhole = async () => {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
@@ -34,7 +34,7 @@ const exampleViaWormhole = async () => {
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
 
-  const connection = new solanaWeb3.Connection(sdk.params.solanaRpcUrl, "confirmed");
+  const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
   transaction.partialSign(keypair);
   const wiredTx = transaction.serialize();
   const signature = await connection.sendRawTransaction(wiredTx);
@@ -42,7 +42,7 @@ const exampleViaWormhole = async () => {
 };
 
 const exampleViaAllbridge = async () => {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
@@ -63,7 +63,7 @@ const exampleViaAllbridge = async () => {
   });
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
 
-  const connection = new solanaWeb3.Connection(sdk.params.solanaRpcUrl, "confirmed");
+  const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
   const signature = await sendAndConfirmTransaction(connection, transaction as any, [keypair]);
 
   console.log("Signature via ALLBRIDGE:", signature);

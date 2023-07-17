@@ -26,7 +26,7 @@ describe("AllbridgeCoreClient", () => {
   const api = new AllbridgeCoreClientImpl(
     new ApiClientImpl({
       coreApiUrl: "http://localhost",
-      polygonApiUrl: POLYGON_API_URL,
+      polygonGasStationUrl: POLYGON_API_URL,
     })
   );
 
@@ -112,7 +112,7 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 
-  describe("given polygonApiUrl endpoint", () => {
+  describe("given polygonGasStationUrl endpoint", () => {
     let scope: nock.Scope;
 
     beforeEach(() => {
@@ -139,7 +139,7 @@ describe("AllbridgeCoreClient", () => {
     const api = new AllbridgeCoreClientImpl(
       new ApiClientImpl({
         coreApiUrl: "http://localhost",
-        polygonApiUrl: POLYGON_API_URL,
+        polygonGasStationUrl: POLYGON_API_URL,
         coreApiHeaders: customHeaders,
       })
     );

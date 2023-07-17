@@ -1,9 +1,9 @@
-import { AllbridgeCoreSdk, Messenger } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../utils/utils";
 import Big from "big.js";
 
 async function runExampleCalculateAmounts() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
   const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
@@ -71,7 +71,7 @@ async function runExampleCalculateAmounts() {
 }
 
 async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
   const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
@@ -114,7 +114,7 @@ async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
 }
 
 async function runExampleGetAmountToSendAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
   const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));

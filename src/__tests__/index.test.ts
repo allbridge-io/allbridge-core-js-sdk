@@ -18,6 +18,7 @@ import {
   GetAllowanceParams,
   GetTokenBalanceParams,
   Messenger,
+  NodeUrlsConfig,
   PoolInfo,
   SendParams,
   TokenWithChainDetails,
@@ -44,15 +45,17 @@ const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenWith
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
 
-  const testConfig: AllbridgeCoreSdkOptions = {
-    polygonApiUrl: "",
-    coreApiUrl: "http://localhost",
+  const testNodeUrls: NodeUrlsConfig = {
     solanaRpcUrl: "solanaRpcUrl",
     tronRpcUrl: "tronRpcUrl",
+  };
+  const testConfig: AllbridgeCoreSdkOptions = {
+    polygonGasStationUrl: "",
+    coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
   };
   beforeEach(() => {
-    sdk = new AllbridgeCoreSdk(testConfig);
+    sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
   });
 
   describe("Given tokens with different precision", () => {
@@ -622,7 +625,9 @@ describe("SDK", () => {
       });
 
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
-        fee, sourceNativeTokenPrice, exchangeRate
+        fee,
+        sourceNativeTokenPrice,
+        exchangeRate,
       };
 
       test("Should return txId after sending GRL to TRX", async () => {
@@ -791,7 +796,7 @@ describe("SDK", () => {
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
         fee,
         sourceNativeTokenPrice,
-        exchangeRate
+        exchangeRate,
       };
 
       test("Should return txId after sending GRL to TRX", async () => {

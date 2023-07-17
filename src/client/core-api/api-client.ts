@@ -35,7 +35,7 @@ export interface ApiClient {
 
 export class ApiClientImpl implements ApiClient {
   private api: Axios;
-  private readonly polygonApiUrl: string;
+  private readonly polygonGasStationUrl: string;
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
@@ -46,7 +46,7 @@ export class ApiClientImpl implements ApiClient {
         "x-Sdk-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
-    this.polygonApiUrl = params.polygonApiUrl;
+    this.polygonGasStationUrl = params.polygonGasStationUrl;
   }
 
   async getTokenInfo(): Promise<TokenInfo> {
@@ -70,7 +70,7 @@ export class ApiClientImpl implements ApiClient {
     const attempts = 5;
     for (let i = 0; i < attempts; i++) {
       try {
-        const { data } = await axios.get(this.polygonApiUrl);
+        const { data } = await axios.get(this.polygonGasStationUrl);
         if (!data[level]) {
           throw new Error(`No data for ${level} level`);
         }

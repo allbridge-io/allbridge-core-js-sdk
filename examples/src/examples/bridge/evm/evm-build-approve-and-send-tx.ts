@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
@@ -17,8 +17,7 @@ const main = async () => {
   const account = web3.eth.accounts.privateKeyToAccount(getEnvVar("ETH_PRIVATE_KEY"));
   web3.eth.accounts.wallet.add(account);
 
-  // const sdk = new AllbridgeCoreSdk();
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
@@ -31,7 +30,6 @@ const main = async () => {
   const amount = "1.01";
 
   // authorize the bridge to transfer tokens from sender's address
-  // const rawTransactionApprove = await sdk.bridge.buildRawTransactionApprove(web3, {
   const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(web3, {
     token: sourceTokenInfo,
     owner: fromAddress,

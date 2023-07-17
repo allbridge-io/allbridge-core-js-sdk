@@ -24,7 +24,7 @@ describe("ChainBridgeService Utils", () => {
 
   beforeEach(() => {
     api = new AllbridgeCoreClientImpl(
-      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" })
+      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonGasStationUrl: "http://localhost" })
     );
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
