@@ -25,17 +25,12 @@ export interface TokenInfo {
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
-  getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }>;
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
 export class ApiClientImpl implements ApiClient {
   private api: Axios;
-  private readonly polygonGasStationUrl: string;
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
@@ -46,7 +41,6 @@ export class ApiClientImpl implements ApiClient {
         "x-Sdk-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
-    this.polygonGasStationUrl = params.polygonGasStationUrl;
   }
 
   async getTokenInfo(): Promise<TokenInfo> {
@@ -60,32 +54,6 @@ export class ApiClientImpl implements ApiClient {
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
     return data;
-  }
-
-  async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }> {
-    let errorMessage = "no message";
-    const attempts = 5;
-    for (let i = 0; i < attempts; i++) {
-      try {
-        const { data } = await axios.get(this.polygonGasStationUrl);
-        if (!data[level]) {
-          throw new Error(`No data for ${level} level`);
-        }
-        return data[level];
-      } catch (e) {
-        errorMessage =
-          e instanceof Error
-            ? `Cannot get polygon gas: ${e.message}`
-            : `Cannot get polygon gas: ${e?.toString() ?? "some error occurred"}`;
-        if (i < attempts - 1) {
-          await sleep(1000);
-        }
-      }
-    }
-    throw new Error(errorMessage);
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {

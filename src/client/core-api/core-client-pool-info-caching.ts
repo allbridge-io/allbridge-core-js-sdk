@@ -29,21 +29,6 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
-  getPolygonGasInfo(): Promise<{
-    maxPriorityFee: string;
-    maxFee: string;
-  }> {
-    return this.client.getPolygonGasInfo();
-  }
-
-  async getPolygonMaxPriorityFee(): Promise<string> {
-    return await this.client.getPolygonMaxPriorityFee();
-  }
-
-  async getPolygonMaxFee(): Promise<string> {
-    return await this.client.getPolygonMaxFee();
-  }
-
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return this.client.getReceiveTransactionCost(args);
   }

@@ -28,13 +28,6 @@ export class ApiClientTokenInfoCaching implements ApiClient {
     return fetchedTokenInfo;
   }
 
-  async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }> {
-    return this.apiClient.getPolygonGasInfoFromGasStation(level);
-  }
-
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return this.apiClient.getReceiveTransactionCost(args);
   }

@@ -1,4 +1,3 @@
-import { Big } from "big.js";
 import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { ApiClient } from "./api-client";
@@ -19,15 +18,6 @@ export interface AllbridgeCoreClient {
   tokens(): Promise<TokenWithChainDetails[]>;
 
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
-
-  getPolygonGasInfo(): Promise<{
-    maxPriorityFee: string;
-    maxFee: string;
-  }>;
-
-  getPolygonMaxPriorityFee(): Promise<string>;
-
-  getPolygonMaxFee(): Promise<string>;
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 }
@@ -53,36 +43,6 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
 
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return await this.apiClient.getTransferStatus(chainSymbol, txId);
-  }
-
-  async getPolygonMaxPriorityFee(): Promise<string> {
-    const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxPriorityFeeGwei = gasInfo.maxPriorityFee;
-    return Big(maxPriorityFeeGwei).times(1e9).toFixed(0);
-  }
-
-  async getPolygonMaxFee(): Promise<string> {
-    const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    const maxFeeGwei = gasInfo.maxFee;
-    return Big(maxFeeGwei).times(1e9).toFixed(0);
-  }
-
-  async getPolygonGasInfo(): Promise<{
-    maxPriorityFee: string;
-    maxFee: string;
-  }> {
-    const gasInfo = await this.getPolygonGasInfoFromGasStation();
-    return {
-      maxPriorityFee: Big(gasInfo.maxPriorityFee).times(1e9).toFixed(0),
-      maxFee: Big(gasInfo.maxFee).times(1e9).toFixed(0),
-    };
-  }
-
-  private async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }> {
-    return await this.apiClient.getPolygonGasInfoFromGasStation(level);
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
