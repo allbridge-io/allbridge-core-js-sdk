@@ -7,6 +7,6 @@ export const testnet: AllbridgeCoreSdkOptions = {
 };
 
 export const testnetNodeUrlsDefault: NodeUrlsConfig = {
-  solanaRpcUrl: "https://api.mainnet-beta.solana.com",
+  solanaRpcUrl: "https://api.devnet.solana.com",
   tronRpcUrl: "https://api.trongrid.io/jsonrpc",
 };
