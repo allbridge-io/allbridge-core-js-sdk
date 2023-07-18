@@ -1,15 +1,15 @@
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
-import {TransactionConfig} from "web3-core";
-import {AbiItem} from "web3-utils";
-import {ChainSymbol, ChainType} from "../../../chains";
-import {AllbridgeCoreClient} from "../../../client/core-api";
-import {GetTokenBalanceParams, TransactionResponse} from "../../../models";
-import {RawTransaction} from "../../models";
-import {BaseContract} from "../../models/abi/types/types";
-import {amountToHex} from "../../utils/index";
-import {ApproveParamsDto, GetAllowanceParamsDto} from "../models";
-import {ChainTokenService} from "../models/token";
+import { TransactionConfig } from "web3-core";
+import { AbiItem } from "web3-utils";
+import { ChainSymbol, ChainType } from "../../../chains";
+import { AllbridgeCoreClient } from "../../../client/core-api";
+import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
+import { RawTransaction } from "../../models";
+import { BaseContract } from "../../models/abi/types/types";
+import { amountToHex } from "../../utils/index";
+import { ApproveParamsDto, GetAllowanceParamsDto } from "../models";
+import { ChainTokenService } from "../models/token";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 

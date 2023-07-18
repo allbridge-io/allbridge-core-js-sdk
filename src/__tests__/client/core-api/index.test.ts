@@ -112,28 +112,6 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 
-  describe("given polygonGasStationUrl endpoint", () => {
-    let scope: nock.Scope;
-
-    beforeEach(() => {
-      scope = nock(POLYGON_API_URL).get(``).reply(200, polygonApiUrlResponse);
-    });
-
-    it("☀️ getPolygonMaxPriorityFee() returns PolygonMaxPriorityFee", async () => {
-      const actual = await api.getPolygonMaxPriorityFee();
-
-      expect(actual).toEqual("1433333332");
-      scope.done();
-    });
-
-    it("☀️ getPolygonMaxFee() returns PolygonMaxFee", async () => {
-      const actual = await api.getPolygonMaxFee();
-
-      expect(actual).toEqual("1433333348");
-      scope.done();
-    });
-  });
-
   describe("Custom headers", () => {
     const customHeaders = { "secret-waf-header": "secret-waf-header-value" };
     const api = new AllbridgeCoreClientImpl(

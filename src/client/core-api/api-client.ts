@@ -1,6 +1,5 @@
 import axios, { Axios } from "axios";
 import { ChainSymbol } from "../../chains";
-import { sleep } from "../../services/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {

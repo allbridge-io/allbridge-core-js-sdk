@@ -1,16 +1,16 @@
 import BN from "bn.js";
 import Web3 from "web3";
-import {AbiItem} from "web3-utils";
-import {ChainType} from "../../../chains";
-import {AllbridgeCoreClient} from "../../../client/core-api";
-import {FeePaymentMethod, TransactionResponse} from "../../../models";
-import {RawTransaction} from "../../models";
+import { AbiItem } from "web3-utils";
+import { ChainType } from "../../../chains";
+import { AllbridgeCoreClient } from "../../../client/core-api";
+import { FeePaymentMethod, TransactionResponse } from "../../../models";
+import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Bridge.json";
-import {Bridge as BridgeContract} from "../../models/abi/types/Bridge";
-import {BaseContract, PayableTransactionObject} from "../../models/abi/types/types";
-import {SendParams, TxSendParams} from "../models";
-import {ChainBridgeService} from "../models/bridge";
-import {getNonce, prepareTxSendParams} from "../utils";
+import { Bridge as BridgeContract } from "../../models/abi/types/Bridge";
+import { BaseContract, PayableTransactionObject } from "../../models/abi/types/types";
+import { SendParams, TxSendParams } from "../models";
+import { ChainBridgeService } from "../models/bridge";
+import { getNonce, prepareTxSendParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -74,12 +74,12 @@ export class EvmBridgeService extends ChainBridgeService {
       value = fee;
     }
 
-    return {
+    return Promise.resolve({
       from: fromAccountAddress,
       to: contractAddress,
       value: value,
       data: swapAndBridgeMethod.encodeABI(),
-    };
+    });
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {

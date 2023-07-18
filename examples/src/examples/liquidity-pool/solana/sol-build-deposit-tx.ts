@@ -23,7 +23,7 @@ const main = async () => {
     token: tokenInfo,
   });
 
-  const tx = await sendRawTransaction(transaction, privateKey,nodeUrlsDefault.solanaRpcUrl);
+  const tx = await sendRawTransaction(transaction, privateKey, nodeUrlsDefault.solanaRpcUrl);
 
   console.log("Token deposit:", tx);
 };

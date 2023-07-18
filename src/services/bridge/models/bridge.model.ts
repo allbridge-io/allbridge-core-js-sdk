@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../models";
+import { AmountFormat, FeePaymentMethod } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
 export interface ApproveParams {

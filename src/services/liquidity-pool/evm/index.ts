@@ -1,16 +1,16 @@
 import Web3 from "web3";
-import {AbiItem} from "web3-utils";
-import {ChainType} from "../../../chains";
-import {AllbridgeCoreClient} from "../../../client/core-api";
-import {PoolInfo, TokenWithChainDetails} from "../../../tokens-info";
-import {calculatePoolInfoImbalance} from "../../../utils/calculation";
-import {RawTransaction} from "../../models";
+import { AbiItem } from "web3-utils";
+import { ChainType } from "../../../chains";
+import { AllbridgeCoreClient } from "../../../client/core-api";
+import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { calculatePoolInfoImbalance } from "../../../utils/calculation";
+import { RawTransaction } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
-import {Pool as PoolContract} from "../../models/abi/types/Pool";
-import {BaseContract} from "../../models/abi/types/types";
-import {promisify} from "../../utils";
-import {LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo} from "../models";
-import {ChainPoolService} from "../models/pool";
+import { Pool as PoolContract } from "../../models/abi/types/Pool";
+import { BaseContract } from "../../models/abi/types/types";
+import { promisify } from "../../utils";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { ChainPoolService } from "../models/pool";
 
 export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -57,21 +57,21 @@ export class EvmPoolService extends ChainPoolService {
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     return Promise.resolve({
-      ...(this.buildTxParams(params)),
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.deposit(params.amount).encodeABI(),
     });
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     return Promise.resolve({
-      ...(this.buildTxParams(params)),
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.withdraw(params.amount).encodeABI(),
     });
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     return Promise.resolve({
-      ...(this.buildTxParams(params)),
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.claimRewards().encodeABI(),
     });
   }

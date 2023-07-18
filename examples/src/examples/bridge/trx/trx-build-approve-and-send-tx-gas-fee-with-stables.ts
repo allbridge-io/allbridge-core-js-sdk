@@ -1,4 +1,11 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  FeePaymentMethod,
+  Messenger,
+  nodeUrlsDefault,
+  RawTransaction,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
