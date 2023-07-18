@@ -55,6 +55,15 @@ export enum ChainType {
   TRX = "TRX",
 }
 
+/**
+ * Native gas tokens decimals by ChainType
+ */
+export const ChainDecimalsByType: Record<ChainType, number> = {
+  EVM: 18,
+  SOLANA: 9,
+  TRX: 6,
+};
+
 export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.GRL]: {
     chainSymbol: ChainSymbol.GRL,

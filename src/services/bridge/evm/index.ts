@@ -1,3 +1,4 @@
+import Big from "big.js";
 import BN from "bn.js";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
@@ -41,12 +42,18 @@ export class EvmBridgeService extends ChainBridgeService {
       messenger,
       fee,
       gasFeePaymentMethod,
+      extraGas,
     } = params;
 
     const nonce = new BN(getNonce());
     let swapAndBridgeMethod: PayableTransactionObject<void>;
     let value: string;
     const bridgeContract = this.getBridgeContract(contractAddress);
+
+    let totalFee = fee;
+    if (extraGas) {
+      totalFee = Big(totalFee).plus(extraGas).toFixed();
+    }
 
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
@@ -57,7 +64,7 @@ export class EvmBridgeService extends ChainBridgeService {
         toTokenAddress,
         nonce,
         messenger,
-        fee
+        totalFee
       );
       value = "0";
     } else {
@@ -71,7 +78,7 @@ export class EvmBridgeService extends ChainBridgeService {
         messenger,
         0
       );
-      value = fee;
+      value = totalFee;
     }
 
     return Promise.resolve({

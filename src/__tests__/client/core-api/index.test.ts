@@ -15,7 +15,6 @@ import transferStatus from "../../data/transfer-status/TransferStatus.json";
 import poolResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
-import polygonApiUrlResponse from "../../mock/polygon-api/polygon-api.json";
 import { getRequestBodyMatcher } from "../../mock/utils";
 
 const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;

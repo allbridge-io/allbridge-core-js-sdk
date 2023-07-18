@@ -300,6 +300,7 @@ export class AllbridgeCoreSdk {
   ): Promise<GasFeeOptions> {
     return getGasFeeOptions(
       sourceChainToken.allbridgeChainId,
+      sourceChainToken.chainType,
       destinationChainToken.allbridgeChainId,
       sourceChainToken.decimals,
       messenger,
