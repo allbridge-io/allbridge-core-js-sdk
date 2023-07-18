@@ -1,6 +1,5 @@
 import axios, { Axios } from "axios";
 import { ChainSymbol } from "../../chains";
-import { sleep } from "../../services/utils";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
@@ -25,20 +24,12 @@ export interface TokenInfo {
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
-  getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }>;
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }>;
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
 export class ApiClientImpl implements ApiClient {
   private api: Axios;
-  private readonly polygonApiUrl: string;
 
   constructor(params: AllbridgeCoreClientParams) {
     this.api = axios.create({
@@ -49,7 +40,6 @@ export class ApiClientImpl implements ApiClient {
         "x-Sdk-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
     });
-    this.polygonApiUrl = params.polygonApiUrl;
   }
 
   async getTokenInfo(): Promise<TokenInfo> {
@@ -65,42 +55,14 @@ export class ApiClientImpl implements ApiClient {
     return data;
   }
 
-  async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }> {
-    let errorMessage = "no message";
-    const attempts = 5;
-    for (let i = 0; i < attempts; i++) {
-      try {
-        const { data } = await axios.get(this.polygonApiUrl);
-        if (!data[level]) {
-          throw new Error(`No data for ${level} level`);
-        }
-        return data[level];
-      } catch (e) {
-        errorMessage =
-          e instanceof Error
-            ? `Cannot get polygon gas: ${e.message}`
-            : `Cannot get polygon gas: ${e?.toString() ?? "some error occurred"}`;
-        if (i < attempts - 1) {
-          await sleep(1000);
-        }
-      }
-    }
-    throw new Error(errorMessage);
-  }
-
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
       headers: {
         "Content-Type": "application/json",
       },
     });
     return {
+      exchangeRate: data.exchangeRate,
       fee: data.fee,
       sourceNativeTokenPrice: data.sourceNativeTokenPrice,
     };

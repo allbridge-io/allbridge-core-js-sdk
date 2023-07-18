@@ -25,7 +25,7 @@ export {
 } from "../services/liquidity-pool/models/pool.model";
 export { Provider, RawTransaction } from "../services/models/index";
 
-export { testnet } from "../configs/testnet";
+export { testnet, testnetNodeUrlsDefault } from "../configs/testnet";
 
 export enum FeePaymentMethod {
   /**
@@ -66,3 +66,19 @@ export interface AmountsAndGasFeeOptions {
 export type GasFeeOptions = {
   [key in FeePaymentMethod]?: string;
 };
+
+/**
+ * Define the type of amount data<p/>
+ * Example:<p/>
+ *  "1500000" USDC {@link AmountFormat.INT} = "1.5" USDC {@link AmountFormat.FLOAT}, if USDC.decimals = 6
+ */
+export enum AmountFormat {
+  /**
+   * denominated in the smallest unit of the source token
+   */
+  INT = "INT",
+  /**
+   * denominated in the unit of the source token
+   */
+  FLOAT = "FLOAT",
+}

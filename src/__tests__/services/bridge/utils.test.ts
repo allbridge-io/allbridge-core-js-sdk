@@ -23,15 +23,15 @@ describe("ChainBridgeService Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl(
-      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" })
-    );
+    api = new AllbridgeCoreClientImpl(new ApiClientImpl({ coreApiUrl: "http://localhost" }));
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
 
   describe("prepareTxSendParams()", () => {
     const fee = "20000000000000000";
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
+    const exchangeRate = "0.12550590438537169016";
+    const sourceNativeTokenPrice = "241.26";
+    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, exchangeRate, sourceNativeTokenPrice };
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
       const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {

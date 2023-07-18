@@ -15,18 +15,15 @@ import transferStatus from "../../data/transfer-status/TransferStatus.json";
 import poolResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
-import polygonApiUrlResponse from "../../mock/polygon-api/polygon-api.json";
 import { getRequestBodyMatcher } from "../../mock/utils";
 
 const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;
 const expectedTransferStatus = transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
-  const POLYGON_API_URL = "http://localhost/pol";
   const api = new AllbridgeCoreClientImpl(
     new ApiClientImpl({
       coreApiUrl: "http://localhost",
-      polygonApiUrl: POLYGON_API_URL,
     })
   );
 
@@ -63,12 +60,13 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
     const fee = "20000000000000000";
     const sourceNativeTokenPrice = "1501";
+    const exchangeRate = "0.12550590438537169016";
     const receiveFeeRequest: ReceiveTransactionCostRequest = {
       sourceChainId: 2,
       destinationChainId: 4,
       messenger: Messenger.ALLBRIDGE,
     };
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, sourceNativeTokenPrice };
+    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, sourceNativeTokenPrice, exchangeRate };
 
     beforeEach(() => {
       scope = nock("http://localhost")
@@ -79,6 +77,7 @@ describe("AllbridgeCoreClient", () => {
     it("☀️ getReceiveTransactionCost returns fee", async () => {
       const actual = await api.getReceiveTransactionCost(receiveFeeRequest);
       expect(actual).toEqual({
+        exchangeRate: "0.12550590438537169016",
         fee: "20000000000000000",
         sourceNativeTokenPrice: "1501",
       });
@@ -110,34 +109,11 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 
-  describe("given polygonApiUrl endpoint", () => {
-    let scope: nock.Scope;
-
-    beforeEach(() => {
-      scope = nock(POLYGON_API_URL).get(``).reply(200, polygonApiUrlResponse);
-    });
-
-    it("☀️ getPolygonMaxPriorityFee() returns PolygonMaxPriorityFee", async () => {
-      const actual = await api.getPolygonMaxPriorityFee();
-
-      expect(actual).toEqual("1433333332");
-      scope.done();
-    });
-
-    it("☀️ getPolygonMaxFee() returns PolygonMaxFee", async () => {
-      const actual = await api.getPolygonMaxFee();
-
-      expect(actual).toEqual("1433333348");
-      scope.done();
-    });
-  });
-
   describe("Custom headers", () => {
     const customHeaders = { "secret-waf-header": "secret-waf-header-value" };
     const api = new AllbridgeCoreClientImpl(
       new ApiClientImpl({
         coreApiUrl: "http://localhost",
-        polygonApiUrl: POLYGON_API_URL,
         coreApiHeaders: customHeaders,
       })
     );

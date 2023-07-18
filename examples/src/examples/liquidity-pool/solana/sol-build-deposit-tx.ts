@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk, RawTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import solanaWeb3, { sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -12,7 +12,7 @@ const main = async () => {
   const privateKey = getEnvVar("SOL_PRIVATE_KEY");
   const tokenAddress = getEnvVar("SOL_TOKEN_ADDRESS");
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const oneToken = "1";
@@ -23,7 +23,7 @@ const main = async () => {
     token: tokenInfo,
   });
 
-  const tx = await sendRawTransaction(transaction, privateKey, sdk.params.solanaRpcUrl);
+  const tx = await sendRawTransaction(transaction, privateKey, nodeUrlsDefault.solanaRpcUrl);
 
   console.log("Token deposit:", tx);
 };

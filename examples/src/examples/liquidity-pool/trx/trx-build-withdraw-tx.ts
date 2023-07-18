@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import { AllbridgeCoreSdk, RawTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
 
@@ -20,7 +20,7 @@ const main = async () => {
     getEnvVar("TRX_PRIVATE_KEY")
   );
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const halfToken = "0.5";

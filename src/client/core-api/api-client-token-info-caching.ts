@@ -2,7 +2,11 @@ import Cache from "timed-cache";
 import { ChainSymbol } from "../../chains";
 import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
-import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
+import {
+  ReceiveTransactionCostRequest,
+  ReceiveTransactionCostResponse,
+  TransferStatusResponse,
+} from "./core-api.model";
 
 const TWO_MINUTES_TTL = 120 * 1000;
 
@@ -24,17 +28,7 @@ export class ApiClientTokenInfoCaching implements ApiClient {
     return fetchedTokenInfo;
   }
 
-  async getPolygonGasInfoFromGasStation(level: "safeLow" | "standard" | "fast" = "standard"): Promise<{
-    maxPriorityFee: number;
-    maxFee: number;
-  }> {
-    return this.apiClient.getPolygonGasInfoFromGasStation(level);
-  }
-
-  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }> {
+  async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return this.apiClient.getReceiveTransactionCost(args);
   }
 

@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { getEnvVar } from "../../utils/env";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env" });
@@ -7,7 +7,7 @@ const main = async () => {
   const txId = getEnvVar("SENT_TX_ID");
   const chainSymbol = ChainSymbol.TRX; // example, must correspond to SENT_TX_ID blockchain
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const sendStatus = await sdk.getTransferStatus(chainSymbol, txId);
 

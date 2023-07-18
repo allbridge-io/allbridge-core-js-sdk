@@ -1,4 +1,11 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger, RawTransaction } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  FeePaymentMethod,
+  Messenger,
+  nodeUrlsDefault,
+  RawTransaction,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -20,7 +27,7 @@ const main = async () => {
     getEnvVar("TRONWEB_PROVIDER_URL"),
     getEnvVar("TRX_PRIVATE_KEY")
   );
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 

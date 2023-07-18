@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
 
@@ -12,11 +12,10 @@ const main = async () => {
   const privateKey = getEnvVar("TRX_PRIVATE_KEY");
   const tokenAddress = getEnvVar("TRX_TOKEN_ADDRESS");
   const accountAddress = getEnvVar("TRX_ACCOUNT_ADDRESS");
-  const poolAddress = getEnvVar("TRX_POOL_ADDRESS");
 
   const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
 
   const approveData = {

@@ -3,13 +3,12 @@ import { Big } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { FeePaymentMethod, GasFeeOptions } from "../../models";
+import { AmountFormat, FeePaymentMethod, GasFeeOptions } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
-import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
 import { SendParams, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
@@ -143,10 +142,12 @@ export async function prepareTxSendParams(
   txSendParams.fromAccountAddress = params.fromAccountAddress;
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
 
-  let { fee } = params;
+  //Fee
+  let { fee, feeFormat } = params;
   if (!fee) {
     const gasFeeOptions = await getGasFeeOptions(
       txSendParams.fromChainId,
+      params.sourceToken.chainType,
       txSendParams.toChainId,
       sourceToken.decimals,
       txSendParams.messenger,
@@ -154,11 +155,42 @@ export async function prepareTxSendParams(
     );
 
     fee = gasFeeOptions[txSendParams.gasFeePaymentMethod];
+    feeFormat = AmountFormat.INT;
     if (!fee) {
       throw Error(`Amount of gas fee cannot be determined for payment method '${txSendParams.gasFeePaymentMethod}'`);
     }
   }
-  txSendParams.fee = fee;
+  if (feeFormat == AmountFormat.FLOAT) {
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+        txSendParams.fee = convertFloatAmountToInt(fee, ChainDecimalsByType[sourceToken.chainType]).toFixed(0);
+        break;
+      case FeePaymentMethod.WITH_STABLECOIN:
+        txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.decimals).toFixed(0);
+        break;
+    }
+  } else {
+    txSendParams.fee = fee;
+  }
+
+  //ExtraGas
+  const { extraGas, extraGasFormat } = params;
+  if (extraGas) {
+    if (extraGasFormat == AmountFormat.FLOAT) {
+      switch (txSendParams.gasFeePaymentMethod) {
+        case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+          txSendParams.extraGas = convertFloatAmountToInt(extraGas, ChainDecimalsByType[sourceToken.chainType]).toFixed(
+            0
+          );
+          break;
+        case FeePaymentMethod.WITH_STABLECOIN:
+          txSendParams.extraGas = convertFloatAmountToInt(extraGas, sourceToken.decimals).toFixed(0);
+          break;
+      }
+    } else {
+      txSendParams.extraGas = extraGas;
+    }
+  }
 
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
@@ -168,6 +200,7 @@ export async function prepareTxSendParams(
 
 export async function getGasFeeOptions(
   sourceAllbridgeChainId: number,
+  sourceChainType: ChainType,
   destinationAllbridgeChainId: number,
   sourceChainTokenDecimals: number,
   messenger: Messenger,
@@ -185,7 +218,7 @@ export async function getGasFeeOptions(
   if (transactionCostResponse.sourceNativeTokenPrice) {
     gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
-      EVM_NATIVE_TOKEN_PRECISION,
+      ChainDecimalsByType[sourceChainType],
       sourceChainTokenDecimals
     ).toFixed(0, Big.roundUp);
   }

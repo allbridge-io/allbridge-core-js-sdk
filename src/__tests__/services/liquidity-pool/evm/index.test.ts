@@ -5,8 +5,6 @@ import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { EvmPoolService } from "../../../../services/liquidity-pool/evm";
 import { TokenWithChainDetails } from "../../../../tokens-info";
 
-const POLYGON_GAS_PRICE = "1433333332";
-const POLYGON_MAX_PRICE = "1433333348";
 const ACCOUNT_ADDRESS = "0xb3A88d47eEda762610C4D86Ea6c8562288d53dfA";
 const POOL_ADDRESS = "0x57FB363e8e96B086cc16E0f35b369a14b1Ac1AC2";
 // @ts-expect-error enough
@@ -14,15 +12,7 @@ const TOKEN_INFO: TokenWithChainDetails = { poolAddress: POOL_ADDRESS };
 const LOCAL_NODE_URL = "https://goerli.infura.io/";
 describe("EvmPool", () => {
   // @ts-expect-error enough
-  const api: AllbridgeCoreClient = {
-    getPolygonGasInfo: () =>
-      new Promise((resolve) => {
-        resolve({
-          maxPriorityFee: POLYGON_GAS_PRICE,
-          maxFee: POLYGON_MAX_PRICE,
-        });
-      }),
-  };
+  const api: AllbridgeCoreClient = {};
 
   const evmPool = new EvmPoolService(new Web3(LOCAL_NODE_URL), api);
 
@@ -82,20 +72,18 @@ describe("EvmPool", () => {
     });
   });
 
-  test("buildTxParams for polygon", async () => {
+  test("buildTxParams for polygon", () => {
     const polToken = { ...TOKEN_INFO, chainSymbol: ChainSymbol.POL };
     const params = {
       accountAddress: ACCOUNT_ADDRESS,
       token: polToken,
     };
-    const rawTransaction = await evmPool.buildTxParams(params);
+    const rawTransaction = evmPool.buildTxParams(params);
 
     expect(rawTransaction).toEqual({
       from: ACCOUNT_ADDRESS,
       to: POOL_ADDRESS,
       value: "0",
-      maxPriorityFeePerGas: POLYGON_GAS_PRICE,
-      maxFeePerGas: POLYGON_MAX_PRICE,
     });
   });
 

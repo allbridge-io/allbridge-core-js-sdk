@@ -69,24 +69,12 @@ export class EvmTokenService extends ChainTokenService {
       amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
 
-    const tx = {
+    return {
       from: owner,
       to: tokenAddress,
       value: "0",
       data: approveMethod.encodeABI(),
     };
-
-    if (params.chainSymbol == ChainSymbol.POL) {
-      const gasInfo = await this.api.getPolygonGasInfo();
-
-      return {
-        ...tx,
-        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
-        maxFeePerGas: gasInfo.maxFee,
-      };
-    }
-
-    return tx;
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {

@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../models";
+import { AmountFormat, FeePaymentMethod } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
 export interface ApproveParams {
@@ -31,13 +31,13 @@ export interface GetTokenBalanceParams {
   token: TokenWithChainDetails;
 }
 
-/**
- * @internal
- */
 export interface BaseSendParams {
   /**
-   * The float amount of tokens to transfer.
-   * (Includes gas fee if `gasFeePaymentMethod` is FeePaymentMethod.WITH_STABLECOIN)
+   * The float amount of Total tokens to transfer.
+   *
+   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN}:<br/>
+   * Includes gas fee<br/>
+   * Includes extra gas
    */
   amount: string;
   /**
@@ -48,20 +48,46 @@ export interface BaseSendParams {
    * The account address to transfer tokens to.
    */
   toAccountAddress: string;
+  /**
+   * The Messenger to use.
+   */
   messenger: Messenger;
   /**
-   * The integer amount of gas fee to pay for the transfer.
-   * If gasFeePaymentMethod is WITH_NATIVE_CURRENCY then
-   * it is denominated in the smallest unit of the source chain currency.
-   * if gasFeePaymentMethod is WITH_STABLECOIN then
-   * it is denominated in the smallest unit of the source token.
+   * The amount of gas fee to pay for the transfer.
+   *
+   * If {@link this.gasFeePaymentMethod} is {@link WITH_NATIVE_CURRENCY} then
+   * it is amount of the source chain currency.<p/>
+   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN} then
+   * it is amount of the source token.
    *
    * Optional.
    * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
    * See method {@link getGasFeeOptions} to get required gas fee amount.
    */
   fee?: string;
-
+  /**
+   * Format of fee value.<p/>
+   * Optional.
+   * {@link AmountFormat.INT} by default.
+   */
+  feeFormat?: AmountFormat;
+  /**
+   * The amount of extra gas to send with the transfer.
+   *
+   * If gasFeePaymentMethod is {@link WITH_NATIVE_CURRENCY} then
+   * it is amount of the source chain currency.<p/>
+   * if gasFeePaymentMethod is {@link WITH_STABLECOIN} then
+   * it is amount of the source token.
+   *
+   * Optional.
+   */
+  extraGas?: string;
+  /**
+   * Format of extra gas value.<p/>
+   * Optional.
+   * {@link AmountFormat.INT} by default.
+   */
+  extraGasFormat?: AmountFormat;
   /**
    * Payment method for the gas fee.
    *
@@ -115,6 +141,13 @@ export interface TxSendParams {
   toAccountAddress: AccountAddress;
   toTokenAddress: AccountAddress;
   messenger: Messenger;
+  /**
+   * int format
+   */
   fee: string;
+  /**
+   * int format
+   */
+  extraGas?: string;
   gasFeePaymentMethod: FeePaymentMethod;
 }

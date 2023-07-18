@@ -45,11 +45,11 @@ export interface AllbridgeCoreSdkOptions {
    * A set of headers to be added to all requests to the Core API.
    */
   coreApiHeaders?: Record<string, string>;
-  solanaRpcUrl: string;
-  polygonApiUrl: string;
-  tronRpcUrl: string;
-
   wormholeMessengerProgramId: string;
+}
+export interface NodeUrlsConfig {
+  solanaRpcUrl: string;
+  tronRpcUrl: string;
 }
 
 export class AllbridgeCoreSdk {
@@ -69,26 +69,27 @@ export class AllbridgeCoreSdk {
 
   /**
    * Initializes the SDK object.
+   * @param nodeUrls node rpc urls for full functionality
    * @param params
    * Optional.
    * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(params: AllbridgeCoreSdkOptions = mainnet) {
+  constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
     const apiClient = new ApiClientImpl(params);
     const apiClientTokenInfoCaching = new ApiClientTokenInfoCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
     const solBridgeParams: SolanaBridgeParams = {
-      solanaRpcUrl: params.solanaRpcUrl,
+      solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
     };
     this.tokenService = new TokenService(this.api, solBridgeParams);
     this.bridge = new BridgeService(this.api, solBridgeParams, this.tokenService);
     const solPoolParams: SolanaPoolParams = {
-      solanaRpcUrl: params.solanaRpcUrl,
+      solanaRpcUrl: nodeUrls.solanaRpcUrl,
     };
-    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService, params.tronRpcUrl);
+    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService, nodeUrls.tronRpcUrl);
     this.params = params;
   }
 
@@ -272,7 +273,6 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<string> {
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
-
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
       destinationChainToken,
@@ -299,6 +299,7 @@ export class AllbridgeCoreSdk {
   ): Promise<GasFeeOptions> {
     return getGasFeeOptions(
       sourceChainToken.allbridgeChainId,
+      sourceChainToken.chainType,
       destinationChainToken.allbridgeChainId,
       sourceChainToken.decimals,
       messenger,
