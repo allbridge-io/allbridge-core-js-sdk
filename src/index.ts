@@ -45,7 +45,6 @@ export interface AllbridgeCoreSdkOptions {
    * A set of headers to be added to all requests to the Core API.
    */
   coreApiHeaders?: Record<string, string>;
-  polygonGasStationUrl: string;
   wormholeMessengerProgramId: string;
 }
 export interface NodeUrlsConfig {

@@ -23,9 +23,7 @@ describe("ChainBridgeService Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl(
-      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonGasStationUrl: "http://localhost" })
-    );
+    api = new AllbridgeCoreClientImpl(new ApiClientImpl({ coreApiUrl: "http://localhost" }));
     scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
   });
 

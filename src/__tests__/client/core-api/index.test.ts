@@ -21,11 +21,9 @@ const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDet
 const expectedTransferStatus = transferStatus as unknown as TransferStatusResponse;
 
 describe("AllbridgeCoreClient", () => {
-  const POLYGON_API_URL = "http://localhost/pol";
   const api = new AllbridgeCoreClientImpl(
     new ApiClientImpl({
       coreApiUrl: "http://localhost",
-      polygonGasStationUrl: POLYGON_API_URL,
     })
   );
 
@@ -116,7 +114,6 @@ describe("AllbridgeCoreClient", () => {
     const api = new AllbridgeCoreClientImpl(
       new ApiClientImpl({
         coreApiUrl: "http://localhost",
-        polygonGasStationUrl: POLYGON_API_URL,
         coreApiHeaders: customHeaders,
       })
     );

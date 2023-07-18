@@ -4,7 +4,6 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   coreApiUrl: "https://core.api.allbridgecoreapi.net",
   coreApiHeaders: {},
   wormholeMessengerProgramId: "worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth",
-  polygonGasStationUrl: "https://gasstation.polygon.technology/v2",
 };
 
 /**

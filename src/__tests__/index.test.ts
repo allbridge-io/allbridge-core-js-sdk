@@ -50,7 +50,6 @@ describe("SDK", () => {
     tronRpcUrl: "tronRpcUrl",
   };
   const testConfig: AllbridgeCoreSdkOptions = {
-    polygonGasStationUrl: "",
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
   };

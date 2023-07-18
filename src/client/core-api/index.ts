@@ -10,7 +10,6 @@ import {
 export interface AllbridgeCoreClientParams {
   coreApiUrl: string;
   coreApiHeaders?: Record<string, string>;
-  polygonGasStationUrl: string;
 }
 
 export interface AllbridgeCoreClient {
