@@ -57,7 +57,7 @@ export class SolanaTokenService extends ChainTokenService {
       return accountData.amount.toString();
     } catch (e) {
       if (e instanceof Error) {
-        e.message.startsWith('Account does not exist')
+        e.message.startsWith("Account does not exist");
         return "0";
       }
       throw e;

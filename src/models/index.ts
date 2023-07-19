@@ -68,6 +68,28 @@ export type GasFeeOptions = {
 };
 
 /**
+ * Describes MAX extra gas value can to be passed when using the corresponding method.
+ *
+ * For {@link FeePaymentMethod.WITH_NATIVE_CURRENCY} value contains {@link ExtraGasMaxLimit} the amount of the source chain currency
+ *
+ * For {@link FeePaymentMethod.WITH_STABLECOIN} value contains {@link ExtraGasMaxLimit} the amount of the source token
+ */
+export type ExtraGasMaxLimits = {
+  [key in FeePaymentMethod]?: ExtraGasMaxLimit;
+};
+
+/**
+ * Describes the same MAX extra gas amount in two variation formats.
+ *
+ * For {@link AmountFormat.INT} value contains the amount in tokens denomination
+ *
+ * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
+ */
+export type ExtraGasMaxLimit = {
+  [key2 in AmountFormat]: string;
+};
+
+/**
  * Define the type of amount data<p/>
  * Example:<p/>
  *  "1500000" USDC {@link AmountFormat.INT} = "1.5" USDC {@link AmountFormat.FLOAT}, if USDC.decimals = 6

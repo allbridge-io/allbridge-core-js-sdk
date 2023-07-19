@@ -1,5 +1,5 @@
 import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
-import { ensure } from "../utils/utils";
+import { ensure } from "../../utils/utils";
 
 const main = async () => {
   const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
