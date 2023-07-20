@@ -9,6 +9,7 @@ import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import {
   AmountFormat,
+  AmountInFormats,
   AmountsAndGasFeeOptions,
   ExtraGasMaxLimit,
   ExtraGasMaxLimits,
@@ -371,7 +372,14 @@ export class AllbridgeCoreSdk {
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
-  ): Promise<{ extraGasMax: ExtraGasMaxLimits; destinationGasAmountMax: ExtraGasMaxLimit }> {
+  ): Promise<{
+    extraGasMax: ExtraGasMaxLimits;
+    destinationChain: {
+      gasAmountMax: ExtraGasMaxLimit;
+      swap: AmountInFormats;
+      transfer: AmountInFormats;
+    };
+  }> {
     const extraGasMaxLimits: ExtraGasMaxLimits = {};
     const transactionCostResponse = await this.api.getReceiveTransactionCost({
       sourceChainId: sourceChainToken.allbridgeChainId,
@@ -403,9 +411,25 @@ export class AllbridgeCoreSdk {
     }
     return {
       extraGasMax: extraGasMaxLimits,
-      destinationGasAmountMax: {
-        [AmountFormat.INT]: maxAmount,
-        [AmountFormat.FLOAT]: maxAmountFloat,
+      destinationChain: {
+        gasAmountMax: {
+          [AmountFormat.INT]: maxAmount,
+          [AmountFormat.FLOAT]: maxAmountFloat,
+        },
+        swap: {
+          [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            destinationChainToken.txCostAmount.swap,
+            ChainDecimalsByType[destinationChainToken.chainType]
+          ).toFixed(),
+        },
+        transfer: {
+          [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            destinationChainToken.txCostAmount.transfer,
+            ChainDecimalsByType[destinationChainToken.chainType]
+          ).toFixed(),
+        },
       },
     };
   }
