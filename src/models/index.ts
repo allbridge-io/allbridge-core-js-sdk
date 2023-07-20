@@ -109,3 +109,38 @@ export type ExtraGasMaxLimits = {
  * Describes the same MAX extra gas amount.
  */
 export type ExtraGasMaxLimit = AmountInFormats;
+
+/**
+ * Provide extra gas information
+ */
+export interface ExtraGasMaxLimitResponse {
+  /**
+   * See {@link ExtraGasMaxLimits}
+   */
+  extraGasMax: ExtraGasMaxLimits;
+  /**
+   * Information due to destination chain
+   */
+  destinationChain: {
+    /**
+     *  gasAmountMax maximum amount you can receive as extra gas on dest chain
+     */
+    gasAmountMax: ExtraGasMaxLimit;
+    /**
+     * cost of swap tx on chain
+     */
+    swap: AmountInFormats;
+    /**
+     * cost of send tx on chain
+     */
+    transfer: AmountInFormats;
+  };
+  /**
+   * Exchange rate
+   */
+  exchangeRate: string;
+  /**
+   * Source native token price
+   */
+  sourceNativeTokenPrice: string;
+}
