@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "./chains";
+import { ChainDecimalsByType, ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
 import { ApiClientTokenInfoCaching } from "./client/core-api/api-client-token-info-caching";
@@ -7,7 +7,16 @@ import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
-import { AmountsAndGasFeeOptions, GasFeeOptions, GetTokenBalanceParams, Messenger } from "./models";
+import {
+  AmountFormat,
+  AmountsAndGasFeeOptions,
+  ExtraGasMaxLimit,
+  ExtraGasMaxLimits,
+  FeePaymentMethod,
+  GasFeeOptions,
+  GetTokenBalanceParams,
+  Messenger,
+} from "./models";
 import { BridgeService } from "./services/bridge";
 
 import { SolanaBridgeParams } from "./services/bridge/sol";
@@ -30,9 +39,9 @@ import {
   swapToVUsdReverse,
 } from "./utils/calculation";
 import {
+  SwapAndBridgeCalculationData,
   swapAndBridgeFeeCalculation,
   swapAndBridgeFeeCalculationReverse,
-  SwapAndBridgeCalculationData,
 } from "./utils/calculation/swap-and-bridge-fee-calc";
 
 export * from "./configs/mainnet";
@@ -350,6 +359,55 @@ export class AllbridgeCoreSdk {
    */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
     return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
+  }
+
+  /**
+   * Get possible limit of extra gas amount.
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @returns extraGasMax see {@link ExtraGasMaxLimits} - maximum amount can be added to transfer
+   * destinationGasAmountMax - maximum amount you can receive as extra gas on dest chain
+   */
+  async getExtraGasMaxLimits(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<{ extraGasMax: ExtraGasMaxLimits; destinationGasAmountMax: ExtraGasMaxLimit }> {
+    const extraGasMaxLimits: ExtraGasMaxLimits = {};
+    const transactionCostResponse = await this.api.getReceiveTransactionCost({
+      sourceChainId: sourceChainToken.allbridgeChainId,
+      destinationChainId: destinationChainToken.allbridgeChainId,
+      messenger: Messenger.ALLBRIDGE,
+    });
+    const maxAmount = destinationChainToken.txCostAmount.maxAmount;
+    const maxAmountFloat = convertIntAmountToFloat(
+      maxAmount,
+      ChainDecimalsByType[destinationChainToken.chainType]
+    ).toFixed();
+    const maxAmountFloatInSourceNative = Big(maxAmountFloat).div(transactionCostResponse.exchangeRate).toFixed();
+    const maxAmountInSourceNative = convertFloatAmountToInt(
+      maxAmountFloatInSourceNative,
+      ChainDecimalsByType[sourceChainToken.chainType]
+    ).toFixed(0);
+    extraGasMaxLimits[FeePaymentMethod.WITH_NATIVE_CURRENCY] = {
+      [AmountFormat.INT]: maxAmountInSourceNative,
+      [AmountFormat.FLOAT]: maxAmountFloatInSourceNative,
+    };
+    if (transactionCostResponse.sourceNativeTokenPrice) {
+      const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
+        .mul(transactionCostResponse.sourceNativeTokenPrice)
+        .toFixed();
+      extraGasMaxLimits[FeePaymentMethod.WITH_STABLECOIN] = {
+        [AmountFormat.INT]: convertFloatAmountToInt(maxAmountFloatInStable, sourceChainToken.decimals).toFixed(0),
+        [AmountFormat.FLOAT]: maxAmountFloatInStable,
+      };
+    }
+    return {
+      extraGasMax: extraGasMaxLimits,
+      destinationGasAmountMax: {
+        [AmountFormat.INT]: maxAmount,
+        [AmountFormat.FLOAT]: maxAmountFloat,
+      },
+    };
   }
 
   async swapAndBridgeFeeCalculation(

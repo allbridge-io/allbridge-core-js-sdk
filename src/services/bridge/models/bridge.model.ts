@@ -72,7 +72,8 @@ export interface BaseSendParams {
    */
   feeFormat?: AmountFormat;
   /**
-   * The amount of extra gas to send with the transfer.
+   * The amount of extra gas to send with the transfer.<br/>
+   * To get maximum supported value, look {@link getExtraGasMaxLimits}
    *
    * If gasFeePaymentMethod is {@link WITH_NATIVE_CURRENCY} then
    * it is amount of the source chain currency.<p/>
@@ -89,10 +90,10 @@ export interface BaseSendParams {
    */
   extraGasFormat?: AmountFormat;
   /**
-   * Payment method for the gas fee.
+   * Payment method for the gas fee and extra gas payment.
    *
-   * WITH_NATIVE_CURRENCY - gas fee will be added to transaction as native tokens value
-   * WITH_STABLECOIN - gas fee will be deducted from the transaction amount
+   * WITH_NATIVE_CURRENCY - gas fee and extra gas will be added to transaction as native tokens value
+   * WITH_STABLECOIN - gas fee and extra gas will be deducted from the transaction amount
    *
    * Optional.
    * WITH_NATIVE_CURRENCY by default.
