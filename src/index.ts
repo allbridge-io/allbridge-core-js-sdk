@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainDecimalsByType, ChainSymbol } from "./chains";
+import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
 import { ApiClientTokenInfoCaching } from "./client/core-api/api-client-token-info-caching";
@@ -8,12 +8,8 @@ import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-clien
 import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
 import {
-  AmountFormat,
-  AmountInFormats,
   AmountsAndGasFeeOptions,
-  ExtraGasMaxLimit,
-  ExtraGasMaxLimits,
-  FeePaymentMethod,
+  ExtraGasMaxLimitResponse,
   GasFeeOptions,
   GetTokenBalanceParams,
   Messenger,
@@ -21,7 +17,7 @@ import {
 import { BridgeService } from "./services/bridge";
 
 import { SolanaBridgeParams } from "./services/bridge/sol";
-import { getGasFeeOptions } from "./services/bridge/utils";
+import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
 import { LiquidityPoolService } from "./services/liquidity-pool";
 import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
@@ -366,72 +362,13 @@ export class AllbridgeCoreSdk {
    * Get possible limit of extra gas amount.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @returns extraGasMax see {@link ExtraGasMaxLimits} - maximum amount can be added to transfer
-   * destinationGasAmountMax - maximum amount you can receive as extra gas on dest chain
+   * @returns {@link ExtraGasMaxLimitResponse}
    */
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
-  ): Promise<{
-    extraGasMax: ExtraGasMaxLimits;
-    destinationChain: {
-      gasAmountMax: ExtraGasMaxLimit;
-      swap: AmountInFormats;
-      transfer: AmountInFormats;
-    };
-  }> {
-    const extraGasMaxLimits: ExtraGasMaxLimits = {};
-    const transactionCostResponse = await this.api.getReceiveTransactionCost({
-      sourceChainId: sourceChainToken.allbridgeChainId,
-      destinationChainId: destinationChainToken.allbridgeChainId,
-      messenger: Messenger.ALLBRIDGE,
-    });
-    const maxAmount = destinationChainToken.txCostAmount.maxAmount;
-    const maxAmountFloat = convertIntAmountToFloat(
-      maxAmount,
-      ChainDecimalsByType[destinationChainToken.chainType]
-    ).toFixed();
-    const maxAmountFloatInSourceNative = Big(maxAmountFloat).div(transactionCostResponse.exchangeRate).toFixed();
-    const maxAmountInSourceNative = convertFloatAmountToInt(
-      maxAmountFloatInSourceNative,
-      ChainDecimalsByType[sourceChainToken.chainType]
-    ).toFixed(0);
-    extraGasMaxLimits[FeePaymentMethod.WITH_NATIVE_CURRENCY] = {
-      [AmountFormat.INT]: maxAmountInSourceNative,
-      [AmountFormat.FLOAT]: maxAmountFloatInSourceNative,
-    };
-    if (transactionCostResponse.sourceNativeTokenPrice) {
-      const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
-        .mul(transactionCostResponse.sourceNativeTokenPrice)
-        .toFixed();
-      extraGasMaxLimits[FeePaymentMethod.WITH_STABLECOIN] = {
-        [AmountFormat.INT]: convertFloatAmountToInt(maxAmountFloatInStable, sourceChainToken.decimals).toFixed(0),
-        [AmountFormat.FLOAT]: maxAmountFloatInStable,
-      };
-    }
-    return {
-      extraGasMax: extraGasMaxLimits,
-      destinationChain: {
-        gasAmountMax: {
-          [AmountFormat.INT]: maxAmount,
-          [AmountFormat.FLOAT]: maxAmountFloat,
-        },
-        swap: {
-          [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
-          [AmountFormat.FLOAT]: convertIntAmountToFloat(
-            destinationChainToken.txCostAmount.swap,
-            ChainDecimalsByType[destinationChainToken.chainType]
-          ).toFixed(),
-        },
-        transfer: {
-          [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
-          [AmountFormat.FLOAT]: convertIntAmountToFloat(
-            destinationChainToken.txCostAmount.transfer,
-            ChainDecimalsByType[destinationChainToken.chainType]
-          ).toFixed(),
-        },
-      },
-    };
+  ): Promise<ExtraGasMaxLimitResponse> {
+    return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
   }
 
   async swapAndBridgeFeeCalculation(
