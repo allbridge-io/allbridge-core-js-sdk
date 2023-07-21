@@ -5,10 +5,12 @@ import nock, { cleanAll as nockCleanAll } from "nock";
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
+import { ChainDecimalsByType } from "../chains";
 import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
   AllbridgeCoreSdkOptions,
+  AmountFormat,
   ChainDetailsMap,
   ChainSymbol,
   ChainType,
@@ -25,7 +27,7 @@ import {
 } from "../index";
 import { formatAddress } from "../services/bridge/utils";
 
-import { getFeePercent } from "../utils/calculation";
+import { convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
@@ -916,8 +918,17 @@ describe("SDK", () => {
         .mul(10 ** sourceChainToken.decimals)
         .toFixed();
       const expected: GasFeeOptions = {
-        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
-        [FeePaymentMethod.WITH_STABLECOIN]: expectedFeeAmountInStablecoin,
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+          [AmountFormat.INT]: fee,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+        },
+        [FeePaymentMethod.WITH_STABLECOIN]: {
+          [AmountFormat.INT]: expectedFeeAmountInStablecoin,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            expectedFeeAmountInStablecoin,
+            sourceChainToken.decimals
+          ).toFixed(),
+        },
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);
@@ -935,7 +946,10 @@ describe("SDK", () => {
         .persist();
 
       const expected: GasFeeOptions = {
-        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+          [AmountFormat.INT]: fee,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+        },
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);
