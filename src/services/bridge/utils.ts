@@ -160,11 +160,12 @@ export async function prepareTxSendParams(
       api
     );
 
-    fee = gasFeeOptions[txSendParams.gasFeePaymentMethod];
-    feeFormat = AmountFormat.INT;
-    if (!fee) {
+    const gasFeeOption = gasFeeOptions[txSendParams.gasFeePaymentMethod];
+    if (!gasFeeOption) {
       throw Error(`Amount of gas fee cannot be determined for payment method '${txSendParams.gasFeePaymentMethod}'`);
     }
+    fee = gasFeeOption[AmountFormat.INT];
+    feeFormat = AmountFormat.INT;
   }
   if (feeFormat == AmountFormat.FLOAT) {
     switch (txSendParams.gasFeePaymentMethod) {
@@ -226,14 +227,24 @@ export async function getGasFeeOptions(
   });
 
   const gasFeeOptions: GasFeeOptions = {
-    [FeePaymentMethod.WITH_NATIVE_CURRENCY]: transactionCostResponse.fee,
+    [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+      [AmountFormat.INT]: transactionCostResponse.fee,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        transactionCostResponse.fee,
+        ChainDecimalsByType[sourceChainType]
+      ).toFixed(),
+    },
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
-    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
+    const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
       ChainDecimalsByType[sourceChainType],
       sourceChainTokenDecimals
     ).toFixed(0, Big.roundUp);
+    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
+      [AmountFormat.INT]: gasFeeIntWithStables,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainTokenDecimals).toFixed(),
+    };
   }
 
   return gasFeeOptions;

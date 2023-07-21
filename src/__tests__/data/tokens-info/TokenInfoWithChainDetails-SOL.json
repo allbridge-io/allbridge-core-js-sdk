@@ -30,6 +30,11 @@
         "2": null
       }
     },
+    "txCostAmount": {
+      "maxAmount": "4731000",
+      "swap": "1877000",
+      "transfer": "1577000"
+    },
     "confirmations": 32,
     "chainName": "Solana"
   }

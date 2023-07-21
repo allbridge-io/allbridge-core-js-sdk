@@ -25,6 +25,11 @@
       }
     },
     "confirmations": 5,
+    "txCostAmount": {
+      "swap": "2697498159559000",
+      "transfer": "3332203608867000",
+      "maxAmount": "9996610826601000"
+    },
     "tokens": [
       {
         "name": "Yaroslav Stable Token",
@@ -57,6 +62,11 @@
             "1": 120000,
             "2": null
           }
+        },
+        "txCostAmount": {
+          "swap": "2697498159559000",
+          "transfer": "3332203608867000",
+          "maxAmount": "9996610826601000"
         },
         "confirmations": 5,
         "chainName": "Goerli"
@@ -92,6 +102,11 @@
             "1": 120000,
             "2": null
           }
+        },
+        "txCostAmount": {
+          "swap": "2697498159559000",
+          "transfer": "3332203608867000",
+          "maxAmount": "9996610826601000"
         },
         "confirmations": 5,
         "chainName": "Goerli"

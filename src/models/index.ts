@@ -64,7 +64,7 @@ export interface AmountsAndGasFeeOptions {
  * For {@link FeePaymentMethod.WITH_STABLECOIN} value contains the amount in the smallest denomination of the source token
  */
 export type GasFeeOptions = {
-  [key in FeePaymentMethod]?: string;
+  [key in FeePaymentMethod]?: AmountFormatted;
 };
 
 /**
@@ -90,7 +90,7 @@ export enum AmountFormat {
  *
  * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
  */
-export type AmountInFormats = {
+export type AmountFormatted = {
   [key2 in AmountFormat]: string;
 };
 
@@ -108,7 +108,7 @@ export type ExtraGasMaxLimits = {
 /**
  * Describes the same MAX extra gas amount.
  */
-export type ExtraGasMaxLimit = AmountInFormats;
+export type ExtraGasMaxLimit = AmountFormatted;
 
 /**
  * Provide extra gas information
@@ -129,11 +129,11 @@ export interface ExtraGasMaxLimitResponse {
     /**
      * cost of swap tx on chain
      */
-    swap: AmountInFormats;
+    swap: AmountFormatted;
     /**
      * cost of send tx on chain
      */
-    transfer: AmountInFormats;
+    transfer: AmountFormatted;
   };
   /**
    * Exchange rate
