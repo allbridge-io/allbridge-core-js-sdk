@@ -48,7 +48,10 @@ $ npm install @allbridge/bridge-core-sdk
 
 ```ts
 import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
-const sdk = new AllbridgeCoreSdk();
+const sdk = new AllbridgeCoreSdk({
+  solanaRpcUrl: "your solana-rpc-url",
+  tronRpcUrl: "your tron-rpc-url",
+});
 ```
 
 ### 2. Get the list of supported tokens
@@ -122,7 +125,10 @@ async function runExample() {
   const account = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk({
+    solanaRpcUrl: "your solana-rpc-url",
+    tronRpcUrl: "your tron-rpc-url",
+  });
 
   // fetch information about supported chains
   const chains = await sdk.chainDetailsMap();
@@ -245,8 +251,8 @@ and can be paid either in the source chain's currency or in source tokens.
 
 The method returns an object with two properties:
 
-- native: The amount of gas fee, denominated in the smallest unit of the source chain currency (e.g. wei for Ethereum).
-- stablecoin: (optional) The amount of gas fee, denominated in the smallest unit of the source token.
+- native: The amount of gas fee, denominated in unit of the source chain currency (e.g. wei for Ethereum).
+- stablecoin: (optional) The amount of gas fee, denominated in unit of the source token.
   If this property is not present, it indicates that the stablecoin payment method is not available.
 
 ```ts
@@ -255,8 +261,18 @@ const { native, stablecoin } = await sdk.getGasFeeOptions(
   usdtOnTrxToken, // to TRX
   Messenger.ALLBRIDGE
 );
-console.log(native); // Output: "10000000000000000" (0.01 ETH)
-console.log(stablecoin); // Output: "10010000" (10.01 USDT)
+console.log(native);
+// Output:
+// {
+//   int: "10000000000000000",
+//   float: "0.01" // (0.01 ETH)
+// }
+console.log(stablecoin);
+// Output:
+// {
+//   int: "10010000",
+//   float: "10.01" // (10.01 USDT)
+// }
 ```
 
 ### Getting the average transfer time

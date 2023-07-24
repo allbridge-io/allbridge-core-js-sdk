@@ -49,7 +49,7 @@ const main = async () => {
   const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
   console.log("gasFeeOptions", gasFeeOptions);
   const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
-  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const gasFeeAmountFloat = gasFeeAmount.float;
   const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
   console.log(
     `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
@@ -64,7 +64,7 @@ const main = async () => {
     destinationToken: destinationTokenInfo,
     messenger: Messenger.ALLBRIDGE,
     gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-    fee: gasFeeAmount,
+    fee: gasFeeAmount.int,
   };
   const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(params, tronWeb);
 

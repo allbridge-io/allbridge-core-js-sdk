@@ -2,7 +2,7 @@ import { Big } from "big.js";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
-import { ApiClientTokenInfoCaching } from "./client/core-api/api-client-token-info-caching";
+import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
@@ -82,7 +82,7 @@ export class AllbridgeCoreSdk {
    */
   constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
     const apiClient = new ApiClientImpl(params);
-    const apiClientTokenInfoCaching = new ApiClientTokenInfoCaching(apiClient);
+    const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
