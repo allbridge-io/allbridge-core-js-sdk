@@ -56,6 +56,9 @@ export interface AmountsAndGasFeeOptions {
   gasFeeOptions: GasFeeOptions;
 }
 
+type GasFeeOptionsType = {
+  [key in FeePaymentMethod]?: AmountFormatted;
+};
 /**
  * Describes available options of paying the gas fee and the amount to pay when using the corresponding method.
  *
@@ -63,9 +66,10 @@ export interface AmountsAndGasFeeOptions {
  *
  * For {@link FeePaymentMethod.WITH_STABLECOIN} value contains the amount in the smallest denomination of the source token
  */
-export type GasFeeOptions = {
-  [key in FeePaymentMethod]?: AmountFormatted;
-};
+export interface GasFeeOptions extends GasFeeOptionsType {
+  [FeePaymentMethod.WITH_NATIVE_CURRENCY]: AmountFormatted;
+  [FeePaymentMethod.WITH_STABLECOIN]?: AmountFormatted;
+}
 
 /**
  * Define the type of amount data<p/>
@@ -76,11 +80,11 @@ export enum AmountFormat {
   /**
    * denominated in the smallest unit of the source token
    */
-  INT = "INT",
+  INT = "int",
   /**
    * denominated in the unit of the source token
    */
-  FLOAT = "FLOAT",
+  FLOAT = "float",
 }
 
 /**
@@ -91,7 +95,7 @@ export enum AmountFormat {
  * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
  */
 export type AmountFormatted = {
-  [key2 in AmountFormat]: string;
+  [key in AmountFormat]: string;
 };
 
 /**

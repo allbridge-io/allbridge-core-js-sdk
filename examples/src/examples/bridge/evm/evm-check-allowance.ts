@@ -36,7 +36,7 @@ const main = async () => {
   if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
     const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
-    const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+    const gasFeeAmountFloat = gasFeeAmount.float;
     // checking allowance for amount + gas fee
     totalAmountFloat = amountFloat.add(gasFeeAmountFloat);
   } else {

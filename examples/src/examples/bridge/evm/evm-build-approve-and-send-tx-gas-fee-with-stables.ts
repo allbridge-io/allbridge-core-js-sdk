@@ -46,7 +46,7 @@ const main = async () => {
   const approveTxReceipt = await sendRawTransaction(web3, rawTransactionApprove);
   console.log("approve tx id:", approveTxReceipt.transactionHash);
 
-  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const gasFeeAmountFloat = gasFeeAmount.float;
   const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
   console.log(
     `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
@@ -62,7 +62,7 @@ const main = async () => {
       destinationToken: destinationTokenInfo,
       messenger: Messenger.ALLBRIDGE,
       gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-      fee: gasFeeAmount,
+      fee: gasFeeAmount.int,
     },
     web3
   );
