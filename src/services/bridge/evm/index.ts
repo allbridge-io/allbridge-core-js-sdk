@@ -91,9 +91,14 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
+    // prettier-ignore
+    const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
       ...rawTransaction,
       gas: estimateGas,
+      ...feeOptions,
     });
     return { txId: transactionHash };
   }
