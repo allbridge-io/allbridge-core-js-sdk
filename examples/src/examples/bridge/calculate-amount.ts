@@ -1,12 +1,11 @@
-import { AllbridgeCoreSdk, Messenger } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../utils/utils";
-import Big from "big.js";
 
 async function runExampleCalculateAmounts() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT"));
+  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
   const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
   const amount = "100.5";
   const sourceChainMinUnit = "wei";
@@ -18,7 +17,7 @@ async function runExampleCalculateAmounts() {
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amount,
     sourceToken.symbol,
-    gasFeeOptions.native,
+    gasFeeOptions.native.int,
     sourceChainMinUnit,
     sourceToken.chainSymbol,
     amountToBeReceived,
@@ -27,7 +26,7 @@ async function runExampleCalculateAmounts() {
   );
   if (gasFeeOptions.stablecoin) {
     // Option to pay with stablecoins is available
-    const floatGasFeeAmount = new Big(gasFeeOptions.stablecoin).div(new Big(10).pow(sourceToken.decimals)).toFixed();
+    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
     console.log(
       "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
       amount,
@@ -46,7 +45,7 @@ async function runExampleCalculateAmounts() {
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amountToSend,
     sourceToken.symbol,
-    gasFeeOptions.native,
+    gasFeeOptions.native.int,
     sourceChainMinUnit,
     sourceToken.chainSymbol,
     amount,
@@ -55,11 +54,12 @@ async function runExampleCalculateAmounts() {
   );
   if (gasFeeOptions.stablecoin) {
     // Option to pay with stablecoins is available
+    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
     console.log(
       "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
       amountToSend,
       sourceToken.symbol,
-      gasFeeOptions.stablecoin,
+      floatGasFeeAmount,
       sourceToken.symbol,
       sourceToken.chainSymbol,
       amount,
@@ -70,10 +70,10 @@ async function runExampleCalculateAmounts() {
 }
 
 async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT"));
+  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
   const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
   const amount = "100.5";
   const sourceChainMinUnit = "wei";
@@ -88,7 +88,7 @@ async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amountToSendFloat,
     sourceToken.symbol,
-    gasFeeOptions.native,
+    gasFeeOptions.native.int,
     sourceChainMinUnit,
     sourceToken.chainSymbol,
     amountToBeReceivedFloat,
@@ -97,7 +97,7 @@ async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
   );
   if (gasFeeOptions.stablecoin) {
     // Option to pay with stablecoins is available
-    const floatGasFeeAmount = new Big(gasFeeOptions.stablecoin).div(new Big(10).pow(sourceToken.decimals)).toFixed();
+    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
     console.log(
       "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
       amount,
@@ -113,10 +113,10 @@ async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
 }
 
 async function runExampleGetAmountToSendAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT"));
+  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
   const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
   const amount = "100.5";
   const sourceChainMinUnit = "wei";
@@ -131,7 +131,7 @@ async function runExampleGetAmountToSendAndGasFeeOptions() {
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amountToSendFloat,
     sourceToken.symbol,
-    gasFeeOptions.native,
+    gasFeeOptions.native.int,
     sourceChainMinUnit,
     sourceToken.chainSymbol,
     amountToBeReceivedFloat,
@@ -140,7 +140,7 @@ async function runExampleGetAmountToSendAndGasFeeOptions() {
   );
   if (gasFeeOptions.stablecoin) {
     // Option to pay with stablecoins is available
-    const floatGasFeeAmount = new Big(gasFeeOptions.stablecoin).div(new Big(10).pow(sourceToken.decimals)).toFixed();
+    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
     console.log(
       "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
       amountToSendFloat,

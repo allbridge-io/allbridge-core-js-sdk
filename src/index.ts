@@ -2,16 +2,22 @@ import { Big } from "big.js";
 import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
-import { ApiClientTokenInfoCaching } from "./client/core-api/api-client-token-info-caching";
+import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
 import { InsufficientPoolLiquidity } from "./exceptions";
-import { AmountsAndGasFeeOptions, GasFeeOptions, GetTokenBalanceParams, Messenger } from "./models";
+import {
+  AmountsAndGasFeeOptions,
+  ExtraGasMaxLimitResponse,
+  GasFeeOptions,
+  GetTokenBalanceParams,
+  Messenger,
+} from "./models";
 import { BridgeService } from "./services/bridge";
 
 import { SolanaBridgeParams } from "./services/bridge/sol";
-import { getGasFeeOptions } from "./services/bridge/utils";
+import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
 import { LiquidityPoolService } from "./services/liquidity-pool";
 import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
@@ -30,9 +36,9 @@ import {
   swapToVUsdReverse,
 } from "./utils/calculation";
 import {
+  SwapAndBridgeCalculationData,
   swapAndBridgeFeeCalculation,
   swapAndBridgeFeeCalculationReverse,
-  SwapAndBridgeCalculationData,
 } from "./utils/calculation/swap-and-bridge-fee-calc";
 
 export * from "./configs/mainnet";
@@ -45,11 +51,11 @@ export interface AllbridgeCoreSdkOptions {
    * A set of headers to be added to all requests to the Core API.
    */
   coreApiHeaders?: Record<string, string>;
-  solanaRpcUrl: string;
-  polygonApiUrl: string;
-  tronRpcUrl: string;
-
   wormholeMessengerProgramId: string;
+}
+export interface NodeUrlsConfig {
+  solanaRpcUrl: string;
+  tronRpcUrl: string;
 }
 
 export class AllbridgeCoreSdk {
@@ -69,26 +75,27 @@ export class AllbridgeCoreSdk {
 
   /**
    * Initializes the SDK object.
+   * @param nodeUrls node rpc urls for full functionality
    * @param params
    * Optional.
    * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(params: AllbridgeCoreSdkOptions = mainnet) {
+  constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
     const apiClient = new ApiClientImpl(params);
-    const apiClientTokenInfoCaching = new ApiClientTokenInfoCaching(apiClient);
+    const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
     const solBridgeParams: SolanaBridgeParams = {
-      solanaRpcUrl: params.solanaRpcUrl,
+      solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
     };
     this.tokenService = new TokenService(this.api, solBridgeParams);
     this.bridge = new BridgeService(this.api, solBridgeParams, this.tokenService);
     const solPoolParams: SolanaPoolParams = {
-      solanaRpcUrl: params.solanaRpcUrl,
+      solanaRpcUrl: nodeUrls.solanaRpcUrl,
     };
-    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService, params.tronRpcUrl);
+    this.pool = new LiquidityPoolService(this.api, solPoolParams, this.tokenService, nodeUrls.tronRpcUrl);
     this.params = params;
   }
 
@@ -272,7 +279,6 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<string> {
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
-
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
       destinationChainToken,
@@ -299,6 +305,7 @@ export class AllbridgeCoreSdk {
   ): Promise<GasFeeOptions> {
     return getGasFeeOptions(
       sourceChainToken.allbridgeChainId,
+      sourceChainToken.chainType,
       destinationChainToken.allbridgeChainId,
       sourceChainToken.decimals,
       messenger,
@@ -349,6 +356,19 @@ export class AllbridgeCoreSdk {
    */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
     return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
+  }
+
+  /**
+   * Get possible limit of extra gas amount.
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @returns {@link ExtraGasMaxLimitResponse}
+   */
+  async getExtraGasMaxLimits(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<ExtraGasMaxLimitResponse> {
+    return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
   }
 
   async swapAndBridgeFeeCalculation(

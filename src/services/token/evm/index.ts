@@ -1,3 +1,4 @@
+import BN from "bn.js";
 import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
@@ -69,34 +70,26 @@ export class EvmTokenService extends ChainTokenService {
       amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
 
-    const tx = {
+    return {
       from: owner,
       to: tokenAddress,
       value: "0",
       data: approveMethod.encodeABI(),
     };
-
-    if (params.chainSymbol == ChainSymbol.POL) {
-      const gasInfo = await this.api.getPolygonGasInfo();
-
-      return {
-        ...tx,
-        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
-        maxFeePerGas: gasInfo.maxFee,
-      };
-    }
-
-    return tx;
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {
     const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
+    // prettier-ignore
+    const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     if (chainSymbol == ChainSymbol.POL) {
       transactionConfig.gas = POLYGON_GAS_LIMIT;
     } else {
       transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction);
     }
-    const { transactionHash } = await this.web3.eth.sendTransaction(transactionConfig);
+    const { transactionHash } = await this.web3.eth.sendTransaction({ ...transactionConfig, ...feeOptions });
     return { txId: transactionHash };
   }
 

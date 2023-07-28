@@ -25,7 +25,7 @@ export {
 } from "../services/liquidity-pool/models/pool.model";
 export { Provider, RawTransaction } from "../services/models/index";
 
-export { testnet } from "../configs/testnet";
+export { testnet, testnetNodeUrlsDefault } from "../configs/testnet";
 
 export enum FeePaymentMethod {
   /**
@@ -56,6 +56,9 @@ export interface AmountsAndGasFeeOptions {
   gasFeeOptions: GasFeeOptions;
 }
 
+type GasFeeOptionsType = {
+  [key in FeePaymentMethod]?: AmountFormatted;
+};
 /**
  * Describes available options of paying the gas fee and the amount to pay when using the corresponding method.
  *
@@ -63,6 +66,85 @@ export interface AmountsAndGasFeeOptions {
  *
  * For {@link FeePaymentMethod.WITH_STABLECOIN} value contains the amount in the smallest denomination of the source token
  */
-export type GasFeeOptions = {
-  [key in FeePaymentMethod]?: string;
+export interface GasFeeOptions extends GasFeeOptionsType {
+  [FeePaymentMethod.WITH_NATIVE_CURRENCY]: AmountFormatted;
+  [FeePaymentMethod.WITH_STABLECOIN]?: AmountFormatted;
+}
+
+/**
+ * Define the type of amount data<p/>
+ * Example:<p/>
+ *  "1500000" USDC {@link AmountFormat.INT} = "1.5" USDC {@link AmountFormat.FLOAT}, if USDC.decimals = 6
+ */
+export enum AmountFormat {
+  /**
+   * denominated in the smallest unit of the source token
+   */
+  INT = "int",
+  /**
+   * denominated in the unit of the source token
+   */
+  FLOAT = "float",
+}
+
+/**
+ * Describes the same amount in two variation formats.
+ *
+ * For {@link AmountFormat.INT} value contains the amount in tokens denomination
+ *
+ * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
+ */
+export type AmountFormatted = {
+  [key in AmountFormat]: string;
 };
+
+/**
+ * Describes MAX extra gas value can to be passed when using the corresponding method.
+ *
+ * For {@link FeePaymentMethod.WITH_NATIVE_CURRENCY} value contains {@link ExtraGasMaxLimit} the amount of the source chain currency
+ *
+ * For {@link FeePaymentMethod.WITH_STABLECOIN} value contains {@link ExtraGasMaxLimit} the amount of the source token
+ */
+export type ExtraGasMaxLimits = {
+  [key in FeePaymentMethod]?: ExtraGasMaxLimit;
+};
+
+/**
+ * Describes the same MAX extra gas amount.
+ */
+export type ExtraGasMaxLimit = AmountFormatted;
+
+/**
+ * Provide extra gas information
+ */
+export interface ExtraGasMaxLimitResponse {
+  /**
+   * See {@link ExtraGasMaxLimits}
+   */
+  extraGasMax: ExtraGasMaxLimits;
+  /**
+   * Information due to destination chain
+   */
+  destinationChain: {
+    /**
+     *  gasAmountMax maximum amount you can receive as extra gas on dest chain
+     */
+    gasAmountMax: ExtraGasMaxLimit;
+    /**
+     * cost of swap tx on chain
+     */
+    swap: AmountFormatted;
+    /**
+     * cost of send tx on chain
+     */
+    transfer: AmountFormatted;
+  };
+  /**
+   * Exchange rate
+   */
+  exchangeRate: string;
+  /**
+   * Source native token price
+   */
+  sourceNativeTokenPrice: string;
+}

@@ -51,8 +51,16 @@ export class SolanaTokenService extends ChainTokenService {
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     const { account, token } = params;
-    const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(token.tokenAddress));
-    const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
-    return accountData.amount.toString();
+    try {
+      const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(token.tokenAddress));
+      const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
+      return accountData.amount.toString();
+    } catch (e) {
+      if (e instanceof Error) {
+        e.message.startsWith("Account does not exist");
+        return "0";
+      }
+      throw e;
+    }
   }
 }

@@ -1,4 +1,10 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  FeePaymentMethod,
+  Messenger,
+  nodeUrlsDefault,
+} from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
@@ -15,7 +21,7 @@ const main = async () => {
   const account = web3.eth.accounts.privateKeyToAccount(getEnvVar("ETH_PRIVATE_KEY"));
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const chains = await sdk.chainDetailsMap();
   const sourceChain = chains[ChainSymbol.ETH];
   const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
@@ -30,7 +36,7 @@ const main = async () => {
   if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
     const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
-    const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+    const gasFeeAmountFloat = gasFeeAmount.float;
     // checking allowance for amount + gas fee
     totalAmountFloat = amountFloat.add(gasFeeAmountFloat);
   } else {

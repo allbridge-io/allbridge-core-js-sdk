@@ -3,13 +3,18 @@ import { Big } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { FeePaymentMethod, GasFeeOptions } from "../../models";
+import {
+  AmountFormat,
+  ExtraGasMaxLimitResponse,
+  ExtraGasMaxLimits,
+  FeePaymentMethod,
+  GasFeeOptions,
+} from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
-import { convertAmountPrecision, convertFloatAmountToInt } from "../../utils/calculation";
-import { EVM_NATIVE_TOKEN_PRECISION } from "../../utils/calculation/constants";
+import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { SendParams, TxSendParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
@@ -143,22 +148,63 @@ export async function prepareTxSendParams(
   txSendParams.fromAccountAddress = params.fromAccountAddress;
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
 
-  let { fee } = params;
+  //Fee
+  let { fee, feeFormat } = params;
   if (!fee) {
     const gasFeeOptions = await getGasFeeOptions(
       txSendParams.fromChainId,
+      params.sourceToken.chainType,
       txSendParams.toChainId,
       sourceToken.decimals,
       txSendParams.messenger,
       api
     );
 
-    fee = gasFeeOptions[txSendParams.gasFeePaymentMethod];
-    if (!fee) {
+    const gasFeeOption = gasFeeOptions[txSendParams.gasFeePaymentMethod];
+    if (!gasFeeOption) {
       throw Error(`Amount of gas fee cannot be determined for payment method '${txSendParams.gasFeePaymentMethod}'`);
     }
+    fee = gasFeeOption[AmountFormat.INT];
+    feeFormat = AmountFormat.INT;
   }
-  txSendParams.fee = fee;
+  if (feeFormat == AmountFormat.FLOAT) {
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+        txSendParams.fee = convertFloatAmountToInt(fee, ChainDecimalsByType[sourceToken.chainType]).toFixed(0);
+        break;
+      case FeePaymentMethod.WITH_STABLECOIN:
+        txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.decimals).toFixed(0);
+        break;
+    }
+  } else {
+    txSendParams.fee = fee;
+  }
+
+  //ExtraGas
+  const { extraGas, extraGasFormat } = params;
+  if (extraGas) {
+    if (extraGasFormat == AmountFormat.FLOAT) {
+      switch (txSendParams.gasFeePaymentMethod) {
+        case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+          txSendParams.extraGas = convertFloatAmountToInt(extraGas, ChainDecimalsByType[sourceToken.chainType]).toFixed(
+            0
+          );
+          break;
+        case FeePaymentMethod.WITH_STABLECOIN:
+          txSendParams.extraGas = convertFloatAmountToInt(extraGas, sourceToken.decimals).toFixed(0);
+          break;
+      }
+    } else {
+      txSendParams.extraGas = extraGas;
+    }
+    await validateExtraGasNotExceeded(
+      txSendParams.extraGas,
+      txSendParams.gasFeePaymentMethod,
+      sourceToken,
+      params.destinationToken,
+      api
+    );
+  }
 
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
@@ -168,6 +214,7 @@ export async function prepareTxSendParams(
 
 export async function getGasFeeOptions(
   sourceAllbridgeChainId: number,
+  sourceChainType: ChainType,
   destinationAllbridgeChainId: number,
   sourceChainTokenDecimals: number,
   messenger: Messenger,
@@ -180,15 +227,106 @@ export async function getGasFeeOptions(
   });
 
   const gasFeeOptions: GasFeeOptions = {
-    [FeePaymentMethod.WITH_NATIVE_CURRENCY]: transactionCostResponse.fee,
+    [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+      [AmountFormat.INT]: transactionCostResponse.fee,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        transactionCostResponse.fee,
+        ChainDecimalsByType[sourceChainType]
+      ).toFixed(),
+    },
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
-    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = convertAmountPrecision(
+    const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
-      EVM_NATIVE_TOKEN_PRECISION,
+      ChainDecimalsByType[sourceChainType],
       sourceChainTokenDecimals
     ).toFixed(0, Big.roundUp);
+    gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
+      [AmountFormat.INT]: gasFeeIntWithStables,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainTokenDecimals).toFixed(),
+    };
   }
 
   return gasFeeOptions;
+}
+
+async function validateExtraGasNotExceeded(
+  extraGasInInt: string,
+  gasFeePaymentMethod: FeePaymentMethod,
+  sourceToken: TokenWithChainDetails,
+  destinationToken: TokenWithChainDetails,
+  api: AllbridgeCoreClient
+) {
+  const extraGasLimits = await getExtraGasMaxLimits(sourceToken, destinationToken, api);
+  const extraGasMaxLimit = extraGasLimits.extraGasMax[gasFeePaymentMethod];
+  if (!extraGasMaxLimit) {
+    throw new Error(`Impossible to pay extra gas by ${gasFeePaymentMethod} payment method`);
+  }
+  const extraGasMaxIntLimit = extraGasMaxLimit[AmountFormat.INT];
+  if (Big(extraGasInInt).gt(extraGasMaxIntLimit)) {
+    throw new Error(
+      `Extra gas ${extraGasInInt} in int format, exceeded limit ${extraGasMaxIntLimit} for ${gasFeePaymentMethod} payment method`
+    );
+  }
+}
+
+export async function getExtraGasMaxLimits(
+  sourceChainToken: TokenWithChainDetails,
+  destinationChainToken: TokenWithChainDetails,
+  api: AllbridgeCoreClient
+): Promise<ExtraGasMaxLimitResponse> {
+  const extraGasMaxLimits: ExtraGasMaxLimits = {};
+  const transactionCostResponse = await api.getReceiveTransactionCost({
+    sourceChainId: sourceChainToken.allbridgeChainId,
+    destinationChainId: destinationChainToken.allbridgeChainId,
+    messenger: Messenger.ALLBRIDGE,
+  });
+  const maxAmount = destinationChainToken.txCostAmount.maxAmount;
+  const maxAmountFloat = convertIntAmountToFloat(
+    maxAmount,
+    ChainDecimalsByType[destinationChainToken.chainType]
+  ).toFixed();
+  const maxAmountFloatInSourceNative = Big(maxAmountFloat).div(transactionCostResponse.exchangeRate).toFixed();
+  const maxAmountInSourceNative = convertFloatAmountToInt(
+    maxAmountFloatInSourceNative,
+    ChainDecimalsByType[sourceChainToken.chainType]
+  ).toFixed(0);
+  extraGasMaxLimits[FeePaymentMethod.WITH_NATIVE_CURRENCY] = {
+    [AmountFormat.INT]: maxAmountInSourceNative,
+    [AmountFormat.FLOAT]: maxAmountFloatInSourceNative,
+  };
+  if (transactionCostResponse.sourceNativeTokenPrice) {
+    const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
+      .mul(transactionCostResponse.sourceNativeTokenPrice)
+      .toFixed();
+    extraGasMaxLimits[FeePaymentMethod.WITH_STABLECOIN] = {
+      [AmountFormat.INT]: convertFloatAmountToInt(maxAmountFloatInStable, sourceChainToken.decimals).toFixed(0),
+      [AmountFormat.FLOAT]: maxAmountFloatInStable,
+    };
+  }
+  return {
+    extraGasMax: extraGasMaxLimits,
+    destinationChain: {
+      gasAmountMax: {
+        [AmountFormat.INT]: maxAmount,
+        [AmountFormat.FLOAT]: maxAmountFloat,
+      },
+      swap: {
+        [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
+        [AmountFormat.FLOAT]: convertIntAmountToFloat(
+          destinationChainToken.txCostAmount.swap,
+          ChainDecimalsByType[destinationChainToken.chainType]
+        ).toFixed(),
+      },
+      transfer: {
+        [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
+        [AmountFormat.FLOAT]: convertIntAmountToFloat(
+          destinationChainToken.txCostAmount.transfer,
+          ChainDecimalsByType[destinationChainToken.chainType]
+        ).toFixed(),
+      },
+    },
+    exchangeRate: transactionCostResponse.exchangeRate,
+    sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
+  };
 }

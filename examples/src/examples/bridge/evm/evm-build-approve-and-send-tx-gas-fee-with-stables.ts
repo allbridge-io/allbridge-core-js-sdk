@@ -1,4 +1,10 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  FeePaymentMethod,
+  Messenger,
+  nodeUrlsDefault,
+} from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
@@ -18,7 +24,7 @@ const main = async () => {
   const account = web3.eth.accounts.privateKeyToAccount(getEnvVar("ETH_PRIVATE_KEY"));
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
@@ -40,7 +46,7 @@ const main = async () => {
   const approveTxReceipt = await sendRawTransaction(web3, rawTransactionApprove);
   console.log("approve tx id:", approveTxReceipt.transactionHash);
 
-  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const gasFeeAmountFloat = gasFeeAmount.float;
   const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
   console.log(
     `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
@@ -56,7 +62,7 @@ const main = async () => {
       destinationToken: destinationTokenInfo,
       messenger: Messenger.ALLBRIDGE,
       gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-      fee: gasFeeAmount,
+      fee: gasFeeAmount.int,
     },
     web3
   );

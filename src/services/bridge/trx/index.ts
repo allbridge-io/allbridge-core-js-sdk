@@ -1,3 +1,4 @@
+import Big from "big.js";
 // @ts-expect-error import tron
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
@@ -40,7 +41,13 @@ export class TronBridgeService extends ChainBridgeService {
       messenger,
       fee,
       gasFeePaymentMethod,
+      extraGas,
     } = params;
+
+    let totalFee = fee;
+    if (extraGas) {
+      totalFee = Big(totalFee).plus(extraGas).toFixed();
+    }
 
     const nonce = getNonce().toJSON().data;
     let parameters;
@@ -54,7 +61,7 @@ export class TronBridgeService extends ChainBridgeService {
         { type: "bytes32", value: toTokenAddress },
         { type: "uint256", value: nonce },
         { type: "uint8", value: messenger },
-        { type: "uint256", value: fee },
+        { type: "uint256", value: totalFee },
       ];
       value = "0";
     } else {
@@ -68,7 +75,7 @@ export class TronBridgeService extends ChainBridgeService {
         { type: "uint8", value: messenger },
         { type: "uint256", value: 0 },
       ];
-      value = fee;
+      value = totalFee;
     }
     const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
     return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);

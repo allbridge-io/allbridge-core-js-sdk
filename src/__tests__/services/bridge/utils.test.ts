@@ -10,9 +10,15 @@ import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
-import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../models";
+import {
+  AmountFormat,
+  ExtraGasMaxLimitResponse,
+  FeePaymentMethod,
+  SendParams,
+  TokenWithChainDetails,
+} from "../../../models";
 import { TxSendParams } from "../../../services/bridge/models";
-import { prepareTxSendParams } from "../../../services/bridge/utils";
+import { getExtraGasMaxLimits, prepareTxSendParams } from "../../../services/bridge/utils";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsSol from "../../data/tokens-info/TokenInfoWithChainDetails-SOL.json";
 import tokenInfoWithChainDetailsTrx from "../../data/tokens-info/TokenInfoWithChainDetails-TRX.json";
@@ -23,15 +29,18 @@ describe("ChainBridgeService Utils", () => {
   let scope: nock.Scope;
 
   beforeEach(() => {
-    api = new AllbridgeCoreClientImpl(
-      new ApiClientImpl({ coreApiUrl: "http://localhost", polygonApiUrl: "http://localhost" })
-    );
-    scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
+    api = new AllbridgeCoreClientImpl(new ApiClientImpl({ coreApiUrl: "http://localhost" }));
   });
 
+  const fee = "20000000000000000";
+  const exchangeRate = "0.12550590438537169016";
+  const sourceNativeTokenPrice = "241.26";
+  const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, exchangeRate, sourceNativeTokenPrice };
+
   describe("prepareTxSendParams()", () => {
-    const fee = "20000000000000000";
-    const receiveFeeResponse: ReceiveTransactionCostResponse = { fee };
+    beforeEach(() => {
+      scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
+    });
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
       const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {
@@ -271,6 +280,43 @@ describe("ChainBridgeService Utils", () => {
         toAccountAddress: Array.from(bs58.decode("1111111111113Zre8c5PsFSvvA2hXgPx1hGq9YCu")),
       };
       expect(txSendParams).toEqual(expectedTxSendParams);
+    });
+  });
+
+  describe("getExtraGasMaxLimits()", () => {
+    beforeEach(() => {
+      scope = nock("http://localhost")
+        .post("/receive-fee", '{"sourceChainId":2,"destinationChainId":5,"messenger":1}')
+        .reply(201, receiveFeeResponse)
+        .persist();
+    });
+
+    it("should return extra gas max limits", async () => {
+      const sourceToken = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
+      const destToken = tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails;
+
+      const extraGasMaxLimitResponse = await getExtraGasMaxLimits(sourceToken, destToken, api);
+
+      const expectedExtraGasMaxLimitResponse: ExtraGasMaxLimitResponse = {
+        extraGasMax: {
+          [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+            [AmountFormat.INT]: "37695437702064163",
+            [AmountFormat.FLOAT]: "0.03769543770206416314",
+          },
+          [FeePaymentMethod.WITH_STABLECOIN]: {
+            int: "9094401299999999999",
+            float: "9.0944012999999999991564",
+          },
+        },
+        destinationChain: {
+          gasAmountMax: { int: "4731000", float: "0.004731" },
+          swap: { int: "1877000", float: "0.001877" },
+          transfer: { int: "1577000", float: "0.001577" },
+        },
+        exchangeRate: "0.12550590438537169016",
+        sourceNativeTokenPrice: "241.26",
+      };
+      expect(extraGasMaxLimitResponse).toEqual(expectedExtraGasMaxLimitResponse);
     });
   });
 });

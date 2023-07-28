@@ -42,7 +42,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
 
-    const solTxSendParams = await this.prepareSolTxSendParams(params, txSendParams);
+    const solTxSendParams = this.prepareSolTxSendParams(params, txSendParams);
 
     const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
     switch (txSendParams.messenger) {
@@ -56,35 +56,12 @@ export class SolanaBridgeService extends ChainBridgeService {
     }
   }
 
-  private async prepareSolTxSendParams(params: SendParams, txSendParams: TxSendParams): Promise<SolTxSendParams> {
-    const gasFeeOptions = await getGasFeeOptions(
-      txSendParams.fromChainId,
-      txSendParams.toChainId,
-      params.sourceToken.decimals,
-      txSendParams.messenger,
-      this.api
-    );
-    const fee = gasFeeOptions[txSendParams.gasFeePaymentMethod];
-    let extraGas;
-    if (fee) {
-      switch (txSendParams.gasFeePaymentMethod) {
-        case FeePaymentMethod.WITH_NATIVE_CURRENCY:
-          extraGas = Big(txSendParams.fee).minus(fee).toFixed();
-          txSendParams.fee = fee;
-          break;
-        case FeePaymentMethod.WITH_STABLECOIN:
-          extraGas = Big(txSendParams.amount).minus(fee).toFixed();
-          txSendParams.amount = Big(txSendParams.amount).minus(extraGas).toFixed();
-          throw Error("Solana does not support extraGas feature for payment with Stable-coins yet.");
-          break;
-      }
-    }
-    if (extraGas) {
-      return {
-        ...txSendParams,
-        extraGas,
-        poolAddress: params.sourceToken.poolAddress,
-      };
+  private prepareSolTxSendParams(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+        break;
+      case FeePaymentMethod.WITH_STABLECOIN:
+        throw Error("Solana does not support extraGas feature for payment with Stable-coins yet.");
     }
     return {
       ...txSendParams,
@@ -409,5 +386,4 @@ export class SolanaBridgeService extends ChainBridgeService {
 
 interface SolTxSendParams extends TxSendParams {
   poolAddress: string;
-  extraGas?: string;
 }

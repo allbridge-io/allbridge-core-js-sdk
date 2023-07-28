@@ -2,7 +2,11 @@ import Cache from "timed-cache";
 import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
-import { ReceiveTransactionCostRequest, TransferStatusResponse } from "./core-api.model";
+import {
+  ReceiveTransactionCostRequest,
+  ReceiveTransactionCostResponse,
+  TransferStatusResponse,
+} from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
 export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
@@ -25,25 +29,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
-  getPolygonGasInfo(): Promise<{
-    maxPriorityFee: string;
-    maxFee: string;
-  }> {
-    return this.client.getPolygonGasInfo();
-  }
-
-  async getPolygonMaxPriorityFee(): Promise<string> {
-    return await this.client.getPolygonMaxPriorityFee();
-  }
-
-  async getPolygonMaxFee(): Promise<string> {
-    return await this.client.getPolygonMaxFee();
-  }
-
-  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<{
-    fee: string;
-    sourceNativeTokenPrice?: string;
-  }> {
+  getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return this.client.getReceiveTransactionCost(args);
   }
 

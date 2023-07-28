@@ -19,11 +19,11 @@ export class TronTokenService extends ChainTokenService {
 
   async getAllowance(params: GetAllowanceParamsDto): Promise<string> {
     const {
-      token: { tokenAddress, bridgeAddress: spender },
+      token: { tokenAddress },
       owner,
     } = params;
     const tokenContract = await this.getContract(tokenAddress);
-    const allowance = await tokenContract.methods.allowance(owner, spender).call();
+    const allowance = await tokenContract.methods.allowance(owner, params.spender).call();
     return allowance.toString();
   }
 

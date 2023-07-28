@@ -7,7 +7,9 @@ import {
   fromSystemPrecision,
   getFeePercent,
   swapFromVUsd,
+  swapFromVUsdReverse,
   swapToVUsd,
+  swapToVUsdReverse,
   toSystemPrecision,
 } from "../../../utils/calculation";
 
@@ -114,6 +116,7 @@ describe("Calculation", () => {
         [1000000000000000000000, 999998],
       ])("☀️ swapToVUsd amount: %s -> %d", (amount, expectedAmount) => {
         expect(Big(swapToVUsd(amount, token, pool))).toEqual(Big(expectedAmount));
+        expect(Big(swapToVUsdReverse(expectedAmount, token, pool))).toEqual(Big(amount));
       });
 
       test.each([
@@ -121,6 +124,7 @@ describe("Calculation", () => {
         [999998, 999996000000000000000],
       ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
         expect(Big(swapFromVUsd(amount, token, pool))).toEqual(Big(expectedAmount));
+        expect(Big(swapFromVUsdReverse(expectedAmount, token, pool))).toEqual(Big(amount));
       });
     });
 
@@ -142,10 +146,12 @@ describe("Calculation", () => {
 
       test("☀️ swapToVUsd near-zero amount", () => {
         expect(Big(swapToVUsd(10000000000000000, token, pool))).toEqual(Big(22));
+        expect(Big(swapToVUsdReverse(22, token, pool))).toEqual(Big(10000000000000000));
       });
 
       test("☀️ swapFromVUsd near-zero amount", () => {
-        expect(Big(swapFromVUsd(22, token, pool))).toEqual(Big(10000000000000000));
+        expect(Big(swapFromVUsd(21, token, pool))).toEqual(Big(10000000000000000));
+        expect(Big(swapFromVUsdReverse(10000000000000000, token, pool))).toEqual(Big(21));
       });
     });
 
@@ -170,6 +176,13 @@ describe("Calculation", () => {
         [10000000000000000, 5],
       ])("☀️ swapToVUsd amount: %d -> %d", (amount, expectedAmount) => {
         expect(Big(swapToVUsd(amount, token, pool))).toEqual(Big(expectedAmount));
+        let amountReverseExpected;
+        if (expectedAmount == 0) {
+          amountReverseExpected = 0;
+        } else {
+          amountReverseExpected = amount;
+        }
+        expect(Big(swapToVUsdReverse(expectedAmount, token, pool))).toEqual(Big(amountReverseExpected));
       });
 
       test.each([
@@ -177,6 +190,7 @@ describe("Calculation", () => {
         [5, 11000000000000000],
       ])("☀️ swapFromVUsd amount: %d -> %d", (amount, expectedAmount) => {
         expect(Big(swapFromVUsd(amount, token, pool))).toEqual(Big(expectedAmount));
+        expect(Big(swapFromVUsdReverse(expectedAmount, token, pool))).toEqual(Big(amount));
       });
     });
 
@@ -213,10 +227,12 @@ describe("Calculation", () => {
 
       test("☀️ swapToVUsd 10 tokens", () => {
         expect(Big(swapToVUsd(10000000000000000000, sourceToken, sourcePoolInfo))).toEqual(Big(9969));
+        expect(Big(swapToVUsdReverse(9969, sourceToken, sourcePoolInfo))).toEqual(Big(10000000000000000000));
       });
 
       test("☀️ swapFromVUsd almost 10 tokens", () => {
         expect(Big(swapFromVUsd(9969, destinationToken, destinationPoolInfo))).toEqual(Big(9938096000000000000));
+        expect(Big(swapFromVUsdReverse(9938096000000000000, destinationToken, destinationPoolInfo))).toEqual(Big(9969));
       });
     });
   });

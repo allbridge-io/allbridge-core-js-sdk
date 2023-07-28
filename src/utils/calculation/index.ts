@@ -74,7 +74,7 @@ export function swapFromVUsd(
 export function swapToVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: PoolInfo
+  poolInfo: Omit<PoolInfo, "imbalance">
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);
@@ -91,7 +91,7 @@ export function swapToVUsdReverse(
 export function swapFromVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: PoolInfo
+  poolInfo: Omit<PoolInfo, "imbalance">
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);

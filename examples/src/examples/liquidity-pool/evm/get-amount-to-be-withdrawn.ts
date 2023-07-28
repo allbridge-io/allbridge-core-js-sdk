@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import Web3 from "web3";
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 dotenv.config({ path: ".env" });
 
@@ -15,7 +15,7 @@ const main = async () => {
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const halfToken = "0.5";
