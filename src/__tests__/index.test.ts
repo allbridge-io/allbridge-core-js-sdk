@@ -5,10 +5,12 @@ import nock, { cleanAll as nockCleanAll } from "nock";
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
+import { ChainDecimalsByType } from "../chains";
 import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
   AllbridgeCoreSdkOptions,
+  AmountFormat,
   ChainDetailsMap,
   ChainSymbol,
   ChainType,
@@ -18,13 +20,14 @@ import {
   GetAllowanceParams,
   GetTokenBalanceParams,
   Messenger,
+  NodeUrlsConfig,
   PoolInfo,
   SendParams,
   TokenWithChainDetails,
 } from "../index";
 import { formatAddress } from "../services/bridge/utils";
 
-import { getFeePercent } from "../utils/calculation";
+import { convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
@@ -44,15 +47,16 @@ const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenWith
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
 
-  const testConfig: AllbridgeCoreSdkOptions = {
-    polygonApiUrl: "",
-    coreApiUrl: "http://localhost",
+  const testNodeUrls: NodeUrlsConfig = {
     solanaRpcUrl: "solanaRpcUrl",
     tronRpcUrl: "tronRpcUrl",
+  };
+  const testConfig: AllbridgeCoreSdkOptions = {
+    coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
   };
   beforeEach(() => {
-    sdk = new AllbridgeCoreSdk(testConfig);
+    sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
   });
 
   describe("Given tokens with different precision", () => {
@@ -610,6 +614,7 @@ describe("SDK", () => {
 
     const fee = "20000000000000000";
     const sourceNativeTokenPrice = "1501.0000";
+    const exchangeRate = "0.12550590438537169016";
     const feeInStablecoins = "30.02";
     const nonceBuffer = mockNonce();
     const tokensAmount = "1.33";
@@ -622,6 +627,8 @@ describe("SDK", () => {
 
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
         fee,
+        sourceNativeTokenPrice,
+        exchangeRate,
       };
 
       test("Should return txId after sending GRL to TRX", async () => {
@@ -790,6 +797,7 @@ describe("SDK", () => {
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
         fee,
         sourceNativeTokenPrice,
+        exchangeRate,
       };
 
       test("Should return txId after sending GRL to TRX", async () => {
@@ -910,8 +918,17 @@ describe("SDK", () => {
         .mul(10 ** sourceChainToken.decimals)
         .toFixed();
       const expected: GasFeeOptions = {
-        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
-        [FeePaymentMethod.WITH_STABLECOIN]: expectedFeeAmountInStablecoin,
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+          [AmountFormat.INT]: fee,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+        },
+        [FeePaymentMethod.WITH_STABLECOIN]: {
+          [AmountFormat.INT]: expectedFeeAmountInStablecoin,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            expectedFeeAmountInStablecoin,
+            sourceChainToken.decimals
+          ).toFixed(),
+        },
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);
@@ -929,7 +946,10 @@ describe("SDK", () => {
         .persist();
 
       const expected: GasFeeOptions = {
-        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: fee,
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+          [AmountFormat.INT]: fee,
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+        },
       };
 
       const actual = await sdk.getGasFeeOptions(sourceChainToken, destinationChainToken, Messenger.ALLBRIDGE);

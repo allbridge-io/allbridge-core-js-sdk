@@ -1,7 +1,7 @@
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chainDetailsMap = await sdk.chainDetailsMap();
   console.log("Chain details map =", JSON.stringify(chainDetailsMap, null, 2));

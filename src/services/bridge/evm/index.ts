@@ -1,7 +1,8 @@
+import Big from "big.js";
 import BN from "bn.js";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
+import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction } from "../../models";
@@ -41,12 +42,18 @@ export class EvmBridgeService extends ChainBridgeService {
       messenger,
       fee,
       gasFeePaymentMethod,
+      extraGas,
     } = params;
 
     const nonce = new BN(getNonce());
     let swapAndBridgeMethod: PayableTransactionObject<void>;
     let value: string;
     const bridgeContract = this.getBridgeContract(contractAddress);
+
+    let totalFee = fee;
+    if (extraGas) {
+      totalFee = Big(totalFee).plus(extraGas).toFixed();
+    }
 
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
@@ -57,7 +64,7 @@ export class EvmBridgeService extends ChainBridgeService {
         toTokenAddress,
         nonce,
         messenger,
-        fee
+        totalFee
       );
       value = "0";
     } else {
@@ -71,34 +78,27 @@ export class EvmBridgeService extends ChainBridgeService {
         messenger,
         0
       );
-      value = fee;
+      value = totalFee;
     }
 
-    const tx = {
+    return Promise.resolve({
       from: fromAccountAddress,
       to: contractAddress,
       value: value,
       data: swapAndBridgeMethod.encodeABI(),
-    };
-
-    if (params.fromChainSymbol == ChainSymbol.POL) {
-      const gasInfo = await this.api.getPolygonGasInfo();
-
-      return {
-        ...tx,
-        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
-        maxFeePerGas: gasInfo.maxFee,
-      };
-    }
-
-    return tx;
+    });
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
+    // prettier-ignore
+    const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
       ...rawTransaction,
       gas: estimateGas,
+      ...feeOptions,
     });
     return { txId: transactionHash };
   }

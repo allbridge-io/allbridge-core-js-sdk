@@ -61,7 +61,12 @@
         "wormhole": 40140000
       }
     },
-    "confirmations": 5
+    "confirmations": 5,
+    "txCostAmount": {
+      "swap": "2697498159559000",
+      "transfer": "3332203608867000",
+      "maxAmount": "9996610826601000"
+    }
   },
   "POL": {
     "tokens": [

@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, SendParams } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault, SendParams } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
@@ -17,7 +17,7 @@ const main = async () => {
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 

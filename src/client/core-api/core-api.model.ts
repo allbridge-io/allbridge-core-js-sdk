@@ -65,8 +65,9 @@ export interface ReceiveTransactionCostRequest {
 }
 
 export interface ReceiveTransactionCostResponse {
+  exchangeRate: string;
   fee: string;
-  sourceNativeTokenPrice?: string;
+  sourceNativeTokenPrice: string;
 }
 
 export interface TransferStatusResponse {

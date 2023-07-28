@@ -1,43 +1,28 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
-
 import { ChainType } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
-  ApproveParamsDto,
-  Bridge,
+  ApproveParams,
+  ChainBridgeService,
   GetAllowanceParamsDto,
   GetTokenBalanceParams,
   SendParams,
-  TransactionResponse,
   TxSendParams,
 } from "../../../../services/bridge/models";
 import { SolanaBridgeParams } from "../../../../services/bridge/sol";
-import { RawTransaction } from "../../../../services/models";
+import { RawTransaction, TransactionResponse } from "../../../../services/models";
 
-export function createTestBridge(): Bridge {
-  // @ts-expect-error
-  return new TestBridge(undefined, undefined, undefined);
-}
-
-export function mockBridge_getTokenBalance(bridge: Bridge, tokenBalance: string) {
-  const getTokenBalance = jest.spyOn(bridge, "getTokenBalance");
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  getTokenBalance.mockImplementation(() => {
-    return Promise.resolve(tokenBalance);
-  });
-}
-
-export class TestBridge extends Bridge {
+export class TestBridge extends ChainBridgeService {
   constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient, public chainType: ChainType) {
     super();
   }
 
-  approve(approveData: ApproveParamsDto): Promise<TransactionResponse> {
+  approve(approveData: ApproveParams): Promise<TransactionResponse> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }
 
-  buildRawTransactionApprove(approveData: ApproveParamsDto): Promise<RawTransaction> {
+  buildRawTransactionApprove(approveData: ApproveParams): Promise<RawTransaction> {
     // @ts-expect-error
     return Promise.resolve(undefined);
   }

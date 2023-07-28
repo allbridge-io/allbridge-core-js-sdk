@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
+import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
@@ -55,45 +55,33 @@ export class EvmPoolService extends ChainPoolService {
     };
   }
 
-  /* eslint-disable-next-line  @typescript-eslint/require-await */
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    return {
-      ...(await this.buildTxParams(params)),
+    return Promise.resolve({
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.deposit(params.amount).encodeABI(),
-    };
+    });
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    return {
-      ...(await this.buildTxParams(params)),
+    return Promise.resolve({
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.withdraw(params.amount).encodeABI(),
-    };
+    });
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
-    return {
-      ...(await this.buildTxParams(params)),
+    return Promise.resolve({
+      ...this.buildTxParams(params),
       data: this.getPoolContract(params.token.poolAddress).methods.claimRewards().encodeABI(),
-    };
+    });
   }
 
-  async buildTxParams(params: LiquidityPoolsParams) {
-    const txParams = {
+  buildTxParams(params: LiquidityPoolsParams) {
+    return {
       from: params.accountAddress,
       to: params.token.poolAddress,
       value: "0",
     };
-
-    if (params.token.chainSymbol == ChainSymbol.POL) {
-      const gasInfo = await this.api.getPolygonGasInfo();
-
-      return {
-        ...txParams,
-        maxPriorityFeePerGas: gasInfo.maxPriorityFee,
-        maxFeePerGas: gasInfo.maxFee,
-      };
-    }
-    return txParams;
   }
 
   private getContract<T extends BaseContract>(abiItem: AbiItem[], contractAddress: string): T {

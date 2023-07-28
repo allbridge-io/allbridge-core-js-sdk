@@ -1,4 +1,11 @@
-import { AllbridgeCoreSdk, ChainSymbol, FeePaymentMethod, Messenger, RawTransaction } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  FeePaymentMethod,
+  Messenger,
+  nodeUrlsDefault,
+  RawTransaction,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -20,7 +27,7 @@ const main = async () => {
     getEnvVar("TRONWEB_PROVIDER_URL"),
     getEnvVar("TRX_PRIVATE_KEY")
   );
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
@@ -42,7 +49,7 @@ const main = async () => {
   const gasFeeOptions = await sdk.getGasFeeOptions(sourceTokenInfo, destinationTokenInfo, Messenger.ALLBRIDGE);
   console.log("gasFeeOptions", gasFeeOptions);
   const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
-  const gasFeeAmountFloat = new Big(gasFeeAmount).div(new Big(10).pow(sourceTokenInfo.decimals));
+  const gasFeeAmountFloat = gasFeeAmount.float;
   const totalAmountFloat = new Big(amountToSendFloat).add(gasFeeAmountFloat).toFixed();
   console.log(
     `Sending ${amountToSendFloat} ${sourceTokenInfo.symbol} (gas fee ${gasFeeAmountFloat} ${sourceTokenInfo.symbol}). Total amount: ${totalAmountFloat} ${sourceTokenInfo.symbol}`
@@ -57,7 +64,7 @@ const main = async () => {
     destinationToken: destinationTokenInfo,
     messenger: Messenger.ALLBRIDGE,
     gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
-    fee: gasFeeAmount,
+    fee: gasFeeAmount.int,
   };
   const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(params, tronWeb);
 

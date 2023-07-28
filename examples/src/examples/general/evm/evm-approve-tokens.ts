@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import Web3 from "web3";
 dotenv.config({ path: ".env" });
@@ -10,13 +10,12 @@ const main = async () => {
   const privateKey = getEnvVar("ETH_PRIVATE_KEY");
   const tokenAddress = getEnvVar("ETH_TOKEN_ADDRESS");
   const accountAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
-  const poolAddress = getEnvVar("ETH_POOL_ADDRESS");
 
   const web3 = new Web3(providerUrl);
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
 
   const approveData = {

@@ -2,7 +2,7 @@
 import * as TronWeb from "tronweb";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk, RawTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 dotenv.config({ path: ".env" });
 
@@ -19,7 +19,7 @@ const main = async () => {
     getEnvVar("TRX_PRIVATE_KEY")
   );
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   // create claim rewards raw transaction

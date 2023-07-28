@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, testnet } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 
 import * as dotenv from "dotenv";
@@ -11,13 +11,12 @@ const main = async () => {
   const privateKey = getEnvVar("POL_PRIVATE_KEY");
   const tokenAddress = getEnvVar("POL_TOKEN_ADDRESS");
   const accountAddress = getEnvVar("POL_ACCOUNT_ADDRESS");
-  const poolAddress = getEnvVar("POL_POOL_ADDRESS");
 
   const web3 = new Web3(providerUrl);
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
   web3.eth.accounts.wallet.add(account);
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
   const approveData = {
     token: tokenInfo,

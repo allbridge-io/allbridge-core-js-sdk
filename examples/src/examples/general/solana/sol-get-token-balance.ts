@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 dotenv.config({ path: ".env" });
 
@@ -8,7 +8,7 @@ const main = async () => {
   const tokenAddress = getEnvVar("SOL_TOKEN_ADDRESS");
   const accountAddress = getEnvVar("SOL_ACCOUNT_ADDRESS");
 
-  const sdk = new AllbridgeCoreSdk();
+  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const tokenBalanceData = {
