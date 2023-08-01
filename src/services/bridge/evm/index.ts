@@ -45,7 +45,7 @@ export class EvmBridgeService extends ChainBridgeService {
       extraGas,
     } = params;
 
-    const nonce = new BN(getNonce());
+    const nonce = "0x" + getNonce().toString("hex");
     let swapAndBridgeMethod: PayableTransactionObject<void>;
     let value: string;
     const bridgeContract = this.getBridgeContract(contractAddress);
