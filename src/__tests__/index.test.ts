@@ -690,7 +690,7 @@ describe("SDK", () => {
           formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
           trxChainToken.allbridgeChainId,
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
-          new BN(nonceBuffer),
+          "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
           0
         );
@@ -865,7 +865,7 @@ describe("SDK", () => {
           formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
           trxChainToken.allbridgeChainId,
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
-          new BN(nonceBuffer),
+          "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
           expectedFeeAmount
         );
