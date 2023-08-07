@@ -182,7 +182,7 @@ export async function prepareTxSendParams(
 
   //ExtraGas
   const { extraGas, extraGasFormat } = params;
-  if (extraGas) {
+  if (extraGas && +extraGas > 0) {
     if (extraGasFormat == AmountFormat.FLOAT) {
       switch (txSendParams.gasFeePaymentMethod) {
         case FeePaymentMethod.WITH_NATIVE_CURRENCY:
