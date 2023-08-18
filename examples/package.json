@@ -23,10 +23,9 @@
     "run:bridge:trx:send": "ts-node src/examples/bridge/trx/trx-send-tokens.ts",
     "run:bridge:calculateAmount": "ts-node src/examples/bridge/calculate-amount.ts",
     "run:bridge:getAvetageTransferTime": "ts-node src/examples/bridge/get-average-transfer-time.ts",
-    "run:bridge:getFeePervent": "ts-node src/examples/bridge/get-fee-percent.ts",
+    "run:bridge:getFeePercent": "ts-node src/examples/bridge/get-fee-percent.ts",
     "run:bridge:getTransferStatus": "ts-node src/examples/bridge/get-transfer-status.ts",
     "run:bridge:getExtraGasMaxLimits": "ts-node src/examples/bridge/get-extra-gas-max-limits.ts",
-
     "run:general:evm:bsc:approveTokens": "ts-node src/examples/general/evm/bsc/bsc-approve-tokens.ts",
     "run:general:evm:bsc:getTokenBalance": "ts-node src/examples/general/evm/bsc/bsc-get-token-balance.ts",
     "run:general:evm:pol:approveTokens": "ts-node src/examples/general/evm/pol/pol-approve-tokens.ts",

@@ -1,6 +1,7 @@
 import Big from "big.js";
 import BN from "bn.js";
 import Web3 from "web3";
+import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -45,7 +46,7 @@ export class EvmBridgeService extends ChainBridgeService {
       extraGas,
     } = params;
 
-    const nonce = new BN(getNonce());
+    const nonce = "0x" + getNonce().toString("hex");
     let swapAndBridgeMethod: PayableTransactionObject<void>;
     let value: string;
     const bridgeContract = this.getBridgeContract(contractAddress);
@@ -90,7 +91,7 @@ export class EvmBridgeService extends ChainBridgeService {
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction) {
-    const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
+    const estimateGas = await this.web3.eth.estimateGas(rawTransaction as TransactionConfig);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
     // prettier-ignore

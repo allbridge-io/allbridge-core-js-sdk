@@ -87,7 +87,7 @@ export class EvmTokenService extends ChainTokenService {
     if (chainSymbol == ChainSymbol.POL) {
       transactionConfig.gas = POLYGON_GAS_LIMIT;
     } else {
-      transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction);
+      transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction as TransactionConfig);
     }
     const { transactionHash } = await this.web3.eth.sendTransaction({ ...transactionConfig, ...feeOptions });
     return { txId: transactionHash };

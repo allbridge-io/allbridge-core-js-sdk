@@ -4,6 +4,7 @@ import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import { sendRawTransaction } from "../../../utils/web3";
 import Web3 from "web3";
+import { TransactionConfig } from "web3-core";
 dotenv.config({ path: ".env" });
 
 const main = async () => {
@@ -30,7 +31,7 @@ const main = async () => {
     web3
   );
 
-  const txReceipt = await sendRawTransaction(web3, rawTransactionDeposit);
+  const txReceipt = await sendRawTransaction(web3, rawTransactionDeposit as TransactionConfig);
 
   console.log("Token withdraw:", txReceipt.transactionHash);
 };
