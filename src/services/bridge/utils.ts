@@ -106,17 +106,6 @@ export function getNonce(): Buffer {
   return randomBytes(32);
 }
 
-export function checkIsGasPaymentMethodSupported(
-  gasFeePaymentMethod: FeePaymentMethod | undefined,
-  sourceToken: TokenWithChainDetails
-) {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN && sourceToken.chainSymbol == ChainSymbol.SOL) {
-    throw Error(
-      `Gas fee payment method '${gasFeePaymentMethod}' is not supported on source chain ${sourceToken.chainSymbol}`
-    );
-  }
-}
-
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
   params: SendParams,
@@ -134,8 +123,6 @@ export async function prepareTxSendParams(
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
   const sourceToken = params.sourceToken;
   txSendParams.contractAddress = sourceToken.bridgeAddress;
-
-  checkIsGasPaymentMethodSupported(params.gasFeePaymentMethod, sourceToken);
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;

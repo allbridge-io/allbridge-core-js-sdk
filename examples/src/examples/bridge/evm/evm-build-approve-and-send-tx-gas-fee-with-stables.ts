@@ -11,6 +11,7 @@ import { getEnvVar } from "../../../utils/env";
 import { sendRawTransaction } from "../../../utils/web3";
 import Big from "big.js";
 import { ensure } from "../../../utils/utils";
+import { TransactionConfig } from "web3-core";
 dotenv.config({ path: ".env" });
 
 const main = async () => {
@@ -43,7 +44,7 @@ const main = async () => {
     token: sourceTokenInfo,
     owner: fromAddress,
   });
-  const approveTxReceipt = await sendRawTransaction(web3, rawTransactionApprove);
+  const approveTxReceipt = await sendRawTransaction(web3, rawTransactionApprove as TransactionConfig);
   console.log("approve tx id:", approveTxReceipt.transactionHash);
 
   const gasFeeAmountFloat = gasFeeAmount.float;
@@ -67,7 +68,7 @@ const main = async () => {
     web3
   );
 
-  const txReceipt = await sendRawTransaction(web3, rawTransactionTransfer);
+  const txReceipt = await sendRawTransaction(web3, rawTransactionTransfer as TransactionConfig);
   console.log("tx id:", txReceipt.transactionHash);
 };
 

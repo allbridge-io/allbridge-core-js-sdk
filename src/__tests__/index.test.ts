@@ -1,5 +1,4 @@
 import { Big } from "big.js";
-import BN from "bn.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
