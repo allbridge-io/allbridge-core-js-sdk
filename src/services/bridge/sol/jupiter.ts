@@ -33,7 +33,7 @@ export class JupiterService {
       slippageBps: 100,
       onlyDirectRoutes: true,
     });
-    quoteResponse.swapMode = SwapMode.ExactOut;
+
     const { swapTransaction } = await this.jupiterQuoteApi.swapPost({
       swapRequest: {
         quoteResponse,
