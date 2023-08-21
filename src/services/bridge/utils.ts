@@ -106,6 +106,13 @@ export function getNonce(): Buffer {
   return randomBytes(32);
 }
 
+export function isStablePaymentMethodSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
+  if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
+    return false;
+  }
+  return true;
+}
+
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
   params: SendParams,
@@ -125,6 +132,11 @@ export async function prepareTxSendParams(
   txSendParams.contractAddress = sourceToken.bridgeAddress;
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+    if (!isStablePaymentMethodSupported(params.sourceToken.chainType, params.messenger)) {
+      throw Error(
+        `For ${params.sourceToken.chainType} chain send tx unavailable for payment method '${txSendParams.gasFeePaymentMethod}' via '${params.messenger}' messenger`
+      );
+    }
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
   } else {
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
@@ -222,7 +234,7 @@ export async function getGasFeeOptions(
       ).toFixed(),
     },
   };
-  if (transactionCostResponse.sourceNativeTokenPrice) {
+  if (transactionCostResponse.sourceNativeTokenPrice && isStablePaymentMethodSupported(sourceChainType, messenger)) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
       ChainDecimalsByType[sourceChainType],

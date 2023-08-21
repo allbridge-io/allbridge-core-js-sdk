@@ -1,4 +1,4 @@
-import { createJupiterApiClient, DefaultApi, SwapMode } from "@jup-ag/api";
+import { createJupiterApiClient, DefaultApi } from "@jup-ag/api";
 import { NATIVE_MINT } from "@solana/spl-token";
 import {
   AddressLookupTableAccount,
