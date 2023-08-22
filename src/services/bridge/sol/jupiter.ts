@@ -39,7 +39,6 @@ export class JupiterService {
       throw new JupiterError("Cannot get routes");
     }
     const route = routes[0];
-    console.log("route", route);
     const { swapTransaction } = await this.jupiterQuoteApi.v4SwapPost({
       body: {
         route: { ...route, swapMode: Def1SwapModeEnum[routes[0].swapMode] },
