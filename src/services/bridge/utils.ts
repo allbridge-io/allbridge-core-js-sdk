@@ -6,6 +6,7 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
+import { UnsupportedStablePaymentError } from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -133,8 +134,10 @@ export async function prepareTxSendParams(
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     if (!isStablePaymentMethodSupported(params.sourceToken.chainType, params.messenger)) {
-      throw Error(
-        `For ${params.sourceToken.chainType} chain send tx unavailable for payment method '${txSendParams.gasFeePaymentMethod}' via '${params.messenger}' messenger`
+      throw new UnsupportedStablePaymentError(
+        `For '${params.sourceToken.chainType}' chain send tx unavailable for payment method '${
+          params.gasFeePaymentMethod
+        }' via '${Messenger[params.messenger]}' messenger`
       );
     }
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
