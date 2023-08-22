@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@esbuild-plugins/node-modules-polyfill': ^0.1.4
-  '@jup-ag/api': ^6.0.2
+  '@jup-ag/api': ^4.0.0
   '@project-serum/anchor': ^0.25.0
   '@ryansonshine/commitizen': ^4.2.8
   '@ryansonshine/cz-conventional-changelog': ^3.3.4
@@ -60,7 +60,7 @@ specifiers:
   web3-utils: ^1.9.0
 
 dependencies:
-  '@jup-ag/api': 6.0.2
+  '@jup-ag/api': 4.0.0
   '@project-serum/anchor': 0.25.0
   '@solana/spl-token': 0.3.8_@solana+web3.js@1.78.4
   '@solana/web3.js': 1.78.4
@@ -1520,8 +1520,8 @@ packages:
     dev: true
     optional: true
 
-  /@jup-ag/api/6.0.2:
-    resolution: {integrity: sha512-3M+UocqAzWasI6Sp6ZkcwiiFJZvORqrDV3sC9GnMTrExrSQhe3eBRVtn4SMPshksxclB8fwktkD9DlPdNI2K1g==}
+  /@jup-ag/api/4.0.0:
+    resolution: {integrity: sha512-GqMgiPXsH+zSYNGiSJl/PuPyIMcVDwIATbnk4s9YL1zUaS7Di9nB23SBZOhDv3Z5bo1Ud/nquL+G8+p94RLmQQ==}
     dev: false
 
   /@noble/curves/1.1.0:

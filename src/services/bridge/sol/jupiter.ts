@@ -1,4 +1,4 @@
-import { createJupiterApiClient, DefaultApi } from "@jup-ag/api";
+import { Configuration, Def1SwapModeEnum, DefaultApi, V4QuoteGetSwapModeEnum } from "@jup-ag/api";
 import { NATIVE_MINT } from "@solana/spl-token";
 import {
   AddressLookupTableAccount,
@@ -17,26 +17,32 @@ export class JupiterService {
 
   constructor(solanaRpcUrl: string) {
     this.connection = new Connection(solanaRpcUrl);
-    this.jupiterQuoteApi = createJupiterApiClient();
+    const config = new Configuration({ basePath: "https://quote-api.jup.ag" });
+    this.jupiterQuoteApi = new DefaultApi(config);
   }
 
-  async txAmendJupiterSwapTx(
-    sdkTx: VersionedTransaction,
+  async getJupiterSwapTx(
     userAddress: string,
     stableTokenAddress: string,
-    amount: number
-  ): Promise<VersionedTransaction> {
-    const quoteResponse = await this.jupiterQuoteApi.quoteGet({
+    amountOut: string
+  ): Promise<{ tx: VersionedTransaction; amountIn: string }> {
+    const { data } = await this.jupiterQuoteApi.v4QuoteGet({
       inputMint: stableTokenAddress,
       outputMint: NATIVE_MINT.toString(),
-      amount: amount,
+      amount: amountOut,
+      swapMode: V4QuoteGetSwapModeEnum.ExactOut,
       slippageBps: 100,
       onlyDirectRoutes: true,
     });
-
-    const { swapTransaction } = await this.jupiterQuoteApi.swapPost({
-      swapRequest: {
-        quoteResponse,
+    const routes = data;
+    if (!routes) {
+      throw new JupiterError("Cannot get routes");
+    }
+    const route = routes[0];
+    console.log("route", route);
+    const { swapTransaction } = await this.jupiterQuoteApi.v4SwapPost({
+      body: {
+        route: { ...route, swapMode: Def1SwapModeEnum[routes[0].swapMode] },
         userPublicKey: userAddress,
       },
     });
@@ -45,8 +51,13 @@ export class JupiterService {
       throw new JupiterError("Cannot get swap transaction");
     }
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-    const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+    return { tx: VersionedTransaction.deserialize(swapTransactionBuf), amountIn: route.inAmount };
+  }
 
+  async amendJupiterWithSdkTx(
+    transaction: VersionedTransaction,
+    sdkTx: VersionedTransaction
+  ): Promise<VersionedTransaction> {
     const addressLookupTableAccounts = await Promise.all(
       transaction.message.addressTableLookups.map(async (lookup) => {
         return new AddressLookupTableAccount({

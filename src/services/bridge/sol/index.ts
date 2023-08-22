@@ -18,6 +18,7 @@ import { Messenger } from "../../../client/core-api/core-api.model";
 import { InvalidAmountError } from "../../../exceptions";
 import { JupiterError } from "../../../exceptions/jupiter-error";
 import { FeePaymentMethod } from "../../../models";
+import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
@@ -59,17 +60,45 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const isJupiterForStableCoin = solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN;
 
+    let jupTx;
     if (isJupiterForStableCoin) {
-      solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
-        params.sourceToken.decimals,
-        solTxSendParams
-      );
-    }
+      try {
+        solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
+          params.sourceToken.decimals,
+          solTxSendParams
+        );
 
-    const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
+        let amountToGet = Big(solTxSendParams.fee);
+        if (solTxSendParams.extraGas) {
+          amountToGet = amountToGet.plus(solTxSendParams.extraGas);
+        }
+
+        const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
+          params.fromAccountAddress,
+          params.sourceToken.tokenAddress,
+          amountToGet.toFixed(0)
+        );
+        jupTx = tx;
+        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+        if (Big(solTxSendParams.amount).lte(0)) {
+          throw new InvalidAmountError(
+            `Amount not enough to pay fee, add ${convertIntAmountToFloat(
+              Big(solTxSendParams.amount).neg(),
+              params.sourceToken.decimals
+            ).toFixed()} stables`
+          );
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          throw new JupiterError(e.message);
+        }
+        throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
+      }
+    }
 
     let swapAndBridgeTx: VersionedTransaction;
     let wormMessageSigner: Keypair | undefined = undefined;
+    const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
     switch (txSendParams.messenger) {
       case Messenger.ALLBRIDGE: {
         swapAndBridgeTx = await this.buildSwapAndBridgeAllbridgeTransaction(swapAndBridgeSolData);
@@ -84,17 +113,11 @@ export class SolanaBridgeService extends ChainBridgeService {
     }
 
     if (isJupiterForStableCoin) {
-      let amountToSwap = Big(txSendParams.fee);
-      if (txSendParams.extraGas) {
-        amountToSwap = amountToSwap.plus(txSendParams.extraGas);
-      }
       try {
-        swapAndBridgeTx = await this.jupiterService.txAmendJupiterSwapTx(
-          swapAndBridgeTx,
-          params.fromAccountAddress,
-          params.sourceToken.tokenAddress,
-          amountToSwap.toNumber()
-        );
+        if (!jupTx) {
+          throw new JupiterError("Swap tx is absent");
+        }
+        swapAndBridgeTx = await this.jupiterService.amendJupiterWithSdkTx(jupTx, swapAndBridgeTx);
       } catch (e) {
         if (e instanceof Error) {
           throw new JupiterError(e.message);
@@ -102,6 +125,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
       }
     }
+
     if (wormMessageSigner) {
       swapAndBridgeTx.sign([wormMessageSigner]);
     }
@@ -127,21 +151,21 @@ export class SolanaBridgeService extends ChainBridgeService {
           messenger: solTxSendParams.messenger,
         })
       ).sourceNativeTokenPrice;
-      solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.fee).toFixed(0);
+      // solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.fee).toFixed(0);
       solTxSendParams.fee = Big(solTxSendParams.fee)
         .div(sourceNativeTokenPrice)
         .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
         .toFixed(0);
       if (solTxSendParams.extraGas) {
-        solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.extraGas).toFixed(0);
+        // solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.extraGas).toFixed(0);
         solTxSendParams.extraGas = Big(solTxSendParams.extraGas)
           .div(sourceNativeTokenPrice)
           .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
           .toFixed(0);
       }
-      if (Big(solTxSendParams.amount).lte(0)) {
-        throw new InvalidAmountError("Amount to low to pay fee");
-      }
+      // if (Big(solTxSendParams.amount).lte(0)) {
+      //   throw new InvalidAmountError("Amount to low to pay fee");
+      // }
       solTxSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
     }
     return solTxSendParams;
