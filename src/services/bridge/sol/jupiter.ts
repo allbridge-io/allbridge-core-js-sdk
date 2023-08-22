@@ -1,15 +1,7 @@
 import { Configuration, Def1SwapModeEnum, DefaultApi, V4QuoteGetSwapModeEnum } from "@jup-ag/api";
 import { NATIVE_MINT } from "@solana/spl-token";
-import {
-  AddressLookupTableAccount,
-  Connection,
-  PublicKey,
-  TransactionMessage,
-  VersionedTransaction,
-} from "@solana/web3.js";
+import { AddressLookupTableAccount, Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { JupiterError } from "../../../exceptions";
-
-const LOOKUP_TABLE_ADDRESS = "ACm9ocwiEk7DA3BBubJCmN7SwvjdrgpiaHHSy7QHaHJi";
 
 export class JupiterService {
   connection: Connection;
@@ -72,22 +64,33 @@ export class JupiterService {
         });
       })
     );
-
-    const allbridgeTableAccount = await this.connection
-      .getAddressLookupTable(new PublicKey(LOOKUP_TABLE_ADDRESS))
-      .then((res) => res.value);
-    if (!allbridgeTableAccount) {
-      throw new Error("Cannot find allbridgeLookupTableAccount");
-    }
-    addressLookupTableAccounts.push(allbridgeTableAccount);
+    const sdkAddressLookupTableAccounts = await Promise.all(
+      sdkTx.message.addressTableLookups.map(async (lookup) => {
+        return new AddressLookupTableAccount({
+          key: lookup.accountKey,
+          state: AddressLookupTableAccount.deserialize(
+            await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
+              if (!res) {
+                throw new Error("Cannot get AccountInfo");
+              }
+              return res.data;
+            })
+          ),
+        });
+      })
+    );
 
     const message = TransactionMessage.decompile(transaction.message, {
       addressLookupTableAccounts: addressLookupTableAccounts,
     });
-
-    const sdkMessage = TransactionMessage.decompile(sdkTx.message);
+    const sdkMessage = TransactionMessage.decompile(sdkTx.message, {
+      addressLookupTableAccounts: sdkAddressLookupTableAccounts,
+    });
     sdkMessage.instructions.shift();
     message.instructions.push(...sdkMessage.instructions);
+
+    addressLookupTableAccounts.push(...sdkAddressLookupTableAccounts);
+
     transaction.message = message.compileToV0Message(addressLookupTableAccounts);
     return transaction;
   }

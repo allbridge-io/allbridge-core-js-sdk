@@ -52,6 +52,7 @@ export interface AllbridgeCoreSdkOptions {
    */
   coreApiHeaders?: Record<string, string>;
   wormholeMessengerProgramId: string;
+  solanaLookUpTable: string;
 }
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
@@ -89,6 +90,7 @@ export class AllbridgeCoreSdk {
     const solBridgeParams: SolanaBridgeParams = {
       solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
+      solanaLookUpTable: params.solanaLookUpTable,
     };
     this.tokenService = new TokenService(this.api, solBridgeParams);
     this.bridge = new BridgeService(this.api, solBridgeParams, this.tokenService);

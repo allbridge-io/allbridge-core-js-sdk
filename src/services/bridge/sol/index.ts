@@ -43,6 +43,7 @@ import { JupiterService } from "./jupiter";
 export interface SolanaBridgeParams {
   solanaRpcUrl: string;
   wormholeMessengerProgramId: string;
+  solanaLookUpTable: string;
 }
 
 export class SolanaBridgeService extends ChainBridgeService {
@@ -343,19 +344,24 @@ export class SolanaBridgeService extends ChainBridgeService {
       ])
       .postInstructions(instructions)
       .transaction();
-    transaction.recentBlockhash = (
-      await this.buildAnchorProvider(userAccount.toString()).connection.getLatestBlockhash()
-    ).blockhash;
+    const connection = this.buildAnchorProvider(userAccount.toString()).connection;
+    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
-    return this.convertToVersionedTransaction(transaction);
+    return await this.convertToVersionedTransaction(transaction, connection);
   }
 
-  private convertToVersionedTransaction(tx: Transaction): VersionedTransaction {
+  private async convertToVersionedTransaction(tx: Transaction, connection: Connection): Promise<VersionedTransaction> {
+    const allbridgeTableAccount = await connection
+      .getAddressLookupTable(new PublicKey(this.params.solanaLookUpTable))
+      .then((res) => res.value);
+    if (!allbridgeTableAccount) {
+      throw new Error("Cannot find allbridgeLookupTableAccount");
+    }
     const messageV0 = new web3.TransactionMessage({
       payerKey: tx.feePayer,
       recentBlockhash: tx.recentBlockhash,
       instructions: tx.instructions,
-    } as TransactionMessageArgs).compileToV0Message();
+    } as TransactionMessageArgs).compileToV0Message([allbridgeTableAccount]);
     return new web3.VersionedTransaction(messageV0);
   }
 
@@ -470,7 +476,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .transaction();
     transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
-    return { transaction: this.convertToVersionedTransaction(transaction), messageAccount };
+    return { transaction: await this.convertToVersionedTransaction(transaction, provider.connection), messageAccount };
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
