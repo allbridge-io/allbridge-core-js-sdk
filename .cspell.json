@@ -31,7 +31,8 @@
     "lamports",
     "Seegxrqiu",
     "Arbitrum",
-    "decompile"
+    "decompile",
+    "txid"
   ],
   "flagWords": [],
   "ignorePaths": [
