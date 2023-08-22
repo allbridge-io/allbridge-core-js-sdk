@@ -1,7 +1,7 @@
 import { Configuration, Def1SwapModeEnum, DefaultApi, V4QuoteGetSwapModeEnum } from "@jup-ag/api";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { AddressLookupTableAccount, Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { JupiterError } from "../../../exceptions";
+import { JupiterError, SdkError } from "../../../exceptions";
 
 export class JupiterService {
   connection: Connection;
@@ -49,49 +49,56 @@ export class JupiterService {
     transaction: VersionedTransaction,
     sdkTx: VersionedTransaction
   ): Promise<VersionedTransaction> {
-    const addressLookupTableAccounts = await Promise.all(
-      transaction.message.addressTableLookups.map(async (lookup) => {
-        return new AddressLookupTableAccount({
-          key: lookup.accountKey,
-          state: AddressLookupTableAccount.deserialize(
-            await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
-              if (!res) {
-                throw new Error("Cannot get AccountInfo");
-              }
-              return res.data;
-            })
-          ),
-        });
-      })
-    );
-    const sdkAddressLookupTableAccounts = await Promise.all(
-      sdkTx.message.addressTableLookups.map(async (lookup) => {
-        return new AddressLookupTableAccount({
-          key: lookup.accountKey,
-          state: AddressLookupTableAccount.deserialize(
-            await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
-              if (!res) {
-                throw new Error("Cannot get AccountInfo");
-              }
-              return res.data;
-            })
-          ),
-        });
-      })
-    );
+    try {
+      const addressLookupTableAccounts = await Promise.all(
+        transaction.message.addressTableLookups.map(async (lookup) => {
+          return new AddressLookupTableAccount({
+            key: lookup.accountKey,
+            state: AddressLookupTableAccount.deserialize(
+              await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
+                if (!res) {
+                  throw new SdkError("Cannot get AccountInfo");
+                }
+                return res.data;
+              })
+            ),
+          });
+        })
+      );
+      const sdkAddressLookupTableAccounts = await Promise.all(
+        sdkTx.message.addressTableLookups.map(async (lookup) => {
+          return new AddressLookupTableAccount({
+            key: lookup.accountKey,
+            state: AddressLookupTableAccount.deserialize(
+              await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
+                if (!res) {
+                  throw new SdkError("Cannot get AccountInfo");
+                }
+                return res.data;
+              })
+            ),
+          });
+        })
+      );
 
-    const message = TransactionMessage.decompile(transaction.message, {
-      addressLookupTableAccounts: addressLookupTableAccounts,
-    });
-    const sdkMessage = TransactionMessage.decompile(sdkTx.message, {
-      addressLookupTableAccounts: sdkAddressLookupTableAccounts,
-    });
-    sdkMessage.instructions.shift();
-    message.instructions.push(...sdkMessage.instructions);
+      const message = TransactionMessage.decompile(transaction.message, {
+        addressLookupTableAccounts: addressLookupTableAccounts,
+      });
+      const sdkMessage = TransactionMessage.decompile(sdkTx.message, {
+        addressLookupTableAccounts: sdkAddressLookupTableAccounts,
+      });
+      sdkMessage.instructions.shift();
+      message.instructions.push(...sdkMessage.instructions);
 
-    addressLookupTableAccounts.push(...sdkAddressLookupTableAccounts);
+      addressLookupTableAccounts.push(...sdkAddressLookupTableAccounts);
 
-    transaction.message = message.compileToV0Message(addressLookupTableAccounts);
-    return transaction;
+      transaction.message = message.compileToV0Message(addressLookupTableAccounts);
+      return transaction;
+    } catch (e) {
+      if (e instanceof Error && e.message) {
+        throw new JupiterError(`Some error occurred during creation final swap and bridge transaction. ${e.message}`);
+      }
+      throw new JupiterError("Some error occurred during creation final swap and bridge transaction");
+    }
   }
 }

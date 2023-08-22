@@ -72,7 +72,7 @@ export interface BaseSendParams {
    */
   feeFormat?: AmountFormat;
   /**
-   * The amount of extra gas to send with the transfer.<br/>
+   * The amount of extra gas to transfer to gas on destination chain with the transfer.<br/>
    * To get maximum supported value, look {@link getExtraGasMaxLimits}
    *
    * If gasFeePaymentMethod is {@link WITH_NATIVE_CURRENCY} then

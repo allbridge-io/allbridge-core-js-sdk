@@ -6,7 +6,7 @@ import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
-import { InsufficientPoolLiquidity } from "./exceptions";
+import { InsufficientPoolLiquidityError } from "./exceptions";
 import {
   AmountsAndGasFeeOptions,
   ExtraGasMaxLimitResponse,
@@ -264,7 +264,7 @@ export class AllbridgeCoreSdk {
       await getPoolInfoByToken(this.api, destinationChainToken)
     );
     if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidity();
+      throw new InsufficientPoolLiquidityError();
     }
     return convertIntAmountToFloat(resultInt, destinationChainToken.decimals).toFixed();
   }
@@ -288,7 +288,7 @@ export class AllbridgeCoreSdk {
     );
     const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
     if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidity();
+      throw new InsufficientPoolLiquidityError();
     }
     return convertIntAmountToFloat(resultInt, sourceChainToken.decimals).toFixed();
   }

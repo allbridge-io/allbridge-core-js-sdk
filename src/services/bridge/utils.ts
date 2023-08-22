@@ -6,7 +6,7 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { UnsupportedStablePaymentError } from "../../exceptions";
+import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -33,12 +33,6 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = tronAddressToBuffer32(address);
       break;
     }
-    default: {
-      throw new Error(
-        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
-        `Error in formatAddress method: unknown chain type ${from}, or method not implemented`
-      );
-    }
   }
 
   switch (to) {
@@ -50,12 +44,6 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     }
     case ChainType.TRX: {
       return buffer.toJSON().data;
-    }
-    default: {
-      throw new Error(
-        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
-        `Error in formatAddress method: unknown chain type ${to}, or method not implemented`
-      );
     }
   }
 }
@@ -98,7 +86,7 @@ export function getTokenByTokenAddress(
     (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
   );
   if (!token) {
-    throw new Error("Cannot find token info about token " + tokenAddress + " on chain " + chainSymbol);
+    throw new SdkError("Cannot find token info about token " + tokenAddress + " on chain " + chainSymbol);
   }
   return token;
 }
@@ -134,7 +122,7 @@ export async function prepareTxSendParams(
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     if (!isStablePaymentMethodSupported(params.sourceToken.chainType, params.messenger)) {
-      throw new UnsupportedStablePaymentError(
+      throw new InvalidGasFeePaymentOptionError(
         `For '${params.sourceToken.chainType}' chain send tx unavailable for payment method '${
           params.gasFeePaymentMethod
         }' via '${Messenger[params.messenger]}' messenger`
@@ -164,7 +152,7 @@ export async function prepareTxSendParams(
 
     const gasFeeOption = gasFeeOptions[txSendParams.gasFeePaymentMethod];
     if (!gasFeeOption) {
-      throw Error(`Amount of gas fee cannot be determined for payment method '${txSendParams.gasFeePaymentMethod}'`);
+      throw new InvalidGasFeePaymentOptionError();
     }
     fee = gasFeeOption[AmountFormat.INT];
     feeFormat = AmountFormat.INT;
@@ -262,12 +250,12 @@ async function validateExtraGasNotExceeded(
   const extraGasLimits = await getExtraGasMaxLimits(sourceToken, destinationToken, api);
   const extraGasMaxLimit = extraGasLimits.extraGasMax[gasFeePaymentMethod];
   if (!extraGasMaxLimit) {
-    throw new Error(`Impossible to pay extra gas by ${gasFeePaymentMethod} payment method`);
+    throw new InvalidGasFeePaymentOptionError(`Impossible to pay extra gas by '${gasFeePaymentMethod}' payment method`);
   }
   const extraGasMaxIntLimit = extraGasMaxLimit[AmountFormat.INT];
   if (Big(extraGasInInt).gt(extraGasMaxIntLimit)) {
-    throw new Error(
-      `Extra gas ${extraGasInInt} in int format, exceeded limit ${extraGasMaxIntLimit} for ${gasFeePaymentMethod} payment method`
+    throw new ExtraGasMaxLimitExceededError(
+      `Extra gas ${extraGasInInt} in int format, exceeded limit ${extraGasMaxIntLimit} for '${gasFeePaymentMethod}' payment method`
     );
   }
 }

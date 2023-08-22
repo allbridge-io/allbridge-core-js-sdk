@@ -2,6 +2,7 @@
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { SdkError } from "../../../exceptions";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { amountToHex } from "../../utils";
@@ -73,7 +74,7 @@ export class TronTokenService extends ChainTokenService {
       fromAddress
     );
     if (!transactionObject?.result?.result) {
-      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
+      throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
   }

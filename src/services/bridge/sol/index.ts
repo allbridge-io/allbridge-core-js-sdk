@@ -15,8 +15,13 @@ import Big from "big.js";
 import { ChainDecimalsByType, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { InvalidAmountError } from "../../../exceptions";
-import { JupiterError } from "../../../exceptions/jupiter-error";
+import {
+  AmountNotEnoughError,
+  JupiterError,
+  MethodNotSupportedError,
+  SdkError,
+  SdkRootError,
+} from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
@@ -82,16 +87,19 @@ export class SolanaBridgeService extends ChainBridgeService {
         jupTx = tx;
         solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
         if (Big(solTxSendParams.amount).lte(0)) {
-          throw new InvalidAmountError(
-            `Amount not enough to pay fee, add ${convertIntAmountToFloat(
+          throw new AmountNotEnoughError(
+            `Amount not enough to pay fee, ${convertIntAmountToFloat(
               Big(solTxSendParams.amount).neg(),
               params.sourceToken.decimals
-            ).toFixed()} stables`
+            ).toFixed()} stables is missing`
           );
         }
       } catch (e) {
-        if (e instanceof Error) {
-          throw new JupiterError(e.message);
+        if (e instanceof SdkRootError) {
+          throw e;
+        }
+        if (e instanceof Error && e.message) {
+          throw new JupiterError(`Some error occurred during creation Jupiter swap transaction. ${e.message}`);
         }
         throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
       }
@@ -114,17 +122,10 @@ export class SolanaBridgeService extends ChainBridgeService {
     }
 
     if (isJupiterForStableCoin) {
-      try {
-        if (!jupTx) {
-          throw new JupiterError("Swap tx is absent");
-        }
-        swapAndBridgeTx = await this.jupiterService.amendJupiterWithSdkTx(jupTx, swapAndBridgeTx);
-      } catch (e) {
-        if (e instanceof Error) {
-          throw new JupiterError(e.message);
-        }
-        throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
+      if (!jupTx) {
+        throw new JupiterError("Swap tx is absent");
       }
+      swapAndBridgeTx = await this.jupiterService.amendJupiterWithSdkTx(jupTx, swapAndBridgeTx);
     }
 
     if (wormMessageSigner) {
@@ -152,21 +153,16 @@ export class SolanaBridgeService extends ChainBridgeService {
           messenger: solTxSendParams.messenger,
         })
       ).sourceNativeTokenPrice;
-      // solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.fee).toFixed(0);
       solTxSendParams.fee = Big(solTxSendParams.fee)
         .div(sourceNativeTokenPrice)
         .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
         .toFixed(0);
       if (solTxSendParams.extraGas) {
-        // solTxSendParams.amount = Big(solTxSendParams.amount).minus(solTxSendParams.extraGas).toFixed(0);
         solTxSendParams.extraGas = Big(solTxSendParams.extraGas)
           .div(sourceNativeTokenPrice)
           .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
           .toFixed(0);
       }
-      // if (Big(solTxSendParams.amount).lte(0)) {
-      //   throw new InvalidAmountError("Amount to low to pay fee");
-      // }
       solTxSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
     }
     return solTxSendParams;
@@ -355,7 +351,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .getAddressLookupTable(new PublicKey(this.params.solanaLookUpTable))
       .then((res) => res.value);
     if (!allbridgeTableAccount) {
-      throw new Error("Cannot find allbridgeLookupTableAccount");
+      throw new SdkError("Cannot find allbridgeLookupTableAccount");
     }
     const messageV0 = new web3.TransactionMessage({
       payerKey: tx.feePayer,
@@ -417,7 +413,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const bridgeAccountInfo = await provider.connection.getAccountInfo(whBridgeAccount);
     if (bridgeAccountInfo == null) {
-      throw new Error("Cannot fetch wormhole bridge account info");
+      throw new SdkError("Cannot fetch wormhole bridge account info");
     }
     const feeLamports = new BN(bridgeAccountInfo.data.slice(16, 24), "le").toString();
 
@@ -496,7 +492,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    throw new Error("NOT SUPPORTED");
+    throw new MethodNotSupportedError();
   }
 }
 

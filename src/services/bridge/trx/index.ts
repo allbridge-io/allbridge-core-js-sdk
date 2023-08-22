@@ -3,6 +3,7 @@ import Big from "big.js";
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
@@ -98,7 +99,7 @@ export class TronBridgeService extends ChainBridgeService {
       fromAddress
     );
     if (!transactionObject?.result?.result) {
-      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
+      throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
   }
