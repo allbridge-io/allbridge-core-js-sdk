@@ -61,12 +61,6 @@ export class ApiClientImpl implements ApiClient {
         "Content-Type": "application/json",
       },
     });
-
-    if (!data.sourceNativeTokenPrice && args.sourceChainId == 4) {
-      const response = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
-      data.sourceNativeTokenPrice = response.data.solana.usd;
-    }
-
     return {
       exchangeRate: data.exchangeRate,
       fee: data.fee,
