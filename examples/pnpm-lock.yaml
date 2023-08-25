@@ -497,6 +497,10 @@ packages:
       browser-headers: 0.4.1
     dev: false
 
+  /@jup-ag/api/6.0.3:
+    resolution: {integrity: sha512-z3L8OCcW2o51AbN+72qaD5MNbiTTdOZyrkMOdith/UjsHXIixCWX6MeKSOEajWSGabkDH0e3NKjZBq822WM+qg==}
+    dev: false
+
   /@noble/curves/1.1.0:
     resolution: {integrity: sha512-091oBExgENk/kGj3AZmtBDMpxQPDtxQABR2B9lb1JbVTs6ytdzZNwvhxQ4MWasRNEzlbEH8jCWFCwhF/Obj5AA==}
     dependencies:
@@ -614,6 +618,21 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
+  /@solana/buffer-layout-utils/0.2.0:
+    resolution: {integrity: sha512-szG4sxgJGktbuZYDg2FfNmkMi0DYQoVjN2h7ta1W1hPrwzarcFLBq9UpX1UjNXsNpT9dn+chgprtWGioUAr4/g==}
+    engines: {node: '>= 10'}
+    dependencies:
+      '@solana/buffer-layout': 4.0.1
+      '@solana/web3.js': 1.77.3
+      bigint-buffer: 1.1.5
+      bignumber.js: 9.1.1
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    dev: false
+
   /@solana/buffer-layout/4.0.1:
     resolution: {integrity: sha512-E1ImOIAD1tBZFRdjeM4/pzTiTApC0AOBGwyAMS4fwIodCWArzJ3DWdoh8cKxeFM2fElkxBh2Aqts1BPC373rHA==}
     engines: {node: '>=5.10'}
@@ -631,6 +650,23 @@ packages:
       buffer: 6.0.3
       buffer-layout: 1.2.2
       dotenv: 10.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    dev: false
+
+  /@solana/spl-token/0.3.8_@solana+web3.js@1.77.3:
+    resolution: {integrity: sha512-ogwGDcunP9Lkj+9CODOWMiVJEdRtqHAtX2rWF62KxnnSWtMZtV9rDhTrZFshiyJmxDnRL/1nKE1yJHg4jjs3gg==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@solana/web3.js': ^1.47.4
+    dependencies:
+      '@solana/buffer-layout': 4.0.1
+      '@solana/buffer-layout-utils': 0.2.0
+      '@solana/web3.js': 1.77.3
+      buffer: 6.0.3
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -4449,7 +4485,9 @@ packages:
     engines: {node: ^18.7.0 || >= 16, npm: ^8.16.0 || >= 8}
     dependencies:
       '@certusone/wormhole-sdk': 0.5.0
+      '@jup-ag/api': 6.0.3
       '@project-serum/anchor': 0.25.0
+      '@solana/spl-token': 0.3.8_@solana+web3.js@1.77.3
       '@solana/web3.js': 1.77.3
       '@types/big.js': 6.1.6
       assert: 2.0.0
@@ -4457,6 +4495,7 @@ packages:
       big.js: 6.2.1
       bn.js: 5.2.1
       erc-20-abi: 1.0.0
+      ethers: 5.7.2
       querystring: 0.2.1
       randombytes: 2.1.0
       timed-cache: 2.0.0
@@ -4469,7 +4508,6 @@ packages:
       - bufferutil
       - debug
       - encoding
-      - google-protobuf
       - supports-color
       - utf-8-validate
     dev: false

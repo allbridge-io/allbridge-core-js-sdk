@@ -4,6 +4,7 @@ import { AnchorProvider, Provider } from "@project-serum/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { MethodNotSupportedError } from "../../../exceptions";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { getTokenAccountData } from "../../utils/sol";
 import { getAssociatedAccount } from "../../utils/sol/accounts";
@@ -22,11 +23,11 @@ export class SolanaTokenService extends ChainTokenService {
   }
 
   approve(params: ApproveParamsDto): Promise<TransactionResponse> {
-    throw new Error("NOT SUPPORTED");
+    throw new MethodNotSupportedError();
   }
 
   buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
-    throw new Error("NOT SUPPORTED");
+    throw new MethodNotSupportedError();
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
@@ -46,7 +47,7 @@ export class SolanaTokenService extends ChainTokenService {
   }
 
   getAllowance(params: GetAllowanceParamsDto): Promise<string> {
-    throw new Error("NOT SUPPORTED");
+    throw new MethodNotSupportedError();
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {

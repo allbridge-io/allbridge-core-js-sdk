@@ -1,5 +1,4 @@
 import { Big } from "big.js";
-import BN from "bn.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
@@ -33,7 +32,6 @@ import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainD
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
 import { mockEvmBridgeContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
-import { mockTronVerifyTx } from "./mock/bridge/trx/trx-bridge";
 import { mockNonce } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
@@ -54,6 +52,7 @@ describe("SDK", () => {
   const testConfig: AllbridgeCoreSdkOptions = {
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
+    solanaLookUpTable: "solanaLookUpTable",
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
@@ -733,7 +732,10 @@ describe("SDK", () => {
           return signedTx;
         });
         const methodSendRawTransactionMock = jest.fn(() => {
-          return { transaction: { txID: transactionHash } };
+          return { txid: transactionHash, transaction: { txID: transactionHash } };
+        });
+        const methodVerifyTxMocked = jest.fn(() => {
+          return { receipt: { result: "SUCCESS" } };
         });
         const tronWebMock: TronWeb = {
           transactionBuilder: {
@@ -742,10 +744,10 @@ describe("SDK", () => {
           trx: {
             sign: methodSignMock,
             sendRawTransaction: methodSendRawTransactionMock,
+            getUnconfirmedTransactionInfo: methodVerifyTxMocked,
           },
         };
 
-        const verifyTxMocked = mockTronVerifyTx();
         const transactionResponse = await sdk.bridge.send(tronWebMock, sendParams);
         expect(methodTriggerSmartContractMock).toHaveBeenCalledTimes(1);
         const expectedAmount = Big(tokensAmount)
@@ -780,8 +782,8 @@ describe("SDK", () => {
         expect(methodSignMock).toBeCalledWith(rawTx);
         expect(methodSendRawTransactionMock).toHaveBeenCalledTimes(1);
         expect(methodSendRawTransactionMock).toBeCalledWith(signedTx);
-        expect(verifyTxMocked).toHaveBeenCalledTimes(1);
-        expect(verifyTxMocked).toBeCalledWith(transactionHash);
+        expect(methodVerifyTxMocked).toHaveBeenCalledTimes(1);
+        expect(methodVerifyTxMocked).toBeCalledWith(transactionHash);
 
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();

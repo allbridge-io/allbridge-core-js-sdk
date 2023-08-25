@@ -4,6 +4,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { SdkError } from "../../../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { tronAddressToEthAddress } from "../../bridge/utils";
@@ -103,7 +104,7 @@ export class TronPoolService extends ChainPoolService {
       fromAddress
     );
     if (!transactionObject?.result?.result) {
-      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
+      throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
   }

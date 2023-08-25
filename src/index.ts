@@ -6,8 +6,10 @@ import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
-import { InsufficientPoolLiquidity } from "./exceptions";
+import { InsufficientPoolLiquidityError } from "./exceptions";
 import {
+  AmountFormat,
+  AmountFormatted,
   AmountsAndGasFeeOptions,
   ExtraGasMaxLimitResponse,
   GasFeeOptions,
@@ -52,6 +54,7 @@ export interface AllbridgeCoreSdkOptions {
    */
   coreApiHeaders?: Record<string, string>;
   wormholeMessengerProgramId: string;
+  solanaLookUpTable: string;
 }
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
@@ -89,6 +92,7 @@ export class AllbridgeCoreSdk {
     const solBridgeParams: SolanaBridgeParams = {
       solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
+      solanaLookUpTable: params.solanaLookUpTable,
     };
     this.tokenService = new TokenService(this.api, solBridgeParams);
     this.bridge = new BridgeService(this.api, solBridgeParams, this.tokenService);
@@ -262,7 +266,7 @@ export class AllbridgeCoreSdk {
       await getPoolInfoByToken(this.api, destinationChainToken)
     );
     if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidity();
+      throw new InsufficientPoolLiquidityError();
     }
     return convertIntAmountToFloat(resultInt, destinationChainToken.decimals).toFixed();
   }
@@ -286,7 +290,7 @@ export class AllbridgeCoreSdk {
     );
     const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
     if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidity();
+      throw new InsufficientPoolLiquidityError();
     }
     return convertIntAmountToFloat(resultInt, sourceChainToken.decimals).toFixed();
   }
@@ -369,6 +373,18 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
     return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
+  }
+
+  /**
+   * @param vUsdAmount - amount of vUsd, int format
+   * @return amount of destToken
+   */
+  async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {
+    const amount = swapFromVUsd(vUsdAmount, destToken, await getPoolInfoByToken(this.api, destToken));
+    return {
+      [AmountFormat.INT]: amount,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(amount, destToken.decimals).toFixed(),
+    };
   }
 
   async swapAndBridgeFeeCalculation(

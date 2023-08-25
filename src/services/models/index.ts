@@ -1,6 +1,8 @@
+import { VersionedTransaction } from "@solana/web3.js";
 import type { TronWeb } from "tronweb-typings";
 
 import type Web3 from "web3";
+import { TransactionConfig } from "web3-core";
 
 /**
  * The provider is type that combines connection implementations for different chains.<br/>
@@ -8,7 +10,7 @@ import type Web3 from "web3";
  */
 export type Provider = Web3 | TronWeb;
 
-export type RawTransaction = Object;
+export type RawTransaction = Object | VersionedTransaction | TransactionConfig;
 
 export interface SmartContractMethodParameter {
   type: string;
