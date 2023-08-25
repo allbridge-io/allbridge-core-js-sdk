@@ -8,6 +8,8 @@ import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-clien
 import { mainnet } from "./configs";
 import { InsufficientPoolLiquidityError } from "./exceptions";
 import {
+  AmountFormat,
+  AmountFormatted,
   AmountsAndGasFeeOptions,
   ExtraGasMaxLimitResponse,
   GasFeeOptions,
@@ -371,6 +373,18 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
     return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
+  }
+
+  /**
+   * @param vUsdAmount - amount of vUsd, int format
+   * @return amount of destToken
+   */
+  async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {
+    const amount = swapFromVUsd(vUsdAmount, destToken, await getPoolInfoByToken(this.api, destToken));
+    return {
+      [AmountFormat.INT]: amount,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(amount, destToken.decimals).toFixed(),
+    };
   }
 
   async swapAndBridgeFeeCalculation(
