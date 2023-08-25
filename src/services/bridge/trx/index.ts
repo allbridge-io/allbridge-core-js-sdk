@@ -3,9 +3,10 @@ import Big from "big.js";
 import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import { sleep } from "../../utils";
+import { sendRawTransaction } from "../../utils/trx";
 import { SendParams, TxSendParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams } from "../utils";
@@ -21,7 +22,7 @@ export class TronBridgeService extends ChainBridgeService {
 
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
     const rawTransaction = await this.buildRawTransactionSendFromParams(params);
-    return await this.sendRawTransaction(rawTransaction);
+    return await sendRawTransaction(this.tronWeb, rawTransaction);
   }
 
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
@@ -81,27 +82,6 @@ export class TronBridgeService extends ChainBridgeService {
     return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
   }
 
-  private async verifyTx(txId: string, timeout = 10000): Promise<any> {
-    const start = Date.now();
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition */
-    while (true) {
-      if (Date.now() - start > timeout) {
-        throw new Error("Transaction not found");
-      }
-      const result = await this.tronWeb.trx.getUnconfirmedTransactionInfo(txId);
-      if (!result?.receipt) {
-        await sleep(2000);
-        continue;
-      }
-      if (result.receipt.result === "SUCCESS") {
-        return result;
-      } else {
-        /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
-        throw new Error(`Transaction status is ${result.receipt.result}`);
-      }
-    }
-  }
-
   private async buildRawTransaction(
     contractAddress: string,
     methodSignature: string,
@@ -119,22 +99,8 @@ export class TronBridgeService extends ChainBridgeService {
       fromAddress
     );
     if (!transactionObject?.result?.result) {
-      throw Error("Unknown error: " + JSON.stringify(transactionObject, null, 2));
+      throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));
     }
     return transactionObject.transaction;
-  }
-
-  private async sendRawTransaction(rawTransaction: RawTransaction) {
-    const signedTx = await this.tronWeb.trx.sign(rawTransaction);
-
-    if (!signedTx.signature) {
-      throw Error("Transaction was not signed properly");
-    }
-
-    const receipt = await this.tronWeb.trx.sendRawTransaction(signedTx);
-
-    const transactionHash = receipt.transaction.txID;
-    await this.verifyTx(transactionHash);
-    return { txId: transactionHash };
   }
 }

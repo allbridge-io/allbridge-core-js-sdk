@@ -30,7 +30,9 @@
     "Lamports",
     "lamports",
     "Seegxrqiu",
-    "Arbitrum"
+    "Arbitrum",
+    "decompile",
+    "txid"
   ],
   "flagWords": [],
   "ignorePaths": [

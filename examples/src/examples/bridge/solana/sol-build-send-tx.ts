@@ -2,7 +2,7 @@ import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allb
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import solanaWeb3, { sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
+import solanaWeb3, { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 
 dotenv.config({ path: ".env" });
@@ -24,21 +24,20 @@ const exampleViaWormhole = async () => {
 
   // initiate transfer using Messenger.WORMHOLE
   const transaction = (await sdk.bridge.rawTxBuilder.send({
-    amount: "3.3",
+    amount: "0.2",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressPol,
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.WORMHOLE,
-  })) as Transaction;
+  })) as VersionedTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
+  transaction.sign([keypair]);
 
   const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
-  transaction.partialSign(keypair);
-  const wiredTx = transaction.serialize();
-  const signature = await connection.sendRawTransaction(wiredTx);
-  console.log("Signature via WORMHOLE:", signature);
+  const txid = await connection.sendTransaction(transaction);
+  console.log(`https://explorer.solana.com/tx/${txid}`);
 };
 
 const exampleViaAllbridge = async () => {
@@ -53,20 +52,21 @@ const exampleViaAllbridge = async () => {
   const destinationTokenInfoPol = ensure(destinationChainPol.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.ALLBRIDGE
-  const transaction = await sdk.bridge.rawTxBuilder.send({
-    amount: "4.4",
+  const transaction = (await sdk.bridge.rawTxBuilder.send({
+    amount: "0.2",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressPol,
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.ALLBRIDGE,
-  });
+  })) as VersionedTransaction;
+
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
+  transaction.sign([keypair]);
 
   const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
-  const signature = await sendAndConfirmTransaction(connection, transaction as any, [keypair]);
-
-  console.log("Signature via ALLBRIDGE:", signature);
+  const txid = await connection.sendTransaction(transaction);
+  console.log(`https://explorer.solana.com/tx/${txid}`);
 };
 
 exampleViaWormhole()

@@ -3,6 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 /* eslint-disable-next-line  import/no-named-as-default */
 import Big from "big.js";
 import Web3 from "web3";
+import { InvalidTxError, SdkError } from "../../../exceptions";
 import { PoolInfo } from "../../../tokens-info";
 import { swapToVUsd } from "../../../utils/calculation";
 import { TokenAccountData } from "../../models/sol";
@@ -59,7 +60,7 @@ export function getMessage(args: {
   );
 
   if (!message) {
-    throw new Error("message is not defined");
+    throw new SdkError("message cannot be undefined");
   }
   const hash = Web3.utils.keccak256(Buffer.from(message.replace("0x", ""), "hex") as any);
 
@@ -73,7 +74,7 @@ export function getMessage(args: {
   );
 
   if (!messageWithSigner) {
-    throw new Error("messageWithSigner is not defined");
+    throw new InvalidTxError("messageWithSigner cannot be undefined");
   }
 
   const hashWithSigner = Web3.utils.keccak256(Buffer.from(messageWithSigner.replace("0x", ""), "hex") as any);

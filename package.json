@@ -92,8 +92,10 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
+    "@jup-ag/api": "^4.0.0",
     "@project-serum/anchor": "^0.25.0",
-    "@solana/web3.js": "^1.66.2",
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.70.0",
     "@types/big.js": "^6.1.6",
     "assert": "^2.0.0",
     "axios": "^1.0.0",
@@ -123,6 +125,8 @@
     "testEnvironment": "node",
     "testRegex": ".*\\.test\\.ts$",
     "preset": "ts-jest",
-    "transformIgnorePatterns": ["<rootDir>/node_modules/.pnpm/(?!(timed-cache))"]
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/.pnpm/(?!(timed-cache))"
+    ]
   }
 }
