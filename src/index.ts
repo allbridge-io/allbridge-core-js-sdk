@@ -24,7 +24,7 @@ import { LiquidityPoolService } from "./services/liquidity-pool";
 import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
 import { TokenService } from "./services/token";
-import { ChainDetailsMap, PoolInfo, TokenWithChainDetails } from "./tokens-info";
+import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "./tokens-info";
 import { getPoolInfoByToken } from "./utils";
 import {
   aprInPercents,
@@ -56,6 +56,7 @@ export interface AllbridgeCoreSdkOptions {
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
 }
+
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
   tronRpcUrl: string;
@@ -336,11 +337,29 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Gets information about the poolInfo by token
+   * @param token
+   * @returns poolInfo
+   */
+  async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
+    return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
+  }
+
+  /**
    * Forces refresh of cached information about the state of liquidity pools.
    * Outdated cache leads to calculated amounts being less accurate.
-   * The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.
+   * The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.+
+   *
+   * @param tokens if present, the corresponding liquidity pools will be updated
    */
-  async refreshPoolInfo(): Promise<void> {
+  async refreshPoolInfo(tokens?: TokenWithChainDetails | TokenWithChainDetails[]): Promise<void> {
+    if (tokens) {
+      const tokensArray = tokens instanceof Array ? tokens : [tokens];
+      const poolKeys: PoolKeyObject[] = tokensArray.map((t) => {
+        return { chainSymbol: t.chainSymbol, poolAddress: t.poolAddress };
+      });
+      return this.api.refreshPoolInfo(poolKeys);
+    }
     return this.api.refreshPoolInfo();
   }
 
@@ -351,15 +370,6 @@ export class AllbridgeCoreSdk {
    */
   aprInPercents(apr: number): string {
     return aprInPercents(apr);
-  }
-
-  /**
-   * Gets information about the poolInfo by token
-   * @param token
-   * @returns poolInfo
-   */
-  async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
-    return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
   }
 
   /**

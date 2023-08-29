@@ -45,9 +45,14 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     }
   }
 
-  async refreshPoolInfo(): Promise<void> {
-    const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-    const poolInfoMap = await this.client.getPoolInfoMap(mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap));
+  async refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void> {
+    let poolInfoMap;
+    if (poolKeyObjects) {
+      poolInfoMap = await this.client.getPoolInfoMap(poolKeyObjects);
+    } else {
+      const result = await this.client.getChainDetailsMapAndPoolInfoMap();
+      poolInfoMap = await this.client.getPoolInfoMap(mapChainDetailsMapToPoolKeyObjects(result.chainDetailsMap));
+    }
     this.poolInfoCache.putAll(poolInfoMap);
   }
 }
