@@ -184,7 +184,7 @@ export interface Bridge extends BaseContract {
       amount: number | string | BN,
       token: string | number[],
       receiveToken: string | number[],
-      recipient: string,
+      recipient: string | number[],
       receiveAmountMin: number | string | BN
     ): NonPayableTransactionObject<void>;
 

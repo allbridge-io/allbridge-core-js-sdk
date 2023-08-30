@@ -13,10 +13,11 @@ import {
   ExtraGasMaxLimits,
   FeePaymentMethod,
   GasFeeOptions,
+  SwapParams,
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { SendParams, TxSendParams } from "./models";
+import { SendParams, TxSendParams, TxSwapParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;
@@ -100,6 +101,21 @@ export function isStablePaymentMethodSupported(sourceChainType: ChainType, messe
     return false;
   }
   return true;
+}
+
+export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
+  const txSwapParams = {} as TxSwapParams;
+  const sourceToken = params.sourceToken;
+  txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
+  txSwapParams.contractAddress = sourceToken.bridgeAddress;
+  txSwapParams.fromAccountAddress = params.fromAccountAddress;
+  txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+  txSwapParams.toAccountAddress = params.toAccountAddress;
+  txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+  txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
+    ? convertFloatAmountToInt(params.minimumReceiveAmount, sourceToken.decimals).toFixed()
+    : "0";
+  return txSwapParams;
 }
 
 export async function prepareTxSendParams(
@@ -319,4 +335,8 @@ export async function getExtraGasMaxLimits(
     exchangeRate: transactionCostResponse.exchangeRate,
     sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
   };
+}
+
+export function isSendParams(params: SwapParams | SendParams): params is SendParams {
+  return params.sourceToken.chainSymbol !== params.destinationToken.chainSymbol;
 }

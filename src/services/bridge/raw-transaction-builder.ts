@@ -1,8 +1,9 @@
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
-import { ApproveParams, SendParams } from "./models";
+import { ApproveParams, SendParams, SwapParams } from "./models";
 import { SolanaBridgeParams } from "./sol";
+import { isSendParams } from "./utils";
 import { BridgeService, getChainBridgeService } from "./index";
 
 export class RawTransactionBuilder {
@@ -30,7 +31,20 @@ export class RawTransactionBuilder {
    * @param provider
    * @param params
    */
-  async send(params: SendParams, provider?: Provider): Promise<RawTransaction> {
-    return getChainBridgeService(this.api, this.solParams, provider).buildRawTransactionSend(params);
+  async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
+    if (isSendParams(params)) {
+      return getChainBridgeService(
+        params.sourceToken.chainType,
+        this.api,
+        this.solParams,
+        provider
+      ).buildRawTransactionSend(params);
+    }
+    return getChainBridgeService(
+      params.sourceToken.chainType,
+      this.api,
+      this.solParams,
+      provider
+    ).buildRawTransactionSwap(params);
   }
 }

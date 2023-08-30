@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
 import {
   Connection,
   Keypair,
@@ -22,12 +22,12 @@ import {
   SdkError,
   SdkRootError,
 } from "../../../exceptions";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, SwapParams } from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
-import { getMessage, getVUsdAmount } from "../../utils/sol";
+import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
   getAuthorityAccount,
@@ -40,9 +40,9 @@ import {
   getPriceAccount,
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
-import { SendParams, TxSendParams } from "../models";
+import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
-import { getNonce, prepareTxSendParams } from "../utils";
+import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
 
 export interface SolanaBridgeParams {
@@ -58,6 +58,95 @@ export class SolanaBridgeService extends ChainBridgeService {
   constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
     super();
     this.jupiterService = new JupiterService(params.solanaRpcUrl);
+  }
+
+  async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
+    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    return this.buildSwapTransaction(txSwapParams, params.sourceToken.poolAddress, params.destinationToken.poolAddress);
+  }
+
+  private async buildSwapTransaction(
+    params: TxSwapParams,
+    poolAddress: string,
+    toPoolAddress: string
+  ): Promise<VersionedTransaction> {
+    const {
+      fromAccountAddress,
+      amount,
+      contractAddress,
+      fromTokenAddress,
+      toTokenAddress,
+      toAccountAddress,
+      minimumReceiveAmount,
+    } = params;
+    const account = fromAccountAddress;
+    const bridgeAddress = contractAddress;
+    const tokenAddress = fromTokenAddress;
+    const receiveTokenAddress = toTokenAddress;
+    const receivePoolAddress = toPoolAddress;
+    const receiverOriginal = toAccountAddress;
+
+    const userAccount = new PublicKey(account);
+    const provider = this.buildAnchorProvider(userAccount.toString());
+    const bridge = new Program<BridgeType>(bridgeIdl, bridgeAddress, provider);
+
+    const bridgeAuthority = await getAuthorityAccount(bridge.programId);
+    const configAccount = await getConfigAccount(bridge.programId);
+
+    const sendMint = new PublicKey(tokenAddress);
+    const sendBridgeToken = await getBridgeTokenAccount(sendMint, bridge.programId);
+    const sendPool = new PublicKey(poolAddress);
+    const sendUserToken = await getAssociatedAccount(userAccount, sendMint);
+
+    const receiverAccount = new PublicKey(receiverOriginal);
+    const receiveMint = new PublicKey(receiveTokenAddress);
+    const receiveBridgeToken = await getBridgeTokenAccount(receiveMint, bridge.programId);
+    const receivePool = new PublicKey(receivePoolAddress);
+    const receiveUserToken = await getAssociatedAccount(receiverAccount, receiveMint);
+
+    const preInstructions: TransactionInstruction[] = [
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 1000000,
+      }),
+    ];
+
+    try {
+      await getTokenAccountData(receiveUserToken, provider);
+    } catch (e) {
+      const associatedProgram = Spl.associatedToken(provider);
+      const createReceiveUserTokenInstruction: TransactionInstruction = await associatedProgram.methods
+        .create()
+        .accounts({
+          mint: receiveMint,
+          owner: receiverAccount,
+          associatedAccount: receiveUserToken,
+        })
+        .instruction();
+      preInstructions.push(createReceiveUserTokenInstruction);
+    }
+    const transaction = await bridge.methods
+      .swap(new BN(amount), new BN(minimumReceiveAmount || 0))
+      .accounts({
+        payer: userAccount,
+        config: configAccount,
+        bridgeAuthority,
+        user: userAccount,
+        sendBridgeToken,
+        sendMint,
+        sendPool,
+        sendUserToken,
+        receiveBridgeToken,
+        receiveMint,
+        receivePool,
+        receiveUserToken,
+      })
+      .preInstructions(preInstructions)
+      .transaction();
+
+    const connection = provider.connection;
+    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    transaction.feePayer = userAccount;
+    return await this.convertToVersionedTransaction(transaction, connection);
   }
 
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {

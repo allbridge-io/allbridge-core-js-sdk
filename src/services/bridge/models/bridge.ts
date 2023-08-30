@@ -2,7 +2,7 @@ import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { prepareTxSendParams } from "../utils";
-import { SendParams, TxSendParams } from "./bridge.model";
+import { SendParams, SwapParams, TxSendParams } from "./bridge.model";
 
 export abstract class ChainBridgeService {
   abstract chainType: ChainType;
@@ -16,4 +16,5 @@ export abstract class ChainBridgeService {
   abstract sendTx(params: TxSendParams): Promise<TransactionResponse>;
 
   abstract buildRawTransactionSend(params: SendParams): Promise<RawTransaction>;
+  abstract buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction>;
 }

@@ -1,5 +1,6 @@
 import { Big } from "big.js";
 import Web3 from "web3";
+import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
@@ -26,7 +27,7 @@ export class TokenService {
    * @returns the amount of approved tokens
    */
   async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    const allowanceInt = await this.getChainTokenService(provider).getAllowance(params);
+    const allowanceInt = await this.getChainTokenService(params.token.chainType, provider).getAllowance(params);
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
 
@@ -37,7 +38,9 @@ export class TokenService {
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
   async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
-    return this.getChainTokenService(provider).checkAllowance(this.prepareCheckAllowanceParams(params));
+    return this.getChainTokenService(params.token.chainType, provider).checkAllowance(
+      this.prepareCheckAllowanceParams(params)
+    );
   }
 
   /**
@@ -49,11 +52,15 @@ export class TokenService {
    * @param approveData
    */
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    return this.getChainTokenService(provider).approve(this.prepareApproveParams(approveData));
+    return this.getChainTokenService(approveData.token.chainType, provider).approve(
+      this.prepareApproveParams(approveData)
+    );
   }
 
   async buildRawTransactionApprove(provider: Provider, approveData: ApproveParams): Promise<RawTransaction> {
-    return this.getChainTokenService(provider).buildRawTransactionApprove(this.prepareApproveParams(approveData));
+    return this.getChainTokenService(approveData.token.chainType, provider).buildRawTransactionApprove(
+      this.prepareApproveParams(approveData)
+    );
   }
 
   /**
@@ -63,28 +70,22 @@ export class TokenService {
    * @returns Token balance
    */
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
-    const tokenBalance = await this.getChainTokenService(provider).getTokenBalance(params);
+    const tokenBalance = await this.getChainTokenService(params.token.chainType, provider).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
     }
     return tokenBalance;
   }
 
-  private getChainTokenService(provider?: Provider): ChainTokenService {
-    if (!provider) {
-      return new SolanaTokenService(this.solParams, this.api);
+  private getChainTokenService(chainType: ChainType, provider?: Provider): ChainTokenService {
+    switch (chainType) {
+      case ChainType.EVM:
+        return new EvmTokenService(provider as unknown as Web3, this.api);
+      case ChainType.TRX:
+        return new TronTokenService(provider, this.api);
+      case ChainType.SOLANA:
+        return new SolanaTokenService(this.solParams, this.api);
     }
-    if (this.isTronWeb(provider)) {
-      return new TronTokenService(provider, this.api);
-    } else {
-      // Web3
-      return new EvmTokenService(provider as unknown as Web3, this.api);
-    }
-  }
-
-  private isTronWeb(params: Provider): boolean {
-    // @ts-expect-error get existing trx property
-    return (params as TronWeb).trx !== undefined;
   }
 
   prepareCheckAllowanceParams(params: CheckAllowanceParams): CheckAllowanceParamsDto {

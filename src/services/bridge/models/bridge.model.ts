@@ -49,6 +49,30 @@ export interface BaseSendParams {
    */
   toAccountAddress: string;
   /**
+   * {@link TokenWithChainDetails |The token info object} on the source chain.
+   */
+  sourceToken: TokenWithChainDetails;
+  /**
+   * {@link TokenWithChainDetails |The token info object} on the destination chain.
+   */
+  destinationToken: TokenWithChainDetails;
+}
+
+/**
+ * Required params to handle swap transfer (different tokens on the same chain)
+ */
+export interface SwapParams extends BaseSendParams {
+  /**
+   * minimum amount to receive including possible slippage
+   */
+  minimumReceiveAmount?: string;
+}
+
+/**
+ * Required params to handle bridge transfer (transfer between chains)
+ */
+export interface SendParams extends BaseSendParams {
+  /**
    * The Messenger to use.
    */
   messenger: Messenger;
@@ -101,17 +125,6 @@ export interface BaseSendParams {
   gasFeePaymentMethod?: FeePaymentMethod;
 }
 
-export interface SendParams extends BaseSendParams {
-  /**
-   * {@link TokenWithChainDetails |The token info object} on the source chain.
-   */
-  sourceToken: TokenWithChainDetails;
-  /**
-   * {@link TokenWithChainDetails |The token info object} on the destination chain.
-   */
-  destinationToken: TokenWithChainDetails;
-}
-
 export interface GetAllowanceParams {
   token: TokenWithChainDetails;
   owner: string;
@@ -126,7 +139,21 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
    */
   amount: string | number | Big;
 }
+
 type AccountAddress = string | number[];
+
+/**
+ * @internal
+ */
+export interface TxSwapParams {
+  amount: string;
+  contractAddress: string;
+  fromAccountAddress: string;
+  fromTokenAddress: AccountAddress;
+  toAccountAddress: AccountAddress;
+  toTokenAddress: AccountAddress;
+  minimumReceiveAmount: string;
+}
 
 /**
  * @internal
