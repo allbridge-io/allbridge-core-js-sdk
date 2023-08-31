@@ -22,11 +22,12 @@ import {
   NodeUrlsConfig,
   PoolInfo,
   SendParams,
+  SwapParams,
   TokenWithChainDetails,
 } from "../index";
 import { formatAddress } from "../services/bridge/utils";
 
-import { convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
+import { convertFloatAmountToInt, convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
@@ -41,6 +42,9 @@ import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithChainDetails;
 const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenWithChainDetails;
+const trxBasicTokenInfoWithChainDetails = tokenInfoList[5] as unknown as TokenWithChainDetails;
+
+jest.mock("../services/bridge/sol/jupiter");
 
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;
@@ -599,13 +603,33 @@ describe("SDK", () => {
       decimals: 18,
       feeShare: "0.003",
     };
+    const grlChainToken2: TokenWithChainDetails = {
+      ...basicTokenInfoWithChainDetails,
+      allbridgeChainId: 2,
+      chainSymbol: ChainSymbol.GRL,
+      bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+      tokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
+      decimals: 18,
+      feeShare: "0.003",
+    };
     const trxChainToken: TokenWithChainDetails = {
-      ...basicTokenInfoWithChainDetails2,
+      ...trxBasicTokenInfoWithChainDetails,
       allbridgeChainId: 4,
       chainSymbol: ChainSymbol.TRX,
       /* cSpell:disable */
       bridgeAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
       tokenAddress: "TS7Aqd75LprBKkPPxVLuZ8WWEyULEQFF1U",
+      /* cSpell:enable */
+      decimals: 18,
+      feeShare: "0.003",
+    };
+    const trxChainToken2: TokenWithChainDetails = {
+      ...trxBasicTokenInfoWithChainDetails,
+      allbridgeChainId: 4,
+      chainSymbol: ChainSymbol.TRX,
+      /* cSpell:disable */
+      bridgeAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
+      tokenAddress: "TEwnUeq4d2oZRtg9x7ZdZgqJhMpYzpAtLp",
       /* cSpell:enable */
       decimals: 18,
       feeShare: "0.003",
@@ -794,6 +818,7 @@ describe("SDK", () => {
       afterEach(() => {
         nockCleanAll();
         jest.clearAllMocks();
+        jest.restoreAllMocks();
       });
 
       const receiveFeeResponse: ReceiveTransactionCostResponse = {
@@ -873,6 +898,82 @@ describe("SDK", () => {
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
+      });
+    });
+
+    describe("swap", () => {
+      test("rawTxBuilder should build swapTx correctly for evm", async () => {
+        const accountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
+        const swapParams: SwapParams = {
+          amount: "10",
+          fromAccountAddress: accountAddress,
+          toAccountAddress: accountAddress,
+          sourceToken: grlChainToken,
+          destinationToken: grlChainToken2,
+          minimumReceiveAmount: "7",
+        };
+
+        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, new Web3());
+
+        expect(rawTransactionTransfer).toEqual({
+          data: "0x331838b20000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000ddac3cb57dea3fbeff4997d78215535eb5787117000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000068d7ed9cf9881427f1db299b90fd63ef805dd10d0000000000000000000000000000000000000000000000006124fee993bc0000",
+          from: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+          to: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
+        });
+      });
+      test("rawTxBuilder should build swapTx correctly for trx", async () => {
+        const rawTx = "rawTx";
+        const methodTriggerSmartContractMock = jest.fn(() => {
+          return {
+            result: {
+              result: true,
+            },
+            transaction: rawTx,
+          };
+        });
+        const tronWebMock: TronWeb = {
+          transactionBuilder: {
+            triggerSmartContract: methodTriggerSmartContractMock,
+          },
+        };
+        const accountAddress = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN"; // cSpell:disable-line
+        const minimumReceiveAmount = "7";
+        const swapParams: SwapParams = {
+          amount: "10",
+          fromAccountAddress: accountAddress,
+          toAccountAddress: accountAddress,
+          sourceToken: trxChainToken,
+          destinationToken: trxChainToken2,
+          minimumReceiveAmount: minimumReceiveAmount,
+        };
+
+        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, tronWebMock);
+        expect(methodTriggerSmartContractMock).toBeCalledWith(
+          trxChainToken.bridgeAddress,
+          "swap(uint256,bytes32,bytes32,address,uint256)",
+          { callValue: "0" },
+          [
+            {
+              type: "uint256",
+              value: convertFloatAmountToInt(swapParams.amount, trxChainToken.decimals).toFixed(),
+            },
+            {
+              type: "bytes32",
+              value: formatAddress(swapParams.sourceToken.tokenAddress, ChainType.TRX, ChainType.TRX),
+            },
+            {
+              type: "bytes32",
+              value: formatAddress(swapParams.destinationToken.tokenAddress, ChainType.TRX, ChainType.TRX),
+            },
+            { type: "address", value: accountAddress },
+            {
+              type: "uint256",
+              value: convertFloatAmountToInt(minimumReceiveAmount, trxChainToken.decimals).toFixed(),
+            },
+          ],
+          accountAddress
+        );
+        expect(rawTransactionTransfer).toEqual(rawTx);
       });
     });
   });

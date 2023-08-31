@@ -5,14 +5,14 @@ import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, TransactionResponse } from "../../../models";
+import { FeePaymentMethod, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction } from "../../models";
 import abi from "../../models/abi/Bridge.json";
 import { Bridge as BridgeContract } from "../../models/abi/types/Bridge";
 import { BaseContract, PayableTransactionObject } from "../../models/abi/types/types";
-import { SendParams, TxSendParams } from "../models";
+import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
-import { getNonce, prepareTxSendParams } from "../utils";
+import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -24,6 +24,39 @@ export class EvmBridgeService extends ChainBridgeService {
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
     const rawTransaction = await this.buildRawTransactionSendFromParams(params);
     return this.sendRawTransaction(rawTransaction);
+  }
+
+  async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
+    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    return await this.buildRawTransactionSwapFromParams(txSwapParams);
+  }
+
+  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+    const {
+      amount,
+      contractAddress,
+      fromAccountAddress,
+      fromTokenAddress,
+      toAccountAddress,
+      toTokenAddress,
+      minimumReceiveAmount,
+    } = params;
+
+    const bridgeContract = this.getBridgeContract(contractAddress);
+
+    const swapMethod = bridgeContract.methods.swap(
+      amount,
+      fromTokenAddress,
+      toTokenAddress,
+      toAccountAddress,
+      minimumReceiveAmount
+    );
+
+    return Promise.resolve({
+      from: fromAccountAddress,
+      to: contractAddress,
+      data: swapMethod.encodeABI(),
+    });
   }
 
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {

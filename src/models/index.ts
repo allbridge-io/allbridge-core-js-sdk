@@ -5,6 +5,7 @@ export {
   GetAllowanceParams,
   GetTokenBalanceParams,
   SendParams,
+  SwapParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";

@@ -1,5 +1,6 @@
 import { Big } from "big.js";
 import Web3 from "web3";
+import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { calculatePoolInfoImbalance, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
@@ -109,7 +110,7 @@ export class LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getUserBalanceInfo(
+    return getChainPoolService(token.chainType, this.api, this.solParams, this.tronRpcUrl, provider).getUserBalanceInfo(
       accountAddress,
       token
     );
@@ -122,32 +123,31 @@ export class LiquidityPoolService {
    * @returns poolInfo
    */
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
-    const pool = await getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getPoolInfoFromChain(
-      token
-    );
+    const pool = await getChainPoolService(
+      token.chainType,
+      this.api,
+      this.solParams,
+      this.tronRpcUrl,
+      provider
+    ).getPoolInfoFromChain(token);
     const imbalance = calculatePoolInfoImbalance(pool);
     return { ...pool, imbalance };
   }
 }
 
 export function getChainPoolService(
+  chainType: ChainType,
   api: AllbridgeCoreClient,
   solParams: SolanaPoolParams,
   tronRpcUrl: string,
   provider?: Provider
 ): ChainPoolService {
-  if (!provider) {
-    return new SolanaPoolService(solParams, api);
+  switch (chainType) {
+    case ChainType.EVM:
+      return new EvmPoolService(provider as unknown as Web3, api);
+    case ChainType.TRX:
+      return new TronPoolService(provider, api, tronRpcUrl);
+    case ChainType.SOLANA:
+      return new SolanaPoolService(solParams, api);
   }
-  if (isTronWeb(provider)) {
-    return new TronPoolService(provider, api, tronRpcUrl);
-  } else {
-    // Web3
-    return new EvmPoolService(provider as unknown as Web3, api);
-  }
-}
-
-function isTronWeb(params: Provider): boolean {
-  // @ts-expect-error get existing trx property
-  return (params as TronWeb).trx !== undefined;
 }

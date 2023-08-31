@@ -1,4 +1,5 @@
 import Web3 from "web3";
+import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -58,27 +59,22 @@ export class BridgeService {
    * @param params
    */
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
-    return getChainBridgeService(this.api, this.solParams, provider).send(params);
+    return getChainBridgeService(params.sourceToken.chainType, this.api, this.solParams, provider).send(params);
   }
 }
 
 export function getChainBridgeService(
+  chainType: ChainType,
   api: AllbridgeCoreClient,
   solParams: SolanaBridgeParams,
   provider?: Provider
 ): ChainBridgeService {
-  if (!provider) {
-    return new SolanaBridgeService(solParams, api);
+  switch (chainType) {
+    case ChainType.EVM:
+      return new EvmBridgeService(provider as unknown as Web3, api);
+    case ChainType.TRX:
+      return new TronBridgeService(provider, api);
+    case ChainType.SOLANA:
+      return new SolanaBridgeService(solParams, api);
   }
-  if (isTronWeb(provider)) {
-    return new TronBridgeService(provider, api);
-  } else {
-    // Web3
-    return new EvmBridgeService(provider as unknown as Web3, api);
-  }
-}
-
-function isTronWeb(params: Provider): boolean {
-  // @ts-expect-error get existing trx property
-  return (params as TronWeb).trx !== undefined;
 }

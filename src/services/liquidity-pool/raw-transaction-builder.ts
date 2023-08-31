@@ -34,7 +34,13 @@ export class RawTransactionBuilder {
    */
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
-    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).buildRawTransactionDeposit(params);
+    return getChainPoolService(
+      params.token.chainType,
+      this.api,
+      this.solParams,
+      this.tronRpcUrl,
+      provider
+    ).buildRawTransactionDeposit(params);
   }
 
   /**
@@ -44,7 +50,13 @@ export class RawTransactionBuilder {
    */
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
-    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).buildRawTransactionWithdraw(params);
+    return getChainPoolService(
+      params.token.chainType,
+      this.api,
+      this.solParams,
+      this.tronRpcUrl,
+      provider
+    ).buildRawTransactionWithdraw(params);
   }
 
   /**
@@ -53,8 +65,12 @@ export class RawTransactionBuilder {
    * @param provider
    */
   async claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction> {
-    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).buildRawTransactionClaimRewards(
-      params
-    );
+    return getChainPoolService(
+      params.token.chainType,
+      this.api,
+      this.solParams,
+      this.tronRpcUrl,
+      provider
+    ).buildRawTransactionClaimRewards(params);
   }
 }
