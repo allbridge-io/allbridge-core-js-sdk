@@ -113,7 +113,7 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
   txSwapParams.toAccountAddress = params.toAccountAddress;
   txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
   txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
-    ? convertFloatAmountToInt(params.minimumReceiveAmount, sourceToken.decimals).toFixed()
+    ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
     : "0";
   return txSwapParams;
 }
