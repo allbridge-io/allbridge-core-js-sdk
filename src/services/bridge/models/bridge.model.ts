@@ -35,7 +35,8 @@ export interface BaseSendParams {
   /**
    * The float amount of Total tokens to transfer.
    *
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN}:<br/>
+   * In Send case
+   * If {@link SendParams#gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN}:<br/>
    * Includes gas fee<br/>
    * Includes extra gas
    */
@@ -63,7 +64,7 @@ export interface BaseSendParams {
  */
 export interface SwapParams extends BaseSendParams {
   /**
-   * minimum amount to receive including possible slippage
+   * minimum amount to receive including possible slippage, see {@link AllbridgeCoreSdk#getAmountToBeReceived}
    */
   minimumReceiveAmount?: string;
 }
@@ -79,14 +80,14 @@ export interface SendParams extends BaseSendParams {
   /**
    * The amount of gas fee to pay for the transfer.
    *
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_NATIVE_CURRENCY} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_NATIVE_CURRENCY} then
    * it is amount of the source chain currency.<p/>
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
    *
    * Optional.
    * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
-   * See method {@link getGasFeeOptions} to get required gas fee amount.
+   * See method {@link AllbridgeCoreSdk#getGasFeeOptions} to get required gas fee amount.
    */
   fee?: string;
   /**
@@ -97,11 +98,11 @@ export interface SendParams extends BaseSendParams {
   feeFormat?: AmountFormat;
   /**
    * The amount of extra gas to transfer to gas on destination chain with the transfer.<br/>
-   * To get maximum supported value, look {@link getExtraGasMaxLimits}
+   * To get maximum supported value, look {@link AllbridgeCoreSdk#getExtraGasMaxLimits}
    *
-   * If gasFeePaymentMethod is {@link WITH_NATIVE_CURRENCY} then
+   * If gasFeePaymentMethod is {@link FeePaymentMethod#WITH_NATIVE_CURRENCY} then
    * it is amount of the source chain currency.<p/>
-   * if gasFeePaymentMethod is {@link WITH_STABLECOIN} then
+   * if gasFeePaymentMethod is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
    *
    * Optional.
