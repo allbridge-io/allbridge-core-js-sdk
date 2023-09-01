@@ -3,6 +3,7 @@ import Web3 from "web3";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
+import { validateAmountDecimals } from "../../utils";
 import { calculatePoolInfoImbalance, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
@@ -69,6 +70,7 @@ export class LiquidityPoolService {
    * @returns amount
    */
   async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
+    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
     const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
@@ -89,6 +91,7 @@ export class LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
+    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);

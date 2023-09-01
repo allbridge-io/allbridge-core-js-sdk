@@ -1,6 +1,8 @@
+import { Big } from "big.js";
 import Web3 from "web3";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { validateAmountDecimals } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
@@ -59,6 +61,7 @@ export class BridgeService {
    * @param params
    */
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
     return getChainBridgeService(params.sourceToken.chainType, this.api, this.solParams, provider).send(params);
   }
 }

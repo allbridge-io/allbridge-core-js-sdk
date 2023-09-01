@@ -1,4 +1,6 @@
+import { Big } from "big.js";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { validateAmountDecimals } from "../../utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
@@ -32,6 +34,7 @@ export class RawTransactionBuilder {
    * @param params
    */
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
     if (isSendParams(params)) {
       return getChainBridgeService(
         params.sourceToken.chainType,

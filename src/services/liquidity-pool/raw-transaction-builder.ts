@@ -1,4 +1,6 @@
+import { Big } from "big.js";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { validateAmountDecimals } from "../../utils";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, RawTransaction } from "../models";
@@ -33,6 +35,7 @@ export class RawTransactionBuilder {
    * @param provider
    */
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
     return getChainPoolService(
       params.token.chainType,
@@ -49,6 +52,7 @@ export class RawTransactionBuilder {
    * @param provider
    */
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
     return getChainPoolService(
       params.token.chainType,

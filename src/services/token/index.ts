@@ -2,6 +2,7 @@ import { Big } from "big.js";
 import Web3 from "web3";
 import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { validateAmountDecimals } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
 import { EvmTokenService } from "./evm";
@@ -38,6 +39,7 @@ export class TokenService {
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
   async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
     return this.getChainTokenService(params.token.chainType, provider).checkAllowance(
       this.prepareCheckAllowanceParams(params)
     );
@@ -52,12 +54,18 @@ export class TokenService {
    * @param approveData
    */
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
+    if (approveData.amount) {
+      validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
+    }
     return this.getChainTokenService(approveData.token.chainType, provider).approve(
       this.prepareApproveParams(approveData)
     );
   }
 
   async buildRawTransactionApprove(provider: Provider, approveData: ApproveParams): Promise<RawTransaction> {
+    if (approveData.amount) {
+      validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
+    }
     return this.getChainTokenService(approveData.token.chainType, provider).buildRawTransactionApprove(
       this.prepareApproveParams(approveData)
     );
