@@ -4,12 +4,12 @@ import * as TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { SdkError } from "../../../exceptions";
-import { FeePaymentMethod, TransactionResponse } from "../../../models";
+import { FeePaymentMethod, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
-import { SendParams, TxSendParams } from "../models";
+import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
-import { getNonce, prepareTxSendParams } from "../utils";
+import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
@@ -23,6 +23,33 @@ export class TronBridgeService extends ChainBridgeService {
   async sendTx(params: TxSendParams): Promise<TransactionResponse> {
     const rawTransaction = await this.buildRawTransactionSendFromParams(params);
     return await sendRawTransaction(this.tronWeb, rawTransaction);
+  }
+
+  async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
+    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    return await this.buildRawTransactionSwapFromParams(txSwapParams);
+  }
+
+  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+    const {
+      amount,
+      contractAddress,
+      fromAccountAddress,
+      fromTokenAddress,
+      toAccountAddress,
+      toTokenAddress,
+      minimumReceiveAmount,
+    } = params;
+
+    const parameters = [
+      { type: "uint256", value: amount },
+      { type: "bytes32", value: fromTokenAddress },
+      { type: "bytes32", value: toTokenAddress },
+      { type: "address", value: toAccountAddress },
+      { type: "uint256", value: minimumReceiveAmount },
+    ];
+    const methodSignature = "swap(uint256,bytes32,bytes32,address,uint256)";
+    return this.buildRawTransaction(contractAddress, methodSignature, parameters, "0", fromAccountAddress);
   }
 
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
