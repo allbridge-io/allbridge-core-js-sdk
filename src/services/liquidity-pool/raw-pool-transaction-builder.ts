@@ -9,7 +9,37 @@ import { ApproveParams, LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } f
 import { SolanaPoolParams } from "./sol";
 import { getChainPoolService, LiquidityPoolService } from "./index";
 
-export class RawTransactionBuilder {
+export interface RawPoolTransactionBuilder {
+  /**
+   * Creates a Raw Transaction for approving tokens usage by the bridge
+   * @param provider
+   * @param approveData
+   */
+  approve(provider: Provider, approveData: ApproveParams): Promise<RawTransaction>;
+
+  /**
+   * Creates a Raw Transaction for depositing tokens to Liquidity pools
+   * @param params
+   * @param provider
+   */
+  deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction>;
+
+  /**
+   * Creates a Raw Transaction for withdrawing tokens from Liquidity pools
+   * @param params
+   * @param provider
+   */
+  withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction>;
+
+  /**
+   * Creates a Raw Transaction for claiming rewards from Liquidity pools
+   * @param params
+   * @param provider
+   */
+  claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction>;
+}
+
+export class DefaultRawPoolTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,
     private solParams: SolanaPoolParams,
@@ -18,22 +48,13 @@ export class RawTransactionBuilder {
     private tokenService: TokenService
   ) {}
 
-  /**
-   * Creates a Raw Transaction for approving tokens usage by the bridge
-   * @param provider
-   * @param approveData
-   */
   async approve(provider: Provider, approveData: ApproveParams): Promise<RawTransaction> {
     return this.tokenService.buildRawTransactionApprove(provider, {
       ...approveData,
       spender: approveData.token.poolAddress,
     });
   }
-  /**
-   * Creates a Raw Transaction for depositing tokens to Liquidity pools
-   * @param params
-   * @param provider
-   */
+
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
     validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
@@ -46,11 +67,6 @@ export class RawTransactionBuilder {
     ).buildRawTransactionDeposit(params);
   }
 
-  /**
-   * Creates a Raw Transaction for withdrawing tokens from Liquidity pools
-   * @param params
-   * @param provider
-   */
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
     validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
@@ -63,11 +79,6 @@ export class RawTransactionBuilder {
     ).buildRawTransactionWithdraw(params);
   }
 
-  /**
-   * Creates a Raw Transaction for claiming rewards from Liquidity pools
-   * @param params
-   * @param provider
-   */
   async claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction> {
     return getChainPoolService(
       params.token.chainType,

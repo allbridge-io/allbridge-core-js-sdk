@@ -8,7 +8,23 @@ import { SolanaBridgeParams } from "./sol";
 import { isSendParams } from "./utils";
 import { BridgeService, getChainBridgeService } from "./index";
 
-export class RawTransactionBuilder {
+export interface RawBridgeTransactionBuilder {
+  /**
+   * Creates a Raw Transaction for approving tokens usage by the bridge
+   * @param provider
+   * @param approveData
+   */
+  approve(provider: Provider, approveData: ApproveParams): Promise<RawTransaction>;
+
+  /**
+   * Creates a Raw Transaction for initiating the transfer of tokens
+   * @param provider
+   * @param params
+   */
+  send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction>;
+}
+
+export class DefaultRawBridgeTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,
     private solParams: SolanaBridgeParams,
@@ -16,11 +32,6 @@ export class RawTransactionBuilder {
     private tokenService: TokenService
   ) {}
 
-  /**
-   * Creates a Raw Transaction for approving tokens usage by the bridge
-   * @param provider
-   * @param approveData
-   */
   async approve(provider: Provider, approveData: ApproveParams): Promise<RawTransaction> {
     return this.tokenService.buildRawTransactionApprove(provider, {
       ...approveData,
@@ -28,11 +39,6 @@ export class RawTransactionBuilder {
     });
   }
 
-  /**
-   * Creates a Raw Transaction for initiating the transfer of tokens
-   * @param provider
-   * @param params
-   */
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
     validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
     if (isSendParams(params)) {

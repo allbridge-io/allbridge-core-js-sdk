@@ -11,21 +11,12 @@ import { TokenService } from "../token";
 import { depositAmountToVUsd, vUsdToWithdrawalAmount } from "../utils/calculation";
 import { EvmPoolService } from "./evm";
 import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, ChainPoolService, UserBalanceInfo } from "./models";
-import { RawTransactionBuilder } from "./raw-transaction-builder";
+import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService, SolanaPoolParams } from "./sol";
 import { TronPoolService } from "./trx";
 
-export class LiquidityPoolService {
-  public rawTxBuilder: RawTransactionBuilder;
-
-  constructor(
-    private api: AllbridgeCoreClient,
-    private solParams: SolanaPoolParams,
-    private tokenService: TokenService,
-    private tronRpcUrl: string
-  ) {
-    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, tronRpcUrl, this, tokenService);
-  }
+export interface LiquidityPoolService {
+  rawTxBuilder: RawPoolTransactionBuilder;
 
   /**
    * Get amount of tokens approved for poolInfo
@@ -33,12 +24,7 @@ export class LiquidityPoolService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns the amount of approved tokens
    */
-  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    return await this.tokenService.getAllowance(provider, {
-      ...params,
-      spender: params.token.poolAddress,
-    });
-  }
+  getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string>;
 
   /**
    * Check if the amount of approved tokens is enough to make a transfer
@@ -46,9 +32,7 @@ export class LiquidityPoolService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
-  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
-    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.poolAddress });
-  }
+  checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
   /**
    * Approve tokens usage by another address on chains
@@ -58,9 +42,7 @@ export class LiquidityPoolService {
    * @param provider
    * @param approveData
    */
-  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.poolAddress });
-  }
+  approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
    * Calculates the amount of LP tokens that will be deposited
@@ -69,13 +51,7 @@ export class LiquidityPoolService {
    * @param provider
    * @returns amount
    */
-  async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
-    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
-    const pool = await this.getPoolInfoFromChain(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
-    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
-    return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
-  }
+  getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string>;
 
   /**
    * Calculates the amount of tokens will be withdrawn
@@ -85,6 +61,70 @@ export class LiquidityPoolService {
    * @param provider
    * @returns amount
    */
+  getAmountToBeWithdrawn(
+    amount: string,
+    accountAddress: string,
+    token: TokenWithChainDetails,
+    provider?: Provider
+  ): Promise<string>;
+
+  /**
+   * Get User Balance Info on Liquidity poolInfo
+   * @param accountAddress
+   * @param token
+   * @param provider
+   * @returns UserBalanceInfo
+   */
+  getUserBalanceInfo(
+    accountAddress: string,
+    token: TokenWithChainDetails,
+    provider?: Provider
+  ): Promise<UserBalanceInfo>;
+
+  /**
+   * Gets information about the poolInfo from chain
+   * @param token
+   * @param provider
+   * @returns poolInfo
+   */
+  getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>>;
+}
+
+export class DefaultLiquidityPoolService implements LiquidityPoolService {
+  public rawTxBuilder: RawPoolTransactionBuilder;
+
+  constructor(
+    private api: AllbridgeCoreClient,
+    private solParams: SolanaPoolParams,
+    private tokenService: TokenService,
+    private tronRpcUrl: string
+  ) {
+    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, solParams, tronRpcUrl, this, tokenService);
+  }
+
+  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
+    return await this.tokenService.getAllowance(provider, {
+      ...params,
+      spender: params.token.poolAddress,
+    });
+  }
+
+  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.poolAddress });
+  }
+
+  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
+    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.poolAddress });
+  }
+
+  async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
+    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
+    const pool = await this.getPoolInfoFromChain(token, provider);
+    const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
+    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
+    return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
+  }
+
   async getAmountToBeWithdrawn(
     amount: string,
     accountAddress: string,
@@ -101,13 +141,6 @@ export class LiquidityPoolService {
     return convertIntAmountToFloat(commonAmount, token.decimals).toFixed();
   }
 
-  /**
-   * Get User Balance Info on Liquidity poolInfo
-   * @param accountAddress
-   * @param token
-   * @param provider
-   * @returns UserBalanceInfo
-   */
   async getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
@@ -119,12 +152,6 @@ export class LiquidityPoolService {
     );
   }
 
-  /**
-   * Gets information about the poolInfo from chain
-   * @param token
-   * @param provider
-   * @returns poolInfo
-   */
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
     const pool = await getChainPoolService(
       token.chainType,
