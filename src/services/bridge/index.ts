@@ -1,24 +1,19 @@
+import { Big } from "big.js";
 import Web3 from "web3";
+import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { validateAmountDecimals } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
 import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { ChainBridgeService } from "./models/bridge";
-import { RawTransactionBuilder } from "./raw-transaction-builder";
+import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeParams, SolanaBridgeService } from "./sol";
 import { TronBridgeService } from "./trx";
 
-export class BridgeService {
-  public rawTxBuilder: RawTransactionBuilder;
-
-  constructor(
-    private api: AllbridgeCoreClient,
-    private solParams: SolanaBridgeParams,
-    private tokenService: TokenService
-  ) {
-    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, this, tokenService);
-  }
+export interface BridgeService {
+  rawTxBuilder: RawBridgeTransactionBuilder;
 
   /**
    * Get amount of tokens approved to be sent by the bridge
@@ -26,9 +21,7 @@ export class BridgeService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns the amount of approved tokens
    */
-  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    return await this.tokenService.getAllowance(provider, { ...params, spender: params.token.bridgeAddress });
-  }
+  getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string>;
 
   /**
    * Check if the amount of approved tokens is enough to make a transfer
@@ -36,9 +29,7 @@ export class BridgeService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
-  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
-    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.bridgeAddress });
-  }
+  checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
   /**
    * Approve tokens usage by another address on chains
@@ -48,37 +39,57 @@ export class BridgeService {
    * @param provider
    * @param approveData
    */
-  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.bridgeAddress });
-  }
+  approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
    * Send tokens through the ChainBridgeService
    * @param provider
    * @param params
    */
+  send(provider: Provider, params: SendParams): Promise<TransactionResponse>;
+}
+
+export class DefaultBridgeService implements BridgeService {
+  public rawTxBuilder: RawBridgeTransactionBuilder;
+
+  constructor(
+    private api: AllbridgeCoreClient,
+    private solParams: SolanaBridgeParams,
+    private tokenService: TokenService
+  ) {
+    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, solParams, this, tokenService);
+  }
+
+  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
+    return await this.tokenService.getAllowance(provider, { ...params, spender: params.token.bridgeAddress });
+  }
+
+  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.bridgeAddress });
+  }
+
+  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
+    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.bridgeAddress });
+  }
+
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
-    return getChainBridgeService(this.api, this.solParams, provider).send(params);
+    validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
+    return getChainBridgeService(params.sourceToken.chainType, this.api, this.solParams, provider).send(params);
   }
 }
 
 export function getChainBridgeService(
+  chainType: ChainType,
   api: AllbridgeCoreClient,
   solParams: SolanaBridgeParams,
   provider?: Provider
 ): ChainBridgeService {
-  if (!provider) {
-    return new SolanaBridgeService(solParams, api);
+  switch (chainType) {
+    case ChainType.EVM:
+      return new EvmBridgeService(provider as unknown as Web3, api);
+    case ChainType.TRX:
+      return new TronBridgeService(provider, api);
+    case ChainType.SOLANA:
+      return new SolanaBridgeService(solParams, api);
   }
-  if (isTronWeb(provider)) {
-    return new TronBridgeService(provider, api);
-  } else {
-    // Web3
-    return new EvmBridgeService(provider as unknown as Web3, api);
-  }
-}
-
-function isTronWeb(params: Provider): boolean {
-  // @ts-expect-error get existing trx property
-  return (params as TronWeb).trx !== undefined;
 }

@@ -1,6 +1,6 @@
 <h1 align="center">
    <b>
-        <a href="https://core.allbridge.io/"><img src="https://core.allbridge.io/assets/icons/logo.svg" /></a><br>
+        <a href="https://core.allbridge.io/"><img src="https://allbridge.io/assets/icons/core.svg" /></a><br>
     </b>
 </h1>
 

@@ -1,16 +1,20 @@
 export {
-  ApproveParams,
+  ApproveParams as BridgeApproveParams,
   BaseSendParams,
   CheckAllowanceParams,
   GetAllowanceParams,
   GetTokenBalanceParams,
   SendParams,
+  SwapParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
+export { TokenService } from "../services/token/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
+export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
+export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {
   PoolInfo,
   TokenWithChainDetails,
@@ -19,11 +23,26 @@ export {
   MessengerTransferTime,
 } from "../tokens-info/tokens-info.model";
 export {
+  ApproveParams as TokensApproveParams,
+  CheckAllowanceParams as TokensCheckAllowanceParams,
+  GetAllowanceParams as TokensGetAllowanceParams,
+  GetTokenBalanceParams as TokensGetTokenBalanceParams,
+} from "../services/token/models/token.model";
+export {
   UserBalanceInfo,
+  UserBalanceInfoDTO,
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
+  ApproveParams as LiquidityPoolsApproveParams,
+  CheckAllowanceParams as LiquidityPoolsCheckAllowanceParams,
+  GetAllowanceParams as LiquidityPoolsGetAllowanceParams,
 } from "../services/liquidity-pool/models/pool.model";
 export { Provider, RawTransaction } from "../services/models/index";
+export {
+  SwapAndBridgeCalculationData,
+  SwapFromVUsdCalcResult,
+  SwapToVUsdCalcResult,
+} from "../utils/calculation/swap-and-bridge-fee-calc";
 
 export { testnet, testnetNodeUrlsDefault } from "../configs/testnet";
 
@@ -59,6 +78,7 @@ export interface AmountsAndGasFeeOptions {
 type GasFeeOptionsType = {
   [key in FeePaymentMethod]?: AmountFormatted;
 };
+
 /**
  * Describes available options of paying the gas fee and the amount to pay when using the corresponding method.
  *

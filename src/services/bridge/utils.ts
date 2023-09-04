@@ -6,17 +6,23 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
+import {
+  ExtraGasMaxLimitExceededError,
+  InvalidGasFeePaymentOptionError,
+  InvalidMessengerOptionError,
+  SdkError,
+} from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
   ExtraGasMaxLimits,
   FeePaymentMethod,
   GasFeeOptions,
+  SwapParams,
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { SendParams, TxSendParams } from "./models";
+import { SendParams, TxSendParams, TxSwapParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;
@@ -100,6 +106,28 @@ export function isStablePaymentMethodSupported(sourceChainType: ChainType, messe
     return false;
   }
   return true;
+}
+
+export function isMessengerSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
+  if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
+    return false;
+  }
+  return true;
+}
+
+export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
+  const txSwapParams = {} as TxSwapParams;
+  const sourceToken = params.sourceToken;
+  txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
+  txSwapParams.contractAddress = sourceToken.bridgeAddress;
+  txSwapParams.fromAccountAddress = params.fromAccountAddress;
+  txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+  txSwapParams.toAccountAddress = params.toAccountAddress;
+  txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+  txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
+    ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
+    : "0";
+  return txSwapParams;
 }
 
 export async function prepareTxSendParams(
@@ -210,6 +238,11 @@ export async function getGasFeeOptions(
   messenger: Messenger,
   api: AllbridgeCoreClient
 ): Promise<GasFeeOptions> {
+  if (!isMessengerSupported(sourceChainType, messenger)) {
+    throw new InvalidMessengerOptionError(
+      `For '${sourceChainType}' chain send tx unavailable via '${Messenger[messenger]}' messenger`
+    );
+  }
   const transactionCostResponse = await api.getReceiveTransactionCost({
     sourceChainId: sourceAllbridgeChainId,
     destinationChainId: destinationAllbridgeChainId,
@@ -319,4 +352,8 @@ export async function getExtraGasMaxLimits(
     exchangeRate: transactionCostResponse.exchangeRate,
     sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
   };
+}
+
+export function isSendParams(params: SwapParams | SendParams): params is SendParams {
+  return params.sourceToken.chainSymbol !== params.destinationToken.chainSymbol;
 }

@@ -37,6 +37,12 @@ export class InvalidGasFeePaymentOptionError extends SdkRootError {
   }
 }
 
+export class InvalidMessengerOptionError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.INVALID_MESSENGER_OPTION_ERROR, message);
+  }
+}
+
 export class MethodNotSupportedError extends SdkRootError {
   constructor(message?: string) {
     super(ErrorCode.METHOD_NOT_SUPPORTED_ERROR, message);
@@ -61,14 +67,25 @@ export class ExtraGasMaxLimitExceededError extends SdkRootError {
   }
 }
 
+export class ArgumentInvalidDecimalsError extends SdkRootError {
+  constructor(argName: string, decimalsIs: number, decimalsRequired: number) {
+    super(
+      ErrorCode.ARGUMENT_INVALID_DECIMALS_ERROR,
+      `Argument '${argName}' decimals '${decimalsIs}' cannot be greater than '${decimalsRequired}'`
+    );
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
   INSUFFICIENT_POOL_LIQUIDITY_ERROR = "InsufficientPoolLiquidityError",
   JUPITER_ERROR = "JupiterError",
   INVALID_GAS_FEE_PAYMENT_OPTION_ERROR = "InvalidGasFeePaymentOptionError",
+  INVALID_MESSENGER_OPTION_ERROR = "InvalidMessengerOptionError",
   METHOD_NOT_SUPPORTED_ERROR = "MethodNotSupportedError",
   VERIFY_TX_ERROR = "VerifyTxError",
   INVALID_TX_ERROR = "InvalidTxError",
   EXTRA_GAS_MAX_LIMIT_EXCEEDED_ERROR = "ExtraGasMaxLimitExceededError",
+  ARGUMENT_INVALID_DECIMALS_ERROR = "ArgumentInvalidDecimalsError",
 }

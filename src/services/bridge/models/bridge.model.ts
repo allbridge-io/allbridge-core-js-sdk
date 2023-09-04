@@ -35,7 +35,8 @@ export interface BaseSendParams {
   /**
    * The float amount of Total tokens to transfer.
    *
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN}:<br/>
+   * In Send case
+   * If {@link SendParams#gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN}:<br/>
    * Includes gas fee<br/>
    * Includes extra gas
    */
@@ -49,20 +50,44 @@ export interface BaseSendParams {
    */
   toAccountAddress: string;
   /**
+   * {@link TokenWithChainDetails |The token info object} on the source chain.
+   */
+  sourceToken: TokenWithChainDetails;
+  /**
+   * {@link TokenWithChainDetails |The token info object} on the destination chain.
+   */
+  destinationToken: TokenWithChainDetails;
+}
+
+/**
+ * Required params to handle swap transfer (different tokens on the same chain)
+ */
+export interface SwapParams extends BaseSendParams {
+  /**
+   * minimum amount to receive including possible slippage, see {@link AllbridgeCoreSdk#getAmountToBeReceived}
+   */
+  minimumReceiveAmount?: string;
+}
+
+/**
+ * Required params to handle bridge transfer (transfer between chains)
+ */
+export interface SendParams extends BaseSendParams {
+  /**
    * The Messenger to use.
    */
   messenger: Messenger;
   /**
    * The amount of gas fee to pay for the transfer.
    *
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_NATIVE_CURRENCY} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_NATIVE_CURRENCY} then
    * it is amount of the source chain currency.<p/>
-   * If {@link this.gasFeePaymentMethod} is {@link WITH_STABLECOIN} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
    *
    * Optional.
    * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
-   * See method {@link getGasFeeOptions} to get required gas fee amount.
+   * See method {@link AllbridgeCoreSdk#getGasFeeOptions} to get required gas fee amount.
    */
   fee?: string;
   /**
@@ -73,11 +98,11 @@ export interface BaseSendParams {
   feeFormat?: AmountFormat;
   /**
    * The amount of extra gas to transfer to gas on destination chain with the transfer.<br/>
-   * To get maximum supported value, look {@link getExtraGasMaxLimits}
+   * To get maximum supported value, look {@link AllbridgeCoreSdk#getExtraGasMaxLimits}
    *
-   * If gasFeePaymentMethod is {@link WITH_NATIVE_CURRENCY} then
+   * If gasFeePaymentMethod is {@link FeePaymentMethod#WITH_NATIVE_CURRENCY} then
    * it is amount of the source chain currency.<p/>
-   * if gasFeePaymentMethod is {@link WITH_STABLECOIN} then
+   * if gasFeePaymentMethod is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
    *
    * Optional.
@@ -101,17 +126,6 @@ export interface BaseSendParams {
   gasFeePaymentMethod?: FeePaymentMethod;
 }
 
-export interface SendParams extends BaseSendParams {
-  /**
-   * {@link TokenWithChainDetails |The token info object} on the source chain.
-   */
-  sourceToken: TokenWithChainDetails;
-  /**
-   * {@link TokenWithChainDetails |The token info object} on the destination chain.
-   */
-  destinationToken: TokenWithChainDetails;
-}
-
 export interface GetAllowanceParams {
   token: TokenWithChainDetails;
   owner: string;
@@ -126,7 +140,21 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
    */
   amount: string | number | Big;
 }
+
 type AccountAddress = string | number[];
+
+/**
+ * @internal
+ */
+export interface TxSwapParams {
+  amount: string;
+  contractAddress: string;
+  fromAccountAddress: string;
+  fromTokenAddress: AccountAddress;
+  toAccountAddress: AccountAddress;
+  toTokenAddress: AccountAddress;
+  minimumReceiveAmount: string;
+}
 
 /**
  * @internal

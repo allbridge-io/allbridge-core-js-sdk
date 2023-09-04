@@ -1,7 +1,9 @@
 import { Big } from "big.js";
 import Web3 from "web3";
+import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
+import { validateAmountDecimals } from "../../utils";
 import { calculatePoolInfoImbalance, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
@@ -9,21 +11,12 @@ import { TokenService } from "../token";
 import { depositAmountToVUsd, vUsdToWithdrawalAmount } from "../utils/calculation";
 import { EvmPoolService } from "./evm";
 import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, ChainPoolService, UserBalanceInfo } from "./models";
-import { RawTransactionBuilder } from "./raw-transaction-builder";
+import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService, SolanaPoolParams } from "./sol";
 import { TronPoolService } from "./trx";
 
-export class LiquidityPoolService {
-  public rawTxBuilder: RawTransactionBuilder;
-
-  constructor(
-    private api: AllbridgeCoreClient,
-    private solParams: SolanaPoolParams,
-    private tokenService: TokenService,
-    private tronRpcUrl: string
-  ) {
-    this.rawTxBuilder = new RawTransactionBuilder(api, solParams, tronRpcUrl, this, tokenService);
-  }
+export interface LiquidityPoolService {
+  rawTxBuilder: RawPoolTransactionBuilder;
 
   /**
    * Get amount of tokens approved for poolInfo
@@ -31,12 +24,7 @@ export class LiquidityPoolService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns the amount of approved tokens
    */
-  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    return await this.tokenService.getAllowance(provider, {
-      ...params,
-      spender: params.token.poolAddress,
-    });
-  }
+  getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string>;
 
   /**
    * Check if the amount of approved tokens is enough to make a transfer
@@ -44,9 +32,7 @@ export class LiquidityPoolService {
    * @param params See {@link GetAllowanceParams | GetAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer
    */
-  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
-    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.poolAddress });
-  }
+  checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
   /**
    * Approve tokens usage by another address on chains
@@ -56,9 +42,7 @@ export class LiquidityPoolService {
    * @param provider
    * @param approveData
    */
-  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.poolAddress });
-  }
+  approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
    * Calculates the amount of LP tokens that will be deposited
@@ -67,12 +51,7 @@ export class LiquidityPoolService {
    * @param provider
    * @returns amount
    */
-  async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
-    const pool = await this.getPoolInfoFromChain(token, provider);
-    const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
-    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
-    return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
-  }
+  getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string>;
 
   /**
    * Calculates the amount of tokens will be withdrawn
@@ -82,12 +61,77 @@ export class LiquidityPoolService {
    * @param provider
    * @returns amount
    */
+  getAmountToBeWithdrawn(
+    amount: string,
+    accountAddress: string,
+    token: TokenWithChainDetails,
+    provider?: Provider
+  ): Promise<string>;
+
+  /**
+   * Get User Balance Info on Liquidity poolInfo
+   * @param accountAddress
+   * @param token
+   * @param provider
+   * @returns UserBalanceInfo
+   */
+  getUserBalanceInfo(
+    accountAddress: string,
+    token: TokenWithChainDetails,
+    provider?: Provider
+  ): Promise<UserBalanceInfo>;
+
+  /**
+   * Gets information about the poolInfo from chain
+   * @param token
+   * @param provider
+   * @returns poolInfo
+   */
+  getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>>;
+}
+
+export class DefaultLiquidityPoolService implements LiquidityPoolService {
+  public rawTxBuilder: RawPoolTransactionBuilder;
+
+  constructor(
+    private api: AllbridgeCoreClient,
+    private solParams: SolanaPoolParams,
+    private tokenService: TokenService,
+    private tronRpcUrl: string
+  ) {
+    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, solParams, tronRpcUrl, this, tokenService);
+  }
+
+  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
+    return await this.tokenService.getAllowance(provider, {
+      ...params,
+      spender: params.token.poolAddress,
+    });
+  }
+
+  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+    return this.tokenService.checkAllowance(provider, { ...params, spender: params.token.poolAddress });
+  }
+
+  async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
+    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.poolAddress });
+  }
+
+  async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
+    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
+    const pool = await this.getPoolInfoFromChain(token, provider);
+    const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
+    const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
+    return convertIntAmountToFloat(vUsd, SYSTEM_PRECISION).toFixed();
+  }
+
   async getAmountToBeWithdrawn(
     amount: string,
     accountAddress: string,
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
+    validateAmountDecimals("amount", Big(amount).toString(), token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);
@@ -97,57 +141,43 @@ export class LiquidityPoolService {
     return convertIntAmountToFloat(commonAmount, token.decimals).toFixed();
   }
 
-  /**
-   * Get User Balance Info on Liquidity poolInfo
-   * @param accountAddress
-   * @param token
-   * @param provider
-   * @returns UserBalanceInfo
-   */
   async getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getUserBalanceInfo(
+    return getChainPoolService(token.chainType, this.api, this.solParams, this.tronRpcUrl, provider).getUserBalanceInfo(
       accountAddress,
       token
     );
   }
 
-  /**
-   * Gets information about the poolInfo from chain
-   * @param token
-   * @param provider
-   * @returns poolInfo
-   */
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
-    const pool = await getChainPoolService(this.api, this.solParams, this.tronRpcUrl, provider).getPoolInfoFromChain(
-      token
-    );
+    const pool = await getChainPoolService(
+      token.chainType,
+      this.api,
+      this.solParams,
+      this.tronRpcUrl,
+      provider
+    ).getPoolInfoFromChain(token);
     const imbalance = calculatePoolInfoImbalance(pool);
     return { ...pool, imbalance };
   }
 }
 
 export function getChainPoolService(
+  chainType: ChainType,
   api: AllbridgeCoreClient,
   solParams: SolanaPoolParams,
   tronRpcUrl: string,
   provider?: Provider
 ): ChainPoolService {
-  if (!provider) {
-    return new SolanaPoolService(solParams, api);
+  switch (chainType) {
+    case ChainType.EVM:
+      return new EvmPoolService(provider as unknown as Web3, api);
+    case ChainType.TRX:
+      return new TronPoolService(provider, api, tronRpcUrl);
+    case ChainType.SOLANA:
+      return new SolanaPoolService(solParams, api);
   }
-  if (isTronWeb(provider)) {
-    return new TronPoolService(provider, api, tronRpcUrl);
-  } else {
-    // Web3
-    return new EvmPoolService(provider as unknown as Web3, api);
-  }
-}
-
-function isTronWeb(params: Provider): boolean {
-  // @ts-expect-error get existing trx property
-  return (params as TronWeb).trx !== undefined;
 }

@@ -48,6 +48,10 @@ describe("AllbridgeCachingCoreClient", () => {
         chainSymbol: ChainSymbol.GRL,
         poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
       };
+      const poolKeyObject2 = {
+        chainSymbol: ChainSymbol.GRL,
+        poolAddress: "0x227e10f9E750C922bf9dee7620B58033F566b34F",
+      };
       const expectedPoolInfo = poolGRL as unknown as PoolInfo;
 
       beforeEach(() => {
@@ -73,6 +77,20 @@ describe("AllbridgeCachingCoreClient", () => {
         await client.refreshPoolInfo();
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+      });
+
+      test("☀ refreshPoolInfo with poolKeyObject should call getPoolInfoMap", async () => {
+        await client.refreshPoolInfo(poolKeyObject);
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(0);
+      });
+
+      test("☀ refreshPoolInfo with poolKeyObjects[] should call getPoolInfoMap", async () => {
+        await client.refreshPoolInfo([poolKeyObject, poolKeyObject2]);
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getPoolInfoMap).toBeCalledWith([poolKeyObject, poolKeyObject2]);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(0);
       });
     });
   });
