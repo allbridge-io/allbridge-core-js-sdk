@@ -6,7 +6,12 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
+import {
+  ExtraGasMaxLimitExceededError,
+  InvalidGasFeePaymentOptionError,
+  InvalidMessengerOptionError,
+  SdkError,
+} from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -97,6 +102,13 @@ export function getNonce(): Buffer {
 }
 
 export function isStablePaymentMethodSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
+  if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
+    return false;
+  }
+  return true;
+}
+
+export function isMessengerSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
   if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
     return false;
   }
@@ -226,6 +238,11 @@ export async function getGasFeeOptions(
   messenger: Messenger,
   api: AllbridgeCoreClient
 ): Promise<GasFeeOptions> {
+  if (!isMessengerSupported(sourceChainType, messenger)) {
+    throw new InvalidMessengerOptionError(
+      `For '${sourceChainType}' chain send tx unavailable via '${Messenger[messenger]}' messenger`
+    );
+  }
   const transactionCostResponse = await api.getReceiveTransactionCost({
     sourceChainId: sourceAllbridgeChainId,
     destinationChainId: destinationAllbridgeChainId,
