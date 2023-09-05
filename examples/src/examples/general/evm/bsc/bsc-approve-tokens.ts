@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ApproveParams, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, BridgeApproveParams, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env" });
@@ -18,7 +18,7 @@ const main = async () => {
 
   const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
-  const approveData: ApproveParams = {
+  const approveData: BridgeApproveParams = {
     token: tokenInfo,
     owner: accountAddress,
   };
