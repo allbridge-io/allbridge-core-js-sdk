@@ -6,12 +6,7 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import {
-  ExtraGasMaxLimitExceededError,
-  InvalidGasFeePaymentOptionError,
-  InvalidMessengerOptionError,
-  SdkError,
-} from "../../exceptions";
+import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -101,20 +96,6 @@ export function getNonce(): Buffer {
   return randomBytes(32);
 }
 
-export function isStablePaymentMethodSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
-  if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
-    return false;
-  }
-  return true;
-}
-
-export function isMessengerSupported(sourceChainType: ChainType, messenger: Messenger): boolean {
-  if (sourceChainType == ChainType.SOLANA && messenger == Messenger.WORMHOLE) {
-    return false;
-  }
-  return true;
-}
-
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
   const txSwapParams = {} as TxSwapParams;
   const sourceToken = params.sourceToken;
@@ -149,13 +130,6 @@ export async function prepareTxSendParams(
   txSendParams.contractAddress = sourceToken.bridgeAddress;
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    if (!isStablePaymentMethodSupported(params.sourceToken.chainType, params.messenger)) {
-      throw new InvalidGasFeePaymentOptionError(
-        `For '${params.sourceToken.chainType}' chain send tx unavailable for payment method '${
-          params.gasFeePaymentMethod
-        }' via '${Messenger[params.messenger]}' messenger`
-      );
-    }
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
   } else {
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
@@ -238,11 +212,6 @@ export async function getGasFeeOptions(
   messenger: Messenger,
   api: AllbridgeCoreClient
 ): Promise<GasFeeOptions> {
-  if (!isMessengerSupported(sourceChainType, messenger)) {
-    throw new InvalidMessengerOptionError(
-      `For '${sourceChainType}' chain send tx unavailable via '${Messenger[messenger]}' messenger`
-    );
-  }
   const transactionCostResponse = await api.getReceiveTransactionCost({
     sourceChainId: sourceAllbridgeChainId,
     destinationChainId: destinationAllbridgeChainId,
@@ -258,7 +227,7 @@ export async function getGasFeeOptions(
       ).toFixed(),
     },
   };
-  if (transactionCostResponse.sourceNativeTokenPrice && isStablePaymentMethodSupported(sourceChainType, messenger)) {
+  if (transactionCostResponse.sourceNativeTokenPrice) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
       ChainDecimalsByType[sourceChainType],
