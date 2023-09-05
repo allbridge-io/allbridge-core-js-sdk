@@ -4,7 +4,7 @@ export const testnet: AllbridgeCoreSdkOptions = {
   coreApiUrl: "https://core-dev.a11bd.net",
   coreApiHeaders: {},
   wormholeMessengerProgramId: "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5",
-  solanaLookUpTable: "DPksfBY4KqcBwgxC7fUXPHEqg939z2gGpzVCoEBn4PXE",
+  solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
 };
 
 export const testnetNodeUrlsDefault: NodeUrlsConfig = {
