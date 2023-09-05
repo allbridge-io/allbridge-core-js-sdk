@@ -12,7 +12,6 @@ export interface ApproveParams {
 
   /**
    *  The address of the token owner who is granting permission to use tokens
-   *  to the spender
    */
   owner: string;
 

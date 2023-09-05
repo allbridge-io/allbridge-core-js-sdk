@@ -8,7 +8,6 @@ export {
   SwapParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
-export { TokenService } from "../services/token/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
@@ -23,7 +22,6 @@ export {
   MessengerTransferTime,
 } from "../tokens-info/tokens-info.model";
 export {
-  ApproveParams as TokensApproveParams,
   CheckAllowanceParams as TokensCheckAllowanceParams,
   GetAllowanceParams as TokensGetAllowanceParams,
   GetTokenBalanceParams as TokensGetTokenBalanceParams,
