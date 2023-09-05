@@ -287,8 +287,3 @@ const transferTimeMs = sdk.getAverageTransferTime(
   Messenger.ALLBRIDGE
 );
 ```
-
-## Semver
-
-Until bridge-core-sdk reaches a `1.0.0` release, breaking changes will be released with a new minor version. For
-example `0.3.1`, and `0.3.4` will have the same API, but `0.4.0` will have breaking changes.
