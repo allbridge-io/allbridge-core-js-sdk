@@ -8,3 +8,4 @@ coverage/
 .env
 docs/
 /out/
+.firebase
