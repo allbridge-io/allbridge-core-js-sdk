@@ -62,6 +62,9 @@ jobs:
       - name: Test
         run: pnpm run test
 
+      - name: Docs
+        run: pnpm run tsdoc
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
