@@ -27,9 +27,9 @@ export class TronPoolService extends ChainPoolService {
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     let userBalanceInfo;
     try {
-      userBalanceInfo = this.getUserBalanceInfoByBatch(accountAddress, token);
+      userBalanceInfo = await this.getUserBalanceInfoByBatch(accountAddress, token);
     } catch (err) {
-      userBalanceInfo = this.getUserBalanceInfoPerProperty(accountAddress, token);
+      userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
     }
     return userBalanceInfo;
   }
@@ -62,9 +62,9 @@ export class TronPoolService extends ChainPoolService {
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     let poolInfo;
     try {
-      poolInfo = this.getPoolInfoByBatch(token);
+      poolInfo = await this.getPoolInfoByBatch(token);
     } catch (err) {
-      poolInfo = this.getPoolInfoPerProperty(token);
+      poolInfo = await this.getPoolInfoPerProperty(token);
     }
     return poolInfo;
   }
