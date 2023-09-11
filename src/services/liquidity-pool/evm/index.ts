@@ -21,6 +21,19 @@ export class EvmPoolService extends ChainPoolService {
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
+    let userBalanceInfo;
+    try {
+      userBalanceInfo = this.getUserBalanceInfoByBatch(accountAddress, token);
+    } catch (err) {
+      userBalanceInfo = this.getUserBalanceInfoPerProperty(accountAddress, token);
+    }
+    return userBalanceInfo;
+  }
+
+  private async getUserBalanceInfoByBatch(
+    accountAddress: string,
+    token: TokenWithChainDetails
+  ): Promise<UserBalanceInfo> {
     const batch = new this.web3.BatchRequest();
     const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
     const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
@@ -31,7 +44,26 @@ export class EvmPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
+  private async getUserBalanceInfoPerProperty(
+    accountAddress: string,
+    token: TokenWithChainDetails
+  ): Promise<UserBalanceInfo> {
+    const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
+    const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
+  }
+
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
+    let poolInfo;
+    try {
+      poolInfo = this.getPoolInfoByBatch(token);
+    } catch (err) {
+      poolInfo = this.getPoolInfoPerProperty(token);
+    }
+    return poolInfo;
+  }
+
+  private async getPoolInfoByBatch(token: TokenWithChainDetails): Promise<PoolInfo> {
     const batch = new this.web3.BatchRequest();
     const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
     const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
@@ -50,6 +82,30 @@ export class EvmPoolService extends ChainPoolService {
       vUsdBalance: vUsdBalanceStr,
       totalLpAmount: totalLpAmount.toString(),
       accRewardPerShareP: accRewardPerShareP.toString(),
+      p: this.P,
+      imbalance,
+    };
+  }
+
+  private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
+    const poolContract = this.getPoolContract(token.poolAddress);
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
+      poolContract.methods.a().call(),
+      poolContract.methods.d().call(),
+      poolContract.methods.tokenBalance().call(),
+      poolContract.methods.vUsdBalance().call(),
+      poolContract.methods.totalSupply().call(),
+      poolContract.methods.accRewardPerShareP().call(),
+    ]);
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
+
+    return {
+      aValue,
+      dValue,
+      tokenBalance,
+      vUsdBalance,
+      totalLpAmount,
+      accRewardPerShareP,
       p: this.P,
       imbalance,
     };
