@@ -4,7 +4,7 @@ import { ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals } from "../../utils";
-import { calculatePoolInfoImbalance, convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
+import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -152,16 +152,14 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     );
   }
 
-  async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>> {
-    const pool = await getChainPoolService(
+  async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<PoolInfo> {
+    return await getChainPoolService(
       token.chainType,
       this.api,
       this.solParams,
       this.tronRpcUrl,
       provider
     ).getPoolInfoFromChain(token);
-    const imbalance = calculatePoolInfoImbalance(pool);
-    return { ...pool, imbalance };
   }
 }
 

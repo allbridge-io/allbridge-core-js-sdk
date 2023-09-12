@@ -76,6 +76,12 @@ export class ArgumentInvalidDecimalsError extends SdkRootError {
   }
 }
 
+export class TimeoutError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.TIMEOUT_ERROR, message);
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
@@ -88,4 +94,5 @@ export enum ErrorCode {
   INVALID_TX_ERROR = "InvalidTxError",
   EXTRA_GAS_MAX_LIMIT_EXCEEDED_ERROR = "ExtraGasMaxLimitExceededError",
   ARGUMENT_INVALID_DECIMALS_ERROR = "ArgumentInvalidDecimalsError",
+  TIMEOUT_ERROR = "TimeoutError",
 }

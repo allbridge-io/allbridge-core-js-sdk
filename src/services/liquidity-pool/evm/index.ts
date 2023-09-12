@@ -3,6 +3,7 @@ import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
+import { promiseWithTimeout } from "../../../utils";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
@@ -21,6 +22,27 @@ export class EvmPoolService extends ChainPoolService {
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
+    let userBalanceInfo;
+    try {
+      userBalanceInfo = await promiseWithTimeout(
+        this.getUserBalanceInfoByBatch(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name}`,
+        5000
+      );
+    } catch (err) {
+      userBalanceInfo = await promiseWithTimeout(
+        this.getUserBalanceInfoPerProperty(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name}`,
+        5000
+      );
+    }
+    return userBalanceInfo;
+  }
+
+  private async getUserBalanceInfoByBatch(
+    accountAddress: string,
+    token: TokenWithChainDetails
+  ): Promise<UserBalanceInfo> {
     const batch = new this.web3.BatchRequest();
     const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
     const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
@@ -31,7 +53,34 @@ export class EvmPoolService extends ChainPoolService {
     return new UserBalanceInfo({ lpAmount, rewardDebt });
   }
 
+  private async getUserBalanceInfoPerProperty(
+    accountAddress: string,
+    token: TokenWithChainDetails
+  ): Promise<UserBalanceInfo> {
+    const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
+    const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
+    return new UserBalanceInfo({ lpAmount, rewardDebt });
+  }
+
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
+    let poolInfo;
+    try {
+      poolInfo = await promiseWithTimeout(
+        this.getPoolInfoByBatch(token),
+        `Cannot get PoolInfo for ${token.name}`,
+        5000
+      );
+    } catch (err) {
+      poolInfo = await promiseWithTimeout(
+        this.getPoolInfoPerProperty(token),
+        `Cannot get PoolInfo for ${token.name}`,
+        5000
+      );
+    }
+    return poolInfo;
+  }
+
+  private async getPoolInfoByBatch(token: TokenWithChainDetails): Promise<PoolInfo> {
     const batch = new this.web3.BatchRequest();
     const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], token.poolAddress);
     const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
@@ -50,6 +99,30 @@ export class EvmPoolService extends ChainPoolService {
       vUsdBalance: vUsdBalanceStr,
       totalLpAmount: totalLpAmount.toString(),
       accRewardPerShareP: accRewardPerShareP.toString(),
+      p: this.P,
+      imbalance,
+    };
+  }
+
+  private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
+    const poolContract = this.getPoolContract(token.poolAddress);
+    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
+      poolContract.methods.a().call(),
+      poolContract.methods.d().call(),
+      poolContract.methods.tokenBalance().call(),
+      poolContract.methods.vUsdBalance().call(),
+      poolContract.methods.totalSupply().call(),
+      poolContract.methods.accRewardPerShareP().call(),
+    ]);
+    const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
+
+    return {
+      aValue,
+      dValue,
+      tokenBalance,
+      vUsdBalance,
+      totalLpAmount,
+      accRewardPerShareP,
       p: this.P,
       imbalance,
     };
