@@ -2,6 +2,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { TimeoutError } from "../../../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
@@ -23,9 +24,15 @@ export class EvmPoolService extends ChainPoolService {
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     let userBalanceInfo;
     try {
-      userBalanceInfo = await this.getUserBalanceInfoByBatch(accountAddress, token);
+      userBalanceInfo = await this.promiseWithTimeout(
+        this.getUserBalanceInfoByBatch(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name}`
+      );
     } catch (err) {
-      userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
+      userBalanceInfo = await this.promiseWithTimeout(
+        this.getUserBalanceInfoPerProperty(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name}`
+      );
     }
     return userBalanceInfo;
   }
@@ -56,11 +63,23 @@ export class EvmPoolService extends ChainPoolService {
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     let poolInfo;
     try {
-      poolInfo = await this.getPoolInfoByBatch(token);
+      poolInfo = await this.promiseWithTimeout(this.getPoolInfoByBatch(token), `Cannot get PoolInfo for ${token.name}`);
     } catch (err) {
-      poolInfo = await this.getPoolInfoPerProperty(token);
+      poolInfo = await this.promiseWithTimeout(
+        this.getPoolInfoPerProperty(token),
+        `Cannot get PoolInfo for ${token.name}`
+      );
     }
     return poolInfo;
+  }
+
+  async promiseWithTimeout<T>(promise: Promise<T>, msg: string): Promise<T> {
+    return (await Promise.race([
+      promise,
+      new Promise((resolve, reject) => {
+        setTimeout((callback) => reject(new TimeoutError(msg)), 5000);
+      }),
+    ])) as any as T;
   }
 
   private async getPoolInfoByBatch(token: TokenWithChainDetails): Promise<PoolInfo> {
