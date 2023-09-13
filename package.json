@@ -38,8 +38,8 @@
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
     "tsdoc": "typedoc --excludeInternal src/index.ts --cleanOutputDir false",
     "semantic-release": "semantic-release",
-    "prepack": "npm run updateVersion",
-    "prepare": "npm run build",
+    "prepack": "pnpm run updateVersion",
+    "prepare": "pnpm run build",
     "updateVersion": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts"
   },
   "repository": {
