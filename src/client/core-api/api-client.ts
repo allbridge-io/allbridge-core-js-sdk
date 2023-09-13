@@ -39,6 +39,7 @@ export class ApiClientImpl implements ApiClient {
         ...params.coreApiHeaders,
         "x-Sdk-Agent": "AllbridgeCoreSDK/" + VERSION,
       },
+      params: params.coreApiQueryParams,
     });
   }
 

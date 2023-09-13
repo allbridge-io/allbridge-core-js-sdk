@@ -49,6 +49,10 @@ export { ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
 export interface AllbridgeCoreSdkOptions {
   coreApiUrl: string;
   /**
+   * A set of query parameters to be added to all requests to the Core API.
+   */
+  coreApiQueryParams?: Record<string, string>;
+  /**
    * A set of headers to be added to all requests to the Core API.
    */
   coreApiHeaders?: Record<string, string>;

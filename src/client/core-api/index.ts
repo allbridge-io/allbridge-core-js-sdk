@@ -10,6 +10,7 @@ import {
 export interface AllbridgeCoreClientParams {
   coreApiUrl: string;
   coreApiHeaders?: Record<string, string>;
+  coreApiQueryParams?: Record<string, string>;
 }
 
 export interface AllbridgeCoreClient {
