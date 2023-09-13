@@ -21,7 +21,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "npm run clean && npm run type:dts && tsc && npm run build:main",
+    "build": "pnpm run clean && pnpm run type:dts && tsc && pnpm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
     "type:dts": "tsc --emitDeclarationOnly",
