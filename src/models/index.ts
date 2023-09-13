@@ -41,8 +41,7 @@ export {
   SwapFromVUsdCalcResult,
   SwapToVUsdCalcResult,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
-
-export { testnet, testnetNodeUrlsDefault } from "../configs/testnet";
+export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
 
 export enum FeePaymentMethod {
   /**

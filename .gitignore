@@ -6,6 +6,7 @@ coverage/
 .DS_Store
 .idea
 .env
-docs/
+docs/*
+!docs/404.html
 /out/
 .firebase
