@@ -42,9 +42,8 @@ import {
   swapAndBridgeFeeCalculationReverse,
 } from "./utils/calculation/swap-and-bridge-fee-calc";
 
-export * from "./configs/mainnet";
+export * from "./configs";
 export * from "./models";
-export { ChainDetailsMap, ChainDetailsWithTokens } from "./tokens-info";
 
 export interface AllbridgeCoreSdkOptions {
   coreApiUrl: string;
