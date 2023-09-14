@@ -2,7 +2,7 @@
 
 import bs58 from "bs58";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { ChainSymbol, ChainType } from "../../../chains";
+import { ChainSymbol, ChainType, TestnetChainSymbol } from "../../../chains";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
@@ -68,7 +68,7 @@ describe("ChainBridgeService Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+        fromChainSymbol: TestnetChainSymbol.GRL,
         fromTokenAddress: "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
         toChainId: 4,
         toTokenAddress: "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
@@ -108,7 +108,7 @@ describe("ChainBridgeService Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+        fromChainSymbol: TestnetChainSymbol.GRL,
         fromTokenAddress: "0x000000000000000000000000ddac3cb57dea3fbeff4997d78215535eb5787117",
         toChainId: 5,
         toTokenAddress: "0x09c0917b1690e4929808fbc5378d9619a1ff49b3aaff441b2fa4bd58ab035a33",

@@ -1,7 +1,7 @@
-import { ChainSymbol, ChainType } from "./index";
+import { ChainSymbolType, ChainType } from "./index";
 
 export interface BasicChainProperties {
-  chainSymbol: ChainSymbol;
+  chainSymbol: ChainSymbolType;
   chainId?: string; // A 0x-prefixed hexadecimal string
   name: string;
   chainType: ChainType;

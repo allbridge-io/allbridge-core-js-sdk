@@ -1,4 +1,4 @@
-import { chainProperties, ChainSymbol } from "../../chains";
+import { chainProperties, ChainSymbolType } from "../../chains";
 import {
   ChainDetails,
   ChainDetailsMap,
@@ -36,7 +36,7 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
 export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue as ChainSymbolType;
     for (const token of chainDetailsDTO.tokens) {
       const poolKey = mapPoolKeyObjectToPoolKey({
         chainSymbol,
@@ -72,7 +72,7 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
 
 function mapTransferTimeFromDto(dto: TransferTimeDTO): TransferTime {
   return Object.entries(dto).reduce<TransferTime>((result, [key, value]) => {
-    result[key as ChainSymbol] = mapMessengerTransferTimeFromDto(value);
+    result[key as ChainSymbolType] = mapMessengerTransferTimeFromDto(value);
     return result;
   }, {});
 }
@@ -110,7 +110,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
 export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   const dividerPosition = poolKey.indexOf("_");
   return {
-    chainSymbol: poolKey.substring(0, dividerPosition) as ChainSymbol,
+    chainSymbol: poolKey.substring(0, dividerPosition) as ChainSymbolType,
     poolAddress: poolKey.substring(dividerPosition + 1),
   };
 }
@@ -122,7 +122,7 @@ export function mapPoolKeyObjectToPoolKey(poolKeyObject: PoolKeyObject): string 
 export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetailsMap): PoolKeyObject[] {
   const result = [];
   for (const [chainSymbolValue, chainDetails] of Object.entries(chainDetailsMap)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue as ChainSymbolType;
     for (const token of chainDetails.tokens) {
       result.push({
         chainSymbol,
@@ -136,7 +136,7 @@ export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetails
 export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue as ChainSymbolType;
     for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
       poolInfo.imbalance = calculatePoolInfoImbalance(poolInfo);
       poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;

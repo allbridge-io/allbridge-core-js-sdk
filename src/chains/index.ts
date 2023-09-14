@@ -2,17 +2,9 @@ import { BasicChainProperties } from "./models";
 
 export * from "./models";
 
+export type ChainSymbolType = ChainSymbol | TestnetChainSymbol;
+
 export enum ChainSymbol {
-  /**
-   * The Goerli testnet.
-   */
-  GRL = "GRL",
-
-  /**
-   * The Sepolia testnet.
-   */
-  SPL = "SPL",
-
   /**
    * The BNB Smart Chain main network.
    */
@@ -39,14 +31,24 @@ export enum ChainSymbol {
   POL = "POL",
 
   /**
-   * The Polygon Mumbai testnet.
-   */
-  MUM = "MUM",
-
-  /**
    * The Arbitrum network.
    */
   ARB = "ARB",
+}
+
+export enum TestnetChainSymbol {
+  /**
+   * The Goerli testnet.
+   */
+  GRL = "GRL",
+  /**
+   * The Sepolia testnet.
+   */
+  SPL = "SPL",
+  /**
+   * The Polygon Mumbai testnet.
+   */
+  MUM = "MUM",
 }
 
 export enum ChainType {
@@ -65,14 +67,14 @@ export const ChainDecimalsByType: Record<ChainType, number> = {
 };
 
 export const chainProperties: Record<string, BasicChainProperties> = {
-  [ChainSymbol.GRL]: {
-    chainSymbol: ChainSymbol.GRL,
+  [TestnetChainSymbol.GRL]: {
+    chainSymbol: TestnetChainSymbol.GRL,
     chainId: "0x5",
     name: "Goerli",
     chainType: ChainType.EVM,
   },
-  [ChainSymbol.SPL]: {
-    chainSymbol: ChainSymbol.SPL,
+  [TestnetChainSymbol.SPL]: {
+    chainSymbol: TestnetChainSymbol.SPL,
     chainId: "0xaa36a7",
     name: "Sepolia",
     chainType: ChainType.EVM,
@@ -101,8 +103,8 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Polygon",
     chainType: ChainType.EVM,
   },
-  [ChainSymbol.MUM]: {
-    chainSymbol: ChainSymbol.MUM,
+  [TestnetChainSymbol.MUM]: {
+    chainSymbol: TestnetChainSymbol.MUM,
     chainId: "0x13881",
     name: "Mumbai",
     chainType: ChainType.EVM,

@@ -1,5 +1,5 @@
 import axios, { Axios } from "axios";
-import { ChainSymbol } from "../../chains";
+import { ChainSymbolType } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
@@ -23,7 +23,7 @@ export interface TokenInfo {
 
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
+  getTransferStatus(chainSymbol: ChainSymbolType, txId: string): Promise<TransferStatusResponse>;
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
@@ -51,7 +51,7 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: ChainSymbolType, txId: string): Promise<TransferStatusResponse> {
     const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
     return data;
   }

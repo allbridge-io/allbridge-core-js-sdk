@@ -1,8 +1,8 @@
-import { BasicChainProperties, ChainSymbol } from "../chains";
+import { BasicChainProperties, ChainSymbolType } from "../chains";
 import { Messenger } from "../client/core-api/core-api.model";
 
 /**
- * Contains mapping of {@link ChainSymbol} and chain details.
+ * Contains mapping of {@link ChainSymbolType} and chain details.
  */
 export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 
@@ -48,7 +48,7 @@ export interface PoolInfo {
  * Contains average transaction times per chain per messenger.
  */
 export type TransferTime = {
-  [chain in ChainSymbol]?: MessengerTransferTime;
+  [chain in ChainSymbolType]?: MessengerTransferTime;
 };
 
 export type MessengerTransferTime = {
@@ -56,7 +56,7 @@ export type MessengerTransferTime = {
 };
 
 export interface PoolKeyObject {
-  chainSymbol: ChainSymbol;
+  chainSymbol: ChainSymbolType;
   poolAddress: string;
 }
 

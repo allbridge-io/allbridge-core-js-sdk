@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { ChainSymbol } from "../../../../chains";
+import { TestnetChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { FeePaymentMethod } from "../../../../models";
@@ -39,7 +39,7 @@ describe("EvmBridge", () => {
         amount: "1330000000000000000",
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+        fromChainSymbol: TestnetChainSymbol.GRL,
         fromAccountAddress: from,
         fromTokenAddress: "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
         toChainId: 4,
