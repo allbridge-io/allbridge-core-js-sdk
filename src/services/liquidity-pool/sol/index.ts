@@ -14,7 +14,7 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
 export interface SolanaPoolParams {
@@ -57,12 +57,12 @@ export class SolanaPoolService extends ChainPoolService {
         bridge.programId
       );
       const { lpAmount, rewardDebt } = await bridge.account.userDeposit.fetch(userDepositAccount);
-      return new UserBalanceInfo({
+      return new UserBalance({
         lpAmount: lpAmount.toString(),
         rewardDebt: rewardDebt.toString(),
       });
     } catch (e) {
-      return new UserBalanceInfo({ lpAmount: "0", rewardDebt: "0" });
+      return new UserBalance({ lpAmount: "0", rewardDebt: "0" });
     }
   }
 
