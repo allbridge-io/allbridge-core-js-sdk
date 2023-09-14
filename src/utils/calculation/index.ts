@@ -8,7 +8,7 @@ export function getFeePercent(input: BigSource, output: BigSource): number {
 }
 
 export function toSystemPrecision(amount: BigSource, decimals: number): Big {
-  return convertAmountPrecision(amount, decimals, SYSTEM_PRECISION);
+  return convertAmountPrecision(amount, decimals, SYSTEM_PRECISION).round(0, 0);
 }
 
 export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
