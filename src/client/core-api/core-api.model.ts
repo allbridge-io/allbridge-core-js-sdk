@@ -1,4 +1,4 @@
-import { ChainSymbolType } from "../../chains";
+import { ChainSymbol } from "../../chains";
 import { PoolInfo } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
@@ -40,7 +40,7 @@ export enum MessengerKeyDTO {
 }
 
 export type TransferTimeDTO = {
-  [chain in ChainSymbolType]: MessengerTransferTimeDTO;
+  [chain in ChainSymbol]: MessengerTransferTimeDTO;
 };
 
 export interface TxCostAmountDTO {
@@ -73,8 +73,8 @@ export interface ReceiveTransactionCostResponse {
 export interface TransferStatusResponse {
   txId: string;
 
-  sourceChainSymbol: ChainSymbolType;
-  destinationChainSymbol: ChainSymbolType;
+  sourceChainSymbol: ChainSymbol;
+  destinationChainSymbol: ChainSymbol;
 
   sendAmount: string;
   sendAmountFormatted: number;
@@ -128,7 +128,7 @@ export interface BridgeTransaction {
 }
 
 export type PoolInfoResponse = {
-  [chainSymbol in ChainSymbolType]?: {
+  [chainSymbol in ChainSymbol]?: {
     string: PoolInfo;
   };
 };

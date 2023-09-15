@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbolType } from "./chains";
+import { ChainSymbol } from "./chains";
 import { AllbridgeCoreClientImpl } from "./client/core-api";
 import { ApiClientImpl } from "./client/core-api/api-client";
 import { ApiClientCaching } from "./client/core-api/api-client-caching";
@@ -123,7 +123,7 @@ export class AllbridgeCoreSdk {
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    */
-  async tokensByChain(chainSymbol: ChainSymbolType): Promise<TokenWithChainDetails[]> {
+  async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenWithChainDetails[]> {
     const map = await this.api.getChainDetailsMap();
     return map[chainSymbol].tokens;
   }
@@ -133,7 +133,7 @@ export class AllbridgeCoreSdk {
    * @param chainSymbol
    * @param txId
    */
-  async getTransferStatus(chainSymbol: ChainSymbolType, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.api.getTransferStatus(chainSymbol, txId);
   }
 

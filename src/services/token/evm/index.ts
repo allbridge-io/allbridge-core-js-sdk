@@ -3,7 +3,7 @@ import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainSymbolType, ChainType } from "../../../chains";
+import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { RawTransaction } from "../../models";
@@ -78,7 +78,7 @@ export class EvmTokenService extends ChainTokenService {
     };
   }
 
-  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbolType) {
+  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {
     const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK

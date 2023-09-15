@@ -11,7 +11,7 @@ export { BridgeService } from "../services/bridge/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export { TransactionResponse } from "../services/models/index";
 export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
-export { ChainSymbol, ChainSymbolType, ChainType, TestnetChainSymbol } from "../chains/index";
+export { ChainSymbol, ChainType } from "../chains/index";
 export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {

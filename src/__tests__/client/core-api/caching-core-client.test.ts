@@ -1,4 +1,4 @@
-import { TestnetChainSymbol } from "../../../chains";
+import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../../client/core-api/core-client-pool-info-caching";
@@ -45,11 +45,11 @@ describe("AllbridgeCachingCoreClient", () => {
 
     describe("Given PoolInfoMap", () => {
       const poolKeyObject = {
-        chainSymbol: TestnetChainSymbol.GRL,
+        chainSymbol: ChainSymbol.GRL,
         poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
       };
       const poolKeyObject2 = {
-        chainSymbol: TestnetChainSymbol.GRL,
+        chainSymbol: ChainSymbol.GRL,
         poolAddress: "0x227e10f9E750C922bf9dee7620B58033F566b34F",
       };
       const expectedPoolInfo = poolGRL as unknown as PoolInfo;
@@ -103,7 +103,7 @@ describe("AllbridgeCachingCoreClient", () => {
     });
 
     test("☀ getTransferStatus should call api.getTransferStatus", async () => {
-      const actual = await client.getTransferStatus(TestnetChainSymbol.GRL, "txId");
+      const actual = await client.getTransferStatus(ChainSymbol.GRL, "txId");
       expect(actual).toEqual(expected);
 
       expect(apiMock.getTransferStatus).toHaveBeenCalledTimes(1);

@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbolType } from "../../../chains";
+import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AmountFormat, FeePaymentMethod } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
@@ -163,7 +163,7 @@ export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromChainId: number;
-  fromChainSymbol: ChainSymbolType;
+  fromChainSymbol: ChainSymbol;
   fromAccountAddress: string;
   fromTokenAddress: AccountAddress;
   toChainId: number;

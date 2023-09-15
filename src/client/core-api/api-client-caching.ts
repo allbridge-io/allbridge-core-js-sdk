@@ -1,5 +1,5 @@
 import Cache from "timed-cache";
-import { ChainSymbolType } from "../../chains";
+import { ChainSymbol } from "../../chains";
 import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
@@ -42,7 +42,7 @@ export class ApiClientCaching implements ApiClient {
     return fetchedTransactionCost;
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbolType, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.apiClient.getTransferStatus(chainSymbol, txId);
   }
 

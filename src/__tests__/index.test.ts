@@ -4,14 +4,14 @@ import nock, { cleanAll as nockCleanAll } from "nock";
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
-import { ChainDecimalsByType, ChainSymbol } from "../chains";
+import { ChainDecimalsByType } from "../chains";
 import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
   AllbridgeCoreSdkOptions,
   AmountFormat,
   ChainDetailsMap,
-  TestnetChainSymbol,
+  ChainSymbol,
   ChainType,
   CheckAllowanceParams,
   FeePaymentMethod,
@@ -67,7 +67,7 @@ describe("SDK", () => {
 
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       decimals: 18,
       feeShare: "0",
     };
@@ -118,7 +118,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       decimals: 6,
       feeShare: "0",
     };
@@ -178,7 +178,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       decimals: 18,
       feeShare: "0.003",
     };
@@ -337,7 +337,7 @@ describe("SDK", () => {
 
       test("☀️ tokensByChain(GRL) returns a list of TokenWithChainDetails on Goerli chain", async () => {
         const expectedTokenInfoWithChainDetailsGrl = tokenInfoWithChainDetailsGrl as unknown as TokenWithChainDetails[];
-        expect(await sdk.tokensByChain(TestnetChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGrl);
+        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGrl);
       });
     });
 
@@ -597,7 +597,7 @@ describe("SDK", () => {
     const grlChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
       decimals: 18,
@@ -606,7 +606,7 @@ describe("SDK", () => {
     const grlChainToken2: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
       decimals: 18,

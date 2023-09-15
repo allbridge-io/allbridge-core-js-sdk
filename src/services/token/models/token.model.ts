@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbolType } from "../../../chains";
+import { ChainSymbol } from "../../../chains";
 import { FeePaymentMethod } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
@@ -52,7 +52,7 @@ export interface GetAllowanceParams {
 
 export interface ApproveParamsDto {
   tokenAddress: string;
-  chainSymbol: ChainSymbolType;
+  chainSymbol: ChainSymbol;
   owner: string;
   spender: string;
   /**

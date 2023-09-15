@@ -1,5 +1,5 @@
 import nock from "nock";
-import { ChainSymbol, TestnetChainSymbol } from "../../../chains";
+import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
@@ -89,7 +89,7 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
 
     const poolKey: PoolKeyObject = {
-      chainSymbol: TestnetChainSymbol.GRL,
+      chainSymbol: ChainSymbol.GRL,
       poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
     };
 
