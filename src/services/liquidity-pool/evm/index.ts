@@ -10,7 +10,7 @@ import PoolAbi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
 import { BaseContract } from "../../models/abi/types/types";
 import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
 export class EvmPoolService extends ChainPoolService {
@@ -50,7 +50,7 @@ export class EvmPoolService extends ChainPoolService {
     );
     batch.execute();
     const [rewardDebt, lpAmount] = await Promise.all(arr);
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   private async getUserBalanceInfoPerProperty(
@@ -59,7 +59,7 @@ export class EvmPoolService extends ChainPoolService {
   ): Promise<UserBalanceInfo> {
     const rewardDebt = await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call();
     const lpAmount = await this.getPoolContract(token.poolAddress).methods.balanceOf(accountAddress).call();
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {

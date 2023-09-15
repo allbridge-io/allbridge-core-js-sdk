@@ -11,7 +11,7 @@ import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
 import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
 export class TronPoolService extends ChainPoolService {
@@ -46,7 +46,7 @@ export class TronPoolService extends ChainPoolService {
     );
     batch.execute();
     const [rewardDebt, lpAmount] = await Promise.all(arr);
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   private async getUserBalanceInfoPerProperty(
@@ -56,7 +56,7 @@ export class TronPoolService extends ChainPoolService {
     const contract = await this.getContract(token.poolAddress);
     const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
     const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {

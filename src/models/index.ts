@@ -42,6 +42,7 @@ export {
   SwapToVUsdCalcResult,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
+export * from "../exceptions";
 
 export enum FeePaymentMethod {
   /**
