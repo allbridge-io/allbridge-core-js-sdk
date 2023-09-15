@@ -39,7 +39,7 @@ export interface RawPoolTransactionBuilder {
   claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction>;
 }
 
-export class DefaultRawPoolTransactionBuilder {
+export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,
     private solParams: SolanaPoolParams,

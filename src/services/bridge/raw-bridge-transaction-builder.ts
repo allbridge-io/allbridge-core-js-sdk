@@ -24,7 +24,7 @@ export interface RawBridgeTransactionBuilder {
   send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction>;
 }
 
-export class DefaultRawBridgeTransactionBuilder {
+export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,
     private solParams: SolanaBridgeParams,
