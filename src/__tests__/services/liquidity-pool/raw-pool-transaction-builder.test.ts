@@ -13,17 +13,11 @@ describe("RawTransactionBuilder", () => {
   let liquidityPoolService: any;
   let api: any;
   let solParams: any;
-  let tronRpcUrl: any;
+  let nodeRpcUrls: any;
   const tokenService = new DefaultTokenService(api, solParams);
 
   beforeEach(() => {
-    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(
-      api,
-      solParams,
-      tronRpcUrl,
-      liquidityPoolService,
-      tokenService
-    );
+    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, liquidityPoolService, tokenService);
   });
 
   test("approve should call buildRawTransactionApprove", async () => {

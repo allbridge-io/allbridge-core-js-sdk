@@ -13,10 +13,17 @@ describe("RawTransactionBuilder", () => {
   let bridgeService: any;
   let api: any;
   let solParams: any;
-  const tokenService = new DefaultTokenService(api, solParams);
+  let nodeRpcUrls: any;
+  const tokenService = new DefaultTokenService(api, nodeRpcUrls);
 
   beforeEach(() => {
-    rawTransactionBuilder = new DefaultRawBridgeTransactionBuilder(api, solParams, bridgeService, tokenService);
+    rawTransactionBuilder = new DefaultRawBridgeTransactionBuilder(
+      api,
+      nodeRpcUrls,
+      solParams,
+      bridgeService,
+      tokenService
+    );
   });
 
   test("approve should call buildRawTransactionApprove", async () => {

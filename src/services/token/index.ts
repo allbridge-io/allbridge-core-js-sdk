@@ -1,7 +1,10 @@
 import { Big } from "big.js";
+// @ts-expect-error import tron
+import TronWeb from "tronweb";
 import Web3 from "web3";
-import { ChainType } from "../../chains";
+import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
@@ -9,64 +12,38 @@ import { EvmTokenService } from "./evm";
 import {
   ApproveParams,
   ApproveParamsDto,
-  CheckAllowanceParamsDto,
   CheckAllowanceParams,
+  CheckAllowanceParamsDto,
   GetAllowanceParams,
   GetTokenBalanceParams,
 } from "./models";
 import { ChainTokenService } from "./models/token";
-import { SolanaTokenParams, SolanaTokenService } from "./sol";
+import { SolanaTokenService } from "./sol";
 import { TronTokenService } from "./trx";
 
 export interface TokenService {
-  /**
-   * Get amount of tokens approved for poolInfo
-   * @param provider
-   * @param params See {@link GetAllowanceParams | GetAllowanceParams}
-   * @returns the amount of approved tokens
-   */
-  getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string>;
+  getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string>;
 
-  /**
-   * Check if the amount of approved tokens is enough to make a transfer
-   * @param provider
-   * @param params See {@link GetAllowanceParams | GetAllowanceParams}
-   * @returns true if the amount of approved tokens is enough to make a transfer
-   */
-  checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
+  checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean>;
 
-  /**
-   * Approve tokens usage by another address on chains
-   * <p>
-   * For ETH/USDT: due to specificity of the USDT contract:<br/>
-   * If the current allowance is not 0, this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
-   * @param provider
-   * @param approveData
-   */
   approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
-  buildRawTransactionApprove(provider: Provider, approveData: ApproveParams): Promise<RawTransaction>;
+  buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction>;
 
-  /**
-   * Get token balance
-   * @param params
-   * @param provider
-   * @returns Token balance
-   */
   getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string>;
 }
 
 export class DefaultTokenService implements TokenService {
-  constructor(public api: AllbridgeCoreClient, public solParams: SolanaTokenParams) {}
+  constructor(public api: AllbridgeCoreClient, public nodeRpcUrlsConfig: NodeRpcUrlsConfig) {}
 
-  async getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string> {
-    const allowanceInt = await this.getChainTokenService(params.token.chainType, provider).getAllowance(params);
+  async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
+    const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, provider).getAllowance(params);
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
 
-  async checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean> {
+  async checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean> {
     validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
-    return this.getChainTokenService(params.token.chainType, provider).checkAllowance(
+    return this.getChainTokenService(params.token.chainSymbol, provider).checkAllowance(
       this.prepareCheckAllowanceParams(params)
     );
   }
@@ -75,36 +52,50 @@ export class DefaultTokenService implements TokenService {
     if (approveData.amount) {
       validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
     }
-    return this.getChainTokenService(approveData.token.chainType, provider).approve(
+    return this.getChainTokenService(approveData.token.chainSymbol, provider).approve(
       this.prepareApproveParams(approveData)
     );
   }
 
-  async buildRawTransactionApprove(provider: Provider, approveData: ApproveParams): Promise<RawTransaction> {
+  async buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction> {
     if (approveData.amount) {
       validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
     }
-    return this.getChainTokenService(approveData.token.chainType, provider).buildRawTransactionApprove(
+    return this.getChainTokenService(approveData.token.chainSymbol, provider).buildRawTransactionApprove(
       this.prepareApproveParams(approveData)
     );
   }
 
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
-    const tokenBalance = await this.getChainTokenService(params.token.chainType, provider).getTokenBalance(params);
+    const tokenBalance = await this.getChainTokenService(params.token.chainSymbol, provider).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
     }
     return tokenBalance;
   }
 
-  private getChainTokenService(chainType: ChainType, provider?: Provider): ChainTokenService {
-    switch (chainType) {
-      case ChainType.EVM:
-        return new EvmTokenService(provider as unknown as Web3, this.api);
-      case ChainType.TRX:
-        return new TronTokenService(provider, this.api);
-      case ChainType.SOLANA:
-        return new SolanaTokenService(this.solParams, this.api);
+  private getChainTokenService(chainSymbol: ChainSymbol, provider?: Provider): ChainTokenService {
+    switch (chainProperties[chainSymbol].chainType) {
+      case ChainType.EVM: {
+        if (provider) {
+          return new EvmTokenService(provider as unknown as Web3, this.api);
+        } else {
+          const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+          return new EvmTokenService(new Web3(nodeRpcUrl), this.api);
+        }
+      }
+      case ChainType.TRX: {
+        if (provider) {
+          return new TronTokenService(provider, this.api);
+        } else {
+          const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+          return new TronTokenService(new TronWeb({ fullHost: nodeRpcUrl }), this.api);
+        }
+      }
+      case ChainType.SOLANA: {
+        const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        return new SolanaTokenService(nodeRpcUrl, this.api);
+      }
     }
   }
 

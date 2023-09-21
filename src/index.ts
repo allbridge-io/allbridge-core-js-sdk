@@ -6,7 +6,7 @@ import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
-import { InsufficientPoolLiquidityError } from "./exceptions";
+import { InsufficientPoolLiquidityError, NodeRpcUrlNotInitializedError } from "./exceptions";
 import {
   AmountFormat,
   AmountFormatted,
@@ -20,7 +20,6 @@ import { BridgeService, DefaultBridgeService } from "./services/bridge";
 import { SolanaBridgeParams } from "./services/bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
 import { LiquidityPoolService, DefaultLiquidityPoolService } from "./services/liquidity-pool";
-import { SolanaPoolParams } from "./services/liquidity-pool/sol";
 import { Provider } from "./services/models";
 import { TokenService, DefaultTokenService } from "./services/token";
 import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "./tokens-info";
@@ -59,9 +58,41 @@ export interface AllbridgeCoreSdkOptions {
   solanaLookUpTable: string;
 }
 
+/**
+ * Provide node RPC URL for chain connection you intend to communicate with</br>
+ * - required for SOL, TRX chains</br>
+ * - optional for EVM chains -- you can interact by passing a {@link Provider} that will be used to communicate with the chain</br>
+ */
+export type NodeRpcUrls = {
+  [key in ChainSymbol]?: string;
+};
+
+export class NodeRpcUrlsConfig {
+  constructor(private nodeRpcUrls: NodeRpcUrls) {}
+
+  getNodeRpcUrl(chainSymbol: ChainSymbol): string {
+    const nodeRpcUrl = this.nodeRpcUrls[chainSymbol];
+    if (nodeRpcUrl !== undefined) {
+      return nodeRpcUrl;
+    } else {
+      throw new NodeRpcUrlNotInitializedError(chainSymbol);
+    }
+  }
+}
+
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
   tronRpcUrl: string;
+}
+
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
+function isNodeUrlsConfig(nodeUrls: NodeUrlsConfig | NodeRpcUrls): nodeUrls is NodeUrlsConfig {
+  return 'solanaRpcUrl' in nodeUrls;
 }
 
 export class AllbridgeCoreSdk {
@@ -86,23 +117,26 @@ export class AllbridgeCoreSdk {
    * Optional.
    * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
+  constructor(nodeUrls: NodeUrlsConfig | NodeRpcUrls, params: AllbridgeCoreSdkOptions = mainnet) {
+    let nodeRpcUrlsConfig: NodeRpcUrlsConfig;
+    if (isNodeUrlsConfig(nodeUrls)) {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig({ SOL: nodeUrls.solanaRpcUrl, TRX: nodeUrls.tronRpcUrl });
+    } else {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig(nodeUrls);
+    }
+
     const apiClient = new ApiClientImpl(params);
     const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
     const solBridgeParams: SolanaBridgeParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
       solanaLookUpTable: params.solanaLookUpTable,
     };
-    this.tokenService = new DefaultTokenService(this.api, solBridgeParams);
-    this.bridge = new DefaultBridgeService(this.api, solBridgeParams, this.tokenService);
-    const solPoolParams: SolanaPoolParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
-    };
-    this.pool = new DefaultLiquidityPoolService(this.api, solPoolParams, this.tokenService, nodeUrls.tronRpcUrl);
+    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig);
+    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, solBridgeParams, this.tokenService);
+    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, this.tokenService);
     this.params = params;
   }
 
@@ -403,6 +437,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * @param vUsdAmount - amount of vUsd, int format
+   * @param destToken selected token on the destination chain
    * @return amount of destToken
    */
   async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {

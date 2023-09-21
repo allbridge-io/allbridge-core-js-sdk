@@ -1,3 +1,5 @@
+import { ChainSymbol } from "../chains";
+
 export abstract class SdkRootError extends Error {
   public errorCode: ErrorCode;
 
@@ -82,6 +84,12 @@ export class TimeoutError extends SdkRootError {
   }
 }
 
+export class NodeRpcUrlNotInitializedError extends SdkRootError {
+  constructor(chainSymbol: ChainSymbol) {
+    super(ErrorCode.NODE_RPC_URL_NOT_INITIALIZED_ERROR, `For chain '${chainSymbol}' Node RPC URL not initialized`);
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
@@ -95,4 +103,5 @@ export enum ErrorCode {
   EXTRA_GAS_MAX_LIMIT_EXCEEDED_ERROR = "ExtraGasMaxLimitExceededError",
   ARGUMENT_INVALID_DECIMALS_ERROR = "ArgumentInvalidDecimalsError",
   TIMEOUT_ERROR = "TimeoutError",
+  NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
 }
