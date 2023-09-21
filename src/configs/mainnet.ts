@@ -13,5 +13,5 @@ export const mainnet: AllbridgeCoreSdkOptions = {
  */
 export const nodeUrlsDefault: NodeUrlsConfig = {
   solanaRpcUrl: "https://api.mainnet-beta.solana.com",
-  tronRpcUrl: "https://api.trongrid.io/jsonrpc",
+  tronRpcUrl: "https://api.trongrid.io",
 };

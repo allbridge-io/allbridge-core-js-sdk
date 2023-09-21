@@ -1,5 +1,5 @@
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
@@ -21,7 +21,7 @@ export class TronPoolService extends ChainPoolService {
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronRpcUrl: string) {
     super();
-    this.web3 = new Web3(tronRpcUrl);
+    this.web3 = new Web3(tronRpcUrl+'/jsonrpc');
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
