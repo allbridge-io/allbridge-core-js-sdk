@@ -37,13 +37,15 @@ export class DefaultTokenService implements TokenService {
   constructor(public api: AllbridgeCoreClient, public nodeRpcUrlsConfig: NodeRpcUrlsConfig) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
-    const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, provider).getAllowance(params);
+    const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
+      params
+    );
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
 
   async checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean> {
     validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
-    return this.getChainTokenService(params.token.chainSymbol, provider).checkAllowance(
+    return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
       this.prepareCheckAllowanceParams(params)
     );
   }
@@ -52,7 +54,7 @@ export class DefaultTokenService implements TokenService {
     if (approveData.amount) {
       validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
     }
-    return this.getChainTokenService(approveData.token.chainSymbol, provider).approve(
+    return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
       this.prepareApproveParams(approveData)
     );
   }
@@ -61,20 +63,26 @@ export class DefaultTokenService implements TokenService {
     if (approveData.amount) {
       validateAmountDecimals("amount", Big(approveData.amount).toString(), approveData.token.decimals);
     }
-    return this.getChainTokenService(approveData.token.chainSymbol, provider).buildRawTransactionApprove(
-      this.prepareApproveParams(approveData)
-    );
+    return this.getChainTokenService(
+      approveData.token.chainSymbol,
+      approveData.owner,
+      provider
+    ).buildRawTransactionApprove(this.prepareApproveParams(approveData));
   }
 
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
-    const tokenBalance = await this.getChainTokenService(params.token.chainSymbol, provider).getTokenBalance(params);
+    const tokenBalance = await this.getChainTokenService(
+      params.token.chainSymbol,
+      params.account,
+      provider
+    ).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
     }
     return tokenBalance;
   }
 
-  private getChainTokenService(chainSymbol: ChainSymbol, provider?: Provider): ChainTokenService {
+  private getChainTokenService(chainSymbol: ChainSymbol, ownerAddress: string, provider?: Provider): ChainTokenService {
     switch (chainProperties[chainSymbol].chainType) {
       case ChainType.EVM: {
         if (provider) {
@@ -89,7 +97,9 @@ export class DefaultTokenService implements TokenService {
           return new TronTokenService(provider, this.api);
         } else {
           const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-          return new TronTokenService(new TronWeb({ fullHost: nodeRpcUrl }), this.api);
+          const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
+          tronWeb.setAddress(ownerAddress);
+          return new TronTokenService(tronWeb, this.api);
         }
       }
       case ChainType.SOLANA: {
