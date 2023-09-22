@@ -92,7 +92,7 @@ export interface NodeUrlsConfig {
  * @Deprecated Use {@link NodeRpcUrls}
  */
 function isNodeUrlsConfig(nodeUrls: NodeUrlsConfig | NodeRpcUrls): nodeUrls is NodeUrlsConfig {
-  return 'solanaRpcUrl' in nodeUrls;
+  return "solanaRpcUrl" in nodeUrls;
 }
 
 export class AllbridgeCoreSdk {

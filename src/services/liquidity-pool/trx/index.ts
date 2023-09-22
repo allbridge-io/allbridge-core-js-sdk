@@ -21,7 +21,7 @@ export class TronPoolService extends ChainPoolService {
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronRpcUrl: string) {
     super();
-    this.web3 = new Web3(tronRpcUrl+'/jsonrpc');
+    this.web3 = new Web3(tronRpcUrl + "/jsonrpc");
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
