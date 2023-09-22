@@ -29,7 +29,11 @@ export function convertFloatAmountToInt(amountFloat: BigSource, decimals: number
 }
 
 export function convertIntAmountToFloat(amountInt: BigSource, decimals: number): Big {
-  return Big(amountInt).div(toPowBase10(decimals));
+  const amountValue = Big(amountInt);
+  if (amountValue.eq(0)) {
+    return Big(0);
+  }
+  return Big(amountValue).div(toPowBase10(decimals));
 }
 
 export function calculatePoolInfoImbalance(poolInfo: Pick<PoolInfo, "tokenBalance" | "vUsdBalance">): string {
