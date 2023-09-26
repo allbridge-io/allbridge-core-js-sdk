@@ -118,6 +118,8 @@ export interface BridgeTransaction {
   sourceTokenAddress: string;
   destinationTokenAddress: string;
 
+  hash: string;
+
   messenger: Messenger;
 
   blockTime: number;
