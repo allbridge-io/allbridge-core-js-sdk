@@ -6,7 +6,12 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
+import {
+  CCTPDoesNotSupportedError,
+  ExtraGasMaxLimitExceededError,
+  InvalidGasFeePaymentOptionError,
+  SdkError,
+} from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -121,13 +126,10 @@ export async function prepareTxSendParams(
   txSendParams.fromChainId = params.sourceToken.allbridgeChainId;
   txSendParams.fromChainSymbol = params.sourceToken.chainSymbol;
   const toChainType = chainProperties[params.destinationToken.chainSymbol].chainType;
-  txSendParams.contractAddress = params.sourceToken.bridgeAddress;
   txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
 
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
-  const sourceToken = params.sourceToken;
-  txSendParams.contractAddress = sourceToken.bridgeAddress;
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
@@ -135,7 +137,15 @@ export async function prepareTxSendParams(
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
-
+  const sourceToken = params.sourceToken;
+  if (params.messenger === Messenger.CCTP) {
+    if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
+      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+    }
+    txSendParams.contractAddress = sourceToken.cctpAddress;
+  } else {
+    txSendParams.contractAddress = sourceToken.bridgeAddress;
+  }
   txSendParams.messenger = params.messenger;
   txSendParams.fromAccountAddress = params.fromAccountAddress;
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();

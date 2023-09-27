@@ -24,6 +24,8 @@ export interface Token {
   decimals: number;
   poolAddress: string;
   tokenAddress: string;
+  cctpAddress?: string;
+  cctpFeeShare?: string;
   feeShare: string;
   apr: number;
   lpRate: number;

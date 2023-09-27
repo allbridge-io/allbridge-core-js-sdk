@@ -115,7 +115,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private tokenService: TokenService
   ) {
-    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this, tokenService);
+    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, tokenService);
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {

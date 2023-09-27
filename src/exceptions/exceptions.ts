@@ -90,6 +90,12 @@ export class NodeRpcUrlNotInitializedError extends SdkRootError {
   }
 }
 
+export class CCTPDoesNotSupportedError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.CCTP_DOES_NOT_SUPPORTED_ERROR, message);
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
@@ -104,4 +110,5 @@ export enum ErrorCode {
   ARGUMENT_INVALID_DECIMALS_ERROR = "ArgumentInvalidDecimalsError",
   TIMEOUT_ERROR = "TimeoutError",
   NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
+  CCTP_DOES_NOT_SUPPORTED_ERROR = "CCTPDoesNotSupportedError",
 }

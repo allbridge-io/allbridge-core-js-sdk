@@ -17,7 +17,7 @@ describe("RawTransactionBuilder", () => {
   const tokenService = new DefaultTokenService(api, solParams);
 
   beforeEach(() => {
-    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, liquidityPoolService, tokenService);
+    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, tokenService);
   });
 
   test("approve should call buildRawTransactionApprove", async () => {

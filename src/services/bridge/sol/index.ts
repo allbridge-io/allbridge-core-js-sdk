@@ -17,6 +17,7 @@ import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import {
   AmountNotEnoughError,
+  CCTPDoesNotSupportedError,
   JupiterError,
   MethodNotSupportedError,
   SdkError,
@@ -206,6 +207,9 @@ export class SolanaBridgeService extends ChainBridgeService {
         swapAndBridgeTx = transaction;
         wormMessageSigner = messageAccount;
         break;
+      }
+      case Messenger.CCTP: {
+        throw new CCTPDoesNotSupportedError("Solana does not support CCTP yet");
       }
     }
 

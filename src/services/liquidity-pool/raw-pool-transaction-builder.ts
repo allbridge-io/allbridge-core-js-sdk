@@ -7,7 +7,7 @@ import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./models";
-import { getChainPoolService, LiquidityPoolService } from "./index";
+import { getChainPoolService } from "./index";
 
 export interface RawPoolTransactionBuilder {
   /**
@@ -48,7 +48,6 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   constructor(
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    private liquidityPoolService: LiquidityPoolService,
     private tokenService: TokenService
   ) {}
 

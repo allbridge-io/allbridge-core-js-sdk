@@ -7,7 +7,7 @@ import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
 import { SolanaBridgeParams } from "./sol";
 import { isSendParams } from "./utils";
-import { BridgeService, getChainBridgeService } from "./index";
+import { BridgeService, getChainBridgeService, getSpender } from "./index";
 
 export interface RawBridgeTransactionBuilder {
   /**
@@ -21,7 +21,6 @@ export interface RawBridgeTransactionBuilder {
    * @param approveData
    */
   approve(approveData: ApproveParams): Promise<RawTransaction>;
-
   /**
    * Creates a Raw Transaction for initiating the transfer of tokens
    * @param params
@@ -40,23 +39,22 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
   ) {}
 
   async approve(a: Provider | ApproveParams, b?: ApproveParams): Promise<RawTransaction> {
+    let provider: Provider | undefined;
+    let approveData: ApproveParams;
     if (b) {
-      const provider = a as Provider;
-      const approveData = b;
-      return this.tokenService.buildRawTransactionApprove(
-        {
-          ...approveData,
-          spender: approveData.token.bridgeAddress,
-        },
-        provider
-      );
+      provider = a as Provider;
+      approveData = b;
     } else {
-      const approveData = a as ApproveParams;
-      return this.tokenService.buildRawTransactionApprove({
-        ...approveData,
-        spender: approveData.token.bridgeAddress,
-      });
+      approveData = a as ApproveParams;
     }
+    const spender = getSpender(approveData.token, approveData.messenger);
+    return this.tokenService.buildRawTransactionApprove(
+      {
+        ...approveData,
+        spender,
+      },
+      provider
+    );
   }
 
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {

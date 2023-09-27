@@ -4,7 +4,7 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
+import { CCTPDoesNotSupportedError, Messenger, NodeRpcUrlsConfig, TokenWithChainDetails } from "../../index";
 import { validateAmountDecimals } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -79,29 +79,34 @@ export class DefaultBridgeService implements BridgeService {
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
+    let provider: Provider | undefined;
+    let params: GetAllowanceParams;
     if (b) {
-      const provider = a as Provider;
-      const params = b;
-      return await this.tokenService.getAllowance({ ...params, spender: params.token.bridgeAddress }, provider);
+      provider = a as Provider;
+      params = b;
     } else {
-      const params = a as GetAllowanceParams;
-      return await this.tokenService.getAllowance({ ...params, spender: params.token.bridgeAddress });
+      params = a as GetAllowanceParams;
     }
+    const spender = getSpender(params.token, params.messenger);
+    return await this.tokenService.getAllowance({ ...params, spender }, provider);
   }
 
   async checkAllowance(a: Provider | CheckAllowanceParams, b?: CheckAllowanceParams): Promise<boolean> {
+    let provider: Provider | undefined;
+    let params: CheckAllowanceParams;
     if (b) {
-      const provider = a as Provider;
-      const params = b;
-      return this.tokenService.checkAllowance({ ...params, spender: params.token.bridgeAddress }, provider);
+      provider = a as Provider;
+      params = b;
     } else {
-      const params = a as CheckAllowanceParams;
-      return this.tokenService.checkAllowance({ ...params, spender: params.token.bridgeAddress });
+      params = a as CheckAllowanceParams;
     }
+    const spender = getSpender(params.token, params.messenger);
+    return this.tokenService.checkAllowance({ ...params, spender }, provider);
   }
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    return this.tokenService.approve(provider, { ...approveData, spender: approveData.token.bridgeAddress });
+    const spender = getSpender(approveData.token, approveData.messenger);
+    return this.tokenService.approve(provider, { ...approveData, spender });
   }
 
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
@@ -113,6 +118,18 @@ export class DefaultBridgeService implements BridgeService {
       this.solParams,
       provider
     ).send(params);
+  }
+}
+
+export function getSpender(token: TokenWithChainDetails, messenger?: Messenger): string {
+  if (messenger && messenger == Messenger.CCTP) {
+    if (token.cctpAddress) {
+      return token.cctpAddress;
+    } else {
+      throw new CCTPDoesNotSupportedError();
+    }
+  } else {
+    return token.bridgeAddress;
   }
 }
 
