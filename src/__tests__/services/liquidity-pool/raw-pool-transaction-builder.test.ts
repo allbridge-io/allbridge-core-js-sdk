@@ -10,7 +10,6 @@ import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithCh
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawPoolTransactionBuilder;
-  let liquidityPoolService: any;
   let api: any;
   let solParams: any;
   let nodeRpcUrls: any;

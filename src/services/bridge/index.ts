@@ -126,7 +126,7 @@ export function getSpender(token: TokenWithChainDetails, messenger?: Messenger):
     if (token.cctpAddress) {
       return token.cctpAddress;
     } else {
-      throw new CCTPDoesNotSupportedError();
+      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
     }
   } else {
     return token.bridgeAddress;

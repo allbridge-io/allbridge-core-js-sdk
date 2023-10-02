@@ -122,7 +122,11 @@ export function getY(x: BigSource, a: BigSource, d: BigSource): Big {
     .sqrt()
     .round(0, 0);
   const dividerBig = Big(8).times(a).times(x);
-  return commonPartBig.times(x).plus(sqrtBig).div(dividerBig).round(0, 0).plus(1); // +1 to offset rounding errors
+  const result = commonPartBig.times(x).plus(sqrtBig).div(dividerBig).round(0, 0);
+  if (result.eq(0)) {
+    return Big(0);
+  }
+  return result.plus(1); // +1 to offset rounding errors
 }
 
 export function getEarned(userLpAmount: string, userRewardDebt: string, accRewardPerShareP: string, p: number): string {

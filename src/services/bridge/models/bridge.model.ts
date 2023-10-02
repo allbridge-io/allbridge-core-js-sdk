@@ -25,7 +25,7 @@ export interface ApproveParams {
   /**
    * The Messengers for different routes to approve.
    * Optional.
-   * The {@link Messenger.ALLBRIDGE} AND {@link Messenger.WORMHOLE} by default.
+   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
    */
   messenger?: Messenger;
 }
@@ -140,7 +140,7 @@ export interface GetAllowanceParams {
   /**
    * The Messengers for different routes.
    * Optional.
-   * The {@link Messenger.ALLBRIDGE} AND {@link Messenger.WORMHOLE} by default.
+   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
    */
   messenger?: Messenger;
 }
