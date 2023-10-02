@@ -243,7 +243,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the transfer
+   * Calculates the amount of tokens to be received as a result of transfer
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
@@ -270,7 +270,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
@@ -301,7 +301,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the swap.
+   * Calculates the amount of tokens to be received as a result of transfer.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
@@ -347,7 +347,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap.
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
