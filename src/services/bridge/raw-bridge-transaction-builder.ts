@@ -7,7 +7,7 @@ import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
 import { SolanaBridgeParams } from "./sol";
 import { isSendParams } from "./utils";
-import { BridgeService, getChainBridgeService, getSpender } from "./index";
+import { getChainBridgeService, getSpender } from "./index";
 
 export interface RawBridgeTransactionBuilder {
   /**
@@ -34,7 +34,6 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private solParams: SolanaBridgeParams,
-    private bridgeService: BridgeService,
     private tokenService: TokenService
   ) {}
 

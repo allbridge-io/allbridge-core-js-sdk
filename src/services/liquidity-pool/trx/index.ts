@@ -16,6 +16,7 @@ import { ChainPoolService } from "../models/pool";
 
 export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
+  private static contracts = new Map<string, any>();
   private P = 52;
   private web3: Web3;
 
@@ -167,7 +168,12 @@ export class TronPoolService extends ChainPoolService {
     return transactionObject.transaction;
   }
 
-  private getContract(contractAddress: string): Promise<any> {
-    return this.tronWeb.contract().at(contractAddress);
+  private async getContract(contractAddress: string): Promise<any> {
+    if (TronPoolService.contracts.has(contractAddress)) {
+      return TronPoolService.contracts.get(contractAddress);
+    }
+    const contract = await this.tronWeb.contract().at(contractAddress);
+    TronPoolService.contracts.set(contractAddress, contract);
+    return contract;
   }
 }

@@ -75,7 +75,7 @@ export class DefaultBridgeService implements BridgeService {
     private solParams: SolanaBridgeParams,
     private tokenService: TokenService
   ) {
-    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, solParams, this, tokenService);
+    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, solParams, tokenService);
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
