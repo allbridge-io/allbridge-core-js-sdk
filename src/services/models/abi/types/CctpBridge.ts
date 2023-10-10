@@ -27,6 +27,12 @@ export type OwnershipTransferred = ContractEventLog<{
   0: string;
   1: string;
 }>;
+export type ReceivedExtraGas = ContractEventLog<{
+  recipient: string;
+  amount: string;
+  0: string;
+  1: string;
+}>;
 export type ReceivedGas = ContractEventLog<{
   sender: string;
   amount: string;
@@ -75,9 +81,14 @@ export interface CctpBridge extends BaseContract {
 
     getBridgingCostInTokens(destinationChainId: number | string | BN): NonPayableTransactionObject<string>;
 
-    getDomain(chainId_: number | string | BN): NonPayableTransactionObject<string>;
+    getDomainByChainId(chainId_: number | string | BN): NonPayableTransactionObject<string>;
 
     getTransactionCost(chainId: number | string | BN): NonPayableTransactionObject<string>;
+
+    isMessageProcessed(
+      sourceChainId: number | string | BN,
+      nonce: number | string | BN
+    ): NonPayableTransactionObject<boolean>;
 
     owner(): NonPayableTransactionObject<string>;
 
@@ -102,6 +113,8 @@ export interface CctpBridge extends BaseContract {
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
 
+    unregisterBridgeDestination(chainId_: number | string | BN): NonPayableTransactionObject<void>;
+
     withdrawFeeInTokens(): NonPayableTransactionObject<void>;
 
     withdrawGas(amount: number | string | BN): NonPayableTransactionObject<void>;
@@ -109,6 +122,9 @@ export interface CctpBridge extends BaseContract {
   events: {
     OwnershipTransferred(cb?: Callback<OwnershipTransferred>): EventEmitter;
     OwnershipTransferred(options?: EventOptions, cb?: Callback<OwnershipTransferred>): EventEmitter;
+
+    ReceivedExtraGas(cb?: Callback<ReceivedExtraGas>): EventEmitter;
+    ReceivedExtraGas(options?: EventOptions, cb?: Callback<ReceivedExtraGas>): EventEmitter;
 
     ReceivedGas(cb?: Callback<ReceivedGas>): EventEmitter;
     ReceivedGas(options?: EventOptions, cb?: Callback<ReceivedGas>): EventEmitter;
@@ -121,6 +137,9 @@ export interface CctpBridge extends BaseContract {
 
   once(event: "OwnershipTransferred", cb: Callback<OwnershipTransferred>): void;
   once(event: "OwnershipTransferred", options: EventOptions, cb: Callback<OwnershipTransferred>): void;
+
+  once(event: "ReceivedExtraGas", cb: Callback<ReceivedExtraGas>): void;
+  once(event: "ReceivedExtraGas", options: EventOptions, cb: Callback<ReceivedExtraGas>): void;
 
   once(event: "ReceivedGas", cb: Callback<ReceivedGas>): void;
   once(event: "ReceivedGas", options: EventOptions, cb: Callback<ReceivedGas>): void;
