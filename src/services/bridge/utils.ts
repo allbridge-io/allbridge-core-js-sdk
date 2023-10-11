@@ -43,7 +43,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       break;
     }
     case ChainType.SRB: {
-      buffer = base32.decode(address).slice(1, 33);
+      buffer = Buffer.from(base32.decode(address).slice(1, 33));
       break;
     }
   }
