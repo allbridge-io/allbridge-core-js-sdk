@@ -4,7 +4,7 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
+import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals } from "../../utils";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
@@ -215,6 +215,9 @@ export function getChainPoolService(
     case ChainType.SOLANA: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
       return new SolanaPoolService(nodeRpcUrl, api);
+    }
+    case ChainType.SRB: {
+      throw new MethodNotSupportedError("Soroban does not support yet");
     }
   }
 }

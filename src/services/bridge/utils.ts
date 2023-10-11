@@ -1,4 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
+/* @ts-expect-error  Could not find a declaration file for module "base32.js"*/
+import base32 from "base32.js";
 import { Big } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
@@ -10,6 +12,7 @@ import {
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
+  MethodNotSupportedError,
   SdkError,
 } from "../../exceptions";
 import {
@@ -39,6 +42,10 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = tronAddressToBuffer32(address);
       break;
     }
+    case ChainType.SRB: {
+      buffer = base32.decode(address).slice(1, 33);
+      break;
+    }
   }
 
   switch (to) {
@@ -50,6 +57,9 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     }
     case ChainType.TRX: {
       return buffer.toJSON().data;
+    }
+    case ChainType.SRB: {
+      throw new MethodNotSupportedError("Soroban does not supported yet");
     }
   }
 }

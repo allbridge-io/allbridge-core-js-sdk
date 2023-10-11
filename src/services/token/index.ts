@@ -4,7 +4,7 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
+import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
@@ -105,6 +105,9 @@ export class DefaultTokenService implements TokenService {
       case ChainType.SOLANA: {
         const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
         return new SolanaTokenService(nodeRpcUrl, this.api);
+      }
+      case ChainType.SRB: {
+        throw new MethodNotSupportedError("Soroban does not support yet");
       }
     }
   }

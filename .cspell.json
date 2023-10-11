@@ -34,7 +34,8 @@
     "decompile",
     "txid",
     "CCTP",
-    "cctp"
+    "cctp",
+    "Soroban"
   ],
   "flagWords": [],
   "ignorePaths": [

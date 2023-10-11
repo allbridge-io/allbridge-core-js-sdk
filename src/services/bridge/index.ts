@@ -4,7 +4,13 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { CCTPDoesNotSupportedError, Messenger, NodeRpcUrlsConfig, TokenWithChainDetails } from "../../index";
+import {
+  CCTPDoesNotSupportedError,
+  Messenger,
+  MethodNotSupportedError,
+  NodeRpcUrlsConfig,
+  TokenWithChainDetails,
+} from "../../index";
 import { validateAmountDecimals } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -159,6 +165,9 @@ export function getChainBridgeService(
     }
     case ChainType.SOLANA: {
       return new SolanaBridgeService(nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL), solParams, api);
+    }
+    case ChainType.SRB: {
+      throw new MethodNotSupportedError("Soroban does not support yet");
     }
   }
 }

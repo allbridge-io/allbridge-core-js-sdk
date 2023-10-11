@@ -24,6 +24,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.62.0
   assert: ^2.1.0
   axios: ^1.5.0
+  base32.js: ^0.1.0
   big.js: ^6.2.1
   bn.js: ^5.2.1
   bs58: ^5.0.0
@@ -67,6 +68,7 @@ dependencies:
   '@types/big.js': 6.2.0
   assert: 2.1.0
   axios: 1.5.0
+  base32.js: 0.1.0
   big.js: 6.2.1
   bn.js: 5.2.1
   erc-20-abi: 1.0.0
@@ -2737,6 +2739,11 @@ packages:
   /base-x/4.0.0:
     resolution: {integrity: sha512-FuwxlW4H5kh37X/oW59pwTzzTKRzfrrQwhmyspRM7swOEZcHtDZSCt45U6oKgtuFE+WYPblePMVIPR4RZrh/hw==}
     dev: true
+
+  /base32.js/0.1.0:
+    resolution: {integrity: sha512-n3TkB02ixgBOhTvANakDb4xaMXnYUVkNoRFJjQflcqMQhyEKxEHdj3E6N8t8sUQ0mjH/3/JxzlXuz3ul/J90pQ==}
+    engines: {node: '>=0.12.0'}
+    dev: false
 
   /base64-js/1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
