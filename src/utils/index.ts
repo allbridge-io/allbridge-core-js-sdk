@@ -1,3 +1,4 @@
+import { Big } from "big.js";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { ArgumentInvalidDecimalsError, TimeoutError } from "../exceptions";
 import { TokenWithChainDetails } from "../tokens-info";
@@ -12,9 +13,10 @@ export async function getPoolInfoByToken(
   });
 }
 
-export function validateAmountDecimals(argName: string, amountFloat: string, decimalRequired: number) {
-  if (amountFloat.split(".").length == 2 && amountFloat.split(".")[1].length > decimalRequired) {
-    throw new ArgumentInvalidDecimalsError(argName, amountFloat.split(".")[1].length, decimalRequired);
+export function validateAmountDecimals(argName: string, amountFloat: number | string | Big, decimalRequired: number) {
+  const amount = Big(amountFloat).toFixed();
+  if (amount.split(".").length == 2 && amount.split(".")[1].length > decimalRequired) {
+    throw new ArgumentInvalidDecimalsError(argName, amount.split(".")[1].length, decimalRequired);
   }
 }
 

@@ -145,7 +145,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 
   async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
-    validateAmountDecimals("amount", Big(amount).toFixed(), token.decimals);
+    validateAmountDecimals("amount", amount, token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
     const vUsd = depositAmountToVUsd(amount, aValue, dValue, tokenBalance, vUsdBalance);
@@ -158,7 +158,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
-    validateAmountDecimals("amount", Big(amount).toFixed(), token.decimals);
+    validateAmountDecimals("amount", amount, token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);
     const tokenAmount = fromSystemPrecision(tokenAmountInSP, token.decimals);

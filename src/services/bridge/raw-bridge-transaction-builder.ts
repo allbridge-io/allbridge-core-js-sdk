@@ -1,4 +1,3 @@
-import { Big } from "big.js";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals } from "../../utils";
@@ -57,7 +56,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
   }
 
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
-    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.sourceToken.decimals);
+    validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     if (isSendParams(params)) {
       return getChainBridgeService(
         params.sourceToken.chainSymbol,

@@ -194,7 +194,7 @@ export class AllbridgeCoreSdk {
     amountFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toFixed(), sourceChainToken.decimals);
+    validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
@@ -223,7 +223,7 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toFixed(), sourceChainToken.decimals);
+    validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
@@ -256,7 +256,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toFixed(), sourceChainToken.decimals);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     return {
       amountToSendFloat: Big(amountToSendFloat).toFixed(),
       amountToBeReceivedFloat: await this.getAmountToBeReceived(
@@ -283,11 +283,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toFixed(),
-      destinationChainToken.decimals
-    );
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     return {
       amountToSendFloat: await this.getAmountToSend(
         amountToBeReceivedFloat,
@@ -318,7 +314,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toFixed(), sourceChainToken.decimals);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
 
     if (messenger && messenger == Messenger.CCTP) {
@@ -364,11 +360,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toFixed(),
-      destinationChainToken.decimals
-    );
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
 
     if (messenger && messenger == Messenger.CCTP) {

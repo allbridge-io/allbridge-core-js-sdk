@@ -44,7 +44,7 @@ export class DefaultTokenService implements TokenService {
   }
 
   async checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean> {
-    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.token.decimals);
+    validateAmountDecimals("amount", params.amount, params.token.decimals);
     return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
       this.prepareCheckAllowanceParams(params)
     );
@@ -52,7 +52,7 @@ export class DefaultTokenService implements TokenService {
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
     if (approveData.amount) {
-      validateAmountDecimals("amount", Big(approveData.amount).toFixed(), approveData.token.decimals);
+      validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
       this.prepareApproveParams(approveData)
@@ -61,7 +61,7 @@ export class DefaultTokenService implements TokenService {
 
   async buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction> {
     if (approveData.amount) {
-      validateAmountDecimals("amount", Big(approveData.amount).toFixed(), approveData.token.decimals);
+      validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(
       approveData.token.chainSymbol,

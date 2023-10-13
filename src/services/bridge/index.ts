@@ -1,4 +1,3 @@
-import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
@@ -116,7 +115,7 @@ export class DefaultBridgeService implements BridgeService {
   }
 
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
-    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.sourceToken.decimals);
+    validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     return getChainBridgeService(
       params.sourceToken.chainSymbol,
       this.api,
