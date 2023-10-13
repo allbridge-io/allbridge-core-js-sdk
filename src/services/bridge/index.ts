@@ -116,7 +116,7 @@ export class DefaultBridgeService implements BridgeService {
   }
 
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
-    validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
+    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.sourceToken.decimals);
     return getChainBridgeService(
       params.sourceToken.chainSymbol,
       this.api,

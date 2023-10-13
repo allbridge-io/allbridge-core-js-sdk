@@ -57,7 +57,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
   }
 
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
-    validateAmountDecimals("amount", Big(params.amount).toString(), params.sourceToken.decimals);
+    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.sourceToken.decimals);
     if (isSendParams(params)) {
       return getChainBridgeService(
         params.sourceToken.chainSymbol,

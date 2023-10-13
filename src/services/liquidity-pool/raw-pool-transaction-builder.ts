@@ -72,7 +72,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   }
 
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
-    validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
+    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
     return getChainPoolService(
       params.token.chainSymbol,
@@ -83,7 +83,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   }
 
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
-    validateAmountDecimals("amount", Big(params.amount).toString(), params.token.decimals);
+    validateAmountDecimals("amount", Big(params.amount).toFixed(), params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
     return getChainPoolService(
       params.token.chainSymbol,
