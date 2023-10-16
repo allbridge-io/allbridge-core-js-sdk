@@ -37,6 +37,7 @@ export interface PoolInfoDTO {
 export enum MessengerKeyDTO {
   ALLBRIDGE = "allbridge",
   WORMHOLE = "wormhole",
+  CCTP = "cctp",
 }
 
 export type TransferTimeDTO = {
@@ -56,6 +57,7 @@ export type MessengerTransferTimeDTO = {
 export enum Messenger {
   ALLBRIDGE = 1,
   WORMHOLE = 2,
+  CCTP = 3,
 }
 
 export interface ReceiveTransactionCostRequest {
@@ -117,6 +119,8 @@ export interface BridgeTransaction {
 
   sourceTokenAddress: string;
   destinationTokenAddress: string;
+
+  hash: string;
 
   messenger: Messenger;
 

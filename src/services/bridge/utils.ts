@@ -1,4 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
+/* @ts-expect-error  Could not find a declaration file for module "base32.js"*/
+import base32 from "base32.js";
 import { Big } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
@@ -6,7 +8,13 @@ import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { ExtraGasMaxLimitExceededError, InvalidGasFeePaymentOptionError, SdkError } from "../../exceptions";
+import {
+  CCTPDoesNotSupportedError,
+  ExtraGasMaxLimitExceededError,
+  InvalidGasFeePaymentOptionError,
+  MethodNotSupportedError,
+  SdkError,
+} from "../../exceptions";
 import {
   AmountFormat,
   ExtraGasMaxLimitResponse,
@@ -34,6 +42,10 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = tronAddressToBuffer32(address);
       break;
     }
+    case ChainType.SRB: {
+      buffer = Buffer.from(base32.decode(address).slice(1, 33));
+      break;
+    }
   }
 
   switch (to) {
@@ -45,6 +57,9 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     }
     case ChainType.TRX: {
       return buffer.toJSON().data;
+    }
+    case ChainType.SRB: {
+      throw new MethodNotSupportedError("Soroban does not supported yet");
     }
   }
 }
@@ -121,13 +136,10 @@ export async function prepareTxSendParams(
   txSendParams.fromChainId = params.sourceToken.allbridgeChainId;
   txSendParams.fromChainSymbol = params.sourceToken.chainSymbol;
   const toChainType = chainProperties[params.destinationToken.chainSymbol].chainType;
-  txSendParams.contractAddress = params.sourceToken.bridgeAddress;
   txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
 
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
-  const sourceToken = params.sourceToken;
-  txSendParams.contractAddress = sourceToken.bridgeAddress;
 
   if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
@@ -135,7 +147,15 @@ export async function prepareTxSendParams(
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
-
+  const sourceToken = params.sourceToken;
+  if (params.messenger === Messenger.CCTP) {
+    if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
+      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+    }
+    txSendParams.contractAddress = sourceToken.cctpAddress;
+  } else {
+    txSendParams.contractAddress = sourceToken.bridgeAddress;
+  }
   txSendParams.messenger = params.messenger;
   txSendParams.fromAccountAddress = params.fromAccountAddress;
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();

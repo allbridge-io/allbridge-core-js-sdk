@@ -21,6 +21,13 @@ export interface ApproveParams {
    * The maximum amount by default.
    */
   amount?: string | number | Big;
+
+  /**
+   * The Messengers for different routes to approve.
+   * Optional.
+   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+   */
+  messenger?: Messenger;
 }
 
 export interface GetTokenBalanceParams {
@@ -130,6 +137,12 @@ export interface GetAllowanceParams {
   token: TokenWithChainDetails;
   owner: string;
   gasFeePaymentMethod?: FeePaymentMethod;
+  /**
+   * The Messengers for different routes.
+   * Optional.
+   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+   */
+  messenger?: Messenger;
 }
 
 export type GetAllowanceParamsDto = GetAllowanceParams;

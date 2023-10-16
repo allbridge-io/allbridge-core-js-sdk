@@ -17,10 +17,6 @@ import {
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
-export interface SolanaPoolParams {
-  solanaRpcUrl: string;
-}
-
 interface LPAccounts {
   mint: PublicKey;
   user: PublicKey;
@@ -41,7 +37,7 @@ export class SolanaPoolService extends ChainPoolService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   private P = 48;
 
-  constructor(public params: SolanaPoolParams, public api: AllbridgeCoreClient) {
+  constructor(public solanaRpcUrl: string, public api: AllbridgeCoreClient) {
     super();
   }
 
@@ -143,7 +139,7 @@ export class SolanaPoolService extends ChainPoolService {
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.params.solanaRpcUrl, "confirmed");
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
 
     const publicKey = new PublicKey(accountAddress);
 

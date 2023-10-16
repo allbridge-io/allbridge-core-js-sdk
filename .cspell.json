@@ -32,7 +32,10 @@
     "Seegxrqiu",
     "Arbitrum",
     "decompile",
-    "txid"
+    "txid",
+    "CCTP",
+    "cctp",
+    "Soroban"
   ],
   "flagWords": [],
   "ignorePaths": [

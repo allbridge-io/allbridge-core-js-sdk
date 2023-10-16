@@ -5,10 +5,12 @@ import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, SwapParams, TransactionResponse } from "../../../models";
+import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction } from "../../models";
-import abi from "../../models/abi/Bridge.json";
+import bridgeAbi from "../../models/abi/Bridge.json";
+import cctpBridgeAbi from "../../models/abi/CctpBridge.json";
 import { Bridge as BridgeContract } from "../../models/abi/types/Bridge";
+import { CctpBridge as CctpBridgeContract } from "../../models/abi/types/CctpBridge";
 import { BaseContract, PayableTransactionObject } from "../../models/abi/types/types";
 import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
@@ -80,46 +82,56 @@ export class EvmBridgeService extends ChainBridgeService {
     } = params;
 
     const nonce = "0x" + getNonce().toString("hex");
-    let swapAndBridgeMethod: PayableTransactionObject<void>;
+    let sendMethod: PayableTransactionObject<void>;
     let value: string;
-    const bridgeContract = this.getBridgeContract(contractAddress);
 
     let totalFee = fee;
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
-
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-        fromTokenAddress,
-        amount,
-        toAccountAddress,
-        toChainId,
-        toTokenAddress,
-        nonce,
-        messenger,
-        totalFee
-      );
-      value = "0";
+    if (messenger === Messenger.CCTP) {
+      const cctpBridgeContract: CctpBridgeContract = this.getContract(cctpBridgeAbi as AbiItem[], contractAddress);
+      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, totalFee);
+        value = "0";
+      } else {
+        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, 0);
+        value = totalFee;
+      }
     } else {
-      swapAndBridgeMethod = bridgeContract.methods.swapAndBridge(
-        fromTokenAddress,
-        amount,
-        toAccountAddress,
-        toChainId,
-        toTokenAddress,
-        nonce,
-        messenger,
-        0
-      );
-      value = totalFee;
+      const bridgeContract = this.getBridgeContract(contractAddress);
+      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+        sendMethod = bridgeContract.methods.swapAndBridge(
+          fromTokenAddress,
+          amount,
+          toAccountAddress,
+          toChainId,
+          toTokenAddress,
+          nonce,
+          messenger,
+          totalFee
+        );
+        value = "0";
+      } else {
+        sendMethod = bridgeContract.methods.swapAndBridge(
+          fromTokenAddress,
+          amount,
+          toAccountAddress,
+          toChainId,
+          toTokenAddress,
+          nonce,
+          messenger,
+          0
+        );
+        value = totalFee;
+      }
     }
 
     return Promise.resolve({
       from: fromAccountAddress,
       to: contractAddress,
       value: value,
-      data: swapAndBridgeMethod.encodeABI(),
+      data: sendMethod.encodeABI(),
     });
   }
 
@@ -142,6 +154,6 @@ export class EvmBridgeService extends ChainBridgeService {
   }
 
   private getBridgeContract(contractAddress: string): BridgeContract {
-    return this.getContract<BridgeContract>(abi as AbiItem[], contractAddress);
+    return this.getContract<BridgeContract>(bridgeAbi as AbiItem[], contractAddress);
   }
 }

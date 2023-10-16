@@ -6,7 +6,7 @@ import { ApiClientCaching } from "./client/core-api/api-client-caching";
 import { TransferStatusResponse } from "./client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
 import { mainnet } from "./configs";
-import { InsufficientPoolLiquidityError } from "./exceptions";
+import { CCTPDoesNotSupportedError, InsufficientPoolLiquidityError, NodeRpcUrlNotInitializedError } from "./exceptions";
 import {
   AmountFormat,
   AmountFormatted,
@@ -19,14 +19,14 @@ import {
 import { BridgeService, DefaultBridgeService } from "./services/bridge";
 import { SolanaBridgeParams } from "./services/bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
-import { LiquidityPoolService, DefaultLiquidityPoolService } from "./services/liquidity-pool";
-import { SolanaPoolParams } from "./services/liquidity-pool/sol";
+import { DefaultLiquidityPoolService, LiquidityPoolService } from "./services/liquidity-pool";
 import { Provider } from "./services/models";
-import { TokenService, DefaultTokenService } from "./services/token";
+import { DefaultTokenService, TokenService } from "./services/token";
 import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "./tokens-info";
 import { getPoolInfoByToken, validateAmountDecimals } from "./utils";
 import {
   aprInPercents,
+  convertAmountPrecision,
   convertFloatAmountToInt,
   convertIntAmountToFloat,
   fromSystemPrecision,
@@ -59,9 +59,41 @@ export interface AllbridgeCoreSdkOptions {
   solanaLookUpTable: string;
 }
 
+/**
+ * Provide node RPC URL for chain connection you intend to communicate with</br>
+ * - required for SOL, TRX chains</br>
+ * - optional for EVM chains -- you can interact by passing a {@link Provider} that will be used to communicate with the chain</br>
+ */
+export type NodeRpcUrls = {
+  [key in ChainSymbol]?: string;
+};
+
+export class NodeRpcUrlsConfig {
+  constructor(private nodeRpcUrls: NodeRpcUrls) {}
+
+  getNodeRpcUrl(chainSymbol: ChainSymbol): string {
+    const nodeRpcUrl = this.nodeRpcUrls[chainSymbol];
+    if (nodeRpcUrl !== undefined) {
+      return nodeRpcUrl;
+    } else {
+      throw new NodeRpcUrlNotInitializedError(chainSymbol);
+    }
+  }
+}
+
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
   tronRpcUrl: string;
+}
+
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
+function isNodeUrlsConfig(nodeUrls: NodeUrlsConfig | NodeRpcUrls): nodeUrls is NodeUrlsConfig {
+  return "solanaRpcUrl" in nodeUrls;
 }
 
 export class AllbridgeCoreSdk {
@@ -86,23 +118,26 @@ export class AllbridgeCoreSdk {
    * Optional.
    * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
+  constructor(nodeUrls: NodeUrlsConfig | NodeRpcUrls, params: AllbridgeCoreSdkOptions = mainnet) {
+    let nodeRpcUrlsConfig: NodeRpcUrlsConfig;
+    if (isNodeUrlsConfig(nodeUrls)) {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig({ SOL: nodeUrls.solanaRpcUrl, TRX: nodeUrls.tronRpcUrl });
+    } else {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig(nodeUrls);
+    }
+
     const apiClient = new ApiClientImpl(params);
     const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
     const solBridgeParams: SolanaBridgeParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
       solanaLookUpTable: params.solanaLookUpTable,
     };
-    this.tokenService = new DefaultTokenService(this.api, solBridgeParams);
-    this.bridge = new DefaultBridgeService(this.api, solBridgeParams, this.tokenService);
-    const solPoolParams: SolanaPoolParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
-    };
-    this.pool = new DefaultLiquidityPoolService(this.api, solPoolParams, this.tokenService, nodeUrls.tronRpcUrl);
+    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig);
+    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, solBridgeParams, this.tokenService);
+    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, this.tokenService);
     this.params = params;
   }
 
@@ -148,6 +183,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * @Deprecated
    * Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
    * (Does not include fee related to the destination chain. Does not include gas fee)
    * @param amountFloat initial amount of tokens to swap
@@ -158,7 +194,7 @@ export class AllbridgeCoreSdk {
     amountFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toString(), sourceChainToken.decimals);
+    validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
@@ -173,6 +209,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * @Deprecated
    * Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain fee percent applies to the amount after the source chain fee.
    * (Does not include fee related to the source chain. Does not include gas fee)
    * @see {@link calculateFeePercentOnSourceChain}
@@ -186,7 +223,7 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toString(), sourceChainToken.decimals);
+    validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
       return 0;
@@ -206,7 +243,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the transfer
+   * Calculates the amount of tokens to be received as a result of transfer
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
@@ -219,20 +256,21 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toString(), sourceChainToken.decimals);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     return {
       amountToSendFloat: Big(amountToSendFloat).toFixed(),
       amountToBeReceivedFloat: await this.getAmountToBeReceived(
         amountToSendFloat,
         sourceChainToken,
-        destinationChainToken
+        destinationChainToken,
+        messenger
       ),
       gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
     };
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
@@ -245,31 +283,52 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toString(),
-      destinationChainToken.decimals
-    );
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     return {
-      amountToSendFloat: await this.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken),
+      amountToSendFloat: await this.getAmountToSend(
+        amountToBeReceivedFloat,
+        sourceChainToken,
+        destinationChainToken,
+        messenger
+      ),
       amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
       gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
     };
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the swap.
+   * Calculates the amount of tokens to be received as a result of transfer.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
    */
   async getAmountToBeReceived(
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toString(), sourceChainToken.decimals);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
+
+    if (messenger && messenger == Messenger.CCTP) {
+      if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+      }
+      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 3);
+      const resultInDestPrecision = convertAmountPrecision(
+        result,
+        sourceChainToken.decimals,
+        destinationChainToken.decimals
+      ).round(0);
+      return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
+    }
 
     const vUsd = swapToVUsd(amountToSend, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
     const resultInt = swapFromVUsd(
@@ -284,22 +343,39 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap.
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
    */
   async getAmountToSend(
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toString(),
-      destinationChainToken.decimals
-    );
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
+
+    if (messenger && messenger == Messenger.CCTP) {
+      if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+      }
+      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 0);
+      const resultInSourcePrecision = convertAmountPrecision(
+        result,
+        destinationChainToken.decimals,
+        sourceChainToken.decimals
+      ).round(0);
+      return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+    }
+
     const vUsd = swapFromVUsdReverse(
       amountToBeReceived,
       destinationChainToken,
@@ -403,6 +479,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * @param vUsdAmount - amount of vUsd, int format
+   * @param destToken selected token on the destination chain
    * @return amount of destToken
    */
   async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {

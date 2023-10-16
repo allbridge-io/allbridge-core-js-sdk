@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 
 import { ensure } from "../../../utils/utils";
 dotenv.config({ path: ".env" });

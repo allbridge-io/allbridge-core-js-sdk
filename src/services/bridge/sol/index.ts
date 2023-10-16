@@ -17,6 +17,7 @@ import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import {
   AmountNotEnoughError,
+  CCTPDoesNotSupportedError,
   JupiterError,
   MethodNotSupportedError,
   SdkError,
@@ -46,7 +47,6 @@ import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
 
 export interface SolanaBridgeParams {
-  solanaRpcUrl: string;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
 }
@@ -55,9 +55,9 @@ export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
 
-  constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
+  constructor(public solanaRpcUrl: string, public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
     super();
-    this.jupiterService = new JupiterService(params.solanaRpcUrl);
+    this.jupiterService = new JupiterService(solanaRpcUrl);
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
@@ -207,6 +207,9 @@ export class SolanaBridgeService extends ChainBridgeService {
         swapAndBridgeTx = transaction;
         wormMessageSigner = messageAccount;
         break;
+      }
+      case Messenger.CCTP: {
+        throw new CCTPDoesNotSupportedError("Solana does not support CCTP yet");
       }
     }
 
@@ -565,7 +568,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.params.solanaRpcUrl, "confirmed");
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
 
     const publicKey = new PublicKey(accountAddress);
 

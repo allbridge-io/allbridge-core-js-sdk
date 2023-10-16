@@ -47,12 +47,18 @@ export enum ChainSymbol {
    * The Arbitrum network.
    */
   ARB = "ARB",
+
+  /**
+   * The Soroban network.
+   */
+  SRB = "SRB",
 }
 
 export enum ChainType {
   EVM = "EVM",
   SOLANA = "SOLANA",
   TRX = "TRX",
+  SRB = "SRB",
 }
 
 /**
@@ -62,6 +68,7 @@ export const ChainDecimalsByType: Record<ChainType, number> = {
   EVM: 18,
   SOLANA: 9,
   TRX: 6,
+  SRB: 7,
 };
 
 export const chainProperties: Record<string, BasicChainProperties> = {
@@ -116,5 +123,10 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.TRX,
     name: "Tron",
     chainType: ChainType.TRX,
+  },
+  [ChainSymbol.SRB]: {
+    chainSymbol: ChainSymbol.SRB,
+    name: "Soroban",
+    chainType: ChainType.SRB,
   },
 };
