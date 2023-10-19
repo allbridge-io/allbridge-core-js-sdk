@@ -41,6 +41,12 @@ export {
   SwapFromVUsdCalcResult,
   SwapToVUsdCalcResult,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
+export {
+  toSystemPrecision,
+  fromSystemPrecision,
+  convertIntAmountToFloat,
+  convertFloatAmountToInt,
+} from "../utils/calculation/export";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
 export * from "../exceptions";
 
