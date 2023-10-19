@@ -559,6 +559,7 @@ export class AllbridgeCoreSdk {
   ): Promise<SwapAndBridgeDetails> {
     let amountInTokenPrecision;
     if (amountFormat == AmountFormat.FLOAT) {
+      validateAmountDecimals("amount", amount, sourceToken.decimals);
       amountInTokenPrecision = convertFloatAmountToInt(amount, sourceToken.decimals).toFixed();
     } else {
       amountInTokenPrecision = amount;
