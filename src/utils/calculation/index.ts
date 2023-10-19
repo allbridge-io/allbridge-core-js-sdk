@@ -1,5 +1,6 @@
 import { Big, BigSource } from "big.js";
 import BN from "bn.js";
+import { InsufficientPoolLiquidityError } from "../../exceptions";
 import { PoolInfo, Token } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
@@ -75,6 +76,12 @@ export function swapFromVUsd(
   return Big(result).minus(fee).round(0, 0).toFixed();
 }
 
+/**
+ * @param amount - vUsd amount should be received
+ * @param feeShare
+ * @param decimals
+ * @param poolInfo
+ */
 export function swapToVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -84,6 +91,9 @@ export function swapToVUsdReverse(
     return Big(0);
   }
   const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amount);
+  if (vUsdNewAmount.lte(0)) {
+    throw new InsufficientPoolLiquidityError();
+  }
   const tokenBalance = getY(vUsdNewAmount, poolInfo.aValue, poolInfo.dValue);
   const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
   const amountWithoutFee = fromSystemPrecision(inSystemPrecision, decimals);
@@ -92,6 +102,12 @@ export function swapToVUsdReverse(
   return Big(amountWithoutFee).plus(fee).round(0, 0);
 }
 
+/**
+ * @param amount - amount should be received
+ * @param feeShare
+ * @param decimals
+ * @param poolInfo
+ */
 export function swapFromVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -105,6 +121,9 @@ export function swapFromVUsdReverse(
   const amountWithFee = Big(amount).plus(fee);
   const inSystemPrecision = toSystemPrecision(amountWithFee, decimals);
   const tokenBalance = Big(poolInfo.tokenBalance).minus(inSystemPrecision);
+  if (tokenBalance.lte(0)) {
+    throw new InsufficientPoolLiquidityError();
+  }
   const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
   return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round(0, 0);
 }
