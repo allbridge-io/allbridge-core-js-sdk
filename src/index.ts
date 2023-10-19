@@ -36,6 +36,7 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
+import { swapAndBridgeDetails, SwapAndBridgeDetails } from "./utils/calculation/swap-and-bridge-details";
 import {
   SwapAndBridgeCalculationData,
   swapAndBridgeFeeCalculation,
@@ -490,6 +491,12 @@ export class AllbridgeCoreSdk {
     };
   }
 
+  /**
+   * @Deprecated Use {@link swapAndBridgeDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
@@ -510,6 +517,12 @@ export class AllbridgeCoreSdk {
     );
   }
 
+  /**
+   * @Deprecated Use {@link getAmountToBeReceived} and then {@link swapAndBridgeDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
@@ -533,5 +546,30 @@ export class AllbridgeCoreSdk {
       throw new InsufficientPoolLiquidityError();
     }
     return result;
+  }
+
+  /**
+   *  Show amount changes (fee and amount adjustment) during swaps on source and destination chains
+   */
+  async swapAndBridgeDetails(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<SwapAndBridgeDetails> {
+    let amountInTokenPrecision;
+    if (amountFormat == AmountFormat.FLOAT) {
+      amountInTokenPrecision = convertFloatAmountToInt(amount, sourceToken.decimals).toFixed();
+    } else {
+      amountInTokenPrecision = amount;
+    }
+
+    return swapAndBridgeDetails(
+      amountInTokenPrecision,
+      sourceToken,
+      await getPoolInfoByToken(this.api, sourceToken),
+      destToken,
+      await getPoolInfoByToken(this.api, destToken)
+    );
   }
 }
