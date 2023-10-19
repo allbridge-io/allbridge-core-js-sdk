@@ -2,23 +2,23 @@ import { Big } from "big.js";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision, swapFromVUsd, swapToVUsd } from "./index";
 
-export interface SwapAndBridgeDetails {
-  swapTo: FeeAndSwapImpact;
-  swapFrom: FeeAndSwapImpact;
+export interface SendAmountDetails {
+  sourceLPSwap: AmountImpact;
+  destLPSwap: AmountImpact;
 }
 
-export interface FeeAndSwapImpact {
+export interface AmountImpact {
   fee: string;
   swap: string;
 }
 
-export function swapAndBridgeDetails(
+export function getSendAmountDetails(
   amountInTokenPrecision: string,
   sourceToken: TokenWithChainDetails,
   sourcePool: PoolInfo,
   destToken: TokenWithChainDetails,
   destPool: PoolInfo
-): SwapAndBridgeDetails {
+): SendAmountDetails {
   const vUsd = swapToVUsd(amountInTokenPrecision, sourceToken, sourcePool);
   const vUsdInTokenPrecision = fromSystemPrecision(vUsd, sourceToken.decimals);
   const result = swapFromVUsd(vUsd, destToken, destPool);
@@ -26,7 +26,7 @@ export function swapAndBridgeDetails(
   const swapToFeeInt = Big(amountInTokenPrecision).times(sourceToken.feeShare);
   const swapFromFeeInt = Big(result).div(Big(1).minus(destToken.feeShare)).minus(result);
   return {
-    swapTo: {
+    sourceLPSwap: {
       fee: convertIntAmountToFloat(swapToFeeInt, sourceToken.decimals)
         .neg()
         .round(sourceToken.decimals, Big.roundUp)
@@ -39,7 +39,7 @@ export function swapAndBridgeDetails(
         .round(sourceToken.decimals, Big.roundUp)
         .toFixed(),
     },
-    swapFrom: {
+    destLPSwap: {
       fee: convertIntAmountToFloat(swapFromFeeInt, destToken.decimals)
         .neg()
         .round(destToken.decimals, Big.roundUp)

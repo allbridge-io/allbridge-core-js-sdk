@@ -36,7 +36,7 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
-import { swapAndBridgeDetails, SwapAndBridgeDetails } from "./utils/calculation/swap-and-bridge-details";
+import { SendAmountDetails, getSendAmountDetails } from "./utils/calculation/swap-and-bridge-details";
 import {
   SwapAndBridgeCalculationData,
   swapAndBridgeFeeCalculation,
@@ -549,14 +549,14 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   *  Show amount changes (fee and amount adjustment) during swaps on source and destination chains
+   *  Show amount changes (fee and amount adjustment) during send through pools on source and destination chains
    */
-  async swapAndBridgeDetails(
+  async getSendAmountDetails(
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
-  ): Promise<SwapAndBridgeDetails> {
+  ): Promise<SendAmountDetails> {
     let amountInTokenPrecision;
     if (amountFormat == AmountFormat.FLOAT) {
       validateAmountDecimals("amount", amount, sourceToken.decimals);
@@ -565,7 +565,7 @@ export class AllbridgeCoreSdk {
       amountInTokenPrecision = amount;
     }
 
-    return swapAndBridgeDetails(
+    return getSendAmountDetails(
       amountInTokenPrecision,
       sourceToken,
       await getPoolInfoByToken(this.api, sourceToken),

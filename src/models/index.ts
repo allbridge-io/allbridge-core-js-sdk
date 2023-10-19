@@ -41,7 +41,7 @@ export {
   SwapFromVUsdCalcResult,
   SwapToVUsdCalcResult,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
-export { SwapAndBridgeDetails, FeeAndSwapImpact } from "../utils/calculation/swap-and-bridge-details";
+export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
 export * from "../exceptions";
 
