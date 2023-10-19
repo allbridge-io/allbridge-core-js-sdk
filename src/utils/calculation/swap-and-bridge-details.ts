@@ -27,23 +27,23 @@ export function swapAndBridgeDetails(
   const swapFromFeeInt = Big(result).div(Big(1).minus(destToken.feeShare)).minus(result);
   return {
     swapTo: {
-      fee: convertIntAmountToFloat(swapToFeeInt, sourceToken.decimals).neg().round(sourceToken.decimals, 3).toFixed(),
+      fee: convertIntAmountToFloat(swapToFeeInt, sourceToken.decimals).neg().round(sourceToken.decimals, Big.roundUp).toFixed(),
       swap: convertIntAmountToFloat(
         Big(amountInTokenPrecision).minus(vUsdInTokenPrecision).minus(swapToFeeInt),
         sourceToken.decimals
       )
         .neg()
-        .round(sourceToken.decimals, 3)
+        .round(sourceToken.decimals, Big.roundUp)
         .toFixed(),
     },
     swapFrom: {
-      fee: convertIntAmountToFloat(swapFromFeeInt, destToken.decimals).neg().round(destToken.decimals, 3).toFixed(),
+      fee: convertIntAmountToFloat(swapFromFeeInt, destToken.decimals).neg().round(destToken.decimals, Big.roundUp).toFixed(),
       swap: convertIntAmountToFloat(
         fromSystemPrecision(vUsd, destToken.decimals).minus(result).minus(swapFromFeeInt),
         destToken.decimals
       )
         .neg()
-        .round(destToken.decimals, 3)
+        .round(destToken.decimals, Big.roundUp)
         .toFixed(),
     },
   };

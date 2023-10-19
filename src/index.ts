@@ -322,7 +322,7 @@ export class AllbridgeCoreSdk {
       if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
         throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
       }
-      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 3);
+      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundUp);
       const resultInDestPrecision = convertAmountPrecision(
         result,
         sourceChainToken.decimals,
@@ -368,7 +368,7 @@ export class AllbridgeCoreSdk {
       if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
         throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
       }
-      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 0);
+      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundDown);
       const resultInSourcePrecision = convertAmountPrecision(
         result,
         destinationChainToken.decimals,
