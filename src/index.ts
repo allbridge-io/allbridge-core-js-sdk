@@ -515,7 +515,7 @@ export class AllbridgeCoreSdk {
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
-    return swapAndBridgeFeeCalculationReverse(
+    const result = swapAndBridgeFeeCalculationReverse(
       amountInTokenPrecision,
       {
         decimals: sourceToken.decimals,
@@ -528,5 +528,10 @@ export class AllbridgeCoreSdk {
         poolInfo: await getPoolInfoByToken(this.api, destToken),
       }
     );
+    const newAmount = result.swapFromVUsdCalcResult.amountIncludingCommissionInTokenPrecision;
+    if (Big(newAmount).lte(0)) {
+      throw new InsufficientPoolLiquidityError();
+    }
+    return result;
   }
 }
