@@ -36,6 +36,7 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
+import { SYSTEM_PRECISION } from "./utils/calculation/constants";
 import { SendAmountDetails, getSendAmountDetails } from "./utils/calculation/swap-and-bridge-details";
 import {
   SwapAndBridgeCalculationData,
@@ -476,6 +477,32 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
     return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
+  }
+
+  /**
+   * @param amount - amount
+   * @param amountFormat - AmountFormat
+   * @param sourceToken - selected token on the source chain
+   * @return virtual amount
+   */
+  async getVUsdFromAmount(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails
+  ): Promise<AmountFormatted> {
+    let amountInTokenPrecision;
+    if (amountFormat == AmountFormat.FLOAT) {
+      validateAmountDecimals("amount", amount, sourceToken.decimals);
+      amountInTokenPrecision = convertFloatAmountToInt(amount, sourceToken.decimals).toFixed();
+    } else {
+      amountInTokenPrecision = amount;
+    }
+
+    const vUsdAmount = swapToVUsd(amountInTokenPrecision, sourceToken, await getPoolInfoByToken(this.api, sourceToken));
+    return {
+      [AmountFormat.INT]: vUsdAmount,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(vUsdAmount, SYSTEM_PRECISION).toFixed(),
+    };
   }
 
   /**
