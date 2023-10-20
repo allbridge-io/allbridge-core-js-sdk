@@ -44,14 +44,26 @@ $ npm install @allbridge/bridge-core-sdk
 
 ## How to use
 
-### 1. Initialize SDK instance
-
+### 1. Initialize SDK
+#### 1.1 Initialize SDK with your node Rpc urls (RECOMMENDED)
 ```ts
-import { AllbridgeCoreSdk } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+// Connections to blockchains will be made through your rpc-urls passed during initialization
 const sdk = new AllbridgeCoreSdk({
-  solanaRpcUrl: "your solana-rpc-url",
-  tronRpcUrl: "your tron-rpc-url",
+  ...nodeUrlsDefault,
+  TRX: "your trx-rpc-url",
+  ETH: "your eth-rpc-url"
 });
+// The Provider parameter may not be passed in methods where it is present, for example:
+const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
+```
+
+#### 1.2 Initialize SDK instance
+```ts
+import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+// The Provider parameter must be passed in order for it to be used to connect to the blockchain, for example:
+const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
 
 ### 2. Get the list of supported tokens
@@ -73,21 +85,18 @@ If the current allowance is not 0,
 this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 ```ts
-const response = await sdk.bridge.approve(web3, {
+const response = await sdk.bridge.approve(provider, {
   token: sourceToken,
   owner: accountAddress
 });
 ```
-
-**TIP:** To interact with the **Tron** blockchain: </br>
-use ```tronWeb``` instead of ```web3```
 
 ### 3.2 Send Tokens
 
 Initiate the transfer of tokens with `send` method on SDK instance.
 
 ```ts
-sdk.bridge.send(web3, {
+sdk.bridge.send(provider, {
   amount: "1.01",
   fromAccountAddress: fromAddress,
   toAccountAddress: toAddress,
@@ -96,9 +105,6 @@ sdk.bridge.send(web3, {
   messenger: Messenger.ALLBRIDGE,
 });
 ```
-
-**TIP:** To interact with the **Tron** blockchain: </br>
-use ```tronWeb``` instead of ```web3```
 
 ### Full example
 
@@ -168,7 +174,6 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 ### Liquidity pools operations
 
 SDK supports operation with **Liquidity Pools**<br/>
-For more details, see [***Docs***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/core-sdk-liquidity-pools-api.md)<br/>
 For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
 
 ### Transaction builder
@@ -178,23 +183,16 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 SDK method `bridge.rawTxBuilder.approve` can be used to create approve Transaction.
 
 ```ts
-const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(web3, approveParams);
+const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(provider, approveParams);
 ```
-
-**TIP:** To interact with the **Tron** blockchain: </br>
-use ```tronWeb``` instead of ```web3```
 
 #### Send Transaction
 
 SDK method `bridge.rawTxBuilder.send` can be used to create send Transaction.
 
 ```ts
-const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams, web3);
+const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
-
-**TIP:** </br>
-To interact with the **Tron** blockchain: </br>
-use ```tronWeb``` instead of ```web3``` </p>
 
 **TIP:** </br>
 To interact with the **Solana** blockchain: </br>
