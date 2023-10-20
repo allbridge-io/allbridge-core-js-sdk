@@ -45,7 +45,7 @@ $ npm install @allbridge/bridge-core-sdk
 ## How to use
 
 ### 1. Initialize SDK
-#### 1.1 Initialize SDK with your node Rpc urls (RECOMMENDED)
+#### 1.1 Initialize SDK instance with your node Rpc urls (RECOMMENDED)
 ```ts
 import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 // Connections to blockchains will be made through your rpc-urls passed during initialization
@@ -58,13 +58,15 @@ const sdk = new AllbridgeCoreSdk({
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
 
-#### 1.2 Initialize SDK instance
+#### 1.2 Initialize SDK instance (using passed provider for blockchains connections)
 ```ts
 import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
 const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 // The Provider parameter must be passed in order for it to be used to connect to the blockchain, for example:
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
+
+***TIP:*** Use 1.1 in case your provider differs from required by the SDK (Web3:v1.9.0, tronweb:v4.4.0)
 
 ### 2. Get the list of supported tokens
 
