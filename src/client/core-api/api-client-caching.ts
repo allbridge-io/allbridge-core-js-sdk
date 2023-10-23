@@ -12,23 +12,23 @@ const _20_SECONDS_TTL = 20 * 1000;
 const ONE_MINUTES_TTL = 60 * 1000;
 
 export class ApiClientCaching implements ApiClient {
-  private tokenInfoCache: Cache<TokenInfo>;
+  private tokenInfoCache: Cache<Promise<TokenInfo>>;
   private receivedTransactionCache: Cache<ReceiveTransactionCostResponse>;
 
   constructor(private apiClient: ApiClient) {
-    this.tokenInfoCache = new Cache<TokenInfo>({ defaultTtl: ONE_MINUTES_TTL });
+    this.tokenInfoCache = new Cache<Promise<TokenInfo>>({ defaultTtl: ONE_MINUTES_TTL });
     this.receivedTransactionCache = new Cache<ReceiveTransactionCostResponse>({ defaultTtl: _20_SECONDS_TTL });
   }
 
-  async getTokenInfo(): Promise<TokenInfo> {
+  getTokenInfo(): Promise<TokenInfo> {
     const TOKEN_INFO_CACHE_KEY = "TOKEN_INFO_CACHE_KEY";
     const tokenInfo = this.tokenInfoCache.get(TOKEN_INFO_CACHE_KEY);
     if (tokenInfo) {
       return tokenInfo;
     }
-    const fetchedTokenInfo = await this.apiClient.getTokenInfo();
-    this.tokenInfoCache.put(TOKEN_INFO_CACHE_KEY, fetchedTokenInfo);
-    return fetchedTokenInfo;
+    const tokenInfoPromise = this.apiClient.getTokenInfo();
+    this.tokenInfoCache.put(TOKEN_INFO_CACHE_KEY, tokenInfoPromise);
+    return tokenInfoPromise;
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
