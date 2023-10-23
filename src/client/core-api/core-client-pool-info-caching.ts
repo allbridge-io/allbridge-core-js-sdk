@@ -9,6 +9,8 @@ import {
 } from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
+const _55_SECONDS_TTL = 55 * 1000;
+
 export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   private readonly poolInfoCache;
 
@@ -67,7 +69,7 @@ class PoolInfoCache {
   private cache;
 
   constructor() {
-    this.cache = new Cache<PoolInfo>({ defaultTtl: 60 * 1000 });
+    this.cache = new Cache<PoolInfo>({ defaultTtl: _55_SECONDS_TTL });
   }
 
   putAll(poolInfoMap: PoolInfoMap) {
