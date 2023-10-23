@@ -5,20 +5,41 @@ export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
   return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
 }
 
-export function mockPoolInfoEndpoint(scope: nock.Scope, pools: { token: TokenWithChainDetails; poolInfo: PoolInfo }[]) {
-  let result = {};
+export function mockTokenInfoEndpoint(
+  scope: nock.Scope,
+  pools: { token: TokenWithChainDetails; poolInfo: PoolInfo }[]
+) {
+  let resultInfo = {};
   for (const pool of pools) {
-    const poolResponse = {
+    const infoResponse = {
       [pool.token.chainSymbol]: {
-        [pool.token.poolAddress]: pool.poolInfo,
+        tokens: [
+          {
+            name: pool.token.name,
+            poolAddress: pool.token.poolAddress,
+            tokenAddress: pool.token.tokenAddress,
+            decimals: pool.token.decimals,
+            symbol: pool.token.symbol,
+            poolInfo: pool.poolInfo,
+            feeShare: pool.token.feeShare,
+            apr: pool.token.apr,
+            lpRate: pool.token.lpRate,
+          },
+        ],
+        chainId: pool.token.chainId,
+        bridgeAddress: pool.token.bridgeAddress,
+        transferTime: pool.token.transferTime,
+        confirmations: pool.token.confirmations,
+        txCostAmount: pool.token.txCostAmount,
       },
     };
-    result = {
-      ...result,
-      ...poolResponse,
+    resultInfo = {
+      ...resultInfo,
+      ...infoResponse,
     };
   }
-  scope.post("/pool-info").reply(201, result).persist();
+  console.log("resultInfo", JSON.stringify(resultInfo, null, 2));
+  scope.get("/token-info").reply(200, resultInfo).persist();
 }
 
 export function rpcReply(result: any): (url: string, body: any) => Record<string, any> {

@@ -52,6 +52,10 @@ describe("AllbridgeCachingCoreClient", () => {
         chainSymbol: ChainSymbol.GRL,
         poolAddress: "0x227e10f9E750C922bf9dee7620B58033F566b34F",
       };
+      const poolKeyObjectNotInCash = {
+        chainSymbol: ChainSymbol.GRL,
+        poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34A",
+      };
       const expectedPoolInfo = poolGRL as unknown as PoolInfo;
 
       beforeEach(() => {
@@ -61,16 +65,21 @@ describe("AllbridgeCachingCoreClient", () => {
       test("☀ getPoolInfoByKey should return PoolInfo Info", async () => {
         const actual = await client.getPoolInfoByKey(poolKeyObject);
         expect(actual).toEqual(expectedPoolInfo);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+      });
+
+      test("☀ getPoolInfoByKey should request not cashed from pool-info request", async () => {
+        await client.getPoolInfoByKey(poolKeyObjectNotInCash);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
-        expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
+        expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObjectNotInCash);
       });
 
       test("☀ getPoolInfoByKey should cache returned PoolInfo Info", async () => {
         await client.getPoolInfoByKey(poolKeyObject);
         const actual = await client.getPoolInfoByKey(poolKeyObject);
         expect(actual).toEqual(expectedPoolInfo);
-        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
-        expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(0);
       });
 
       test("☀ refreshPoolInfo should call getChainDetailsMapAndPoolInfoMap", async () => {
@@ -83,14 +92,22 @@ describe("AllbridgeCachingCoreClient", () => {
         await client.refreshPoolInfo(poolKeyObject);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
-        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(0);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+      });
+
+      test("☀ refreshPoolInfo with poolKeyObject should call getChainDetailsMapAndPoolInfoMap only in cash init", async () => {
+        await client.refreshPoolInfo(poolKeyObject);
+        await client.refreshPoolInfo(poolKeyObject);
+        expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(2);
+        expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
       });
 
       test("☀ refreshPoolInfo with poolKeyObjects[] should call getPoolInfoMap", async () => {
         await client.refreshPoolInfo([poolKeyObject, poolKeyObject2]);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getPoolInfoMap).toBeCalledWith([poolKeyObject, poolKeyObject2]);
-        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(0);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
       });
     });
   });
