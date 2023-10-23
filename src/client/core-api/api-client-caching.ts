@@ -9,14 +9,14 @@ import {
 } from "./core-api.model";
 
 const _20_SECONDS_TTL = 20 * 1000;
-const TWO_MINUTES_TTL = 120 * 1000;
+const ONE_MINUTES_TTL = 60 * 1000;
 
 export class ApiClientCaching implements ApiClient {
   private tokenInfoCache: Cache<TokenInfo>;
   private receivedTransactionCache: Cache<ReceiveTransactionCostResponse>;
 
   constructor(private apiClient: ApiClient) {
-    this.tokenInfoCache = new Cache<TokenInfo>({ defaultTtl: TWO_MINUTES_TTL });
+    this.tokenInfoCache = new Cache<TokenInfo>({ defaultTtl: ONE_MINUTES_TTL });
     this.receivedTransactionCache = new Cache<ReceiveTransactionCostResponse>({ defaultTtl: _20_SECONDS_TTL });
   }
 
