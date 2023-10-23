@@ -1,11 +1,4 @@
-# Allbridge Core SDK: Install
-
-### Initialize SDK instance
-
-```ts
-import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
-const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
-```
+# Allbridge Core SDK
 
 ### Configure headers for requests to Core API 
 
@@ -21,7 +14,3 @@ const sdk = new AllbridgeCoreSdk(
     }
   });
 ```
-
-
----
-#### Next: [SDK methods](core-sdk-api.md)
