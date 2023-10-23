@@ -38,7 +38,6 @@ export function mockTokenInfoEndpoint(
       ...infoResponse,
     };
   }
-  console.log("resultInfo", JSON.stringify(resultInfo, null, 2));
   scope.get("/token-info").reply(200, resultInfo).persist();
 }
 
