@@ -49,6 +49,11 @@ export enum ChainSymbol {
   ARB = "ARB",
 
   /**
+   * The Avalanche main network.
+   */
+  AVA = "AVA",
+
+  /**
    * The Soroban network.
    */
   SRB = "SRB",
@@ -100,6 +105,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.ARB,
     chainId: "0xa4b1",
     name: "Arbitrum",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.AVA]: {
+    chainSymbol: ChainSymbol.AVA,
+    chainId: "0xa86a",
+    name: "Avalanche",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.POL]: {
