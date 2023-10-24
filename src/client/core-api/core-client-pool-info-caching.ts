@@ -9,6 +9,8 @@ import {
 } from "./core-api.model";
 import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
 
+const _55_SECONDS_TTL = 55 * 1000;
+
 export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   private readonly poolInfoCache;
 
@@ -34,6 +36,9 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   }
 
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
+    if (this.poolInfoCache.size() == 0) {
+      this.poolInfoCache.putAll((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
+    }
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
     /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
     if (poolInfo) {
@@ -48,6 +53,9 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   async refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void> {
     let poolInfoMap;
     if (poolKeyObjects) {
+      if (this.poolInfoCache.size() == 0) {
+        this.poolInfoCache.putAll((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
+      }
       poolInfoMap = await this.client.getPoolInfoMap(poolKeyObjects);
     } else {
       const result = await this.client.getChainDetailsMapAndPoolInfoMap();
@@ -61,7 +69,7 @@ class PoolInfoCache {
   private cache;
 
   constructor() {
-    this.cache = new Cache<PoolInfo>({ defaultTtl: 120 * 1000 });
+    this.cache = new Cache<PoolInfo>({ defaultTtl: _55_SECONDS_TTL });
   }
 
   putAll(poolInfoMap: PoolInfoMap) {
@@ -73,5 +81,9 @@ class PoolInfoCache {
   get(poolKeyObject: PoolKeyObject): PoolInfo | undefined {
     const key = mapPoolKeyObjectToPoolKey(poolKeyObject);
     return this.cache.get(key);
+  }
+
+  size(): number {
+    return this.cache.size();
   }
 }

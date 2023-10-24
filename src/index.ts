@@ -36,6 +36,8 @@ import {
   swapToVUsd,
   swapToVUsdReverse,
 } from "./utils/calculation";
+import { SYSTEM_PRECISION } from "./utils/calculation/constants";
+import { SendAmountDetails, getSendAmountDetails } from "./utils/calculation/swap-and-bridge-details";
 import {
   SwapAndBridgeCalculationData,
   swapAndBridgeFeeCalculation,
@@ -321,7 +323,7 @@ export class AllbridgeCoreSdk {
       if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
         throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
       }
-      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 3);
+      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundUp);
       const resultInDestPrecision = convertAmountPrecision(
         result,
         sourceChainToken.decimals,
@@ -367,7 +369,7 @@ export class AllbridgeCoreSdk {
       if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
         throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
       }
-      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, 0);
+      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundDown);
       const resultInSourcePrecision = convertAmountPrecision(
         result,
         destinationChainToken.decimals,
@@ -478,6 +480,32 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * @param amount - amount
+   * @param amountFormat - AmountFormat
+   * @param sourceToken - selected token on the source chain
+   * @return virtual amount
+   */
+  async getVUsdFromAmount(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails
+  ): Promise<AmountFormatted> {
+    let amountInTokenPrecision;
+    if (amountFormat == AmountFormat.FLOAT) {
+      validateAmountDecimals("amount", amount, sourceToken.decimals);
+      amountInTokenPrecision = convertFloatAmountToInt(amount, sourceToken.decimals).toFixed();
+    } else {
+      amountInTokenPrecision = amount;
+    }
+
+    const vUsdAmount = swapToVUsd(amountInTokenPrecision, sourceToken, await getPoolInfoByToken(this.api, sourceToken));
+    return {
+      [AmountFormat.INT]: vUsdAmount,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(vUsdAmount, SYSTEM_PRECISION).toFixed(),
+    };
+  }
+
+  /**
    * @param vUsdAmount - amount of vUsd, int format
    * @param destToken selected token on the destination chain
    * @return amount of destToken
@@ -490,6 +518,12 @@ export class AllbridgeCoreSdk {
     };
   }
 
+  /**
+   * @Deprecated Use {@link swapAndBridgeDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
@@ -510,12 +544,18 @@ export class AllbridgeCoreSdk {
     );
   }
 
+  /**
+   * @Deprecated Use {@link getAmountToBeReceived} and then {@link swapAndBridgeDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
-    return swapAndBridgeFeeCalculationReverse(
+    const result = swapAndBridgeFeeCalculationReverse(
       amountInTokenPrecision,
       {
         decimals: sourceToken.decimals,
@@ -527,6 +567,37 @@ export class AllbridgeCoreSdk {
         feeShare: destToken.feeShare,
         poolInfo: await getPoolInfoByToken(this.api, destToken),
       }
+    );
+    const newAmount = result.swapFromVUsdCalcResult.amountIncludingCommissionInTokenPrecision;
+    if (Big(newAmount).lte(0)) {
+      throw new InsufficientPoolLiquidityError();
+    }
+    return result;
+  }
+
+  /**
+   *  Show amount changes (fee and amount adjustment) during send through pools on source and destination chains
+   */
+  async getSendAmountDetails(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<SendAmountDetails> {
+    let amountInTokenPrecision;
+    if (amountFormat == AmountFormat.FLOAT) {
+      validateAmountDecimals("amount", amount, sourceToken.decimals);
+      amountInTokenPrecision = convertFloatAmountToInt(amount, sourceToken.decimals).toFixed();
+    } else {
+      amountInTokenPrecision = amount;
+    }
+
+    return getSendAmountDetails(
+      amountInTokenPrecision,
+      sourceToken,
+      await getPoolInfoByToken(this.api, sourceToken),
+      destToken,
+      await getPoolInfoByToken(this.api, destToken)
     );
   }
 }
