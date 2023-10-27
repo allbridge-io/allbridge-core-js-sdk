@@ -6,6 +6,11 @@ export const testnet: AllbridgeCoreSdkOptions = {
   coreApiHeaders: {},
   wormholeMessengerProgramId: "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5",
   solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
+  cctpParams: {
+    cctpTransmitterProgramId: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
+    cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+    cctpDomains: { GRL: 0, AVA: 1, ARB: 3 },
+  },
 };
 
 /**

@@ -17,7 +17,7 @@ import {
   Messenger,
 } from "./models";
 import { BridgeService, DefaultBridgeService } from "./services/bridge";
-import { SolanaBridgeParams } from "./services/bridge/sol";
+import { CctpParams, SolanaBridgeParams } from "./services/bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./services/liquidity-pool";
 import { Provider } from "./services/models";
@@ -59,6 +59,8 @@ export interface AllbridgeCoreSdkOptions {
   coreApiHeaders?: Record<string, string>;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
+
+  cctpParams: CctpParams;
 }
 
 /**
@@ -121,7 +123,7 @@ export class AllbridgeCoreSdk {
    * If not defined, the default {@link mainnet} parameters are used.
    */
   constructor(nodeUrls: NodeUrlsConfig | NodeRpcUrls, params: AllbridgeCoreSdkOptions = mainnet) {
-    console.log("SDK SDK SDK SDK constructor4")
+    console.log("SDK SDK SDK SDK constructor5");
     let nodeRpcUrlsConfig: NodeRpcUrlsConfig;
     if (isNodeUrlsConfig(nodeUrls)) {
       nodeRpcUrlsConfig = new NodeRpcUrlsConfig({ SOL: nodeUrls.solanaRpcUrl, TRX: nodeUrls.tronRpcUrl });
@@ -137,6 +139,7 @@ export class AllbridgeCoreSdk {
     const solBridgeParams: SolanaBridgeParams = {
       wormholeMessengerProgramId: params.wormholeMessengerProgramId,
       solanaLookUpTable: params.solanaLookUpTable,
+      cctpParams: params.cctpParams,
     };
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig);
     this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, solBridgeParams, this.tokenService);
@@ -546,7 +549,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @Deprecated Use {@link getAmountToBeReceived} and then {@link swapAndBridgeDetails}
+   * @Deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken

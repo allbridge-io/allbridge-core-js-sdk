@@ -57,6 +57,11 @@ describe("SDK", () => {
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
+    cctpParams:{
+      cctpDomains:{},
+      cctpTransmitterProgramId: '',
+      cctpTokenMessengerMinter: ''
+    }
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
