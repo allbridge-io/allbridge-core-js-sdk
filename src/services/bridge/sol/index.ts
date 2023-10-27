@@ -28,11 +28,13 @@ import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
+import { CctpBridge as CctpBridgeType, IDL as cctpBridgeIdl } from "../../models/sol/types/cctp_bridge";
+import { GasOracle as GasOracleType, IDL as gasOracleIdl } from "../../models/sol/types/gas_oracle";
 import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
   getAuthorityAccount,
-  getBridgeTokenAccount,
+  getBridgeTokenAccount, getCctpAccounts, getCctpAuthorityAccount, getCctpBridgeAccount, getCctpBridgeTokenAccount,
   getChainBridgeAccount,
   getConfigAccount,
   getGasUsageAccount,
@@ -45,6 +47,7 @@ import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
+import {CctpBridge} from "../../models/sol/types/cctp_bridge";
 
 export interface SolanaBridgeParams {
   wormholeMessengerProgramId: string;
@@ -196,20 +199,25 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     let swapAndBridgeTx: VersionedTransaction;
     let wormMessageSigner: Keypair | undefined = undefined;
-    const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
+    console.log('@@@@@@@@@@')
+    console.log(txSendParams.messenger)
     switch (txSendParams.messenger) {
       case Messenger.ALLBRIDGE: {
+        const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
         swapAndBridgeTx = await this.buildSwapAndBridgeAllbridgeTransaction(swapAndBridgeSolData);
         break;
       }
       case Messenger.WORMHOLE: {
+        const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
         const { transaction, messageAccount } = await this.buildSwapAndBridgeWormholeTransaction(swapAndBridgeSolData);
         swapAndBridgeTx = transaction;
         wormMessageSigner = messageAccount;
         break;
       }
       case Messenger.CCTP: {
-        throw new CCTPDoesNotSupportedError("Solana does not support CCTP yet");
+        const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpData(solTxSendParams);
+        swapAndBridgeTx = await this.buildSwapAndBridgeCctpTransaction(swapAndBridgeSolData);
+        break;
       }
     }
 
@@ -361,6 +369,115 @@ export class SolanaBridgeService extends ChainBridgeService {
     }
     return swapAndBridgeData;
   }
+  private async prepareSwapAndBridgeCctpData(txSendParams: SolTxSendParams): Promise<SwapAndBridgeSolData> {
+    const {
+      amount,
+      contractAddress,
+      fromChainId,
+      fromAccountAddress,
+      fromTokenAddress,
+      toChainId,
+      toAccountAddress,
+      toTokenAddress,
+      poolAddress,
+      extraGas,
+    } = txSendParams;
+    const CHAIN_ID = 4;
+    const gasOracleAddress = "GTwX3oTgMS4pLQS8SvgZFS9Vyhxdfw1N7fijAhaS88Ff";
+
+    // const tokenAddress = fromTokenAddress;
+    const account = fromAccountAddress;
+    const destinationChainId = toChainId;
+    const receiveTokenAddress = toTokenAddress;
+    const receiverInBuffer32 = toAccountAddress;
+    const bridgeAddress = contractAddress;
+    const sourceChainId = fromChainId;
+
+    const provider = this.buildAnchorProvider(account);
+    // const bridge = new Program<BridgeType>(bridgeIdl, bridgeAddress, provider);
+    const cctpBridgeAddress = "28N48tqwG75BedQDwVE8gYvbm6Bywb5Yv8LMhv6BcxrC";
+    const cctpBridge: Program<CctpBridgeType> = new Program<CctpBridgeType>(
+      // @ts-ignore
+      cctpBridgeIdl,
+      cctpBridgeAddress,
+      provider
+    );
+    // const nonce = Array.from(getNonce());
+    // const poolAccount = new PublicKey(poolAddress);
+    // const vUsdAmount = await getVUsdAmount(amount, bridge, poolAccount);
+
+    // const lockAccount = await getLockAccount(nonce, bridge.programId);
+    // const bridgeAuthority = await getAuthorityAccount(bridge.programId);
+    // const userToken = await getAssociatedAccount(new PublicKey(account), new PublicKey(tokenAddress));
+    // const bridgeTokenAccount = await getBridgeTokenAccount(new PublicKey(tokenAddress), bridge.programId);
+    // const chainBridgeAccount = await getChainBridgeAccount(destinationChainId, bridge.programId);
+    // const otherBridgeTokenAccount = await getOtherChainTokenAccount(
+    //   destinationChainId,
+    //   Buffer.from(receiveTokenAddress),
+    //   bridge.programId
+    // );
+
+    const configAccount = await getConfigAccount(cctpBridge.programId);
+    // const configAccountInfo = await cctpBridge.account.config.fetch(configAccount);
+    // const priceAccount = await getPriceAccount(destinationChainId, configAccountInfo.gasOracleProgramId);
+    // const thisGasPriceAccount = await getPriceAccount(sourceChainId, configAccountInfo.gasOracleProgramId);
+
+
+    const gasOracle = new Program<GasOracleType>(
+      // @ts-ignore
+      gasOracleIdl,
+      gasOracleAddress,
+      provider
+    );
+    const priceAccount = await getPriceAccount(destinationChainId, gasOracle.programId);
+    const thisGasPriceAccount = await getPriceAccount(CHAIN_ID, gasOracle.programId);
+
+    // const message = getMessage({
+    //   amount: vUsdAmount,
+    //   recipient: Buffer.from(receiverInBuffer32),
+    //   nonce: Buffer.from(nonce),
+    //   receiveToken: Buffer.from(receiveTokenAddress),
+    //   destinationChainId,
+    //   sourceChainId,
+    //   chainBridge: (await getAuthorityAccount(bridge.programId)).toBuffer(),
+    // });
+
+    const swapAndBridgeData = {} as SwapAndBridgeSolData;
+
+    // swapAndBridgeData.bridge = bridge;
+    swapAndBridgeData.amount = new BN(amount);
+    // swapAndBridgeData.vusdAmount = new BN(vUsdAmount);
+    // swapAndBridgeData.nonce = nonce;
+    // @ts-expect-error
+    swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
+    // @ts-expect-error
+    swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
+    // swapAndBridgeData.poolAccount = poolAccount;
+    // swapAndBridgeData.lockAccount = lockAccount;
+    // swapAndBridgeData.bridgeAuthority = bridgeAuthority;
+    // swapAndBridgeData.userToken = userToken;
+    // swapAndBridgeData.bridgeTokenAccount = bridgeTokenAccount;
+    // swapAndBridgeData.chainBridgeAccount = chainBridgeAccount;
+    // swapAndBridgeData.otherBridgeTokenAccount = otherBridgeTokenAccount;
+    swapAndBridgeData.userAccount = new PublicKey(account);
+    swapAndBridgeData.destinationChainId = destinationChainId;
+    // // @ts-expect-error
+    // swapAndBridgeData.mint = new PublicKey(tokenAddress);
+    // swapAndBridgeData.config = configAccount;
+    // swapAndBridgeData.configAccountInfo = configAccountInfo;
+    swapAndBridgeData.gasPrice = priceAccount;
+    swapAndBridgeData.thisGasPrice = thisGasPriceAccount;
+    // swapAndBridgeData.message = message;
+
+    if (extraGas) {
+      swapAndBridgeData.extraGasInstruction = this.getExtraGasInstruction(
+        extraGas,
+        swapAndBridgeData.userAccount,
+        configAccount
+      );
+    }
+    return swapAndBridgeData;
+  }
 
   private async buildSwapAndBridgeAllbridgeTransaction(
     swapAndBridgeData: SwapAndBridgeSolData
@@ -442,6 +559,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const allbridgeTableAccount = await connection
       .getAddressLookupTable(new PublicKey(this.params.solanaLookUpTable))
       .then((res) => res.value);
+    console.log('allbridgeTableAccount', allbridgeTableAccount)
     if (!allbridgeTableAccount) {
       throw new SdkError("Cannot find allbridgeLookupTableAccount");
     }
@@ -565,6 +683,118 @@ export class SolanaBridgeService extends ChainBridgeService {
     transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
     return { transaction: await this.convertToVersionedTransaction(transaction, provider.connection), messageAccount };
+  }
+
+  async buildSwapAndBridgeCctpTransaction(
+    swapAndBridgeData: SwapAndBridgeSolData
+  ): Promise<VersionedTransaction> {
+    const {
+      // bridge,
+      amount,
+      // vusdAmount,
+      // nonce,
+      recipient,
+      receiveToken,
+      // poolAccount,
+      // lockAccount,
+      // bridgeAuthority,
+      // userToken,
+      // bridgeTokenAccount,
+      // chainBridgeAccount,
+      // otherBridgeTokenAccount,
+      userAccount,
+      destinationChainId,
+      // mint,
+      // config,
+      // configAccountInfo,
+      gasPrice,
+      thisGasPrice,
+      // message,
+      extraGasInstruction,
+    } = swapAndBridgeData;
+    const mint = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
+    const cctpTransmitterProgramId = new PublicKey('CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd');
+    const cctpTokenMessengerMinter = new PublicKey('CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3');
+    const cctpBridgeAddress = "28N48tqwG75BedQDwVE8gYvbm6Bywb5Yv8LMhv6BcxrC";
+    const provider = this.buildAnchorProvider(userAccount.toString());
+
+    const cctpBridge: Program<CctpBridgeType> = new Program<CctpBridgeType>(
+      // @ts-ignore
+      cctpBridgeIdl,
+      cctpBridgeAddress,
+      provider
+    );
+    ////////////////////////////////////////
+    const cctpBridgeAccount = await getCctpBridgeAccount(mint, cctpBridge);
+    const bridgeTokenAccount = await getCctpBridgeTokenAccount(mint, cctpBridge);
+    const bridgeAuthority = await getCctpAuthorityAccount(cctpBridgeAccount, cctpBridge);
+    const userToken = await getAssociatedAccount(userAccount, mint);
+    const priceAccount = gasPrice;
+    const thisPriceAccount = thisGasPrice;
+    const chainBridgeAccount = await getChainBridgeAccount(
+      destinationChainId,
+      cctpBridge.programId
+    );
+
+    const {
+      messageTransmitterAccount,
+      tokenMessenger,
+      tokenMinter,
+      localToken,
+      remoteTokenMessengerKey,
+      authorityPda,
+    } = await getCctpAccounts(0, mint, cctpTransmitterProgramId, cctpTokenMessengerMinter);
+
+    const instructions: TransactionInstruction[] = [];
+    if (extraGasInstruction) {
+      instructions.push(extraGasInstruction);
+    }
+
+    const tx = await cctpBridge.methods
+      .bridge({
+        amount,
+        destinationChainId,
+        recipient,
+        receiveToken,
+      })
+      .accounts({
+        mint: mint,
+        user: userAccount,
+        cctpBridge: cctpBridgeAccount,
+
+        cctpMessenger: cctpTokenMessengerMinter,
+        messageTransmitterProgram: cctpTransmitterProgramId,
+        messageTransmitterAccount: messageTransmitterAccount,
+        tokenMessenger: tokenMessenger,
+        tokenMinter: tokenMinter,
+        localToken: localToken,
+        remoteTokenMessengerKey: remoteTokenMessengerKey,
+        authorityPda: authorityPda,
+
+        bridgeToken: bridgeTokenAccount,
+        gasPrice: priceAccount,
+        thisGasPrice: thisPriceAccount,
+        chainBridge: chainBridgeAccount,
+        userToken,
+        bridgeAuthority: bridgeAuthority,
+
+      })
+      .preInstructions([
+        // anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({
+        //   units: 2000000,
+        // }),
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: 2000000,
+        }),
+      ])
+      .postInstructions(instructions)
+      // .signers(user.keypair ? [user.keypair] : []);
+      .transaction()
+    const connection = provider.connection;
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    tx.feePayer = userAccount;
+    let versionedTransaction = await this.convertToVersionedTransaction(tx, connection);
+    return versionedTransaction;
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {

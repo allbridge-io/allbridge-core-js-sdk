@@ -1,5 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
+import {Program} from "@project-serum/anchor";
+import { CctpBridge as CctpBridgeType, IDL as cctpBridgeIdl } from "../../models/sol/types/cctp_bridge";
 
 export async function getAssociatedAccount(publicKey: PublicKey, mintAccount: PublicKey): Promise<PublicKey> {
   return anchor.utils.token.associatedAddress({
@@ -32,6 +34,15 @@ export async function getPriceAccount(chainId: number, gasOracleProgramId: Publi
 export async function getAuthorityAccount(bridgeProgramId: PublicKey): Promise<PublicKey> {
   const configAccount = await getConfigAccount(bridgeProgramId);
   const [poolAuthority] = await PublicKey.findProgramAddress([configAccount.toBuffer()], bridgeProgramId);
+  return poolAuthority;
+}
+
+
+export async function getCctpAuthorityAccount(cctpBridgeAccount: PublicKey, cctpBridge: Program<CctpBridgeType>): Promise<PublicKey> {
+  const [poolAuthority] = await PublicKey.findProgramAddress(
+    [cctpBridgeAccount.toBuffer()],
+    cctpBridge.programId,
+  );
   return poolAuthority;
 }
 
@@ -92,4 +103,63 @@ export async function getUserDepositAccount(
     bridgeProgramId
   );
   return userDepositPda;
+}
+
+export async function getCctpBridgeAccount(
+  mintAccount: PublicKey,
+  cctpBridge: Program<CctpBridgeType>,
+): Promise<PublicKey> {
+  const [configPda] = await PublicKey.findProgramAddress(
+    [anchor.utils.bytes.utf8.encode('cctp_bridge'), mintAccount.toBytes()],
+    cctpBridge.programId,
+  );
+  return configPda;
+}
+
+export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridge: Program<CctpBridgeType>): Promise<PublicKey> {
+  const [poolPda] = await PublicKey.findProgramAddress(
+    [anchor.utils.bytes.utf8.encode('token'), token.toBytes()],
+    cctpBridge.programId,
+  );
+  return poolPda;
+}
+
+export async function getCctpAccounts(domain: number, mintAccount: PublicKey, cctpTransmitterProgramId: PublicKey, cctpTokenMessengerMinter: PublicKey) {
+  const messageTransmitterAccount = findProgramAddress('message_transmitter', cctpTransmitterProgramId);
+  const tokenMessenger = findProgramAddress('token_messenger', cctpTokenMessengerMinter);
+  const tokenMinter = findProgramAddress('token_minter', cctpTokenMessengerMinter);
+  const localToken = findProgramAddress('local_token', cctpTokenMessengerMinter, [mintAccount]);
+  const remoteTokenMessengerKey = findProgramAddress('remote_token_messenger', cctpTokenMessengerMinter, [
+    domain.toString(),
+  ]);
+  const authorityPda = findProgramAddress('sender_authority', cctpTokenMessengerMinter);
+  return {
+    messageTransmitterAccount,
+    tokenMessenger,
+    tokenMinter,
+    localToken,
+    remoteTokenMessengerKey,
+    authorityPda,
+  };
+}
+
+function findProgramAddress(
+  label: string,
+  programId: PublicKey,
+  extraSeeds: (string | number[] | Buffer | PublicKey)[] = [],
+): PublicKey {
+  const seeds = [Buffer.from(anchor.utils.bytes.utf8.encode(label))];
+    for (const extraSeed of extraSeeds) {
+      if (typeof extraSeed === 'string') {
+        seeds.push(Buffer.from(anchor.utils.bytes.utf8.encode(extraSeed)));
+      } else if (Array.isArray(extraSeed)) {
+        seeds.push(Buffer.from(extraSeed as number[]));
+      } else if (Buffer.isBuffer(extraSeed)) {
+        seeds.push(extraSeed);
+      } else {
+        seeds.push(extraSeed.toBuffer());
+      }
+    }
+  const res = PublicKey.findProgramAddressSync(seeds, programId);
+  return res[0];
 }
