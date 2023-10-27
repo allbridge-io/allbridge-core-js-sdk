@@ -417,7 +417,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     //   bridge.programId
     // );
 
-    const configAccount = await getConfigAccount(cctpBridge.programId);
+    // const configAccount = await getConfigAccount(cctpBridge.programId);
     // const configAccountInfo = await cctpBridge.account.config.fetch(configAccount);
     // const priceAccount = await getPriceAccount(destinationChainId, configAccountInfo.gasOracleProgramId);
     // const thisGasPriceAccount = await getPriceAccount(sourceChainId, configAccountInfo.gasOracleProgramId);
@@ -468,12 +468,15 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.gasPrice = priceAccount;
     swapAndBridgeData.thisGasPrice = thisGasPriceAccount;
     // swapAndBridgeData.message = message;
+    const mint = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
+
+    const cctpBridgeAccount = await getCctpBridgeAccount(mint, cctpBridge.programId);
 
     if (extraGas) {
       swapAndBridgeData.extraGasInstruction = this.getExtraGasInstruction(
         extraGas,
         swapAndBridgeData.userAccount,
-        configAccount
+        cctpBridgeAccount
       );
     }
     return swapAndBridgeData;
@@ -725,9 +728,9 @@ export class SolanaBridgeService extends ChainBridgeService {
       provider
     );
     ////////////////////////////////////////
-    const cctpBridgeAccount = await getCctpBridgeAccount(mint, cctpBridge);
-    const bridgeTokenAccount = await getCctpBridgeTokenAccount(mint, cctpBridge);
-    const bridgeAuthority = await getCctpAuthorityAccount(cctpBridgeAccount, cctpBridge);
+    const cctpBridgeAccount = await getCctpBridgeAccount(mint, cctpBridge.programId);
+    const bridgeTokenAccount = await getCctpBridgeTokenAccount(mint, cctpBridge.programId);
+    const bridgeAuthority = await getCctpAuthorityAccount(cctpBridgeAccount, cctpBridge.programId);
     const userToken = await getAssociatedAccount(userAccount, mint);
     const priceAccount = gasPrice;
     const thisPriceAccount = thisGasPrice;

@@ -121,7 +121,7 @@ export class AllbridgeCoreSdk {
    * If not defined, the default {@link mainnet} parameters are used.
    */
   constructor(nodeUrls: NodeUrlsConfig | NodeRpcUrls, params: AllbridgeCoreSdkOptions = mainnet) {
-    console.log("SDK SDK SDK SDK constructor3")
+    console.log("SDK SDK SDK SDK constructor4")
     let nodeRpcUrlsConfig: NodeRpcUrlsConfig;
     if (isNodeUrlsConfig(nodeUrls)) {
       nodeRpcUrlsConfig = new NodeRpcUrlsConfig({ SOL: nodeUrls.solanaRpcUrl, TRX: nodeUrls.tronRpcUrl });

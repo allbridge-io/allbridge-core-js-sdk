@@ -37,11 +37,10 @@ export async function getAuthorityAccount(bridgeProgramId: PublicKey): Promise<P
   return poolAuthority;
 }
 
-
-export async function getCctpAuthorityAccount(cctpBridgeAccount: PublicKey, cctpBridge: Program<CctpBridgeType>): Promise<PublicKey> {
+export async function getCctpAuthorityAccount(cctpBridgeAccount: PublicKey, cctpBridgeProgramId: PublicKey): Promise<PublicKey> {
   const [poolAuthority] = await PublicKey.findProgramAddress(
     [cctpBridgeAccount.toBuffer()],
-    cctpBridge.programId,
+    cctpBridgeProgramId,
   );
   return poolAuthority;
 }
@@ -107,19 +106,19 @@ export async function getUserDepositAccount(
 
 export async function getCctpBridgeAccount(
   mintAccount: PublicKey,
-  cctpBridge: Program<CctpBridgeType>,
+  cctpBridgeProgramId: PublicKey,
 ): Promise<PublicKey> {
   const [configPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode('cctp_bridge'), mintAccount.toBytes()],
-    cctpBridge.programId,
+    cctpBridgeProgramId,
   );
   return configPda;
 }
 
-export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridge: Program<CctpBridgeType>): Promise<PublicKey> {
+export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridgeProgramId: PublicKey): Promise<PublicKey> {
   const [poolPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode('token'), token.toBytes()],
-    cctpBridge.programId,
+    cctpBridgeProgramId,
   );
   return poolPda;
 }
