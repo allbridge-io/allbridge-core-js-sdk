@@ -20,7 +20,6 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
 
   async getChainDetailsMap(): Promise<ChainDetailsMap> {
     const result = await this.client.getChainDetailsMapAndPoolInfoMap();
-    this.poolInfoCache.putAll(result.poolInfoMap);
     return result.chainDetailsMap;
   }
   async tokens(): Promise<TokenWithChainDetails[]> {
@@ -36,9 +35,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   }
 
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
-    if (this.poolInfoCache.size() == 0) {
-      this.poolInfoCache.putAll((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
-    }
+    this.poolInfoCache.putAllIfNotExists((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
     /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
     if (poolInfo) {
@@ -53,9 +50,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
   async refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void> {
     let poolInfoMap;
     if (poolKeyObjects) {
-      if (this.poolInfoCache.size() == 0) {
-        this.poolInfoCache.putAll((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
-      }
+      this.poolInfoCache.putAllIfNotExists((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
       poolInfoMap = await this.client.getPoolInfoMap(poolKeyObjects);
     } else {
       const result = await this.client.getChainDetailsMapAndPoolInfoMap();
@@ -78,12 +73,16 @@ class PoolInfoCache {
     }
   }
 
+  putAllIfNotExists(poolInfoMap: PoolInfoMap) {
+    for (const [key, value] of Object.entries(poolInfoMap)) {
+      if (!this.cache.get(key)) {
+        this.cache.put(key, value);
+      }
+    }
+  }
+
   get(poolKeyObject: PoolKeyObject): PoolInfo | undefined {
     const key = mapPoolKeyObjectToPoolKey(poolKeyObject);
     return this.cache.get(key);
-  }
-
-  size(): number {
-    return this.cache.size();
   }
 }

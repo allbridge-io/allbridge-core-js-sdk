@@ -30,7 +30,7 @@ describe("AllbridgeCachingCoreClient", () => {
     const expectedPoolInfoMap = poolMap as unknown as PoolInfoMap;
 
     beforeEach(() => {
-      apiMock.getChainDetailsMapAndPoolInfoMap.mockResolvedValueOnce({
+      apiMock.getChainDetailsMapAndPoolInfoMap.mockResolvedValue({
         chainDetailsMap: expectedChainDetailsMap,
         poolInfoMap: expectedPoolInfoMap,
       });
@@ -78,7 +78,7 @@ describe("AllbridgeCachingCoreClient", () => {
         await client.getPoolInfoByKey(poolKeyObject);
         const actual = await client.getPoolInfoByKey(poolKeyObject);
         expect(actual).toEqual(expectedPoolInfo);
-        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(2);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(0);
       });
 
@@ -95,12 +95,12 @@ describe("AllbridgeCachingCoreClient", () => {
         expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
       });
 
-      test("☀ refreshPoolInfo with poolKeyObject should call getChainDetailsMapAndPoolInfoMap only in cash init", async () => {
+      test("☀ refreshPoolInfo with poolKeyObject should call getPoolInfoMap", async () => {
         await client.refreshPoolInfo(poolKeyObject);
         await client.refreshPoolInfo(poolKeyObject);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(2);
         expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObject);
-        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(1);
+        expect(apiMock.getChainDetailsMapAndPoolInfoMap).toHaveBeenCalledTimes(2);
       });
 
       test("☀ refreshPoolInfo with poolKeyObjects[] should call getPoolInfoMap", async () => {
