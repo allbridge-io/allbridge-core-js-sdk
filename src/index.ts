@@ -527,7 +527,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @Deprecated Use {@link swapAndBridgeDetails}
+   * @Deprecated Use {@link getSendAmountDetails}
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken
@@ -553,7 +553,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @Deprecated Use {@link getAmountToBeReceived} and then {@link swapAndBridgeDetails}
+   * @Deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken
