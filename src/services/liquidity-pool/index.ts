@@ -52,6 +52,7 @@ export interface LiquidityPoolService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawPoolTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>

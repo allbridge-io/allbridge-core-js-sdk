@@ -54,6 +54,7 @@ export interface BridgeService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>
@@ -64,6 +65,7 @@ export interface BridgeService {
   approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}<p>
    * Send tokens through the ChainBridgeService
    * @param provider - will be used to access the network
    * @param params
