@@ -5,7 +5,7 @@ import Web3 from "web3";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
 import { EvmTokenService } from "./evm";
@@ -44,6 +44,7 @@ export class DefaultTokenService implements TokenService {
   }
 
   async checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
       this.prepareCheckAllowanceParams(params)
@@ -52,6 +53,7 @@ export class DefaultTokenService implements TokenService {
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
     if (approveData.amount) {
+      validateAmountGtZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
@@ -61,6 +63,7 @@ export class DefaultTokenService implements TokenService {
 
   async buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction> {
     if (approveData.amount) {
+      validateAmountGtZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(

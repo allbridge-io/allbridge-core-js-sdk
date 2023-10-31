@@ -23,7 +23,7 @@ import { DefaultLiquidityPoolService, LiquidityPoolService } from "./services/li
 import { Provider } from "./services/models";
 import { DefaultTokenService, TokenService } from "./services/token";
 import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "./tokens-info";
-import { getPoolInfoByToken, validateAmountDecimals } from "./utils";
+import { getPoolInfoByToken, validateAmountDecimals, validateAmountGtZero } from "./utils";
 import {
   aprInPercents,
   convertAmountPrecision,
@@ -196,6 +196,7 @@ export class AllbridgeCoreSdk {
     amountFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
+    validateAmountGtZero(amountFloat);
     validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
@@ -225,6 +226,7 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
+    validateAmountGtZero(amountFloat);
     validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
     const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
     if (amountInt.eq(0)) {
@@ -258,6 +260,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
+    validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     return {
       amountToSendFloat: Big(amountToSendFloat).toFixed(),
@@ -285,6 +288,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
+    validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     return {
       amountToSendFloat: await this.getAmountToSend(
@@ -316,6 +320,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger
   ): Promise<string> {
+    validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
 
@@ -362,6 +367,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger
   ): Promise<string> {
+    validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
 
@@ -490,6 +496,7 @@ export class AllbridgeCoreSdk {
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails
   ): Promise<AmountFormatted> {
+    validateAmountGtZero(amount);
     let amountInTokenPrecision;
     if (amountFormat == AmountFormat.FLOAT) {
       validateAmountDecimals("amount", amount, sourceToken.decimals);
@@ -511,6 +518,7 @@ export class AllbridgeCoreSdk {
    * @return amount of destToken
    */
   async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {
+    validateAmountGtZero(vUsdAmount);
     const amount = swapFromVUsd(vUsdAmount, destToken, await getPoolInfoByToken(this.api, destToken));
     return {
       [AmountFormat.INT]: amount,
@@ -584,6 +592,7 @@ export class AllbridgeCoreSdk {
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
   ): Promise<SendAmountDetails> {
+    validateAmountGtZero(amount);
     let amountInTokenPrecision;
     if (amountFormat == AmountFormat.FLOAT) {
       validateAmountDecimals("amount", amount, sourceToken.decimals);

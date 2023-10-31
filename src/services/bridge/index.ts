@@ -10,7 +10,7 @@ import {
   NodeRpcUrlsConfig,
   TokenWithChainDetails,
 } from "../../index";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
@@ -115,6 +115,7 @@ export class DefaultBridgeService implements BridgeService {
   }
 
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     return getChainBridgeService(
       params.sourceToken.chainSymbol,
