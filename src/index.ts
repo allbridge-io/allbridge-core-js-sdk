@@ -338,7 +338,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       await getPoolInfoByToken(this.api, destinationChainToken)
     );
-    if (Big(resultInt).lte(0)) {
+    if (Big(resultInt).lt(0)) {
       throw new InsufficientPoolLiquidityError();
     }
     return convertIntAmountToFloat(resultInt, destinationChainToken.decimals).toFixed();
@@ -569,7 +569,7 @@ export class AllbridgeCoreSdk {
       }
     );
     const newAmount = result.swapFromVUsdCalcResult.amountIncludingCommissionInTokenPrecision;
-    if (Big(newAmount).lte(0)) {
+    if (Big(newAmount).lt(0)) {
       throw new InsufficientPoolLiquidityError();
     }
     return result;
