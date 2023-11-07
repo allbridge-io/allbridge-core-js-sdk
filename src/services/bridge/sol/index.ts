@@ -178,7 +178,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         if (Big(solTxSendParams.amount).lte(0)) {
           throw new AmountNotEnoughError(
             `Amount not enough to pay fee, ${convertIntAmountToFloat(
-              Big(solTxSendParams.amount).neg(),
+              Big(solTxSendParams.amount).minus(1).neg(),
               params.sourceToken.decimals
             ).toFixed()} stables is missing`
           );

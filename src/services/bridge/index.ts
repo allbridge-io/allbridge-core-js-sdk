@@ -10,7 +10,7 @@ import {
   NodeRpcUrlsConfig,
   TokenWithChainDetails,
 } from "../../index";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
@@ -54,6 +54,7 @@ export interface BridgeService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>
@@ -64,6 +65,7 @@ export interface BridgeService {
   approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}<p>
    * Send tokens through the ChainBridgeService
    * @param provider - will be used to access the network
    * @param params
@@ -115,6 +117,7 @@ export class DefaultBridgeService implements BridgeService {
   }
 
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     return getChainBridgeService(
       params.sourceToken.chainSymbol,

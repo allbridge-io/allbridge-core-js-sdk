@@ -1,6 +1,6 @@
-import { Big } from "big.js";
+import { Big, BigSource } from "big.js";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
-import { ArgumentInvalidDecimalsError, TimeoutError } from "../exceptions";
+import { ArgumentInvalidDecimalsError, InvalidAmountError, TimeoutError } from "../exceptions";
 import { TokenWithChainDetails } from "../tokens-info";
 
 export async function getPoolInfoByToken(
@@ -11,6 +11,12 @@ export async function getPoolInfoByToken(
     chainSymbol: sourceChainToken.chainSymbol,
     poolAddress: sourceChainToken.poolAddress,
   });
+}
+
+export function validateAmountGtZero(amount: BigSource) {
+  if (Big(amount).lte(0)) {
+    throw new InvalidAmountError("Amount must be greater than zero");
+  }
 }
 
 export function validateAmountDecimals(argName: string, amountFloat: number | string | Big, decimalRequired: number) {

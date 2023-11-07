@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 /* @ts-expect-error  Could not find a declaration file for module "base32.js"*/
 import base32 from "base32.js";
-import { Big } from "big.js";
+import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
@@ -9,6 +9,7 @@ import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "..
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
+  AmountNotEnoughError,
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
@@ -221,7 +222,29 @@ export async function prepareTxSendParams(
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
   txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
+  if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
+    validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+  }
   return txSendParams;
+}
+
+function validateAmountEnough(
+  amountInt: BigSource,
+  decimals: number,
+  feeInt: BigSource,
+  extraGasInt: BigSource | undefined
+) {
+  const amountTotal = Big(amountInt)
+    .minus(feeInt)
+    .minus(extraGasInt ?? 0);
+  if (amountTotal.lte(0)) {
+    throw new AmountNotEnoughError(
+      `Amount not enough to pay fee, ${convertIntAmountToFloat(
+        Big(amountTotal).minus(1).neg(),
+        decimals
+      ).toFixed()} stables is missing`
+    );
+  }
 }
 
 export async function getGasFeeOptions(

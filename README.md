@@ -7,7 +7,8 @@
 
 <p align="center">
     <a href="https://core.allbridge.io/"><b>Website</b></a> •
-    <a href="https://docs-core.allbridge.io"><b>Documentation</b></a>
+    <a href="https://docs-core.allbridge.io"><b>Documentation</b></a> •
+    <a href="https://bridge-core-sdk.web.app"><b>SDK TS doc</b></a>
 </p> 
 
 # Allbridge Core SDK

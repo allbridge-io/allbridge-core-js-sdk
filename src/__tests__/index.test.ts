@@ -241,9 +241,9 @@ describe("SDK", () => {
         expect(actual).toEqual(expectedPercent);
       });
 
-      test("☁ calculateFeePercentOnSourceChain should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnSourceChain(0, sourceChainToken);
-        expect(actual).toEqual(0);
+      test("☁ calculateFeePercentOnSourceChain should return for amount: 0.1 -> 1%", async () => {
+        const actual = await sdk.calculateFeePercentOnSourceChain(0.1, sourceChainToken);
+        expect(actual).toEqual(1);
       });
     });
 
@@ -258,9 +258,9 @@ describe("SDK", () => {
         expect(actual).toBeCloseTo(expectedPercent, 2);
       });
 
-      test("☁ should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnDestinationChain(0, sourceChainToken, destinationChainToken);
-        expect(actual).toEqual(0);
+      test("☁ should return for amount: 0.1 -> 0.3%", async () => {
+        const actual = await sdk.calculateFeePercentOnDestinationChain(0.1, sourceChainToken, destinationChainToken);
+        expect(actual).toEqual(0.3);
       });
     });
 
