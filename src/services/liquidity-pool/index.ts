@@ -6,7 +6,7 @@ import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, TransactionResponse } from "../models";
@@ -52,6 +52,7 @@ export interface LiquidityPoolService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
+   * @Deprecated Use {@link rawTxBuilder}.{@link RawPoolTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>
@@ -145,6 +146,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 
   async getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string> {
+    validateAmountGtZero(amount);
     validateAmountDecimals("amount", amount, token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const { vUsdBalance, tokenBalance, aValue, dValue } = pool;
@@ -158,6 +160,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<string> {
+    validateAmountGtZero(amount);
     validateAmountDecimals("amount", amount, token.decimals);
     const pool = await this.getPoolInfoFromChain(token, provider);
     const tokenAmountInSP = vUsdToWithdrawalAmount(amount);

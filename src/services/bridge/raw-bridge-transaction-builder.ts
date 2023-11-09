@@ -1,6 +1,6 @@
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
@@ -56,6 +56,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
   }
 
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     if (isSendParams(params)) {
       return getChainBridgeService(

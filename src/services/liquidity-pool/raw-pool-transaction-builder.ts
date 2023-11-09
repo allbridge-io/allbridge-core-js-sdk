@@ -1,6 +1,6 @@
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { Provider, RawTransaction } from "../models";
@@ -71,6 +71,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   }
 
   async deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
     return getChainPoolService(
@@ -82,6 +83,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   }
 
   async withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction> {
+    validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
     return getChainPoolService(

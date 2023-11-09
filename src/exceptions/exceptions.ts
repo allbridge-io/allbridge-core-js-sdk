@@ -15,6 +15,12 @@ export class SdkError extends SdkRootError {
   }
 }
 
+export class InvalidAmountError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.INVALID_AMOUNT_ERROR, message);
+  }
+}
+
 export class AmountNotEnoughError extends SdkRootError {
   constructor(message?: string) {
     super(ErrorCode.AMOUNT_NOT_ENOUGH_ERROR, message);
@@ -98,6 +104,7 @@ export class CCTPDoesNotSupportedError extends SdkRootError {
 
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
+  INVALID_AMOUNT_ERROR = "InvalidAmountError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
   INSUFFICIENT_POOL_LIQUIDITY_ERROR = "InsufficientPoolLiquidityError",
   JUPITER_ERROR = "JupiterError",
