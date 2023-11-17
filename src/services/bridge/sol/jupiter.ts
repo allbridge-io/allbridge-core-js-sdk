@@ -1,16 +1,13 @@
-import { Configuration, Def1SwapModeEnum, DefaultApi, V4QuoteGetSwapModeEnum } from "@jup-ag/api";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { AddressLookupTableAccount, Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import axios, { AxiosError } from "axios";
 import { JupiterError, SdkError } from "../../../exceptions";
 
 export class JupiterService {
   connection: Connection;
-  jupiterQuoteApi: DefaultApi;
 
   constructor(solanaRpcUrl: string) {
     this.connection = new Connection(solanaRpcUrl);
-    const config = new Configuration({ basePath: "https://quote-api.jup.ag" });
-    this.jupiterQuoteApi = new DefaultApi(config);
   }
 
   async getJupiterSwapTx(
@@ -18,31 +15,54 @@ export class JupiterService {
     stableTokenAddress: string,
     amountOut: string
   ): Promise<{ tx: VersionedTransaction; amountIn: string }> {
-    const { data } = await this.jupiterQuoteApi.v4QuoteGet({
-      inputMint: stableTokenAddress,
-      outputMint: NATIVE_MINT.toString(),
-      amount: amountOut,
-      swapMode: V4QuoteGetSwapModeEnum.ExactOut,
-      slippageBps: 100,
-      onlyDirectRoutes: true,
-    });
-    const routes = data;
-    if (!routes) {
-      throw new JupiterError("Cannot get routes");
+    let quoteResponse: any;
+    try {
+      quoteResponse = await axios.get(`https://quote-api.jup.ag/v6/quote?inputMint=${stableTokenAddress}
+&outputMint=${NATIVE_MINT.toString()}
+&amount=${amountOut}
+&swapMode=ExactOut
+&slippageBps=100
+&onlyDirectRoutes=true`);
+    } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
+        throw new JupiterError(err.response.data.error);
+      }
+      throw new JupiterError("Cannot get route");
     }
-    const route = routes[0];
-    const { swapTransaction } = await this.jupiterQuoteApi.v4SwapPost({
-      body: {
-        route: { ...route, swapMode: Def1SwapModeEnum[routes[0].swapMode] },
-        userPublicKey: userAddress,
-      },
-    });
 
-    if (!swapTransaction) {
+    let inAmount;
+    if (quoteResponse?.data?.inAmount) {
+      inAmount = quoteResponse.data.inAmount;
+    } else {
+      throw new JupiterError("Cannot get inAmount");
+    }
+
+    let transactionResponse: any;
+    try {
+      transactionResponse = await axios.post(
+        "https://quote-api.jup.ag/v6/swap",
+        JSON.stringify({
+          quoteResponse: quoteResponse.data,
+          userPublicKey: userAddress,
+          wrapAndUnwrapSol: true,
+        })
+      );
+    } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
+        throw new JupiterError(err.response.data.error);
+      }
       throw new JupiterError("Cannot get swap transaction");
     }
+
+    let swapTransaction;
+    if (transactionResponse?.data?.swapTransaction) {
+      swapTransaction = transactionResponse.data.swapTransaction;
+    } else {
+      throw new JupiterError("Cannot get swap transaction");
+    }
+
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-    return { tx: VersionedTransaction.deserialize(swapTransactionBuf), amountIn: route.inAmount };
+    return { tx: VersionedTransaction.deserialize(swapTransactionBuf), amountIn: inAmount };
   }
 
   async amendJupiterWithSdkTx(
