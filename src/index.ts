@@ -17,6 +17,7 @@ import {
   Messenger,
 } from "./models";
 import { BridgeService, DefaultBridgeService } from "./services/bridge";
+import { GetNativeTokenBalanceParams } from "./services/bridge/models";
 import { SolanaBridgeParams } from "./services/bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./services/liquidity-pool";
@@ -182,6 +183,16 @@ export class AllbridgeCoreSdk {
    */
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
     return this.tokenService.getTokenBalance(params, provider);
+  }
+
+  /**
+   * Get native (gas) token balance
+   * @param params
+   * @param provider
+   * @returns Token balance
+   */
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted> {
+    return this.tokenService.getNativeTokenBalance(params, provider);
   }
 
   /**

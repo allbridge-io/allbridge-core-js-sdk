@@ -4,6 +4,7 @@ import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { SdkError } from "../../../exceptions";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
+import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { amountToHex } from "../../utils";
 import { sendRawTransaction } from "../../utils/trx";
@@ -34,6 +35,10 @@ export class TronTokenService extends ChainTokenService {
     const contract = await this.getContract(params.token.tokenAddress);
     const balance = await contract.balanceOf(params.account).call();
     return balance.toString();
+  }
+
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
+    return (await this.tronWeb.trx.getBalance(params.account)).toString();
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {

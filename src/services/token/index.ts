@@ -2,11 +2,12 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
+import { AmountFormat, AmountFormatted, MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
 import { EvmTokenService } from "./evm";
 import {
@@ -31,6 +32,8 @@ export interface TokenService {
   buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction>;
 
   getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string>;
+
+  getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted>;
 }
 
 export class DefaultTokenService implements TokenService {
@@ -83,6 +86,21 @@ export class DefaultTokenService implements TokenService {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
     }
     return tokenBalance;
+  }
+
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted> {
+    const tokenBalance = await this.getChainTokenService(
+      params.chainSymbol,
+      params.account,
+      provider
+    ).getNativeTokenBalance(params);
+    return {
+      [AmountFormat.INT]: tokenBalance,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        tokenBalance,
+        ChainDecimalsByType[chainProperties[params.chainSymbol].chainType]
+      ).toFixed(),
+    };
   }
 
   private getChainTokenService(chainSymbol: ChainSymbol, ownerAddress: string, provider?: Provider): ChainTokenService {
