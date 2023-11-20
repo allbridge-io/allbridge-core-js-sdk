@@ -321,7 +321,9 @@ export async function getExtraGasMaxLimits(
     maxAmount,
     ChainDecimalsByType[destinationChainToken.chainType]
   ).toFixed();
-  const maxAmountFloatInSourceNative = Big(maxAmountFloat).div(transactionCostResponse.exchangeRate).toFixed();
+  const maxAmountFloatInSourceNative = Big(maxAmountFloat)
+    .div(transactionCostResponse.exchangeRate)
+    .toFixed(ChainDecimalsByType[sourceChainToken.chainType], Big.roundDown);
   const maxAmountInSourceNative = convertFloatAmountToInt(
     maxAmountFloatInSourceNative,
     ChainDecimalsByType[sourceChainToken.chainType]
@@ -333,7 +335,7 @@ export async function getExtraGasMaxLimits(
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.sourceNativeTokenPrice)
-      .toFixed();
+      .toFixed(sourceChainToken.decimals, Big.roundDown);
     extraGasMaxLimits[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: convertFloatAmountToInt(maxAmountFloatInStable, sourceChainToken.decimals).toFixed(0),
       [AmountFormat.FLOAT]: maxAmountFloatInStable,

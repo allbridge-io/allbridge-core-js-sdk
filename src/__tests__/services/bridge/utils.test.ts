@@ -301,11 +301,11 @@ describe("ChainBridgeService Utils", () => {
         extraGasMax: {
           [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
             [AmountFormat.INT]: "37695437702064163",
-            [AmountFormat.FLOAT]: "0.03769543770206416314",
+            [AmountFormat.FLOAT]: "0.037695437702064163",
           },
           [FeePaymentMethod.WITH_STABLECOIN]: {
-            int: "9094401299999999999",
-            float: "9.0944012999999999991564",
+            int: "9094401299999999965",
+            float: "9.094401299999999965",
           },
         },
         destinationChain: {
