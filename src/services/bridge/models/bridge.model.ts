@@ -38,6 +38,14 @@ export interface GetTokenBalanceParams {
   token: TokenWithChainDetails;
 }
 
+export interface GetNativeTokenBalanceParams {
+  /**
+   *  The address for which we will find out the token balance
+   */
+  account: string;
+  chainSymbol: ChainSymbol;
+}
+
 export interface BaseSendParams {
   /**
    * The float amount of Total tokens to transfer.
