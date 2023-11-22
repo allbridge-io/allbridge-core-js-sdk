@@ -2,9 +2,10 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
+import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
+import { MethodNotSupportedError } from "../../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";

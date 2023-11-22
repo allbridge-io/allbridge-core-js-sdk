@@ -1,15 +1,12 @@
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
+import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import {
-  CCTPDoesNotSupportedError,
-  Messenger,
-  MethodNotSupportedError,
-  NodeRpcUrlsConfig,
-  TokenWithChainDetails,
-} from "../../index";
+import { Messenger } from "../../client/core-api/core-api.model";
+import { CCTPDoesNotSupportedError, MethodNotSupportedError } from "../../exceptions";
+import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";

@@ -4,10 +4,11 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { AmountFormat, AmountFormatted, MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
+import { AmountFormat, AmountFormatted, MethodNotSupportedError } from "../../models";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
+import { NodeRpcUrlsConfig } from "../index";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
 import { EvmTokenService } from "./evm";
 import {

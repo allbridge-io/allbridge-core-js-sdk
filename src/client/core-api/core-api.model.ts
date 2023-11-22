@@ -136,3 +136,11 @@ export type PoolInfoResponse = {
     string: PoolInfo;
   };
 };
+
+export type PendingInfoResponse = Record<ChainSymbol, TokenPendingInfoDTO>;
+export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
+
+export interface PendingInfoDTO {
+  pendingTxs: number;
+  totalSentAmount: string;
+}

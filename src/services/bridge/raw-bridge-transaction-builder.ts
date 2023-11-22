@@ -1,5 +1,5 @@
+import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";

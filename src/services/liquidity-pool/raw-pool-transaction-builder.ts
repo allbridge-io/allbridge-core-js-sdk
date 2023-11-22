@@ -1,5 +1,5 @@
+import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";

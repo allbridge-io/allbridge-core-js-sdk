@@ -2,6 +2,7 @@ import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { ApiClient } from "./api-client";
 import {
+  PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -16,6 +17,8 @@ export interface AllbridgeCoreClientParams {
 export interface AllbridgeCoreClient {
   getChainDetailsMap(): Promise<ChainDetailsMap>;
   tokens(): Promise<TokenWithChainDetails[]>;
+
+  getPendingInfo(): Promise<PendingInfoResponse>;
 
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
 
@@ -32,6 +35,10 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   async tokens(): Promise<TokenWithChainDetails[]> {
     const map = await this.getChainDetailsMap();
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
+  }
+
+  async getPendingInfo(): Promise<PendingInfoResponse> {
+    return this.apiClient.getPendingInfo();
   }
 
   async getChainDetailsMapAndPoolInfoMap(): Promise<{

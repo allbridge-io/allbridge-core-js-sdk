@@ -6,6 +6,7 @@ export {
   GetTokenBalanceParams,
   SendParams,
   SwapParams,
+  GetNativeTokenBalanceParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
@@ -166,4 +167,22 @@ export interface ExtraGasMaxLimitResponse {
    * Source native token price
    */
   sourceNativeTokenPrice: string;
+}
+
+/**
+ * Provide pending status information
+ */
+export interface PendingStatusInfoResponse {
+  /**
+   * Number of pending transactions
+   */
+  pendingTxs: number;
+  /**
+   * Total amount of pending transactions
+   */
+  pendingAmount: AmountFormatted;
+  /**
+   * The amount of tokens can be received as a result of transfer considering pending transactions
+   */
+  estimatedAmount: { min: AmountFormatted; max: AmountFormatted };
 }

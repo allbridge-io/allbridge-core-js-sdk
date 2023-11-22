@@ -3,6 +3,7 @@ import { ChainSymbol } from "../../chains";
 import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
+  PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -13,11 +14,13 @@ const _55_SECONDS_TTL = 55 * 1000;
 
 export class ApiClientCaching implements ApiClient {
   private tokenInfoCache: Cache<Promise<TokenInfo>>;
+  private pendingInfoCache: Cache<Promise<PendingInfoResponse>>;
   private receivedTransactionCache: Cache<ReceiveTransactionCostResponse>;
 
   constructor(private apiClient: ApiClient) {
     this.tokenInfoCache = new Cache<Promise<TokenInfo>>({ defaultTtl: _55_SECONDS_TTL });
     this.receivedTransactionCache = new Cache<ReceiveTransactionCostResponse>({ defaultTtl: _20_SECONDS_TTL });
+    this.pendingInfoCache = new Cache<Promise<PendingInfoResponse>>({ defaultTtl: _20_SECONDS_TTL });
   }
 
   getTokenInfo(): Promise<TokenInfo> {
@@ -29,6 +32,17 @@ export class ApiClientCaching implements ApiClient {
     const tokenInfoPromise = this.apiClient.getTokenInfo();
     this.tokenInfoCache.put(TOKEN_INFO_CACHE_KEY, tokenInfoPromise);
     return tokenInfoPromise;
+  }
+
+  async getPendingInfo(): Promise<PendingInfoResponse> {
+    const PENDING_INFO_CACHE_KEY = "PENDING_INFO_CACHE_KEY";
+    const pendingInfo = this.pendingInfoCache.get(PENDING_INFO_CACHE_KEY);
+    if (pendingInfo) {
+      return pendingInfo;
+    }
+    const pendingInfoPromise = this.apiClient.getPendingInfo();
+    this.pendingInfoCache.put(PENDING_INFO_CACHE_KEY, pendingInfoPromise);
+    return pendingInfoPromise;
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
