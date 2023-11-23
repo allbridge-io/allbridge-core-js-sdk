@@ -23,11 +23,6 @@ export {
   MessengerTransferTime,
 } from "../tokens-info/tokens-info.model";
 export {
-  CheckAllowanceParams as TokensCheckAllowanceParams,
-  GetAllowanceParams as TokensGetAllowanceParams,
-  GetTokenBalanceParams as TokensGetTokenBalanceParams,
-} from "../services/token/models/token.model";
-export {
   UserBalanceInfo,
   UserBalanceInfoDTO,
   LiquidityPoolsParams,
@@ -44,6 +39,7 @@ export {
 } from "../utils/calculation/swap-and-bridge-fee-calc";
 export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
+export { Utils } from "../utils";
 export * from "../exceptions";
 
 export enum FeePaymentMethod {

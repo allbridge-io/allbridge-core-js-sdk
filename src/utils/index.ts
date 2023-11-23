@@ -1,36 +1,36 @@
-import { Big, BigSource } from "big.js";
-import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
-import { ArgumentInvalidDecimalsError, InvalidAmountError, TimeoutError } from "../exceptions";
-import { PoolInfo, TokenWithChainDetails } from "../tokens-info";
+import { Connection, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { SdkError } from "../exceptions";
+import { fetchAddressLookupTableAccountsFromTx } from "./sol";
 
-export async function getPoolInfoByToken(
-  api: AllbridgeCoreClientPoolInfoCaching,
-  sourceChainToken: TokenWithChainDetails
-): Promise<PoolInfo> {
-  return await api.getPoolInfoByKey({
-    chainSymbol: sourceChainToken.chainSymbol,
-    poolAddress: sourceChainToken.poolAddress,
-  });
+/**
+ * Contains usefully methods
+ */
+export interface Utils {
+  /**
+   * Add memo to solana's transaction
+   * @param transaction transaction to add memo
+   * @param memo memo to add (32 char max)
+   */
+  addMemoToTx(transaction: VersionedTransaction, memo: string): Promise<void>;
 }
 
-export function validateAmountGtZero(amount: BigSource) {
-  if (Big(amount).lte(0)) {
-    throw new InvalidAmountError("Amount must be greater than zero");
+export class DefaultUtils implements Utils {
+  constructor(readonly solanaRpcUrl: string) {}
+
+  async addMemoToTx(transaction: VersionedTransaction, memo: string): Promise<void> {
+    if (memo.length > 32) {
+      throw new SdkError("InvalidArgumentException memo cannot be more than 32 characters");
+    }
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
+    const addressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(transaction, connection);
+    const message = TransactionMessage.decompile(transaction.message, {
+      addressLookupTableAccounts: addressLookupTableAccounts,
+    });
+    message.instructions[message.instructions.length - 1].keys.push({
+      pubkey: new PublicKey(Buffer.from(memo)),
+      isSigner: false,
+      isWritable: false,
+    });
+    transaction.message = message.compileToV0Message(addressLookupTableAccounts);
   }
-}
-
-export function validateAmountDecimals(argName: string, amountFloat: number | string | Big, decimalRequired: number) {
-  const amount = Big(amountFloat).toFixed();
-  if (amount.split(".").length == 2 && amount.split(".")[1].length > decimalRequired) {
-    throw new ArgumentInvalidDecimalsError(argName, amount.split(".")[1].length, decimalRequired);
-  }
-}
-
-export async function promiseWithTimeout<T>(promise: Promise<T>, msg: string, timeoutMs: number): Promise<T> {
-  return (await Promise.race([
-    promise,
-    new Promise((resolve, reject) => {
-      setTimeout(() => reject(new TimeoutError(msg)), timeoutMs);
-    }),
-  ])) as any as T;
 }

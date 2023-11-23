@@ -1,8 +1,8 @@
 import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./models";

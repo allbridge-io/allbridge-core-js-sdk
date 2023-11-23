@@ -23,7 +23,6 @@ import {
   SwapAndBridgeCalculationData,
 } from "../models";
 import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../tokens-info";
-import { getPoolInfoByToken, validateAmountDecimals, validateAmountGtZero } from "../utils";
 import {
   aprInPercents,
   convertAmountPrecision,
@@ -43,6 +42,7 @@ import {
   swapAndBridgeFeeCalculation,
   swapAndBridgeFeeCalculationReverse,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
+import { getPoolInfoByToken, validateAmountDecimals, validateAmountGtZero } from "../utils/utils";
 import { BridgeService, DefaultBridgeService } from "./bridge";
 import { GetNativeTokenBalanceParams } from "./bridge/models";
 import { SolanaBridgeParams } from "./bridge/sol";

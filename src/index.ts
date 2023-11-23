@@ -22,6 +22,7 @@ import {
   TransferStatusResponse,
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
+import { DefaultUtils, Utils } from "./utils";
 
 export * from "./configs";
 export * from "./models";
@@ -69,6 +70,7 @@ export class AllbridgeCoreSdk {
 
   bridge: BridgeService;
   pool: LiquidityPoolService;
+  utils: Utils;
 
   private service: AllbridgeCoreSdkService;
 
@@ -89,6 +91,7 @@ export class AllbridgeCoreSdk {
     this.service = new AllbridgeCoreSdkService(nodeRpcUrlsConfig, params);
     this.bridge = this.service.bridge;
     this.pool = this.service.pool;
+    this.utils = new DefaultUtils(nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL));
     this.params = params;
   }
 

@@ -7,7 +7,7 @@ import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { CCTPDoesNotSupportedError, MethodNotSupportedError } from "../../exceptions";
 import { TokenWithChainDetails } from "../../tokens-info";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
