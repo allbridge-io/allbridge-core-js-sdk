@@ -14,6 +14,11 @@ export enum ChainSymbol {
   SPL = "SPL",
 
   /**
+   * The Holešky testnet.
+   */
+  HOL = "HOL",
+
+  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -87,6 +92,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.SPL,
     chainId: "0xaa36a7",
     name: "Sepolia",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.HOL]: {
+    chainSymbol: ChainSymbol.HOL,
+    chainId: "0x4268",
+    name: "Holešky",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.BSC]: {
