@@ -20,6 +20,7 @@ import {
   SwapAndBridgeCalculationData,
   TokenWithChainDetails,
   TransferStatusResponse,
+  GasBalanceResponse,
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
 import { DefaultUtils, Utils } from "./utils";
@@ -123,6 +124,15 @@ export class AllbridgeCoreSdk {
    */
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.service.getTransferStatus(chainSymbol, txId);
+  }
+
+  /**
+   * Get gas balance
+   * @param chainSymbol
+   * @param address
+   */
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    return this.service.getGasBalance(chainSymbol, address);
   }
 
   /**

@@ -9,7 +9,7 @@ export interface Utils {
   /**
    * Add memo to solana's transaction
    * @param transaction transaction to add memo
-   * @param memo memo to add (32 char max)
+   * @param memo memo to add (28 char max)
    */
   addMemoToTx(transaction: VersionedTransaction, memo: string): Promise<void>;
 }
@@ -18,8 +18,8 @@ export class DefaultUtils implements Utils {
   constructor(readonly solanaRpcUrl: string) {}
 
   async addMemoToTx(transaction: VersionedTransaction, memo: string): Promise<void> {
-    if (memo.length > 32) {
-      throw new SdkError("InvalidArgumentException memo cannot be more than 32 characters");
+    if (memo.length > 28) {
+      throw new SdkError("InvalidArgumentException memo cannot be more than 28 characters");
     }
     const connection = new Connection(this.solanaRpcUrl, "confirmed");
     const addressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(transaction, connection);
