@@ -9,6 +9,7 @@ import {
 } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
+  GasBalanceResponse,
   PendingInfoResponse,
   PoolInfoResponse,
   ReceiveTransactionCostRequest,
@@ -25,6 +26,7 @@ export interface TokenInfo {
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
   getPendingInfo(): Promise<PendingInfoResponse>;
+  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
@@ -55,6 +57,11 @@ export class ApiClientImpl implements ApiClient {
 
   async getPendingInfo(): Promise<PendingInfoResponse> {
     const { data } = await this.api.get<PendingInfoResponse>("/pending-info");
+    return data;
+  }
+
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    const { data } = await this.api.get<GasBalanceResponse>(`/chain/${chainSymbol}/${address}`);
     return data;
   }
 

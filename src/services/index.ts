@@ -3,7 +3,12 @@ import { ChainSymbol } from "../chains";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
-import { Messenger, PendingInfoDTO, TransferStatusResponse } from "../client/core-api/core-api.model";
+import {
+  GasBalanceResponse,
+  Messenger,
+  PendingInfoDTO,
+  TransferStatusResponse,
+} from "../client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
 import { AllbridgeCoreSdkOptions, NodeRpcUrls } from "../index";
@@ -75,8 +80,8 @@ export class AllbridgeCoreSdkService {
 
   constructor(nodeRpcUrlsConfig: NodeRpcUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
     const apiClient = new ApiClientImpl(params);
-    const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
-    const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
+    const apiClientCaching = new ApiClientCaching(apiClient);
+    const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
 
     const solBridgeParams: SolanaBridgeParams = {
@@ -104,6 +109,10 @@ export class AllbridgeCoreSdkService {
 
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
     return this.api.getTransferStatus(chainSymbol, txId);
+  }
+
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    return this.api.getGasBalance(chainSymbol, address);
   }
 
   async getPendingStatusInfo(

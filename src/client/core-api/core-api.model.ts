@@ -72,6 +72,10 @@ export interface ReceiveTransactionCostResponse {
   sourceNativeTokenPrice: string;
 }
 
+export interface GasBalanceResponse {
+  gasBalance: string;
+}
+
 export interface TransferStatusResponse {
   txId: string;
 
