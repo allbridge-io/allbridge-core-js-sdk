@@ -17,9 +17,11 @@ import BalanceLineAsset = Horizon.BalanceLineAsset;
  * Contains usefully Soroban methods
  */
 export interface SrbUtils {
-  buildChangeTrustTx(limit: string, sender: string, tokenAddress: string): Promise<string>;
+  buildChangeTrustLineXdrTx(limit: string, sender: string, tokenAddress: string): Promise<string>;
 
   getTrustLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLine | undefined>;
+
+  submitXdrTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse>;
 }
 
 const FEE = 100;
@@ -28,7 +30,7 @@ const SEND_TRANSACTION_TIMEOUT = 180;
 export class DefaultSrbUtils implements SrbUtils {
   constructor(readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig, readonly params: AllbridgeCoreSdkOptions) {}
 
-  async buildChangeTrustTx(limit: string, sender: string, tokenAddress: string): Promise<string> {
+  async buildChangeTrustLineXdrTx(limit: string, sender: string, tokenAddress: string): Promise<string> {
     const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
     const stellarAccount = await stellar.loadAccount(sender);
     // stellarAccount.in
@@ -68,6 +70,12 @@ export class DefaultSrbUtils implements SrbUtils {
         balance.asset_code == symbol &&
         balance.asset_issuer == srbTokenAddress
     );
+  }
+
+  async submitXdrTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse> {
+    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
+    const transaction = StellarTransactionBuilder.fromXDR(xdrTx, this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
+    return await stellar.submitTransaction(transaction);
   }
 
   private async getContract<T>(contract: new (args: ClassOptions) => T, address: string): Promise<T> {
