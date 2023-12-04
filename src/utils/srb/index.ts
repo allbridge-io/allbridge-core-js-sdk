@@ -1,4 +1,8 @@
-import { Account, Address, Asset, Operation, TimeoutInfinite, TransactionBuilder } from "soroban-client";
+import {
+  SorobanRpc,
+  Transaction,
+  TransactionBuilder
+} from "soroban-client";
 import {
   Horizon,
   Server as StellarServer,
@@ -12,6 +16,8 @@ import { NodeRpcUrlsConfig } from "../../services";
 import { ClassOptions } from "../../services/models/srb/method-options";
 import { TokenContract } from "../../services/models/srb/token-contract";
 import BalanceLineAsset = Horizon.BalanceLineAsset;
+import * as SorobanClient from "soroban-client";
+import {sendTx} from "../../services/models/srb/tx-builder";
 
 /**
  * Contains usefully Soroban methods
@@ -22,6 +28,8 @@ export interface SrbUtils {
   getTrustLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLine | undefined>;
 
   submitXdrTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse>;
+
+  submitXdrTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse>;
 }
 
 const FEE = 100;
@@ -76,6 +84,20 @@ export class DefaultSrbUtils implements SrbUtils {
     const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
     const transaction = StellarTransactionBuilder.fromXDR(xdrTx, this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
     return await stellar.submitTransaction(transaction);
+  }
+
+  async submitXdrTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse> {
+    const server = new SorobanClient.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
+    const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
+    const simulated = await server.simulateTransaction(transaction);
+    console.log("simulated", simulated)
+    if (SorobanRpc.isSimulationError(simulated)) {
+      throw new Error(simulated.error);
+    } else if (!simulated.result) {
+      throw new Error(`invalid simulation: no result in ${simulated}`);
+    }
+    const secondsToWait = 10;
+    return  await sendTx(transaction, secondsToWait, server);
   }
 
   private async getContract<T>(contract: new (args: ClassOptions) => T, address: string): Promise<T> {
