@@ -27,8 +27,14 @@ import {
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { SendParams, TxSendParams, TxSwapParams } from "./models";
+import { Address } from "soroban-client";
 
-export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
+export function formatAddress(
+  address: string,
+  from: ChainType,
+  to: ChainType,
+  contractAddress = true
+): string | number[] {
   let buffer: Buffer;
   switch (from) {
     case ChainType.EVM: {
@@ -60,16 +66,16 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       return buffer.toJSON().data;
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not supported yet");
+      return buffer.toJSON().data;
     }
   }
 }
 
-function hexToBuffer(hex: string): Buffer {
+export function hexToBuffer(hex: string): Buffer {
   return Buffer.from(hex.replace(/^0x/i, ""), "hex");
 }
 
-function evmAddressToBuffer32(address: string): Buffer {
+export function evmAddressToBuffer32(address: string): Buffer {
   const length = 32;
   const buff = hexToBuffer(address);
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
@@ -110,6 +116,14 @@ export function getTokenByTokenAddress(
 
 export function getNonce(): Buffer {
   return randomBytes(32);
+}
+
+export function getNonceBigInt(): bigint {
+  const bigint = randomBytes(32).readBigInt64BE();
+  if (bigint < 0) {
+    return bigint * -1n;
+  }
+  return bigint;
 }
 
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
@@ -220,8 +234,8 @@ export async function prepareTxSendParams(
   }
 
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
-  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
-  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
+  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType, false);
+  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType, false);
   if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
     validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
   }

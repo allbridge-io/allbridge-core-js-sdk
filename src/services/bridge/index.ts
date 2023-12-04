@@ -16,6 +16,8 @@ import { ChainBridgeService } from "./models/bridge";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeParams, SolanaBridgeService } from "./sol";
 import { TronBridgeService } from "./trx";
+import { SrbBridgeService } from "./srb";
+import { AllbridgeCoreSdkOptions } from "../../index";
 
 export interface BridgeService {
   rawTxBuilder: RawBridgeTransactionBuilder;
@@ -76,10 +78,10 @@ export class DefaultBridgeService implements BridgeService {
   constructor(
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    private solParams: SolanaBridgeParams,
+    private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
   ) {
-    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, solParams, tokenService);
+    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, params, tokenService);
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
@@ -120,7 +122,7 @@ export class DefaultBridgeService implements BridgeService {
       params.sourceToken.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
-      this.solParams,
+      this.params,
       provider
     ).send(params);
   }
@@ -142,7 +144,7 @@ export function getChainBridgeService(
   chainSymbol: ChainSymbol,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-  solParams: SolanaBridgeParams,
+  params: AllbridgeCoreSdkOptions,
   provider?: Provider
 ): ChainBridgeService {
   switch (chainProperties[chainSymbol].chainType) {
@@ -163,10 +165,17 @@ export function getChainBridgeService(
       }
     }
     case ChainType.SOLANA: {
-      return new SolanaBridgeService(nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL), solParams, api);
+      return new SolanaBridgeService(
+        nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL),
+        {
+          wormholeMessengerProgramId: params.wormholeMessengerProgramId,
+          solanaLookUpTable: params.solanaLookUpTable,
+        },
+        api
+      );
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not support yet");
+      return new SrbBridgeService(nodeRpcUrlsConfig, params, api);
     }
   }
 }

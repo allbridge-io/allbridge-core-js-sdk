@@ -25,7 +25,7 @@ import {
   SwapParams,
   TokenWithChainDetails,
 } from "../index";
-import { formatAddress } from "../services/bridge/utils";
+import { evmAddressToBuffer32, formatAddress, getNonce, hexToBuffer } from "../services/bridge/utils";
 
 import { convertFloatAmountToInt, convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";
@@ -57,6 +57,7 @@ describe("SDK", () => {
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
+    sorobanNetworkPassphrase: "sorobanNetworkPassphrase",
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);

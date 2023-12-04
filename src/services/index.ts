@@ -83,13 +83,8 @@ export class AllbridgeCoreSdkService {
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
-
-    const solBridgeParams: SolanaBridgeParams = {
-      wormholeMessengerProgramId: params.wormholeMessengerProgramId,
-      solanaLookUpTable: params.solanaLookUpTable,
-    };
-    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig);
-    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, solBridgeParams, this.tokenService);
+    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
+    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, this.tokenService);
     this.params = params;
   }

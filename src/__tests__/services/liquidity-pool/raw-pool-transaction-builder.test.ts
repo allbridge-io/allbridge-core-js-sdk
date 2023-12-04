@@ -13,7 +13,8 @@ describe("RawTransactionBuilder", () => {
   let api: any;
   let solParams: any;
   let nodeRpcUrls: any;
-  const tokenService = new DefaultTokenService(api, solParams);
+  let params: any;
+  const tokenService = new DefaultTokenService(api, nodeRpcUrls, params);
 
   beforeEach(() => {
     rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, tokenService);

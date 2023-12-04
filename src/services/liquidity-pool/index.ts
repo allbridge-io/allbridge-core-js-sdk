@@ -5,7 +5,6 @@ import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { MethodNotSupportedError } from "../../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
@@ -18,6 +17,7 @@ import { ApproveParams, ChainPoolService, CheckAllowanceParams, GetAllowancePara
 import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService } from "./sol";
 import { TronPoolService } from "./trx";
+import { SrbPoolService } from "./srb";
 
 export interface LiquidityPoolService {
   rawTxBuilder: RawPoolTransactionBuilder;
@@ -221,7 +221,7 @@ export function getChainPoolService(
       return new SolanaPoolService(nodeRpcUrl, api);
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not support yet");
+      return new SrbPoolService(nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), api);
     }
   }
 }

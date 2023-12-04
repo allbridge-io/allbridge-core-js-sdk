@@ -22,6 +22,8 @@ import {
 import { ChainTokenService } from "./models/token";
 import { SolanaTokenService } from "./sol";
 import { TronTokenService } from "./trx";
+import { SrbTokenService } from "./srb";
+import { AllbridgeCoreSdkOptions } from "../../index";
 
 export interface TokenService {
   getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string>;
@@ -38,7 +40,11 @@ export interface TokenService {
 }
 
 export class DefaultTokenService implements TokenService {
-  constructor(public api: AllbridgeCoreClient, public nodeRpcUrlsConfig: NodeRpcUrlsConfig) {}
+  constructor(
+    readonly api: AllbridgeCoreClient,
+    readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    readonly params: AllbridgeCoreSdkOptions
+  ) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
     const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
@@ -129,7 +135,7 @@ export class DefaultTokenService implements TokenService {
         return new SolanaTokenService(nodeRpcUrl, this.api);
       }
       case ChainType.SRB: {
-        throw new MethodNotSupportedError("Soroban does not support yet");
+        return new SrbTokenService(this.nodeRpcUrlsConfig, this.params, this.api);
       }
     }
   }
