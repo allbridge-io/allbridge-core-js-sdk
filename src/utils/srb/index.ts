@@ -89,13 +89,13 @@ export class DefaultSrbUtils implements SrbUtils {
   async submitXdrTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse> {
     const server = new SorobanClient.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
-    const simulated = await server.simulateTransaction(transaction);
-    console.log("simulated", simulated)
-    if (SorobanRpc.isSimulationError(simulated)) {
-      throw new Error(simulated.error);
-    } else if (!simulated.result) {
-      throw new Error(`invalid simulation: no result in ${simulated}`);
-    }
+    // const simulated = await server.simulateTransaction(transaction);
+    // console.log("simulated", simulated)
+    // if (SorobanRpc.isSimulationError(simulated)) {
+    //   throw new Error(simulated.error);
+    // } else if (!simulated.result) {
+    //   throw new Error(`invalid simulation: no result in ${simulated}`);
+    // }
     const secondsToWait = 10;
     return  await sendTx(transaction, secondsToWait, server);
   }
