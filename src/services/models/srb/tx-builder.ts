@@ -2,6 +2,7 @@ import * as SorobanClient from "soroban-client";
 import { Address, SorobanRpc } from "soroban-client";
 import type { Memo, MemoType, Operation, Transaction, xdr } from "soroban-client";
 import type { ClassOptions, MethodOptions, ResponseTypes, Wallet } from "./method-options.js";
+import {SdkError} from "../../../exceptions";
 
 export type Tx = Transaction<Memo<MemoType>, Operation[]>;
 
@@ -37,14 +38,21 @@ export async function xdrTxBuilder({
   const account = await server.getAccount(sender.toString());
   const contract = new SorobanClient.Contract(contractId);
 
-  return new SorobanClient.TransactionBuilder(account, {
+  const tx = new SorobanClient.TransactionBuilder(account, {
     fee: fee.toString(10),
     networkPassphrase,
   })
     .addOperation(contract.call(method, ...args))
     .setTimeout(SorobanClient.TimeoutInfinite)
-    .build()
-    .toXDR();
+    .build();
+
+  const simulated = await server.simulateTransaction(tx);
+  if (SorobanRpc.isSimulationError(simulated)) {
+    throw new SdkError(simulated.error);
+  } else if (!simulated.result) {
+    throw new SdkError(`invalid simulation: no result in ${simulated}`);
+  }
+  return SorobanClient.assembleTransaction(tx, networkPassphrase, simulated).build().toXDR();
 }
 
 /**
