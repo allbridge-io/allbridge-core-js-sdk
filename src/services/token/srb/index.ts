@@ -39,7 +39,7 @@ export class SrbTokenService extends ChainTokenService {
     const tokenName = await tokenContract.name();
     const [symbol, srbTokenAddress] = tokenName.split(":");
 
-    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
+    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.account);
     const balances = stellarAccount.balances;
 
@@ -59,7 +59,7 @@ export class SrbTokenService extends ChainTokenService {
   }
 
   async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
-    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB_STLR));
+    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.account);
     const balances = stellarAccount.balances;
 

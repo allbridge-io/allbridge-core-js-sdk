@@ -66,7 +66,7 @@ export enum ChainSymbol {
   /**
    * The Stellar network.
    */
-  SRB_STLR = "SRB_STLR",
+  STLR = "STLR",
 }
 
 export enum ChainType {
@@ -156,8 +156,8 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Soroban",
     chainType: ChainType.SRB,
   },
-  [ChainSymbol.SRB_STLR]: {
-    chainSymbol: ChainSymbol.SRB_STLR,
+  [ChainSymbol.STLR]: {
+    chainSymbol: ChainSymbol.STLR,
     name: "Stellar",
     chainType: ChainType.SRB,
   },
