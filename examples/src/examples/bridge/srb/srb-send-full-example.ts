@@ -21,8 +21,8 @@ const main = async () => {
   const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
 
   const chainDetailsMap = await sdk.chainDetailsMap();
-  const sourceToken = ensure(chainDetailsMap[ChainSymbol.SRB].tokens.find((t) => t.symbol == "YARO"));
-  const destinationToken = ensure(chainDetailsMap[ChainSymbol.GRL].tokens.find((t) => t.symbol == "YUSD"));
+  const sourceToken = ensure(chainDetailsMap[ChainSymbol.SRB].tokens.find((t) => t.symbol == "USDC"));
+  const destinationToken = ensure(chainDetailsMap[ChainSymbol.ETH].tokens.find((t) => t.symbol == "USDC"));
 
   const amount = "1";
   const sendParams: SendParams = {
@@ -56,13 +56,15 @@ const main = async () => {
     console.log(`Transaction Confirmed. Hash: ${sent.hash}`);
   }
 
-  //TrustLine check and Set up
-  const balanceLine = await sdk.utils.srb.getBalanceLine(fromAddress, sourceToken.tokenAddress);
+  //TrustLine check and Set up for destinationToken if it is SRB
+  const destinationTokenSBR = sourceToken; // simulate destination is srb
+  const toAddressSBR = fromAddress; // simulate destination is srb
+  const balanceLine = await sdk.utils.srb.getBalanceLine(toAddressSBR, destinationTokenSBR.tokenAddress);
   console.log(`BalanceLine:`, balanceLine);
   if (!balanceLine || Big(balanceLine.balance).add(amount).gt(Big(balanceLine.limit))) {
     const xdrTx = await sdk.utils.srb.buildChangeTrustLineXdrTx({
-      sender: fromAddress,
-      tokenAddress: sourceToken.tokenAddress,
+      sender: toAddressSBR,
+      tokenAddress: destinationTokenSBR.tokenAddress,
     });
 
     //SignTx
