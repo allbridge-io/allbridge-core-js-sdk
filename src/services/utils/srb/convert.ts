@@ -1,4 +1,5 @@
 import { xdr, Address, nativeToScVal, scValToBigInt, ScInt } from "soroban-client";
+import { SdkError } from "../../../exceptions";
 
 export function strToScVal(base64Xdr: string): xdr.ScVal {
   return xdr.ScVal.fromXDR(base64Xdr, "base64");
@@ -9,7 +10,7 @@ export function scValStrToJs<T>(base64Xdr: string): T {
 }
 
 export function scValToJs<T>(val: xdr.ScVal): T {
-  switch (val?.switch()) {
+  switch (val.switch()) {
     case xdr.ScValType.scvBool(): {
       return val.b() as unknown as T;
     }
@@ -45,26 +46,26 @@ export function scValToJs<T>(val: xdr.ScVal): T {
     }
     case xdr.ScValType.scvVec(): {
       type Element = ElementType<T>;
-      // @ts-ignore //TODO
+      // @ts-expect-error //TODO
       return val.vec().map((v) => scValToJs<Element>(v)) as unknown as T;
     }
     case xdr.ScValType.scvMap(): {
       type Key = KeyType<T>;
       type Value = ValueType<T>;
-      let res: any = {};
-      // @ts-ignore //TODO
+      const res: any = {};
+      // @ts-expect-error //TODO
       val.map().forEach((e) => {
-        let key = scValToJs<Key>(e.key());
+        const key = scValToJs<Key>(e.key());
         let value;
-        let v: xdr.ScVal = e.val();
+        const v: xdr.ScVal = e.val();
         // For now we assume second level maps are real maps. Not perfect but better.
-        switch (v?.switch()) {
+        switch (v.switch()) {
           case xdr.ScValType.scvMap(): {
-            let inner_map = new Map() as Map<any, any>;
-            // @ts-ignore //TODO
+            const inner_map = new Map();
+            // @ts-expect-error //TODO
             v.map().forEach((e) => {
-              let key = scValToJs<Key>(e.key());
-              let value = scValToJs<Value>(e.val());
+              const key = scValToJs<Key>(e.key());
+              const value = scValToJs<Value>(e.val());
               inner_map.set(key, value);
             });
             value = inner_map;
@@ -74,8 +75,7 @@ export function scValToJs<T>(val: xdr.ScVal): T {
             value = scValToJs<Value>(e.val());
           }
         }
-        //@ts-ignore
-        res[key as Key] = value as Value;
+        res[key] = value as Value;
       });
       return res as unknown as T;
     }
@@ -87,12 +87,12 @@ export function scValToJs<T>(val: xdr.ScVal): T {
     // TODO: Add this case when merged
     // case xdr.ScValType.scvError():
     default: {
-      throw new Error(`type not implemented yet: ${val?.switch().name}`);
+      throw new SdkError(`type not implemented yet: ${val.switch().name}`);
     }
   }
 }
 
-type ElementType<T> = T extends Array<infer U> ? U : never;
+type ElementType<T> = T extends (infer U)[] ? U : never;
 type KeyType<T> = T extends Map<infer K, any> ? K : never;
 type ValueType<T> = T extends Map<any, infer V> ? V : never;
 

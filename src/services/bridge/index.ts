@@ -5,7 +5,8 @@ import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { CCTPDoesNotSupportedError, MethodNotSupportedError } from "../../exceptions";
+import { CCTPDoesNotSupportedError } from "../../exceptions";
+import { AllbridgeCoreSdkOptions } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
@@ -14,10 +15,9 @@ import { EvmBridgeService } from "./evm";
 import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { ChainBridgeService } from "./models/bridge";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
-import { SolanaBridgeParams, SolanaBridgeService } from "./sol";
-import { TronBridgeService } from "./trx";
+import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { TronBridgeService } from "./trx";
 
 export interface BridgeService {
   rawTxBuilder: RawBridgeTransactionBuilder;

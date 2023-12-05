@@ -1,8 +1,9 @@
 import { Address, ContractSpec } from "soroban-client";
-import { xdrTxBuilder } from "./tx-builder";
+import { SdkError } from "../../../exceptions";
+import { xdrTxBuilder } from "../../utils/srb/tx-builder";
 import type { ClassOptions } from "./method-options";
 
-export * from "./tx-builder";
+export * from "../../utils/srb/tx-builder";
 export * from "./method-options";
 
 export type u32 = number;
@@ -37,7 +38,7 @@ export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
   constructor(readonly value: T) {}
 
   unwrapErr(): E {
-    throw new Error("No error");
+    throw new SdkError("No error");
   }
 
   unwrap(): T {
@@ -61,7 +62,7 @@ export class Err<E extends Error_ = Error_> implements Result<any, E> {
   }
 
   unwrap(): never {
-    throw new Error(this.error.message);
+    throw new SdkError(this.error.message);
   }
 
   isOk(): boolean {
@@ -71,25 +72,6 @@ export class Err<E extends Error_ = Error_> implements Result<any, E> {
   isErr(): boolean {
     return !this.isOk();
   }
-}
-
-const regex = /Error\(Contract, #(\d+)\)/;
-
-function parseError(message: string): Err | undefined {
-  const match = message.match(regex);
-  if (!match) {
-    return undefined;
-  }
-  if (Errors === undefined) {
-    return undefined;
-  }
-  let i = parseInt(match[1], 10);
-  // @ts-ignore //TODO
-  let err = Errors[i];
-  if (err) {
-    return new Err(err);
-  }
-  return undefined;
 }
 
 export const networks = {
@@ -114,16 +96,6 @@ export interface Bridge {
   rebalancer: Address;
 }
 
-export type DataKey =
-  | { tag: "OtherBridge"; values: readonly [u32] }
-  | { tag: "SentMessage"; values: readonly [Buffer] }
-  | { tag: "ReceivedMessage"; values: readonly [Buffer] };
-
-export type Admin = readonly [Address];
-export type GasOracleAddress = readonly [Address];
-export type GasUsage = readonly [Map<u32, u128>];
-export type NativeToken = readonly [Address];
-export type StopAuthority = readonly [Address];
 const Errors = {
   0: { message: "" },
   1: { message: "" },

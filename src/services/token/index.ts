@@ -4,7 +4,8 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { AmountFormat, AmountFormatted, MethodNotSupportedError } from "../../models";
+import { AllbridgeCoreSdkOptions } from "../../index";
+import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
@@ -21,9 +22,8 @@ import {
 } from "./models";
 import { ChainTokenService } from "./models/token";
 import { SolanaTokenService } from "./sol";
-import { TronTokenService } from "./trx";
 import { SrbTokenService } from "./srb";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { TronTokenService } from "./trx";
 
 export interface TokenService {
   getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string>;

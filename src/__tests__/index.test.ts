@@ -25,7 +25,7 @@ import {
   SwapParams,
   TokenWithChainDetails,
 } from "../index";
-import { evmAddressToBuffer32, formatAddress, getNonce, hexToBuffer } from "../services/bridge/utils";
+import { formatAddress } from "../services/bridge/utils";
 
 import { convertFloatAmountToInt, convertIntAmountToFloat, getFeePercent } from "../utils/calculation";
 import tokensGroupedByChain from "./data/tokens-info/ChainDetailsMap.json";

@@ -45,6 +45,7 @@ export {
 export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
 export { Utils } from "../utils";
+export { SrbUtils, TrustLineParams } from "../utils/srb";
 export * from "../exceptions";
 
 export enum FeePaymentMethod {

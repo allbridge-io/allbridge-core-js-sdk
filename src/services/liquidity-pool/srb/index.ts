@@ -1,7 +1,7 @@
+import { Address } from "soroban-client";
+import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { ChainType } from "../../../chains";
-import { RawTransaction } from "../../models";
-import { ClassOptions } from "../../models/srb/method-options";
+import { AllbridgeCoreSdkOptions } from "../../../index";
 import {
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
@@ -10,21 +10,27 @@ import {
   TokenWithChainDetails,
   UserBalanceInfo,
 } from "../../../models";
-import { ChainPoolService, UserBalance } from "../models";
-import { PoolContract } from "../../models/srb/pool";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
-import { Address } from "soroban-client";
+import { NodeRpcUrlsConfig } from "../../index";
+import { RawTransaction } from "../../models";
+import { ClassOptions } from "../../models/srb/method-options";
+import { PoolContract } from "../../models/srb/pool";
+import { ChainPoolService, UserBalance } from "../models";
 
 export class SrbPoolService extends ChainPoolService {
   chainType: ChainType.SRB = ChainType.SRB;
   private P = 52;
 
-  constructor(public srbRpcUrl: string, public api: AllbridgeCoreClient) {
+  constructor(
+    readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    readonly params: AllbridgeCoreSdkOptions,
+    readonly api: AllbridgeCoreClient
+  ) {
     super();
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
-    const poolContract = await this.getContract(token.poolAddress);
+    const poolContract = this.getContract(token.poolAddress);
     const userDeposit = (await poolContract.getUserDeposit({ user: Address.fromString(accountAddress) }))?.unwrap();
     if (!userDeposit) {
       throw new SdkError();
@@ -36,7 +42,7 @@ export class SrbPoolService extends ChainPoolService {
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
-    const poolContract = await this.getContract(token.poolAddress);
+    const poolContract = this.getContract(token.poolAddress);
     const pool = (await poolContract.getPool())?.unwrap();
     if (!pool) {
       throw new SdkError();
@@ -57,30 +63,33 @@ export class SrbPoolService extends ChainPoolService {
   }
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    const poolContract = await this.getContract(params.token.poolAddress);
-    return Promise<undefined>;
+    const poolContract = this.getContract(params.token.poolAddress);
+    return await poolContract.deposit({
+      sender: Address.fromString(params.accountAddress),
+      amount: BigInt(params.amount),
+    });
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    const poolContract = await this.getContract(params.token.poolAddress);
-    return Promise<undefined>;
+    const poolContract = this.getContract(params.token.poolAddress);
+    return await poolContract.withdraw({
+      sender: Address.fromString(params.accountAddress),
+      amount_lp: BigInt(params.amount),
+    });
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
-    const poolContract = await this.getContract(params.token.poolAddress);
-    return Promise<undefined>;
+    const poolContract = this.getContract(params.token.poolAddress);
+    return await poolContract.claimRewards({
+      sender: Address.fromString(params.accountAddress),
+    });
   }
 
-  private async getContract(address: string): Promise<PoolContract> {
-    // const networkPassphrase = await this.network;
-    const networkPassphrase = "Test SDF Future Network ; October 2022";
-    // const wallet = await this.wallet;
-    const wallet = undefined;
+  private getContract(address: string): PoolContract {
     const config: ClassOptions = {
       contractId: address,
-      networkPassphrase,
-      rpcUrl: this.srbRpcUrl,
-      wallet,
+      networkPassphrase: this.params.sorobanNetworkPassphrase,
+      rpcUrl: this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB),
     };
     return new PoolContract(config);
   }

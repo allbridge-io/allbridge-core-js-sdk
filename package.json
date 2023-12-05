@@ -48,7 +48,6 @@
   },
   "keywords": [],
   "devDependencies": {
-    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "@ryansonshine/commitizen": "^4.2.8",
     "@ryansonshine/cz-conventional-changelog": "^3.3.4",
     "@semantic-release/changelog": "^6.0.3",
@@ -96,7 +95,6 @@
     "@project-serum/anchor": "^0.25.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.5",
-    "@stellar/freighter-api": "^1.7.1",
     "@types/big.js": "^6.2.0",
     "assert": "^2.1.0",
     "axios": "^1.5.0",

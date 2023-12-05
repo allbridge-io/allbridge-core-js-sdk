@@ -1,16 +1,16 @@
-import { ChainBridgeService, SendParams, SwapParams, TxSendParams, TxSwapParams } from "../models";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import Big from "big.js";
+import { Address } from "soroban-client";
 import { ChainSymbol, ChainType } from "../../../chains";
-import { RawTransaction, TransactionResponse } from "../../models";
+import { AllbridgeCoreClient } from "../../../client/core-api";
 import { MethodNotSupportedError } from "../../../exceptions";
+import { AllbridgeCoreSdkOptions } from "../../../index";
+import { FeePaymentMethod } from "../../../models";
+import { NodeRpcUrlsConfig } from "../../index";
+import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge";
 import { ClassOptions } from "../../models/srb/method-options";
+import { ChainBridgeService, SendParams, SwapParams, TxSendParams, TxSwapParams } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
-import { Address } from "soroban-client";
-import { FeePaymentMethod } from "../../../models";
-import Big from "big.js";
-import { NodeRpcUrlsConfig } from "../../index";
-import { AllbridgeCoreSdkOptions } from "../../../index";
 
 export class SrbBridgeService extends ChainBridgeService {
   chainType: ChainType.SRB = ChainType.SRB;
@@ -46,7 +46,7 @@ export class SrbBridgeService extends ChainBridgeService {
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
-    const contract = await this.getContract(BridgeContract, contractAddress);
+    const contract = this.getContract(BridgeContract, contractAddress);
     let tx;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       tx = await contract.swapAndBridge({
@@ -91,7 +91,7 @@ export class SrbBridgeService extends ChainBridgeService {
       toTokenAddress,
       minimumReceiveAmount,
     } = params;
-    const contract = await this.getContract(BridgeContract, contractAddress);
+    const contract = this.getContract(BridgeContract, contractAddress);
     return await contract.swap({
       sender: Address.contract(Buffer.from(fromAccountAddress)),
       amount: BigInt(amount),
@@ -102,11 +102,11 @@ export class SrbBridgeService extends ChainBridgeService {
     });
   }
 
-  sendTx(params: TxSendParams): Promise<TransactionResponse> {
+  sendTx(): Promise<TransactionResponse> {
     throw new MethodNotSupportedError();
   }
 
-  private async getContract<T>(contract: new (args: ClassOptions) => T, address: string): Promise<T> {
+  private getContract<T>(contract: new (args: ClassOptions) => T, address: string): T {
     const config: ClassOptions = {
       contractId: address,
       networkPassphrase: this.params.sorobanNetworkPassphrase,

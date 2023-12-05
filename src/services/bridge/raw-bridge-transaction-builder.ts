@@ -1,13 +1,12 @@
 import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { AllbridgeCoreSdkOptions } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
-import { SolanaBridgeParams } from "./sol";
 import { isSendParams } from "./utils";
 import { getChainBridgeService, getSpender } from "./index";
-import { AllbridgeCoreSdkOptions } from "../../index";
 
 export interface RawBridgeTransactionBuilder {
   /**

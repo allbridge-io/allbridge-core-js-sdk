@@ -21,5 +21,5 @@ export const testnetNodeRpcUrlsDefault: NodeRpcUrls = {
   SOL: "https://api.devnet.solana.com",
   TRX: "https://nile.trongrid.io",
   SRB: "https://rpc-futurenet.stellar.org:443",
-  SRB_STLR: "https://horizon-futurenet.stellar.org",
+  STLR: "https://horizon-futurenet.stellar.org",
 };

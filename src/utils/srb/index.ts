@@ -1,5 +1,5 @@
 import * as SorobanClient from "soroban-client";
-import {SorobanRpc, Transaction, TransactionBuilder} from "soroban-client";
+import { SorobanRpc, Transaction, TransactionBuilder } from "soroban-client";
 import {
   Asset as StellarAsset,
   Horizon,
@@ -7,11 +7,11 @@ import {
   Server as StellarServer,
   TransactionBuilder as StellarTransactionBuilder,
 } from "stellar-sdk";
-import {AllbridgeCoreSdkOptions, ChainSymbol} from "../../index";
-import {NodeRpcUrlsConfig} from "../../services";
-import {ClassOptions} from "../../services/models/srb/method-options";
-import {TokenContract} from "../../services/models/srb/token-contract";
-import {sendTx} from "../../services/models/srb/tx-builder";
+import { AllbridgeCoreSdkOptions, ChainSymbol } from "../../index";
+import { NodeRpcUrlsConfig } from "../../services";
+import { ClassOptions } from "../../services/models/srb/method-options";
+import { TokenContract } from "../../services/models/srb/token-contract";
+import { confirmTx } from "../../services/utils/srb/tx-builder";
 import BalanceLineAsset = Horizon.BalanceLineAsset;
 
 /**
@@ -30,24 +30,32 @@ export interface SrbUtils {
    * @param sender
    * @param tokenAddress
    */
-  getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLine | undefined>;
+  getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLineAsset | undefined>;
 
   /**
    * Submit tx
    * @param xdrTx
    */
-  submitXdrTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse>;
+  submitTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse>;
 
   /**
    * Submit tx
    * @param xdrTx
    */
-  submitXdrTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse>;
+  sendTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse>;
+
+  /**
+   * Confirm tx
+   */
+  confirmTx(
+    hash: string,
+    secondsToWait?: number
+  ): Promise<SorobanRpc.GetTransactionResponse>;
 }
 
 export interface TrustLineParams {
   /**
-   * Float amount of tokens, default {@link Number.MAX_SAFE_INTEGER}
+   * Float amount of tokens, default is Number.MAX_SAFE_INTEGER
    */
   limit?: string;
   sender: string;
@@ -58,20 +66,19 @@ const FEE = 100;
 const SEND_TRANSACTION_TIMEOUT = 180;
 
 export class DefaultSrbUtils implements SrbUtils {
-  constructor(readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig, readonly params: AllbridgeCoreSdkOptions) {
-  }
+  constructor(readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig, readonly params: AllbridgeCoreSdkOptions) {}
 
   async buildChangeTrustLineXdrTx(params: TrustLineParams): Promise<string> {
     const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.sender);
-    const tokenContract = await this.getContract(TokenContract, params.tokenAddress);
+    const tokenContract = this.getContract(TokenContract, params.tokenAddress);
     const tokenName = await tokenContract.name();
     const [symbol, srbTokenAddress] = tokenName.split(":");
 
     const asset = new StellarAsset(symbol, srbTokenAddress);
     const changeTrust = StellarOperation.changeTrust({
       asset: asset,
-      limit: params.limit ? params.limit : Number.MAX_SAFE_INTEGER.toString(),
+      limit: params.limit,
     });
 
     return new StellarTransactionBuilder(stellarAccount, {
@@ -84,8 +91,8 @@ export class DefaultSrbUtils implements SrbUtils {
       .toXDR();
   }
 
-  async getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLine | undefined> {
-    const tokenContract = await this.getContract(TokenContract, tokenAddress);
+  async getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.BalanceLineAsset | undefined> {
+    const tokenContract = this.getContract(TokenContract, tokenAddress);
     const tokenName = await tokenContract.name();
     const [symbol, srbTokenAddress] = tokenName.split(":");
 
@@ -101,20 +108,30 @@ export class DefaultSrbUtils implements SrbUtils {
     );
   }
 
-  async submitXdrTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse> {
+  async submitTransactionStellar(xdrTx: string): Promise<Horizon.SubmitTransactionResponse> {
     const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
-    const transaction = StellarTransactionBuilder.fromXDR(xdrTx, this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
+    const transaction = StellarTransactionBuilder.fromXDR(
+      xdrTx,
+      this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR)
+    );
     return await stellar.submitTransaction(transaction);
   }
 
-  async submitXdrTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse> {
+  async sendTransactionSoroban(xdrTx: string): Promise<SorobanRpc.SendTransactionResponse> {
     const server = new SorobanClient.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
-    const secondsToWait = 10;
-    return await sendTx(transaction, secondsToWait, server);
+    return server.sendTransaction(transaction);
   }
 
-  private async getContract<T>(contract: new (args: ClassOptions) => T, address: string): Promise<T> {
+  async confirmTx(
+    hash: string,
+    secondsToWait = 15
+  ): Promise<SorobanRpc.GetTransactionResponse> {
+    const server = new SorobanClient.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
+    return confirmTx(hash, secondsToWait, server);
+  }
+
+  private getContract<T>(contract: new (args: ClassOptions) => T, address: string): T {
     const config: ClassOptions = {
       contractId: address,
       networkPassphrase: this.params.sorobanNetworkPassphrase,

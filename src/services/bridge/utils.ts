@@ -13,7 +13,6 @@ import {
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
-  MethodNotSupportedError,
   SdkError,
 } from "../../exceptions";
 import {
@@ -27,14 +26,8 @@ import {
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { SendParams, TxSendParams, TxSwapParams } from "./models";
-import { Address } from "soroban-client";
 
-export function formatAddress(
-  address: string,
-  from: ChainType,
-  to: ChainType,
-  contractAddress = true
-): string | number[] {
+export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
   let buffer: Buffer;
   switch (from) {
     case ChainType.EVM: {
@@ -234,8 +227,8 @@ export async function prepareTxSendParams(
   }
 
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
-  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType, false);
-  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType, false);
+  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
+  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
   if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
     validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
   }

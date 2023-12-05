@@ -50,7 +50,6 @@ import {
 import { getPoolInfoByToken, validateAmountDecimals, validateAmountGtZero } from "../utils/utils";
 import { BridgeService, DefaultBridgeService } from "./bridge";
 import { GetNativeTokenBalanceParams } from "./bridge/models";
-import { SolanaBridgeParams } from "./bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./liquidity-pool";
 import { DefaultTokenService, TokenService } from "./token";
@@ -85,7 +84,7 @@ export class AllbridgeCoreSdkService {
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
     this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
-    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, this.tokenService);
+    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
   }
 
