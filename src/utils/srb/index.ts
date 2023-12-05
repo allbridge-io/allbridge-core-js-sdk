@@ -47,10 +47,7 @@ export interface SrbUtils {
   /**
    * Confirm tx
    */
-  confirmTx(
-    hash: string,
-    secondsToWait?: number
-  ): Promise<SorobanRpc.GetTransactionResponse>;
+  confirmTx(hash: string, secondsToWait?: number): Promise<SorobanRpc.GetTransactionResponse>;
 }
 
 export interface TrustLineParams {
@@ -123,10 +120,7 @@ export class DefaultSrbUtils implements SrbUtils {
     return server.sendTransaction(transaction);
   }
 
-  async confirmTx(
-    hash: string,
-    secondsToWait = 15
-  ): Promise<SorobanRpc.GetTransactionResponse> {
+  async confirmTx(hash: string, secondsToWait = 15): Promise<SorobanRpc.GetTransactionResponse> {
     const server = new SorobanClient.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return confirmTx(hash, secondsToWait, server);
   }

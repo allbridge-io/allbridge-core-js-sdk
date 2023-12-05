@@ -8,10 +8,10 @@ import {
   SendParams,
 } from "@allbridge/bridge-core-sdk";
 import * as SorobanClient from "soroban-client";
-import {SorobanRpc, TransactionBuilder} from "soroban-client";
-import {Keypair as StellarKeypair, TransactionBuilder as StellarTransactionBuilder,} from "stellar-sdk";
-import {ensure} from "../../../utils/utils";
-import {getEnvVar} from "../../../utils/env";
+import { SorobanRpc, TransactionBuilder } from "soroban-client";
+import { Keypair as StellarKeypair, TransactionBuilder as StellarTransactionBuilder } from "stellar-sdk";
+import { ensure } from "../../../utils/utils";
+import { getEnvVar } from "../../../utils/env";
 
 const fromAddress = getEnvVar("SRB_ACCOUNT_ADDRESS");
 const privateKey = getEnvVar("SRB_PRIVATE_KEY");
@@ -45,12 +45,13 @@ const main = async () => {
   const sent = await sdk.utils.srb.sendTransactionSoroban(signedTx);
   const confirm = await sdk.utils.srb.confirmTx(sent.hash);
   if (confirm.status === SorobanRpc.GetTransactionStatus.NOT_FOUND) {
-    console.log(`Waited for transaction to complete, but it did not. ` +
-      `Check the transaction status manually. ` +
-      `Hash: ${sent.hash}`)
+    console.log(
+      `Waited for transaction to complete, but it did not. ` +
+        `Check the transaction status manually. ` +
+        `Hash: ${sent.hash}`
+    );
   } else if (confirm.status === SorobanRpc.GetTransactionStatus.FAILED) {
-    console.log(`Transaction failed. Check the transaction manually.` +
-      `Hash: ${sent.hash}`)
+    console.log(`Transaction failed. Check the transaction manually.` + `Hash: ${sent.hash}`);
   } else {
     console.log(`Transaction Confirmed. Hash: ${sent.hash}`);
   }
@@ -61,7 +62,7 @@ const main = async () => {
   if (!balanceLine || Big(balanceLine.balance).add(amount).gt(Big(balanceLine.limit))) {
     const xdrTx = await sdk.utils.srb.buildChangeTrustLineXdrTx({
       sender: fromAddress,
-      tokenAddress: sourceToken.tokenAddress
+      tokenAddress: sourceToken.tokenAddress,
     });
 
     //SignTx

@@ -12,6 +12,14 @@ export interface ChainDetailsDTO {
   confirmations: number;
 }
 
+export enum AddressStatus {
+  OK = "OK",
+  INVALID = "INVALID",
+  FORBIDDEN = "FORBIDDEN",
+  UNINITIALIZED = "UNINITIALIZED",
+  CONTRACT_ADDRESS = "CONTRACT_ADDRESS",
+}
+
 export interface TokenDTO {
   symbol: string;
   name: string;
@@ -73,7 +81,8 @@ export interface ReceiveTransactionCostResponse {
 }
 
 export interface GasBalanceResponse {
-  gasBalance: string;
+  gasBalance: string | null;
+  status: AddressStatus;
 }
 
 export interface TransferStatusResponse {
