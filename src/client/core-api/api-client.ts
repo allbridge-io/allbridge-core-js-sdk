@@ -61,7 +61,7 @@ export class ApiClientImpl implements ApiClient {
   }
 
   async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
-    const { data } = await this.api.get<GasBalanceResponse>(`/chain/${chainSymbol}/${address}`);
+    const { data } = await this.api.get<GasBalanceResponse>(`/check/${chainSymbol}/${address}`);
     return data;
   }
 
