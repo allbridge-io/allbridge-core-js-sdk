@@ -93,12 +93,13 @@ export class SrbBridgeService extends ChainBridgeService {
     } = params;
     const contract = this.getContract(BridgeContract, contractAddress);
     return await contract.swap({
-      sender: Address.contract(Buffer.from(fromAccountAddress)),
+      sender: Address.fromString(fromAccountAddress),
       amount: BigInt(amount),
       token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
       receive_token: Buffer.from(toTokenAddress),
-      recipient: Address.contract(Buffer.from(toAccountAddress)),
+      recipient: Address.fromString(toAccountAddress as string),
       receive_amount_min: BigInt(minimumReceiveAmount),
+      claimable: false,
     });
   }
 

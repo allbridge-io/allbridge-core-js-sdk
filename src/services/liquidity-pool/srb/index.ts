@@ -19,7 +19,7 @@ import { ChainPoolService, UserBalance } from "../models";
 
 export class SrbPoolService extends ChainPoolService {
   chainType: ChainType.SRB = ChainType.SRB;
-  private P = 52;
+  private P = 48;
 
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,

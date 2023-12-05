@@ -1,7 +1,7 @@
 import { Horizon, Server as StellarServer } from "stellar-sdk";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { AllbridgeCoreSdkOptions } from "../../../index";
+import { AllbridgeCoreSdkOptions, SdkError } from "../../../index";
 import { GetTokenBalanceParams, MethodNotSupportedError, TransactionResponse } from "../../../models";
 import { convertFloatAmountToInt } from "../../../utils/calculation";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
@@ -28,9 +28,10 @@ export class SrbTokenService extends ChainTokenService {
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
-    const tokenContract = this.getContract(TokenContract, params.token.tokenAddress);
-    const tokenName = await tokenContract.name();
-    const [symbol, srbTokenAddress] = tokenName.split(":");
+    if (!params.token.originTokenAddress) {
+      throw new SdkError("OriginTokenAddress missing");
+    }
+    const [symbol, srbTokenAddress] = params.token.originTokenAddress.split(":");
 
     const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.account);

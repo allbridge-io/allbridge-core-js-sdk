@@ -67,6 +67,10 @@ export interface Token {
    */
   tokenAddress: string;
   /**
+   * Token origin address
+   */
+  originTokenAddress?: string;
+  /**
    * Token CCTP address</br>
    * Optional. Defined if CCTP supported by token
    */
