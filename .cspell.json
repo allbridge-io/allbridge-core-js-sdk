@@ -36,7 +36,15 @@
     "CCTP",
     "cctp",
     "Soroban",
-    "Holešky"
+    "Holešky",
+    "STLR",
+    "alphanum",
+    "retval",
+    "typeahead",
+    "Timepoint",
+    "Typepoint",
+    "futurenet",
+    "Vals"
   ],
   "flagWords": [],
   "ignorePaths": [

@@ -1,4 +1,5 @@
 import { AddressLookupTableAccount, Connection, VersionedTransaction } from "@solana/web3.js";
+import { SdkError } from "../../exceptions";
 
 export async function fetchAddressLookupTableAccountsFromTx(
   transaction: VersionedTransaction,
@@ -11,7 +12,7 @@ export async function fetchAddressLookupTableAccountsFromTx(
         state: AddressLookupTableAccount.deserialize(
           await connection.getAccountInfo(lookup.accountKey).then((res) => {
             if (!res) {
-              throw new Error("Cannot get AccountInfo");
+              throw new SdkError("Cannot get AccountInfo");
             }
             return res.data;
           })

@@ -40,6 +40,7 @@ export interface AllbridgeCoreSdkOptions {
   coreApiHeaders?: Record<string, string>;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
+  sorobanNetworkPassphrase: string;
 }
 
 /**
@@ -92,7 +93,7 @@ export class AllbridgeCoreSdk {
     this.service = new AllbridgeCoreSdkService(nodeRpcUrlsConfig, params);
     this.bridge = this.service.bridge;
     this.pool = this.service.pool;
-    this.utils = new DefaultUtils(nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL));
+    this.utils = new DefaultUtils(nodeRpcUrlsConfig, params);
     this.params = params;
   }
 

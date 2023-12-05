@@ -50,7 +50,6 @@ import {
 import { getPoolInfoByToken, validateAmountDecimals, validateAmountGtZero } from "../utils/utils";
 import { BridgeService, DefaultBridgeService } from "./bridge";
 import { GetNativeTokenBalanceParams } from "./bridge/models";
-import { SolanaBridgeParams } from "./bridge/sol";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./liquidity-pool";
 import { DefaultTokenService, TokenService } from "./token";
@@ -83,14 +82,9 @@ export class AllbridgeCoreSdkService {
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);
     this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
-
-    const solBridgeParams: SolanaBridgeParams = {
-      wormholeMessengerProgramId: params.wormholeMessengerProgramId,
-      solanaLookUpTable: params.solanaLookUpTable,
-    };
-    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig);
-    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, solBridgeParams, this.tokenService);
-    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, this.tokenService);
+    this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
+    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
+    this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
   }
 

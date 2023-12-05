@@ -6,6 +6,7 @@ export const testnet: AllbridgeCoreSdkOptions = {
   coreApiHeaders: {},
   wormholeMessengerProgramId: "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5",
   solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
+  sorobanNetworkPassphrase: "Test SDF Future Network ; October 2022",
 };
 
 /**
@@ -19,4 +20,6 @@ export const testnetNodeUrlsDefault: NodeUrlsConfig = {
 export const testnetNodeRpcUrlsDefault: NodeRpcUrls = {
   SOL: "https://api.devnet.solana.com",
   TRX: "https://nile.trongrid.io",
+  SRB: "https://rpc-futurenet.stellar.org:443",
+  STLR: "https://horizon-futurenet.stellar.org",
 };

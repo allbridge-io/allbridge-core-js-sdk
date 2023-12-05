@@ -6,6 +6,7 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   coreApiHeaders: {},
   wormholeMessengerProgramId: "worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth",
   solanaLookUpTable: "2JcBAEVnAwVo4u8d61iqgHPrzZuugur7cVTjWubsVLHj",
+  sorobanNetworkPassphrase: "Public Global Stellar Network ; September 2015",
 };
 
 /**

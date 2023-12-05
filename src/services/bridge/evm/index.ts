@@ -142,7 +142,7 @@ export class EvmBridgeService extends ChainBridgeService {
     // prettier-ignore
     const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
-      ...rawTransaction,
+      ...(rawTransaction as Object),
       gas: estimateGas,
       ...feeOptions,
     });
