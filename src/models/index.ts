@@ -47,6 +47,7 @@ export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-b
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
 export { Utils } from "../utils";
 export { SrbUtils, TrustLineParams } from "../utils/srb";
+export { SolUtils } from "../utils/sol";
 export * from "../exceptions";
 
 export enum FeePaymentMethod {
