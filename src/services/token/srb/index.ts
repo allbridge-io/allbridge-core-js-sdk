@@ -7,8 +7,7 @@ import { convertFloatAmountToInt } from "../../../utils/calculation";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
-import { ClassOptions, TokenContract } from "../../models/srb/token-contract";
-import { ChainTokenService } from "../models/token";
+import { ChainTokenService } from "../models";
 import BalanceLineAsset = Horizon.BalanceLineAsset;
 import BalanceLineNative = Horizon.BalanceLineNative;
 
@@ -73,14 +72,5 @@ export class SrbTokenService extends ChainTokenService {
 
   buildRawTransactionApprove(): Promise<RawTransaction> {
     throw new MethodNotSupportedError();
-  }
-
-  private getContract<T>(contract: new (args: ClassOptions) => T, address: string): T {
-    const config: ClassOptions = {
-      contractId: address,
-      networkPassphrase: this.params.sorobanNetworkPassphrase,
-      rpcUrl: this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB),
-    };
-    return new contract(config);
   }
 }

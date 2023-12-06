@@ -2,7 +2,7 @@ import { NATIVE_MINT } from "@solana/spl-token";
 import { Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import axios, { AxiosError } from "axios";
 import { JupiterError } from "../../../exceptions";
-import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol";
+import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
 
 export class JupiterService {
   connection: Connection;
