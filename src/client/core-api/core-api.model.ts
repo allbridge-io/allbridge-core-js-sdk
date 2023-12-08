@@ -142,6 +142,8 @@ export interface BridgeTransaction {
 
   confirmations: number;
   confirmationsNeeded: number;
+
+  isClaimable?: boolean;
 }
 
 export type PoolInfoResponse = {
