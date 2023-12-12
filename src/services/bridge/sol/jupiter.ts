@@ -1,7 +1,8 @@
 import { NATIVE_MINT } from "@solana/spl-token";
-import { AddressLookupTableAccount, Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import axios, { AxiosError } from "axios";
-import { JupiterError, SdkError } from "../../../exceptions";
+import { JupiterError } from "../../../exceptions";
+import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
 
 export class JupiterService {
   connection: Connection;
@@ -70,36 +71,8 @@ export class JupiterService {
     sdkTx: VersionedTransaction
   ): Promise<VersionedTransaction> {
     try {
-      const addressLookupTableAccounts = await Promise.all(
-        transaction.message.addressTableLookups.map(async (lookup) => {
-          return new AddressLookupTableAccount({
-            key: lookup.accountKey,
-            state: AddressLookupTableAccount.deserialize(
-              await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
-                if (!res) {
-                  throw new SdkError("Cannot get AccountInfo");
-                }
-                return res.data;
-              })
-            ),
-          });
-        })
-      );
-      const sdkAddressLookupTableAccounts = await Promise.all(
-        sdkTx.message.addressTableLookups.map(async (lookup) => {
-          return new AddressLookupTableAccount({
-            key: lookup.accountKey,
-            state: AddressLookupTableAccount.deserialize(
-              await this.connection.getAccountInfo(lookup.accountKey).then((res) => {
-                if (!res) {
-                  throw new SdkError("Cannot get AccountInfo");
-                }
-                return res.data;
-              })
-            ),
-          });
-        })
-      );
+      const addressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(transaction, this.connection);
+      const sdkAddressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(sdkTx, this.connection);
 
       const message = TransactionMessage.decompile(transaction.message, {
         addressLookupTableAccounts: addressLookupTableAccounts,

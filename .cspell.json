@@ -35,7 +35,16 @@
     "txid",
     "CCTP",
     "cctp",
-    "Soroban"
+    "Soroban",
+    "Holešky",
+    "STLR",
+    "alphanum",
+    "retval",
+    "typeahead",
+    "Timepoint",
+    "Typepoint",
+    "futurenet",
+    "Vals"
   ],
   "flagWords": [],
   "ignorePaths": [

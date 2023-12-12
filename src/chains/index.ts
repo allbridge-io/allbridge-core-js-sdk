@@ -14,6 +14,11 @@ export enum ChainSymbol {
   SPL = "SPL",
 
   /**
+   * The Holešky testnet.
+   */
+  HOL = "HOL",
+
+  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -57,6 +62,11 @@ export enum ChainSymbol {
    * The Soroban network.
    */
   SRB = "SRB",
+
+  /**
+   * The Stellar network.
+   */
+  STLR = "STLR",
 }
 
 export enum ChainType {
@@ -87,6 +97,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.SPL,
     chainId: "0xaa36a7",
     name: "Sepolia",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.HOL]: {
+    chainSymbol: ChainSymbol.HOL,
+    chainId: "0x4268",
+    name: "Holešky",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.BSC]: {
@@ -138,6 +154,11 @@ export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.SRB]: {
     chainSymbol: ChainSymbol.SRB,
     name: "Soroban",
+    chainType: ChainType.SRB,
+  },
+  [ChainSymbol.STLR]: {
+    chainSymbol: ChainSymbol.STLR,
+    name: "Stellar",
     chainType: ChainType.SRB,
   },
 };

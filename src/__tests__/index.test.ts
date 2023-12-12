@@ -57,6 +57,7 @@ describe("SDK", () => {
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
+    sorobanNetworkPassphrase: "sorobanNetworkPassphrase",
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);

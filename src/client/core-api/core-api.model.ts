@@ -12,6 +12,14 @@ export interface ChainDetailsDTO {
   confirmations: number;
 }
 
+export enum AddressStatus {
+  OK = "OK",
+  INVALID = "INVALID",
+  FORBIDDEN = "FORBIDDEN",
+  UNINITIALIZED = "UNINITIALIZED",
+  CONTRACT_ADDRESS = "CONTRACT_ADDRESS",
+}
+
 export interface TokenDTO {
   symbol: string;
   name: string;
@@ -72,6 +80,11 @@ export interface ReceiveTransactionCostResponse {
   sourceNativeTokenPrice: string;
 }
 
+export interface GasBalanceResponse {
+  gasBalance: string | null;
+  status: AddressStatus;
+}
+
 export interface TransferStatusResponse {
   txId: string;
 
@@ -129,6 +142,8 @@ export interface BridgeTransaction {
 
   confirmations: number;
   confirmationsNeeded: number;
+
+  isClaimable?: boolean;
 }
 
 export type PoolInfoResponse = {
@@ -136,3 +151,11 @@ export type PoolInfoResponse = {
     string: PoolInfo;
   };
 };
+
+export type PendingInfoResponse = Record<ChainSymbol, TokenPendingInfoDTO>;
+export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
+
+export interface PendingInfoDTO {
+  pendingTxs: number;
+  totalSentAmount: string;
+}

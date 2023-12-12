@@ -13,7 +13,6 @@ import {
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
-  MethodNotSupportedError,
   SdkError,
 } from "../../exceptions";
 import {
@@ -60,16 +59,16 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       return buffer.toJSON().data;
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not supported yet");
+      return buffer.toJSON().data;
     }
   }
 }
 
-function hexToBuffer(hex: string): Buffer {
+export function hexToBuffer(hex: string): Buffer {
   return Buffer.from(hex.replace(/^0x/i, ""), "hex");
 }
 
-function evmAddressToBuffer32(address: string): Buffer {
+export function evmAddressToBuffer32(address: string): Buffer {
   const length = 32;
   const buff = hexToBuffer(address);
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
@@ -110,6 +109,14 @@ export function getTokenByTokenAddress(
 
 export function getNonce(): Buffer {
   return randomBytes(32);
+}
+
+export function getNonceBigInt(): bigint {
+  const bigint = randomBytes(32).readBigInt64BE();
+  if (bigint < 0) {
+    return bigint * -1n;
+  }
+  return bigint;
 }
 
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {

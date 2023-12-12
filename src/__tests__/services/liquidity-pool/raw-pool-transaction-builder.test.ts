@@ -11,12 +11,12 @@ import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithCh
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawPoolTransactionBuilder;
   let api: any;
-  let solParams: any;
   let nodeRpcUrls: any;
-  const tokenService = new DefaultTokenService(api, solParams);
+  let params: any;
+  const tokenService = new DefaultTokenService(api, nodeRpcUrls, params);
 
   beforeEach(() => {
-    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, tokenService);
+    rawTransactionBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrls, params, tokenService);
   });
 
   test("approve should call buildRawTransactionApprove", async () => {
