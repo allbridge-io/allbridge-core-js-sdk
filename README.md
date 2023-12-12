@@ -48,10 +48,10 @@ $ npm install @allbridge/bridge-core-sdk
 ### 1. Initialize SDK
 #### 1.1 Initialize SDK instance with your node Rpc urls (RECOMMENDED)
 ```ts
-import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 // Connections to blockchains will be made through your rpc-urls passed during initialization
 const sdk = new AllbridgeCoreSdk({
-  ...nodeUrlsDefault,
+  ...nodeRpcUrlsDefault,
   TRX: "your trx-rpc-url",
   ETH: "your eth-rpc-url"
 });
@@ -61,8 +61,8 @@ const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
 
 #### 1.2 Initialize SDK instance (using passed provider for blockchains connections)
 ```ts
-import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
-const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
+const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 // The Provider parameter must be passed in order for it to be used to connect to the blockchain, for example:
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
