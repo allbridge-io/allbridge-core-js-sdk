@@ -28,7 +28,7 @@ export interface ClassOptions {
    * @example
    * ```ts
    * import freighter from "@stellar/freighter-api";
-   * import { Contract } from "tmp";
+   * import { Contract } from "contracts";
    * const contract = new Contract({
    *   …,
    *   wallet: freighter,

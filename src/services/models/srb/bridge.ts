@@ -75,9 +75,9 @@ export class Err<E extends Error_ = Error_> implements Result<any, E> {
 }
 
 export const networks = {
-  futurenet: {
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    contractId: "CAXKSIMIIFKKHAQKM32QD4AYEXVLBYIQVUKPRAAUV5HNLTLXHSROM4AV",
+  testnet: {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    contractId: "CBSEMJH6FYPQFVZB7PAVJGSUU6G3RNU6WZHEENNU7I7FKV47W27DWGF5",
   },
 } as const;
 
@@ -85,18 +85,18 @@ export interface Bridge {
   /**
    * precomputed values of the scaling factor required for paying the bridging fee with stable tokens
    */
-  bridging_fee_conversion_factor: Map<Address, u128>;
+  bridging_fee_conversion_factor: Map<string, u128>;
   can_swap: boolean;
   /**
    * precomputed values to divide by to change the precision from the Gas Oracle precision to the token precision
    */
-  from_gas_oracle_factor: Map<Address, u128>;
-  messenger: Address;
-  pools: Map<Buffer, Address>;
-  rebalancer: Address;
+  from_gas_oracle_factor: Map<string, u128>;
+  messenger: string;
+  pools: Map<Buffer, string>;
+  rebalancer: string;
 }
 
-const Errors = {
+/*const Errors = {
   0: { message: "" },
   1: { message: "" },
   2: { message: "" },
@@ -134,7 +134,7 @@ const Errors = {
   302: { message: "" },
   303: { message: "" },
   400: { message: "" },
-};
+};*/
 
 export class BridgeContract {
   spec: ContractSpec;
@@ -142,9 +142,9 @@ export class BridgeContract {
   constructor(public readonly options: ClassOptions) {
     this.spec = new ContractSpec([
       "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",
-      "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",
+      "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",
-      "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",
+      "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",
@@ -155,7 +155,7 @@ export class BridgeContract {
       "AAAAAAAAAAAAAAAPcmVnaXN0ZXJfYnJpZGdlAAAAAAIAAAAAAAAACGNoYWluX2lkAAAABAAAAAAAAAAOYnJpZGdlX2FkZHJlc3MAAAAAA+4AAAAgAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAAQYWRkX2JyaWRnZV90b2tlbgAAAAIAAAAAAAAACGNoYWluX2lkAAAABAAAAAAAAAANdG9rZW5fYWRkcmVzcwAAAAAAA+4AAAAgAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAATcmVtb3ZlX2JyaWRnZV90b2tlbgAAAAACAAAAAAAAAAhjaGFpbl9pZAAAAAQAAAAAAAAADXRva2VuX2FkZHJlc3MAAAAAAAPuAAAAIAAAAAEAAAPpAAAD7QAAAAAAAAAD",
-      "AAAAAAAAAAAAAAAIYWRkX3Bvb2wAAAACAAAAAAAAAARwb29sAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAPuAAAAIAAAAAEAAAPpAAAD7QAAAAAAAAAD",
+      "AAAAAAAAAAAAAAAIYWRkX3Bvb2wAAAACAAAAAAAAAARwb29sAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAATd2l0aGRyYXdfZ2FzX3Rva2VucwAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABmFtb3VudAAAAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAfd2l0aGRyYXdfYnJpZGdpbmdfZmVlX2luX3Rva2VucwAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAADXRva2VuX2FkZHJlc3MAAAAAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAAVaGFzX3Byb2Nlc3NlZF9tZXNzYWdlAAAAAAAAAQAAAAAAAAAHbWVzc2FnZQAAAAPuAAAAIAAAAAEAAAPpAAAAAQAAAAM=",
@@ -196,8 +196,8 @@ export class BridgeContract {
     gas_amount,
     fee_token_amount,
   }: {
-    sender: Address;
-    token: Buffer;
+    sender: string;
+    token: string;
     amount: u128;
     recipient: Buffer;
     destination_chain_id: u32;
@@ -207,11 +207,11 @@ export class BridgeContract {
     fee_token_amount: u128;
   }): Promise<string> {
     return await xdrTxBuilder({
-      sender,
+      sender: new Address(sender),
       method: "swap_and_bridge",
       args: this.spec.funcArgsToScVals("swap_and_bridge", {
-        sender,
-        token,
+        sender: new Address(sender),
+        token: new Address(token),
         amount,
         recipient,
         destination_chain_id,
@@ -231,27 +231,25 @@ export class BridgeContract {
     receive_token,
     recipient,
     receive_amount_min,
-    claimable,
   }: {
-    sender: Address;
+    sender: string;
     amount: u128;
     token: Buffer;
     receive_token: Buffer;
-    recipient: Address;
+    recipient: string;
     receive_amount_min: u128;
     claimable: boolean;
   }) {
     return await xdrTxBuilder({
-      sender,
+      sender: new Address(sender),
       method: "swap",
       args: this.spec.funcArgsToScVals("swap", {
-        sender,
+        sender: new Address(sender),
         amount,
         token,
         receive_token,
-        recipient,
+        recipient: new Address(recipient),
         receive_amount_min,
-        claimable,
       }),
       ...this.options,
     });

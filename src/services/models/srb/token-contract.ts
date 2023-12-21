@@ -85,9 +85,9 @@ function parseError(message: string): Err | undefined {
 }
 
 export const networks = {
-  futurenet: {
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    contractId: "CDUAECF3CF4QBJASV4W3PWTNV7LXR26PF2G6FWZDVZGPAGRRIWTGVARF",
+  testnet: {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    contractId: "CACOK7HB7D7SRPMH3LYYOW77T6D4D2F7TR7UEVKY2TVSUDSRDM6DZVLK",
   },
 } as const;
 
@@ -109,7 +109,7 @@ export class TokenContract {
       "AAAAAAAAAAAAAAAEYnVybgAAAAIAAAAAAAAABGZyb20AAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
       "AAAAAAAAAAAAAAAJYnVybl9mcm9tAAAAAAAAAwAAAAAAAAAHc3BlbmRlcgAAAAATAAAAAAAAAARmcm9tAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAA==",
       "AAAAAAAAAAAAAAAIZGVjaW1hbHMAAAAAAAAAAQAAAAQ=",
-      "AAAAAAAAAAAAAAAEbmFtZQAAAAAAAAABAAAAEA==", // cSpell:disable-line
+      "AAAAAAAAAAAAAAAEbmFtZQAAAAAAAAABAAAAEA==", // cspell:disable-line
       "AAAAAAAAAAAAAAAGc3ltYm9sAAAAAAAAAAAAAQAAABA=",
       "AAAAAQAAAAAAAAAAAAAAEEFsbG93YW5jZURhdGFLZXkAAAACAAAAAAAAAARmcm9tAAAAEwAAAAAAAAAHc3BlbmRlcgAAAAAT",
       "AAAAAQAAAAAAAAAAAAAADkFsbG93YW5jZVZhbHVlAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAAAAAAEWV4cGlyYXRpb25fbGVkZ2VyAAAAAAAABA==",
@@ -119,7 +119,7 @@ export class TokenContract {
   }
 
   async allowance<R extends ResponseTypes = undefined>(
-    { from, spender }: { from: Address; spender: Address },
+    { from, spender }: { from: string; spender: string },
     options: {
       /**
        * The fee to pay for the transaction. Default: 100.
@@ -141,7 +141,7 @@ export class TokenContract {
   ) {
     return await invoke({
       method: "allowance",
-      args: this.spec.funcArgsToScVals("allowance", { from, spender }),
+      args: this.spec.funcArgsToScVals("allowance", { from: new Address(from), spender: new Address(spender) }),
       ...options,
       ...this.options,
       parseResultXdr: (xdr): i128 => {
@@ -151,7 +151,7 @@ export class TokenContract {
   }
 
   async balance<R extends ResponseTypes = undefined>(
-    { id }: { id: Address },
+    { id }: { id: string },
     options: {
       /**
        * The fee to pay for the transaction. Default: 100.
@@ -173,7 +173,7 @@ export class TokenContract {
   ) {
     return await invoke({
       method: "balance",
-      args: this.spec.funcArgsToScVals("balance", { id }),
+      args: this.spec.funcArgsToScVals("balance", { id: new Address(id) }),
       ...options,
       ...this.options,
       parseResultXdr: (xdr): i128 => {
@@ -183,7 +183,7 @@ export class TokenContract {
   }
 
   async spendableBalance<R extends ResponseTypes = undefined>(
-    { id }: { id: Address },
+    { id }: { id: string },
     options: {
       /**
        * The fee to pay for the transaction. Default: 100.
@@ -205,7 +205,7 @@ export class TokenContract {
   ) {
     return await invoke({
       method: "spendable_balance",
-      args: this.spec.funcArgsToScVals("spendable_balance", { id }),
+      args: this.spec.funcArgsToScVals("spendable_balance", { id: new Address(id) }),
       ...options,
       ...this.options,
       parseResultXdr: (xdr): i128 => {

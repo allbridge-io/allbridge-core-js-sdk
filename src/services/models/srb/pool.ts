@@ -39,7 +39,7 @@ export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
   constructor(readonly value: T) {}
 
   unwrapErr(): E {
-    throw new SdkError("No error");
+    throw new Error("No error");
   }
 
   unwrap(): T {
@@ -92,27 +92,11 @@ function parseError(message: string): Err | undefined {
 }
 
 export const networks = {
-  futurenet: {
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    contractId: "CCUFKM6WZKBPAFSY7EHTB4FKMMTQPK7YH7U3VV7MRBPO3FAO6P5A2CZV",
+  testnet: {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    contractId: "CAAIJH55UJZXY7YZ3QQJ5S43KAY4ACEU5EBNS6NLUKJXRQEU2ZC36MUR",
   },
 } as const;
-
-export interface SwappedFromVUsd {
-  amount: u128;
-  fee: u128;
-  recipient: Address;
-  token: Address;
-  vusd_amount: u128;
-}
-
-export interface SwappedToVUsd {
-  amount: u128;
-  fee: u128;
-  sender: Address;
-  token: Address;
-  vusd_amount: u128;
-}
 
 export interface Deposit {
   amount: u128;
@@ -124,17 +108,7 @@ export interface Withdraw {
   user: Address;
 }
 
-export interface RewardsClaimed {
-  amount: u128;
-  user: Address;
-}
-
-export type Bridge = readonly [Address];
-
-export interface DataKey {
-  tag: "UserDeposit";
-  values: readonly [Address];
-}
+export type Bridge = readonly [string];
 
 export interface Pool {
   a: u128;
@@ -148,7 +122,7 @@ export interface Pool {
   decimals: u32;
   fee_share_bp: u128;
   reserves: u128;
-  token: Address;
+  token: string;
   token_balance: u128;
   total_lp_amount: u128;
   v_usd_balance: u128;
@@ -159,11 +133,6 @@ export interface UserDeposit {
   reward_debt: u128;
 }
 
-export type Admin = readonly [Address];
-export type GasOracleAddress = readonly [Address];
-export type GasUsage = readonly [Map<u32, u128>];
-export type NativeToken = readonly [Address];
-export type StopAuthority = readonly [Address];
 const Errors = {
   0: { message: "" },
   1: { message: "" },
@@ -213,8 +182,9 @@ export class PoolContract {
       "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABmFtb3VudAAAAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAACWFtb3VudF9scAAAAAAAAAoAAAABAAAD6QAAA+0AAAAAAAAAAw==",
       "AAAAAAAAAAAAAAANc3dhcF90b192X3VzZAAAAAAAAAMAAAAAAAAABHVzZXIAAAATAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAEAAAPpAAAACgAAAAM=",
-      "AAAAAAAAAAAAAAAPc3dhcF9mcm9tX3ZfdXNkAAAAAAQAAAAAAAAABHVzZXIAAAATAAAAAAAAAAt2dXNkX2Ftb3VudAAAAAAKAAAAAAAAABJyZWNlaXZlX2Ftb3VudF9taW4AAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAEAAAPpAAAACgAAAAM=",
+      "AAAAAAAAAAAAAAAPc3dhcF9mcm9tX3ZfdXNkAAAAAAUAAAAAAAAABHVzZXIAAAATAAAAAAAAAAt2dXNkX2Ftb3VudAAAAAAKAAAAAAAAABJyZWNlaXZlX2Ftb3VudF9taW4AAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAAAAAAJY2xhaW1hYmxlAAAAAAAAAQAAAAEAAAPpAAAACgAAAAM=",
       "AAAAAAAAAAAAAAANY2xhaW1fcmV3YXJkcwAAAAAAAAEAAAAAAAAABnNlbmRlcgAAAAAAEwAAAAEAAAPpAAAD7QAAAAAAAAAD",
+      "AAAAAAAAAAAAAAANY2xhaW1fYmFsYW5jZQAAAAAAAAEAAAAAAAAABHVzZXIAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAdgYWRtaW5gAAAAAA1zZXRfZmVlX3NoYXJlAAAAAAAAAQAAAAAAAAAMZmVlX3NoYXJlX2JwAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAWYWRqdXN0X3RvdGFsX2xwX2Ftb3VudAAAAAAAAAAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAYc2V0X2JhbGFuY2VfcmF0aW9fbWluX2JwAAAAAQAAAAAAAAAUYmFsYW5jZV9yYXRpb19taW5fYnAAAAAKAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
@@ -233,15 +203,18 @@ export class PoolContract {
       "AAAAAAAAAAAAAAASZ2V0X3N0b3BfYXV0aG9yaXR5AAAAAAAAAAAAAQAAA+kAAAATAAAAAw==",
       "AAAAAAAAAAAAAAAKZ2V0X2JyaWRnZQAAAAAAAAAAAAEAAAPpAAAAEwAAAAM=",
       "AAAAAAAAAAAAAAAQZ2V0X3VzZXJfZGVwb3NpdAAAAAEAAAAAAAAABHVzZXIAAAATAAAAAQAAA+kAAAfQAAAAC1VzZXJEZXBvc2l0AAAAAAM=",
+      "AAAAAAAAAAAAAAAVZ2V0X2NsYWltYWJsZV9iYWxhbmNlAAAAAAAAAQAAAAAAAAAEdXNlcgAAABMAAAABAAAD6QAAAAoAAAAD",
       "AAAAAQAAAAAAAAAAAAAAD1N3YXBwZWRGcm9tVlVzZAAAAAAFAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAAA2ZlZQAAAAAKAAAAAAAAAAlyZWNpcGllbnQAAAAAAAATAAAAAAAAAAV0b2tlbgAAAAAAABMAAAAAAAAAC3Z1c2RfYW1vdW50AAAAAAo=",
       "AAAAAQAAAAAAAAAAAAAADVN3YXBwZWRUb1ZVc2QAAAAAAAAFAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAAA2ZlZQAAAAAKAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAALdnVzZF9hbW91bnQAAAAACg==",
       "AAAAAQAAAAAAAAAAAAAAB0RlcG9zaXQAAAAAAgAAAAAAAAAGYW1vdW50AAAAAAAKAAAAAAAAAAR1c2VyAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAACFdpdGhkcmF3AAAAAgAAAAAAAAAGYW1vdW50AAAAAAAKAAAAAAAAAAR1c2VyAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAADlJld2FyZHNDbGFpbWVkAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAABHVzZXIAAAAT",
+      "AAAAAQAAAAAAAAAAAAAADkJhbGFuY2VDbGFpbWVkAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAABHVzZXIAAAAT",
       "AAAAAQAAAAAAAAAAAAAABkJyaWRnZQAAAAAAAQAAAAAAAAABMAAAAAAAABM=",
-      "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAQAAAAEAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAEAAAAT",
+      "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAgAAAAEAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAEAAAATAAAAAQAAAAAAAAAQQ2xhaW1hYmxlQmFsYW5jZQAAAAEAAAAT",
       "AAAAAQAAAAAAAAAAAAAABFBvb2wAAAAPAAAAAAAAAAFhAAAAAAAACgAAAAAAAAAWYWNjX3Jld2FyZF9wZXJfc2hhcmVfcAAAAAAACgAAAAAAAAAQYWRtaW5fZmVlX2Ftb3VudAAAAAoAAAAAAAAAEmFkbWluX2ZlZV9zaGFyZV9icAAAAAAACgAAAAAAAAAUYmFsYW5jZV9yYXRpb19taW5fYnAAAAAKAAAAAAAAAAtjYW5fZGVwb3NpdAAAAAABAAAAAAAAAAxjYW5fd2l0aGRyYXcAAAABAAAAAAAAAAFkAAAAAAAACgAAAAAAAAAIZGVjaW1hbHMAAAAEAAAAAAAAAAxmZWVfc2hhcmVfYnAAAAAKAAAAAAAAAAhyZXNlcnZlcwAAAAoAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAANdG9rZW5fYmFsYW5jZQAAAAAAAAoAAAAAAAAAD3RvdGFsX2xwX2Ftb3VudAAAAAAKAAAAAAAAAA12X3VzZF9iYWxhbmNlAAAAAAAACg==",
       "AAAAAQAAAAAAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAIAAAAAAAAACWxwX2Ftb3VudAAAAAAAAAoAAAAAAAAAC3Jld2FyZF9kZWJ0AAAAAAo=",
+      "AAAAAQAAAAAAAAAAAAAAEENsYWltYWJsZUJhbGFuY2UAAAABAAAAAAAAAAZhbW91bnQAAAAAAAo=",
       "AAAAAQAAAAAAAAAAAAAABUFkbWluAAAAAAAAAQAAAAAAAAABMAAAAAAAABM=",
       "AAAAAQAAAAAAAAAAAAAAEEdhc09yYWNsZUFkZHJlc3MAAAABAAAAAAAAAAEwAAAAAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAACEdhc1VzYWdlAAAAAQAAAAAAAAABMAAAAAAAA+wAAAAEAAAACg==",
@@ -251,27 +224,27 @@ export class PoolContract {
     ]);
   }
 
-  async deposit({ sender, amount }: { sender: Address; amount: u128 }): Promise<string> {
+  async deposit({ sender, amount }: { sender: string; amount: u128 }): Promise<string> {
     return await xdrTxBuilder({
-      sender,
+      sender: new Address(sender),
       method: "deposit",
       args: this.spec.funcArgsToScVals("deposit", { sender, amount }),
       ...this.options,
     });
   }
 
-  async withdraw({ sender, amount_lp }: { sender: Address; amount_lp: u128 }): Promise<string> {
+  async withdraw({ sender, amount_lp }: { sender: string; amount_lp: u128 }): Promise<string> {
     return await xdrTxBuilder({
-      sender,
+      sender: new Address(sender),
       method: "withdraw",
       args: this.spec.funcArgsToScVals("withdraw", { sender, amount_lp }),
       ...this.options,
     });
   }
 
-  async claimRewards({ sender }: { sender: Address }): Promise<string> {
+  async claimRewards({ sender }: { sender: string }): Promise<string> {
     return await xdrTxBuilder({
-      sender,
+      sender: new Address(sender),
       method: "claim_rewards",
       args: this.spec.funcArgsToScVals("claim_rewards", { sender }),
       ...this.options,
@@ -297,11 +270,11 @@ export class PoolContract {
     }
   }
 
-  async getUserDeposit({ user }: { user: Address }) {
+  async getUserDeposit({ user }: { user: string }) {
     try {
       return await invoke({
         method: "get_user_deposit",
-        args: this.spec.funcArgsToScVals("get_user_deposit", { user }),
+        args: this.spec.funcArgsToScVals("get_user_deposit", { user: new Address(user) }),
         ...this.options,
         parseResultXdr: (xdr): Ok<UserDeposit> | Err | undefined => {
           return new Ok(this.spec.funcResToNative("get_user_deposit", xdr));

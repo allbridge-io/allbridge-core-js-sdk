@@ -1,4 +1,3 @@
-import { Address } from "soroban-client";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { AllbridgeCoreSdkOptions } from "../../../index";
@@ -31,7 +30,7 @@ export class SrbPoolService extends ChainPoolService {
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const poolContract = this.getContract(token.poolAddress);
-    const userDeposit = (await poolContract.getUserDeposit({ user: Address.fromString(accountAddress) }))?.unwrap();
+    const userDeposit = (await poolContract.getUserDeposit({ user: accountAddress }))?.unwrap();
     if (!userDeposit) {
       throw new SdkError();
     }
@@ -65,7 +64,7 @@ export class SrbPoolService extends ChainPoolService {
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress);
     return await poolContract.deposit({
-      sender: Address.fromString(params.accountAddress),
+      sender: params.accountAddress,
       amount: BigInt(params.amount),
     });
   }
@@ -73,7 +72,7 @@ export class SrbPoolService extends ChainPoolService {
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress);
     return await poolContract.withdraw({
-      sender: Address.fromString(params.accountAddress),
+      sender: params.accountAddress,
       amount_lp: BigInt(params.amount),
     });
   }
@@ -81,7 +80,7 @@ export class SrbPoolService extends ChainPoolService {
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress);
     return await poolContract.claimRewards({
-      sender: Address.fromString(params.accountAddress),
+      sender: params.accountAddress,
     });
   }
 
