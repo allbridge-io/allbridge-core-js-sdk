@@ -1,5 +1,5 @@
 import Big from "big.js";
-import { Address } from "soroban-client";
+import { Address } from "stellar-sdk";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { MethodNotSupportedError } from "../../../exceptions";
@@ -8,7 +8,7 @@ import { FeePaymentMethod } from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge";
-import { ClassOptions } from "../../models/srb/method-options";
+import { ClassOptions } from "../../utils/srb/method-options";
 import { ChainBridgeService, SendParams, SwapParams, TxSendParams, TxSwapParams } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
@@ -50,8 +50,8 @@ export class SrbBridgeService extends ChainBridgeService {
     let tx;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       tx = await contract.swapAndBridge({
-        sender: Address.fromString(fromAccountAddress),
-        token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
+        sender: fromAccountAddress,
+        token: Buffer.from(fromTokenAddress).toString(),
         amount: BigInt(amount),
         recipient: Buffer.from(toAccountAddress),
         destination_chain_id: +toChainId,
@@ -62,8 +62,8 @@ export class SrbBridgeService extends ChainBridgeService {
       });
     } else {
       tx = await contract.swapAndBridge({
-        sender: Address.fromString(fromAccountAddress),
-        token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
+        sender: fromAccountAddress,
+        token: Buffer.from(fromTokenAddress).toString(),
         amount: BigInt(amount),
         recipient: Buffer.from(toAccountAddress),
         destination_chain_id: +toChainId,
@@ -93,13 +93,12 @@ export class SrbBridgeService extends ChainBridgeService {
     } = params;
     const contract = this.getContract(BridgeContract, contractAddress);
     return await contract.swap({
-      sender: Address.fromString(fromAccountAddress),
+      sender: fromAccountAddress,
       amount: BigInt(amount),
       token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
       receive_token: Buffer.from(toTokenAddress),
-      recipient: Address.fromString(toAccountAddress as string),
+      recipient: toAccountAddress as string,
       receive_amount_min: BigInt(minimumReceiveAmount),
-      claimable: false,
     });
   }
 

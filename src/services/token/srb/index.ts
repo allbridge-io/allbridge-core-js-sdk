@@ -1,4 +1,5 @@
-import { Horizon, Server as StellarServer } from "stellar-sdk";
+import { Horizon } from "stellar-sdk";
+import { HorizonApi } from "stellar-sdk/lib/horizon";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../../index";
@@ -8,8 +9,9 @@ import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import { ChainTokenService } from "../models";
-import BalanceLineAsset = Horizon.BalanceLineAsset;
-import BalanceLineNative = Horizon.BalanceLineNative;
+
+import BalanceLineAsset = HorizonApi.BalanceLineAsset;
+import BalanceLineNative = HorizonApi.BalanceLineNative;
 
 export class SrbTokenService extends ChainTokenService {
   chainType: ChainType.SRB = ChainType.SRB;
@@ -32,7 +34,7 @@ export class SrbTokenService extends ChainTokenService {
     }
     const [symbol, srbTokenAddress] = params.token.originTokenAddress.split(":");
 
-    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
+    const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.account);
     const balances = stellarAccount.balances;
 
@@ -52,7 +54,7 @@ export class SrbTokenService extends ChainTokenService {
   }
 
   async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
-    const stellar = new StellarServer(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
+    const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.account);
     const balances = stellarAccount.balances;
 

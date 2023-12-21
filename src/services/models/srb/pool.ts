@@ -1,170 +1,132 @@
-import { Address, ContractSpec } from "soroban-client";
-import { SdkError } from "../../../exceptions";
-import { invoke } from "../../utils/srb/invoke";
-import { xdrTxBuilder } from "../../utils/srb/tx-builder";
-import type { ClassOptions } from "./method-options";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
-export * from "../../utils/srb/invoke";
-export * from "./method-options";
+import { Address, ContractSpec } from "stellar-sdk";
+import type { u128, u32 } from "../../utils/srb/assembled-tx";
+import { AssembledTransaction, Err, Ok } from "../../utils/srb/assembled-tx";
+import { XDRTransactionBuilder } from "../../utils/srb/build-tx";
+import type { ClassOptions, XDR_BASE64 } from "../../utils/srb/method-options";
 
-export type u32 = number;
-export type i32 = number;
-export type u64 = bigint;
-export type i64 = bigint;
-export type u128 = bigint;
-export type i128 = bigint;
-export type u256 = bigint;
-export type i256 = bigint;
-export type Option<T> = T | undefined;
-export type Typepoint = bigint;
-export type Duration = bigint;
-export { Address };
-
-/// Error interface containing the error message
-export interface Error_ {
-  message: string;
-}
-
-export interface Result<T, E extends Error_> {
-  unwrap(): T;
-
-  unwrapErr(): E;
-
-  isOk(): boolean;
-
-  isErr(): boolean;
-}
-
-export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
-  constructor(readonly value: T) {}
-
-  unwrapErr(): E {
-    throw new SdkError("No error");
-  }
-
-  unwrap(): T {
-    return this.value;
-  }
-
-  isOk(): boolean {
-    return true;
-  }
-
-  isErr(): boolean {
-    return !this.isOk();
-  }
-}
-
-export class Err<E extends Error_ = Error_> implements Result<any, E> {
-  constructor(readonly error: E) {}
-
-  unwrapErr(): E {
-    return this.error;
-  }
-
-  unwrap(): never {
-    throw new SdkError(this.error.message);
-  }
-
-  isOk(): boolean {
-    return false;
-  }
-
-  isErr(): boolean {
-    return !this.isOk();
-  }
-}
-
-const regex = /Error\(Contract, #(\d+)\)/;
-
-function parseError(message: string): Err | undefined {
-  const match = message.match(regex);
-  if (!match) {
-    return undefined;
-  }
-  const i = parseInt(match[1], 10);
-  // @ts-expect-error //TODO
-  const err = Errors[i];
-  if (err) {
-    return new Err(err);
-  }
-  return undefined;
-}
+export * from "../../utils/srb/assembled-tx";
+export * from "../../utils/srb/method-options";
 
 export const networks = {
-  futurenet: {
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    contractId: "CCUFKM6WZKBPAFSY7EHTB4FKMMTQPK7YH7U3VV7MRBPO3FAO6P5A2CZV",
+  testnet: {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    contractId: "CAAIJH55UJZXY7YZ3QQJ5S43KAY4ACEU5EBNS6NLUKJXRQEU2ZC36MUR",
   },
 } as const;
 
-export interface SwappedFromVUsd {
-  amount: u128;
-  fee: u128;
-  recipient: Address;
-  token: Address;
-  vusd_amount: u128;
-}
+/**
 
-export interface SwappedToVUsd {
-  amount: u128;
-  fee: u128;
-  sender: Address;
-  token: Address;
-  vusd_amount: u128;
-}
-
+ */
 export interface Deposit {
+  /**
+
+   */
   amount: u128;
-  user: Address;
+  /**
+
+   */
+  user: string;
 }
 
+/**
+
+ */
 export interface Withdraw {
+  /**
+
+   */
   amount: u128;
-  user: Address;
+  /**
+
+   */
+  user: string;
 }
 
-export interface RewardsClaimed {
-  amount: u128;
-  user: Address;
-}
+/**
 
-export type Bridge = readonly [Address];
-
-export interface DataKey {
-  tag: "UserDeposit";
-  values: readonly [Address];
-}
-
+ */
 export interface Pool {
+  /**
+
+   */
   a: u128;
+  /**
+
+   */
   acc_reward_per_share_p: u128;
+  /**
+
+   */
   admin_fee_amount: u128;
+  /**
+
+   */
   admin_fee_share_bp: u128;
+  /**
+
+   */
   balance_ratio_min_bp: u128;
+  /**
+
+   */
   can_deposit: boolean;
+  /**
+
+   */
   can_withdraw: boolean;
+  /**
+
+   */
   d: u128;
+  /**
+
+   */
   decimals: u32;
+  /**
+
+   */
   fee_share_bp: u128;
+  /**
+
+   */
   reserves: u128;
-  token: Address;
+  /**
+
+   */
+  token: string;
+  /**
+
+   */
   token_balance: u128;
+  /**
+
+   */
   total_lp_amount: u128;
+  /**
+
+   */
   v_usd_balance: u128;
 }
 
+/**
+
+ */
 export interface UserDeposit {
+  /**
+
+   */
   lp_amount: u128;
+  /**
+
+   */
   reward_debt: u128;
 }
+/**
 
-export type Admin = readonly [Address];
-export type GasOracleAddress = readonly [Address];
-export type GasUsage = readonly [Map<u32, u128>];
-export type NativeToken = readonly [Address];
-export type StopAuthority = readonly [Address];
-const Errors = {
+ */
+export const Errors = {
   0: { message: "" },
   1: { message: "" },
   2: { message: "" },
@@ -206,15 +168,15 @@ const Errors = {
 
 export class PoolContract {
   spec: ContractSpec;
-
   constructor(public readonly options: ClassOptions) {
     this.spec = new ContractSpec([
       "AAAAAAAAAAAAAAAKaW5pdGlhbGl6ZQAAAAAABwAAAAAAAAAFYWRtaW4AAAAAAAATAAAAAAAAAAZicmlkZ2UAAAAAABMAAAAAAAAAAWEAAAAAAAAKAAAAAAAAAAV0b2tlbgAAAAAAABMAAAAAAAAADGZlZV9zaGFyZV9icAAAAAoAAAAAAAAAFGJhbGFuY2VfcmF0aW9fbWluX2JwAAAACgAAAAAAAAASYWRtaW5fZmVlX3NoYXJlX2JwAAAAAAAKAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABmFtb3VudAAAAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAACWFtb3VudF9scAAAAAAAAAoAAAABAAAD6QAAA+0AAAAAAAAAAw==",
       "AAAAAAAAAAAAAAANc3dhcF90b192X3VzZAAAAAAAAAMAAAAAAAAABHVzZXIAAAATAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAEAAAPpAAAACgAAAAM=",
-      "AAAAAAAAAAAAAAAPc3dhcF9mcm9tX3ZfdXNkAAAAAAQAAAAAAAAABHVzZXIAAAATAAAAAAAAAAt2dXNkX2Ftb3VudAAAAAAKAAAAAAAAABJyZWNlaXZlX2Ftb3VudF9taW4AAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAEAAAPpAAAACgAAAAM=",
+      "AAAAAAAAAAAAAAAPc3dhcF9mcm9tX3ZfdXNkAAAAAAUAAAAAAAAABHVzZXIAAAATAAAAAAAAAAt2dXNkX2Ftb3VudAAAAAAKAAAAAAAAABJyZWNlaXZlX2Ftb3VudF9taW4AAAAAAAoAAAAAAAAACHplcm9fZmVlAAAAAQAAAAAAAAAJY2xhaW1hYmxlAAAAAAAAAQAAAAEAAAPpAAAACgAAAAM=",
       "AAAAAAAAAAAAAAANY2xhaW1fcmV3YXJkcwAAAAAAAAEAAAAAAAAABnNlbmRlcgAAAAAAEwAAAAEAAAPpAAAD7QAAAAAAAAAD",
+      "AAAAAAAAAAAAAAANY2xhaW1fYmFsYW5jZQAAAAAAAAEAAAAAAAAABHVzZXIAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAdgYWRtaW5gAAAAAA1zZXRfZmVlX3NoYXJlAAAAAAAAAQAAAAAAAAAMZmVlX3NoYXJlX2JwAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAWYWRqdXN0X3RvdGFsX2xwX2Ftb3VudAAAAAAAAAAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAYc2V0X2JhbGFuY2VfcmF0aW9fbWluX2JwAAAAAQAAAAAAAAAUYmFsYW5jZV9yYXRpb19taW5fYnAAAAAKAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
@@ -233,15 +195,18 @@ export class PoolContract {
       "AAAAAAAAAAAAAAASZ2V0X3N0b3BfYXV0aG9yaXR5AAAAAAAAAAAAAQAAA+kAAAATAAAAAw==",
       "AAAAAAAAAAAAAAAKZ2V0X2JyaWRnZQAAAAAAAAAAAAEAAAPpAAAAEwAAAAM=",
       "AAAAAAAAAAAAAAAQZ2V0X3VzZXJfZGVwb3NpdAAAAAEAAAAAAAAABHVzZXIAAAATAAAAAQAAA+kAAAfQAAAAC1VzZXJEZXBvc2l0AAAAAAM=",
+      "AAAAAAAAAAAAAAAVZ2V0X2NsYWltYWJsZV9iYWxhbmNlAAAAAAAAAQAAAAAAAAAEdXNlcgAAABMAAAABAAAD6QAAAAoAAAAD",
       "AAAAAQAAAAAAAAAAAAAAD1N3YXBwZWRGcm9tVlVzZAAAAAAFAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAAA2ZlZQAAAAAKAAAAAAAAAAlyZWNpcGllbnQAAAAAAAATAAAAAAAAAAV0b2tlbgAAAAAAABMAAAAAAAAAC3Z1c2RfYW1vdW50AAAAAAo=",
       "AAAAAQAAAAAAAAAAAAAADVN3YXBwZWRUb1ZVc2QAAAAAAAAFAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAAA2ZlZQAAAAAKAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAALdnVzZF9hbW91bnQAAAAACg==",
       "AAAAAQAAAAAAAAAAAAAAB0RlcG9zaXQAAAAAAgAAAAAAAAAGYW1vdW50AAAAAAAKAAAAAAAAAAR1c2VyAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAACFdpdGhkcmF3AAAAAgAAAAAAAAAGYW1vdW50AAAAAAAKAAAAAAAAAAR1c2VyAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAADlJld2FyZHNDbGFpbWVkAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAABHVzZXIAAAAT",
+      "AAAAAQAAAAAAAAAAAAAADkJhbGFuY2VDbGFpbWVkAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAoAAAAAAAAABHVzZXIAAAAT",
       "AAAAAQAAAAAAAAAAAAAABkJyaWRnZQAAAAAAAQAAAAAAAAABMAAAAAAAABM=",
-      "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAQAAAAEAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAEAAAAT",
+      "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAgAAAAEAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAEAAAATAAAAAQAAAAAAAAAQQ2xhaW1hYmxlQmFsYW5jZQAAAAEAAAAT",
       "AAAAAQAAAAAAAAAAAAAABFBvb2wAAAAPAAAAAAAAAAFhAAAAAAAACgAAAAAAAAAWYWNjX3Jld2FyZF9wZXJfc2hhcmVfcAAAAAAACgAAAAAAAAAQYWRtaW5fZmVlX2Ftb3VudAAAAAoAAAAAAAAAEmFkbWluX2ZlZV9zaGFyZV9icAAAAAAACgAAAAAAAAAUYmFsYW5jZV9yYXRpb19taW5fYnAAAAAKAAAAAAAAAAtjYW5fZGVwb3NpdAAAAAABAAAAAAAAAAxjYW5fd2l0aGRyYXcAAAABAAAAAAAAAAFkAAAAAAAACgAAAAAAAAAIZGVjaW1hbHMAAAAEAAAAAAAAAAxmZWVfc2hhcmVfYnAAAAAKAAAAAAAAAAhyZXNlcnZlcwAAAAoAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAANdG9rZW5fYmFsYW5jZQAAAAAAAAoAAAAAAAAAD3RvdGFsX2xwX2Ftb3VudAAAAAAKAAAAAAAAAA12X3VzZF9iYWxhbmNlAAAAAAAACg==",
       "AAAAAQAAAAAAAAAAAAAAC1VzZXJEZXBvc2l0AAAAAAIAAAAAAAAACWxwX2Ftb3VudAAAAAAAAAoAAAAAAAAAC3Jld2FyZF9kZWJ0AAAAAAo=",
+      "AAAAAQAAAAAAAAAAAAAAEENsYWltYWJsZUJhbGFuY2UAAAABAAAAAAAAAAZhbW91bnQAAAAAAAo=",
       "AAAAAQAAAAAAAAAAAAAABUFkbWluAAAAAAAAAQAAAAAAAAABMAAAAAAAABM=",
       "AAAAAQAAAAAAAAAAAAAAEEdhc09yYWNsZUFkZHJlc3MAAAABAAAAAAAAAAEwAAAAAAAAEw==",
       "AAAAAQAAAAAAAAAAAAAACEdhc1VzYWdlAAAAAQAAAAAAAAABMAAAAAAAA+wAAAAEAAAACg==",
@@ -250,69 +215,153 @@ export class PoolContract {
       "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAAJQAAAAAAAAANVW5pbXBsZW1lbnRlZAAAAAAAAAAAAAAAAAAAC0luaXRpYWxpemVkAAAAAAEAAAAAAAAADVVuaW5pdGlhbGl6ZWQAAAAAAAACAAAAAAAAAAxVbmF1dGhvcml6ZWQAAAADAAAAAAAAAApJbnZhbGlkQXJnAAAAAAAEAAAAAAAAAA5JbnZhbGlkQ2hhaW5JZAAAAAAABQAAAAAAAAATSW52YWxpZE90aGVyQ2hhaW5JZAAAAAAGAAAAAAAAAA5HYXNVc2FnZU5vdFNldAAAAAAABwAAAAAAAAANQnJva2VuQWRkcmVzcwAAAAAAAAgAAAAAAAAACE5vdEZvdW5kAAAACQAAAAAAAAAKWmVyb0Ftb3VudAAAAAAAZwAAAAAAAAAMUG9vbE92ZXJmbG93AAAAaAAAAAAAAAALWmVyb0NoYW5nZXMAAAAAaQAAAAAAAAARUmVzZXJ2ZXNFeGhhdXN0ZWQAAAAAAABqAAAAAAAAABpJbnN1ZmZpY2llbnRSZWNlaXZlZEFtb3VudAAAAAAAawAAAAAAAAAUQmFsYW5jZVJhdGlvRXhjZWVkZWQAAABsAAAAAAAAAAlGb3JiaWRkZW4AAAAAAABtAAAAAAAAABlVbmF1dGhvcml6ZWRTdG9wQXV0aG9yaXR5AAAAAAAAywAAAAAAAAAOU3dhcFByb2hpYml0ZWQAAAAAAMwAAAAAAAAAEkFtb3VudFRvb0xvd0ZvckZlZQAAAAAAzQAAAAAAAAAWQnJpZGdlVG9UaGVaZXJvQWRkcmVzcwAAAAAAzgAAAAAAAAAORW1wdHlSZWNpcGllbnQAAAAAAM8AAAAAAAAAE1NvdXJjZU5vdFJlZ2lzdGVyZWQAAAAA0AAAAAAAAAAVV3JvbmdEZXN0aW5hdGlvbkNoYWluAAAAAAAA0QAAAAAAAAATVW5rbm93bkFub3RoZXJDaGFpbgAAAADSAAAAAAAAABFUb2tlbnNBbHJlYWR5U2VudAAAAAAAANMAAAAAAAAAEE1lc3NhZ2VQcm9jZXNzZWQAAADUAAAAAAAAAAxOb3RFbm91Z2hGZWUAAADWAAAAAAAAAAlOb01lc3NhZ2UAAAAAAADXAAAAAAAAAA1Ob1JlY2VpdmVQb29sAAAAAAAA2AAAAAAAAAAGTm9Qb29sAAAAAADZAAAAAAAAABNVbmtub3duQW5vdGhlclRva2VuAAAAANoAAAAAAAAAD1dyb25nQnl0ZUxlbmd0aAAAAAEsAAAAAAAAAApIYXNNZXNzYWdlAAAAAAEtAAAAAAAAABdJbnZhbGlkUHJpbWFyeVNpZ25hdHVyZQAAAAEuAAAAAAAAABlJbnZhbGlkU2Vjb25kYXJ5U2lnbmF0dXJlAAAAAAABLwAAAAAAAAARTm9HYXNEYXRhRm9yQ2hhaW4AAAAAAAGQ",
     ]);
   }
+  private readonly parsers = {
+    deposit: (result: XDR_BASE64 | Err): Ok<void> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("deposit", result));
+    },
+    withdraw: (result: XDR_BASE64 | Err): Ok<void> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("withdraw", result));
+    },
+    claimRewards: (result: XDR_BASE64 | Err): Ok<void> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("claim_rewards", result));
+    },
+    getPool: (result: XDR_BASE64 | Err): Ok<Pool> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("get_pool", result));
+    },
+    getUserDeposit: (result: XDR_BASE64 | Err): Ok<UserDeposit> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("get_user_deposit", result));
+    },
+  };
 
-  async deposit({ sender, amount }: { sender: Address; amount: u128 }): Promise<string> {
-    return await xdrTxBuilder({
-      sender,
+  /**
+   * Construct and simulate a deposit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  depositXdr = async (
+    { sender, amount }: { sender: string; amount: u128 },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await XDRTransactionBuilder.xdrFromSimulation({
       method: "deposit",
-      args: this.spec.funcArgsToScVals("deposit", { sender, amount }),
+      args: this.spec.funcArgsToScVals("deposit", {
+        sender: new Address(sender),
+        amount,
+      }),
+      account: sender,
+      ...options,
       ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.deposit,
     });
-  }
+  };
 
-  async withdraw({ sender, amount_lp }: { sender: Address; amount_lp: u128 }): Promise<string> {
-    return await xdrTxBuilder({
-      sender,
+  /**
+   * Construct and simulate a withdraw transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  withdrawXdr = async (
+    { sender, amount_lp }: { sender: string; amount_lp: u128 },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await XDRTransactionBuilder.xdrFromSimulation({
       method: "withdraw",
-      args: this.spec.funcArgsToScVals("withdraw", { sender, amount_lp }),
+      args: this.spec.funcArgsToScVals("withdraw", {
+        sender: new Address(sender),
+        amount_lp,
+      }),
+      account: sender,
+      ...options,
       ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.withdraw,
     });
-  }
+  };
 
-  async claimRewards({ sender }: { sender: Address }): Promise<string> {
-    return await xdrTxBuilder({
-      sender,
+  /**
+   * Construct and simulate a claim_rewards transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  claimRewardsXdr = async (
+    { sender }: { sender: string },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await XDRTransactionBuilder.xdrFromSimulation({
       method: "claim_rewards",
-      args: this.spec.funcArgsToScVals("claim_rewards", { sender }),
+      args: this.spec.funcArgsToScVals("claim_rewards", {
+        sender: new Address(sender),
+      }),
+      account: sender,
+      ...options,
       ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.claimRewards,
     });
-  }
+  };
 
-  async getPool() {
-    try {
-      return await invoke({
-        method: "get_pool",
-        args: this.spec.funcArgsToScVals("get_pool", {}),
-        ...this.options,
-        parseResultXdr: (xdr): Ok<Pool> | Err | undefined => {
-          return new Ok(this.spec.funcResToNative("get_pool", xdr));
-        },
-      });
-    } catch (e) {
-      if (typeof e === "string") {
-        const err = parseError(e);
-        if (err) return err;
-      }
-      throw e;
-    }
-  }
+  /**
+   * Construct and simulate a get_pool transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  getPool = async (
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await AssembledTransaction.fromSimulation({
+      method: "get_pool",
+      args: this.spec.funcArgsToScVals("get_pool", {}),
+      ...options,
+      ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.getPool,
+    });
+  };
 
-  async getUserDeposit({ user }: { user: Address }) {
-    try {
-      return await invoke({
-        method: "get_user_deposit",
-        args: this.spec.funcArgsToScVals("get_user_deposit", { user }),
-        ...this.options,
-        parseResultXdr: (xdr): Ok<UserDeposit> | Err | undefined => {
-          return new Ok(this.spec.funcResToNative("get_user_deposit", xdr));
-        },
-      });
-    } catch (e) {
-      if (typeof e === "string") {
-        const err = parseError(e);
-        if (err) return err;
-      }
-      throw e;
-    }
-  }
+  /**
+   * Construct and simulate a get_user_deposit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  getUserDeposit = async (
+    { user }: { user: string },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await AssembledTransaction.fromSimulation({
+      method: "get_user_deposit",
+      args: this.spec.funcArgsToScVals("get_user_deposit", {
+        user: new Address(user),
+      }),
+      ...options,
+      ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.getUserDeposit,
+    });
+  };
 }

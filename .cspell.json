@@ -54,6 +54,8 @@
     "tsconfig.json",
     "node_modules/**",
     "src/configs/",
-    "src/__tests__/services/liquidity-pool/sol/data/"
+    "src/__tests__/services/liquidity-pool/sol/data/",
+    "src/services/models/srb/token-contract.ts",
+    "src/services/utils/srb/assembled-tx.ts"
   ]
 }
