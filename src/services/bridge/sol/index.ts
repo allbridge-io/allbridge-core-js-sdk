@@ -158,23 +158,23 @@ export class SolanaBridgeService extends ChainBridgeService {
     let jupTx;
     if (isJupiterForStableCoin) {
       try {
+        let amountToSwap = Big(solTxSendParams.fee);
+        if (solTxSendParams.extraGas) {
+          amountToSwap = amountToSwap.plus(solTxSendParams.extraGas);
+        }
+
         solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
           params.sourceToken.decimals,
           solTxSendParams
         );
 
-        let amountToGet = Big(solTxSendParams.fee);
-        if (solTxSendParams.extraGas) {
-          amountToGet = amountToGet.plus(solTxSendParams.extraGas);
-        }
-
-        const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
+        const { tx } = await this.jupiterService.getJupiterSwapTx(
           params.fromAccountAddress,
           params.sourceToken.tokenAddress,
-          amountToGet.toFixed(0)
+          amountToSwap.toFixed(0)
         );
         jupTx = tx;
-        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountToSwap).toFixed(0);
         if (Big(solTxSendParams.amount).lte(0)) {
           throw new AmountNotEnoughError(
             `Amount not enough to pay fee, ${convertIntAmountToFloat(

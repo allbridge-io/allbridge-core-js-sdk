@@ -14,14 +14,13 @@ export class JupiterService {
   async getJupiterSwapTx(
     userAddress: string,
     stableTokenAddress: string,
-    amountOut: string
-  ): Promise<{ tx: VersionedTransaction; amountIn: string }> {
+    amount: string
+  ): Promise<{ tx: VersionedTransaction }> {
     let quoteResponse: any;
     try {
       quoteResponse = await axios.get(`https://quote-api.jup.ag/v6/quote?inputMint=${stableTokenAddress}
 &outputMint=${NATIVE_MINT.toString()}
-&amount=${amountOut}
-&swapMode=ExactOut
+&amount=${amount}
 &slippageBps=100
 &onlyDirectRoutes=true`);
     } catch (err) {
@@ -29,13 +28,6 @@ export class JupiterService {
         throw new JupiterError(err.response.data.error);
       }
       throw new JupiterError("Cannot get route");
-    }
-
-    let inAmount;
-    if (quoteResponse?.data?.inAmount) {
-      inAmount = quoteResponse.data.inAmount;
-    } else {
-      throw new JupiterError("Cannot get inAmount");
     }
 
     let transactionResponse: any;
@@ -63,7 +55,7 @@ export class JupiterService {
     }
 
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-    return { tx: VersionedTransaction.deserialize(swapTransactionBuf), amountIn: inAmount };
+    return { tx: VersionedTransaction.deserialize(swapTransactionBuf) };
   }
 
   async amendJupiterWithSdkTx(
