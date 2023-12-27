@@ -146,6 +146,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Mumbai",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.OPT]: {
+    chainSymbol: ChainSymbol.OPT,
+    chainId: "0xa",
+    name: "OP Mainnet",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",
@@ -165,10 +171,5 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.STLR,
     name: "Stellar",
     chainType: ChainType.SRB,
-  },
-  [ChainSymbol.OPT]: {
-    chainSymbol: ChainSymbol.OPT,
-    name: "OP Mainnet",
-    chainType: ChainType.EVM,
   },
 };
