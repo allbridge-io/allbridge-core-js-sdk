@@ -282,6 +282,46 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     messenger?: Messenger
   ): Promise<string> {
+    const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
+    const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
+    return this.getAmountToBeReceivedFromPools(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destPool,
+      messenger
+    );
+  }
+
+  async getAmountToBeReceivedFromChain(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
+    const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
+    return this.getAmountToBeReceivedFromPools(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destPool,
+      messenger
+    );
+  }
+
+  private getAmountToBeReceivedFromPools(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
     validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
@@ -299,8 +339,8 @@ export class AllbridgeCoreSdkService {
       return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
     }
 
-    const vUsd = swapToVUsd(amountToSend, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
-    return (await this.getAmountFromVUsd(vUsd, destinationChainToken)).float;
+    const vUsd = swapToVUsd(amountToSend, sourceChainToken, sourcePool);
+    return this.getAmountFromVUsdFormatted(vUsd, destinationChainToken, destinationPool).float;
   }
 
   async getAmountToSend(
@@ -309,6 +349,46 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     messenger?: Messenger
   ): Promise<string> {
+    const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
+    const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
+    return this.getAmountToSendFromPools(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destPool,
+      messenger
+    );
+  }
+
+  async getAmountToSendFromChain(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
+    const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
+    return this.getAmountToSendFromPools(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destPool,
+      messenger
+    );
+  }
+
+  private getAmountToSendFromPools(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
     validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
@@ -326,12 +406,8 @@ export class AllbridgeCoreSdkService {
       return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
     }
 
-    const vUsd = swapFromVUsdReverse(
-      amountToBeReceived,
-      destinationChainToken,
-      await getPoolInfoByToken(this.api, destinationChainToken)
-    );
-    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
+    const vUsd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken, destinationPool);
+    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, sourcePool);
     if (Big(resultInt).lte(0)) {
       throw new InsufficientPoolLiquidityError();
     }
