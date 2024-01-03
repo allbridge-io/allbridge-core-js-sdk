@@ -5,6 +5,7 @@ import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
+import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
 import { AllbridgeCoreSdkOptions } from "../../index";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
@@ -114,7 +115,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   public rawTxBuilder: RawPoolTransactionBuilder;
 
   constructor(
-    private api: AllbridgeCoreClient,
+    private api: AllbridgeCoreClientPoolInfoCaching,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
@@ -189,13 +190,15 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<PoolInfo> {
-    return await getChainPoolService(
+    const poolInfo = await getChainPoolService(
       token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
       provider
     ).getPoolInfoFromChain(token);
+    this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
+    return poolInfo;
   }
 }
 

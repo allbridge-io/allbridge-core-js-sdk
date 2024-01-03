@@ -68,6 +68,10 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     }
     this.poolInfoCache.putAll(poolInfoMap);
   }
+
+  cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo) {
+    this.poolInfoCache.put(mapPoolKeyObjectToPoolKey(poolKeyObject), poolInfo);
+  }
 }
 
 class PoolInfoCache {
@@ -89,6 +93,10 @@ class PoolInfoCache {
         this.cache.put(key, value);
       }
     }
+  }
+
+  put(key: string, poolInfo: PoolInfo) {
+    this.cache.put(key, poolInfo);
   }
 
   get(poolKeyObject: PoolKeyObject): PoolInfo | undefined {
