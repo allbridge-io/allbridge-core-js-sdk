@@ -272,6 +272,38 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Calculates the amount of tokens to be received as a result of transfer based on actual blockchain pool state.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
+   * @param sourceProvider Optional. source chain Provider
+   * @param destinationProvider Optional. destination chain Provider
+   */
+  async getAmountToBeReceivedFromChain(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    return this.service.getAmountToBeReceivedFromChain(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      messenger,
+      sourceProvider,
+      destinationProvider
+    );
+  }
+
+  /**
    * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
@@ -290,6 +322,38 @@ export class AllbridgeCoreSdk {
     messenger?: Messenger
   ): Promise<string> {
     return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
+  }
+
+  /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer based on actual blockchain pool state.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
+   * @param sourceProvider Optional. source chain Provider
+   * @param destinationProvider Optional. destination chain Provider
+   */
+  async getAmountToSendFromChain(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    return this.service.getAmountToSendFromChain(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      messenger,
+      sourceProvider,
+      destinationProvider
+    );
   }
 
   /**
