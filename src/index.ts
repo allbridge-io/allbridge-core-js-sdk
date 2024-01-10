@@ -304,6 +304,33 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Calculates the amount of tokens to be received as a result of transfer based on passed pool state.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param sourcePool source token pool state
+   * @param destinationPool destination token pool state
+   * @param messenger Optional. selected messenger
+   */
+  getAmountToBeReceivedFromPools(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
+    return this.service.getAmountToBeReceivedFromPools(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destinationPool,
+      messenger
+    );
+  }
+
+  /**
    * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
@@ -353,6 +380,33 @@ export class AllbridgeCoreSdk {
       messenger,
       sourceProvider,
       destinationProvider
+    );
+  }
+
+  /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer based on passed pool state.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param sourcePool source token pool state
+   * @param destinationPool destination token pool state
+   * @param messenger Optional. selected messenger
+   */
+  getAmountToSendFromPools(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
+    return this.service.getAmountToSendFromPools(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destinationPool,
+      messenger
     );
   }
 
