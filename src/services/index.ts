@@ -314,7 +314,7 @@ export class AllbridgeCoreSdkService {
     );
   }
 
-  private getAmountToBeReceivedFromPools(
+  getAmountToBeReceivedFromPools(
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
@@ -381,7 +381,7 @@ export class AllbridgeCoreSdkService {
     );
   }
 
-  private getAmountToSendFromPools(
+  getAmountToSendFromPools(
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
