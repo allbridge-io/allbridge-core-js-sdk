@@ -23,9 +23,6 @@ dependencies:
   axios:
     specifier: ^1.5.0
     version: 1.5.0
-  base32.js:
-    specifier: ^0.1.0
-    version: 0.1.0
   big.js:
     specifier: ^6.2.1
     version: 6.2.1

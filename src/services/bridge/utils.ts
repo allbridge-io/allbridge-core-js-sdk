@@ -1,8 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
-/* @ts-expect-error  Could not find a declaration file for module "base32.js"*/
-import base32 from "base32.js";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
+import { Address } from "stellar-sdk";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
@@ -43,7 +42,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       break;
     }
     case ChainType.SRB: {
-      buffer = Buffer.from(base32.decode(address).slice(1, 33));
+      buffer = new Address(address).toBuffer();
       break;
     }
   }

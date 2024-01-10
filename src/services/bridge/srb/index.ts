@@ -51,7 +51,7 @@ export class SrbBridgeService extends ChainBridgeService {
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       tx = await contract.swapAndBridge({
         sender: fromAccountAddress,
-        token: Buffer.from(fromTokenAddress).toString(),
+        token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
         amount: BigInt(amount),
         recipient: Buffer.from(toAccountAddress),
         destination_chain_id: +toChainId,
@@ -63,7 +63,7 @@ export class SrbBridgeService extends ChainBridgeService {
     } else {
       tx = await contract.swapAndBridge({
         sender: fromAccountAddress,
-        token: Buffer.from(fromTokenAddress).toString(),
+        token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
         amount: BigInt(amount),
         recipient: Buffer.from(toAccountAddress),
         destination_chain_id: +toChainId,
