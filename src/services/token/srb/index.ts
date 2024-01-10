@@ -1,4 +1,4 @@
-import { Horizon } from "stellar-sdk";
+import { Horizon, NotFoundError } from "stellar-sdk";
 import { HorizonApi } from "stellar-sdk/lib/horizon";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -35,7 +35,15 @@ export class SrbTokenService extends ChainTokenService {
     const [symbol, srbTokenAddress] = params.token.originTokenAddress.split(":");
 
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
-    const stellarAccount = await stellar.loadAccount(params.account);
+    let stellarAccount;
+    try {
+      stellarAccount = await stellar.loadAccount(params.account);
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        return "0";
+      }
+      throw err;
+    }
     const balances = stellarAccount.balances;
 
     const balanceInfo = balances.find(
