@@ -223,7 +223,9 @@ export function getChainPoolService(
       if (provider) {
         return new TronPoolService(provider, api, nodeRpcUrl);
       } else {
-        return new TronPoolService(new TronWeb({ fullHost: nodeRpcUrl }), api, nodeRpcUrl);
+        const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
+        tronWeb.setAddress("TU7mCYBJtZ9V3wdP7jdUmUA1QwSW3nKqb1");
+        return new TronPoolService(tronWeb, api, nodeRpcUrl);
       }
     }
     case ChainType.SOLANA: {
