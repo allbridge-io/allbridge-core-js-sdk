@@ -7,6 +7,7 @@ export const testnet: AllbridgeCoreSdkOptions = {
   wormholeMessengerProgramId: "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5",
   solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
   sorobanNetworkPassphrase: "Test SDF Network ; September 2015",
+  tronJsonRpc: "https://nile.trongrid.io/jsonrpc",
 };
 
 /**

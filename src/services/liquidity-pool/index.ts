@@ -220,11 +220,12 @@ export function getChainPoolService(
     }
     case ChainType.TRX: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+      const tronJsonRpc = params.tronJsonRpc;
       if (provider) {
-        return new TronPoolService(provider, api, nodeRpcUrl);
+        return new TronPoolService(provider, api, tronJsonRpc);
       } else {
         const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
-        return new TronPoolService(tronWeb, api, nodeRpcUrl);
+        return new TronPoolService(tronWeb, api, tronJsonRpc);
       }
     }
     case ChainType.SOLANA: {

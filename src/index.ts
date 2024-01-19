@@ -41,6 +41,12 @@ export interface AllbridgeCoreSdkOptions {
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;
+  /**
+   * Optional. Will be used in methods</br>
+   * {@link AllbridgeCoreSdk.pool.getPoolInfoFromChain} and {@link AllbridgeCoreSdk.pool.getAmountToBeWithdrawn}</br>
+   * to fetch information from the blockchain with fewer HTTP requests using JSON-RPC API
+   */
+  tronJsonRpc?: string;
 }
 
 /**
