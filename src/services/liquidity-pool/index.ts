@@ -224,7 +224,6 @@ export function getChainPoolService(
         return new TronPoolService(provider, api, nodeRpcUrl);
       } else {
         const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
-        tronWeb.setAddress("TU7mCYBJtZ9V3wdP7jdUmUA1QwSW3nKqb1");
         return new TronPoolService(tronWeb, api, nodeRpcUrl);
       }
     }

@@ -54,6 +54,9 @@ export class TronPoolService extends ChainPoolService {
     accountAddress: string,
     token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
+    if (!this.tronWeb.defaultAddress.base58) {
+      this.tronWeb.setAddress(accountAddress);
+    }
     const contract = await this.getContract(token.poolAddress);
     const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
     const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
@@ -95,6 +98,9 @@ export class TronPoolService extends ChainPoolService {
   }
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
+    if (!this.tronWeb.defaultAddress.base58) {
+      this.tronWeb.setAddress(token.poolAddress);
+    }
     const poolContract = await this.getContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),
