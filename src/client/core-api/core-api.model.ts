@@ -29,6 +29,8 @@ export interface TokenDTO {
   poolInfo: PoolInfoDTO;
   feeShare: string;
   apr: number;
+  apr7d: number;
+  apr30d: number;
   lpRate: number;
 }
 

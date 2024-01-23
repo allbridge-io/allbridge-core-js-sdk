@@ -85,9 +85,18 @@ export interface Token {
    */
   feeShare: string;
   /**
+   * @Deprecated use {@link apr7d}</br>
    * Token APR
    */
   apr: number;
+  /**
+   * Token APR based on last 7 days
+   */
+  apr7d: number;
+  /**
+   * Token APR based on last 30 days
+   */
+  apr30d: number;
   /**
    * Token LP rate
    */
