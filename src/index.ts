@@ -7,7 +7,9 @@ import {
   BridgeService,
   ChainDetailsMap,
   ChainSymbol,
+  CheckAddressResponse,
   ExtraGasMaxLimitResponse,
+  GasBalanceResponse,
   GasFeeOptions,
   GetNativeTokenBalanceParams,
   GetTokenBalanceParams,
@@ -20,7 +22,6 @@ import {
   SwapAndBridgeCalculationData,
   TokenWithChainDetails,
   TransferStatusResponse,
-  GasBalanceResponse,
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
 import { DefaultUtils, Utils } from "./utils";
@@ -134,6 +135,15 @@ export class AllbridgeCoreSdk {
    */
   async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
     return this.service.getGasBalance(chainSymbol, address);
+  }
+
+  /**
+   * Check address and show gas balance
+   * @param chainSymbol
+   * @param address
+   */
+  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
+    return this.service.checkAddress(chainSymbol, address, tokenAddress);
   }
 
   /**
