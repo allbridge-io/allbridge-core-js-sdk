@@ -16,6 +16,7 @@ export {
   TransferStatusResponse,
   BridgeTransaction,
   GasBalanceResponse,
+  CheckAddressResponse,
   AddressStatus,
 } from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";

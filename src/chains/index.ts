@@ -29,6 +29,11 @@ export enum ChainSymbol {
   ETH = "ETH",
 
   /**
+   * The Base main network.
+   */
+  BAS = "BAS",
+
+  /**
    * The Solana network.
    */
   SOL = "SOL",
@@ -120,6 +125,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.ETH,
     chainId: "0x1",
     name: "Ethereum",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.BAS]: {
+    chainSymbol: ChainSymbol.BAS,
+    chainId: "0x2105",
+    name: "Base",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.ARB]: {

@@ -18,6 +18,7 @@ export enum AddressStatus {
   FORBIDDEN = "FORBIDDEN",
   UNINITIALIZED = "UNINITIALIZED",
   CONTRACT_ADDRESS = "CONTRACT_ADDRESS",
+  WRONG_ASSOCIATED_ACCOUNT_OWNER = "WRONG_ASSOCIATED_ACCOUNT_OWNER",
 }
 
 export interface TokenDTO {
@@ -29,6 +30,8 @@ export interface TokenDTO {
   poolInfo: PoolInfoDTO;
   feeShare: string;
   apr: number;
+  apr7d: number;
+  apr30d: number;
   lpRate: number;
 }
 
@@ -81,6 +84,11 @@ export interface ReceiveTransactionCostResponse {
 }
 
 export interface GasBalanceResponse {
+  gasBalance: string | null;
+  status: AddressStatus;
+}
+
+export interface CheckAddressResponse {
   gasBalance: string | null;
   status: AddressStatus;
 }

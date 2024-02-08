@@ -1,102 +1,25 @@
-import { Address, ContractSpec } from "soroban-client";
-import { SdkError } from "../../../exceptions";
-import { xdrTxBuilder } from "../../utils/srb/tx-builder";
-import type { ClassOptions } from "./method-options";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
-export * from "../../utils/srb/tx-builder";
-export * from "./method-options";
+import { Address, ContractSpec } from "stellar-sdk";
+import type { u128, u256, u32 } from "../../utils/srb/assembled-tx";
+import { Err, Ok } from "../../utils/srb/assembled-tx";
+import { XDRTransactionBuilder } from "../../utils/srb/build-tx";
+import type { ClassOptions, XDR_BASE64 } from "../../utils/srb/method-options";
 
-export type u32 = number;
-export type i32 = number;
-export type u64 = bigint;
-export type i64 = bigint;
-export type u128 = bigint;
-export type i128 = bigint;
-export type u256 = bigint;
-export type i256 = bigint;
-export type Option<T> = T | undefined;
-export type Typepoint = bigint;
-export type Duration = bigint;
-export { Address };
-
-/// Error interface containing the error message
-export interface Error_ {
-  message: string;
-}
-
-export interface Result<T, E extends Error_> {
-  unwrap(): T;
-
-  unwrapErr(): E;
-
-  isOk(): boolean;
-
-  isErr(): boolean;
-}
-
-export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
-  constructor(readonly value: T) {}
-
-  unwrapErr(): E {
-    throw new SdkError("No error");
-  }
-
-  unwrap(): T {
-    return this.value;
-  }
-
-  isOk(): boolean {
-    return true;
-  }
-
-  isErr(): boolean {
-    return !this.isOk();
-  }
-}
-
-export class Err<E extends Error_ = Error_> implements Result<any, E> {
-  constructor(readonly error: E) {}
-
-  unwrapErr(): E {
-    return this.error;
-  }
-
-  unwrap(): never {
-    throw new SdkError(this.error.message);
-  }
-
-  isOk(): boolean {
-    return false;
-  }
-
-  isErr(): boolean {
-    return !this.isOk();
-  }
-}
+export * from "../../utils/srb/assembled-tx";
+export * from "../../utils/srb/method-options";
 
 export const networks = {
-  futurenet: {
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    contractId: "CAXKSIMIIFKKHAQKM32QD4AYEXVLBYIQVUKPRAAUV5HNLTLXHSROM4AV",
+  testnet: {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    contractId: "CBSEMJH6FYPQFVZB7PAVJGSUU6G3RNU6WZHEENNU7I7FKV47W27DWGF5",
   },
 } as const;
 
-export interface Bridge {
-  /**
-   * precomputed values of the scaling factor required for paying the bridging fee with stable tokens
-   */
-  bridging_fee_conversion_factor: Map<Address, u128>;
-  can_swap: boolean;
-  /**
-   * precomputed values to divide by to change the precision from the Gas Oracle precision to the token precision
-   */
-  from_gas_oracle_factor: Map<Address, u128>;
-  messenger: Address;
-  pools: Map<Buffer, Address>;
-  rebalancer: Address;
-}
+/**
 
-const Errors = {
+ */
+export const Errors = {
   0: { message: "" },
   1: { message: "" },
   2: { message: "" },
@@ -142,9 +65,9 @@ export class BridgeContract {
   constructor(public readonly options: ClassOptions) {
     this.spec = new ContractSpec([
       "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",
-      "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",
+      "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",
-      "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",
+      "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",
@@ -155,7 +78,7 @@ export class BridgeContract {
       "AAAAAAAAAAAAAAAPcmVnaXN0ZXJfYnJpZGdlAAAAAAIAAAAAAAAACGNoYWluX2lkAAAABAAAAAAAAAAOYnJpZGdlX2FkZHJlc3MAAAAAA+4AAAAgAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAAQYWRkX2JyaWRnZV90b2tlbgAAAAIAAAAAAAAACGNoYWluX2lkAAAABAAAAAAAAAANdG9rZW5fYWRkcmVzcwAAAAAAA+4AAAAgAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAATcmVtb3ZlX2JyaWRnZV90b2tlbgAAAAACAAAAAAAAAAhjaGFpbl9pZAAAAAQAAAAAAAAADXRva2VuX2FkZHJlc3MAAAAAAAPuAAAAIAAAAAEAAAPpAAAD7QAAAAAAAAAD",
-      "AAAAAAAAAAAAAAAIYWRkX3Bvb2wAAAACAAAAAAAAAARwb29sAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAPuAAAAIAAAAAEAAAPpAAAD7QAAAAAAAAAD",
+      "AAAAAAAAAAAAAAAIYWRkX3Bvb2wAAAACAAAAAAAAAARwb29sAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAATd2l0aGRyYXdfZ2FzX3Rva2VucwAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAABmFtb3VudAAAAAAACgAAAAEAAAPpAAAD7QAAAAAAAAAD",
       "AAAAAAAAAAAAAAAfd2l0aGRyYXdfYnJpZGdpbmdfZmVlX2luX3Rva2VucwAAAAACAAAAAAAAAAZzZW5kZXIAAAAAABMAAAAAAAAADXRva2VuX2FkZHJlc3MAAAAAAAATAAAAAQAAA+kAAAPtAAAAAAAAAAM=",
       "AAAAAAAAAAAAAAAVaGFzX3Byb2Nlc3NlZF9tZXNzYWdlAAAAAAAAAQAAAAAAAAAHbWVzc2FnZQAAAAPuAAAAIAAAAAEAAAPpAAAAAQAAAAM=",
@@ -185,33 +108,53 @@ export class BridgeContract {
     ]);
   }
 
-  async swapAndBridge({
-    sender,
-    token,
-    amount,
-    recipient,
-    destination_chain_id,
-    receive_token,
-    nonce,
-    gas_amount,
-    fee_token_amount,
-  }: {
-    sender: Address;
-    token: Buffer;
-    amount: u128;
-    recipient: Buffer;
-    destination_chain_id: u32;
-    receive_token: Buffer;
-    nonce: u256;
-    gas_amount: u128;
-    fee_token_amount: u128;
-  }): Promise<string> {
-    return await xdrTxBuilder({
+  private readonly parsers = {
+    swapAndBridge: (result: XDR_BASE64 | Err): Ok<void> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("swap_and_bridge", result));
+    },
+    swap: (result: XDR_BASE64 | Err): Ok<void> | Err => {
+      if (result instanceof Err) return result;
+      return new Ok(this.spec.funcResToNative("swap", result));
+    },
+  };
+  /**
+   * Construct and simulate a swap_and_bridge transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  swapAndBridge = async (
+    {
       sender,
+      token,
+      amount,
+      recipient,
+      destination_chain_id,
+      receive_token,
+      nonce,
+      gas_amount,
+      fee_token_amount,
+    }: {
+      sender: string;
+      token: string;
+      amount: u128;
+      recipient: Buffer;
+      destination_chain_id: u32;
+      receive_token: Buffer;
+      nonce: u256;
+      gas_amount: u128;
+      fee_token_amount: u128;
+    },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await XDRTransactionBuilder.xdrFromSimulation({
       method: "swap_and_bridge",
       args: this.spec.funcArgsToScVals("swap_and_bridge", {
-        sender,
-        token,
+        sender: new Address(sender),
+        token: new Address(token),
         amount,
         recipient,
         destination_chain_id,
@@ -220,40 +163,56 @@ export class BridgeContract {
         gas_amount,
         fee_token_amount,
       }),
+      account: sender,
+      ...options,
       ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.swapAndBridge,
     });
-  }
-
-  async swap({
-    sender,
-    amount,
-    token,
-    receive_token,
-    recipient,
-    receive_amount_min,
-    claimable,
-  }: {
-    sender: Address;
-    amount: u128;
-    token: Buffer;
-    receive_token: Buffer;
-    recipient: Address;
-    receive_amount_min: u128;
-    claimable: boolean;
-  }) {
-    return await xdrTxBuilder({
+  };
+  /**
+   * Construct and simulate a swap transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  swap = async (
+    {
       sender,
+      amount,
+      token,
+      receive_token,
+      recipient,
+      receive_amount_min,
+    }: {
+      sender: string;
+      amount: u128;
+      token: Buffer;
+      receive_token: Buffer;
+      recipient: string;
+      receive_amount_min: u128;
+    },
+    options: {
+      /**
+       * The fee to pay for the transaction. Default: 100.
+       */
+      fee?: number;
+    } = {}
+  ) => {
+    return await XDRTransactionBuilder.xdrFromSimulation({
       method: "swap",
       args: this.spec.funcArgsToScVals("swap", {
-        sender,
+        sender: new Address(sender),
         amount,
         token,
         receive_token,
-        recipient,
+        recipient: new Address(recipient),
         receive_amount_min,
-        claimable,
       }),
+      account: sender,
+      ...options,
       ...this.options,
+      errorTypes: Errors,
+      // @ts-expect-error
+      parseResultXdr: this.parsers.swap,
     });
-  }
+  };
 }

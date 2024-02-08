@@ -18,29 +18,36 @@ export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private static contracts = new Map<string, any>();
   private P = 52;
-  private web3: Web3;
+  private web3: Web3 | undefined;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronRpcUrl: string) {
+  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronJsonRpc: string | undefined) {
     super();
-    this.web3 = new Web3(tronRpcUrl + "/jsonrpc");
+    if (tronJsonRpc) {
+      this.web3 = new Web3(tronJsonRpc);
+    }
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     let userBalanceInfo;
-    try {
-      userBalanceInfo = await this.getUserBalanceInfoByBatch(accountAddress, token);
-    } catch (err) {
+    if (this.web3) {
+      try {
+        userBalanceInfo = await this.getUserBalanceInfoByBatch(this.web3, accountAddress, token);
+      } catch (err) {
+        userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
+      }
+    } else {
       userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
     }
     return userBalanceInfo;
   }
 
   private async getUserBalanceInfoByBatch(
+    web3: Web3,
     accountAddress: string,
     token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
-    const batch = new this.web3.BatchRequest();
-    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
+    const batch = new web3.BatchRequest();
+    const contract = new web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
     const userAccount = tronAddressToEthAddress(accountAddress);
     const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
       promisify((cb: any) => batch.add(contract.methods[methodName](userAccount).call.request({}, cb)))()
@@ -54,6 +61,9 @@ export class TronPoolService extends ChainPoolService {
     accountAddress: string,
     token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
+    if (!this.tronWeb.defaultAddress.base58) {
+      this.tronWeb.setAddress(accountAddress);
+    }
     const contract = await this.getContract(token.poolAddress);
     const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
     const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
@@ -62,17 +72,21 @@ export class TronPoolService extends ChainPoolService {
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     let poolInfo;
-    try {
-      poolInfo = await this.getPoolInfoByBatch(token);
-    } catch (err) {
+    if (this.web3) {
+      try {
+        poolInfo = await this.getPoolInfoByBatch(this.web3, token);
+      } catch (err) {
+        poolInfo = await this.getPoolInfoPerProperty(token);
+      }
+    } else {
       poolInfo = await this.getPoolInfoPerProperty(token);
     }
     return poolInfo;
   }
 
-  private async getPoolInfoByBatch(token: TokenWithChainDetails): Promise<PoolInfo> {
-    const batch = new this.web3.BatchRequest();
-    const contract = new this.web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
+  private async getPoolInfoByBatch(web3: Web3, token: TokenWithChainDetails): Promise<PoolInfo> {
+    const batch = new web3.BatchRequest();
+    const contract = new web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
     const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
       promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
     );
@@ -95,6 +109,9 @@ export class TronPoolService extends ChainPoolService {
   }
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
+    if (!this.tronWeb.defaultAddress.base58) {
+      this.tronWeb.setAddress(token.poolAddress);
+    }
     const poolContract = await this.getContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),

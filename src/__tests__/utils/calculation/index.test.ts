@@ -91,6 +91,8 @@ describe("Calculation", () => {
       poolAddress: "poolAddress",
       tokenAddress: "tokenAddress",
       apr: 0,
+      apr7d: 0,
+      apr30d: 0,
       lpRate: 0,
     };
 
