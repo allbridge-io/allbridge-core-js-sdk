@@ -10,7 +10,13 @@ import { TransactionConfig } from "web3-core";
  */
 export type Provider = Web3 | TronWeb;
 
-export type RawTransaction = Object | VersionedTransaction | TransactionConfig;
+/**
+ * EVM TransactionConfig
+ * Solana VersionedTransaction
+ * Tron Object
+ * Soroban string
+ */
+export type RawTransaction = Object | VersionedTransaction | TransactionConfig | string;
 
 export interface SmartContractMethodParameter {
   type: string;

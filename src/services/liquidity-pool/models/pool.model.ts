@@ -61,7 +61,12 @@ export interface UserBalanceInfoDTO {
   rewardDebt: string;
 }
 
-export class UserBalanceInfo implements UserBalanceInfoDTO {
+export interface UserBalanceInfo extends UserBalanceInfoDTO {
+  userLiquidity: string;
+  earned(poolInfo: PoolInfo, decimals?: number): string;
+}
+
+export class UserBalance implements UserBalanceInfo {
   lpAmount: string;
   rewardDebt: string;
 

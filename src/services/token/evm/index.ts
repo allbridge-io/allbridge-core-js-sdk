@@ -6,6 +6,7 @@ import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
+import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction } from "../../models";
 import { BaseContract } from "../../models/abi/types/types";
 import { amountToHex } from "../../utils/index";
@@ -40,6 +41,10 @@ export class EvmTokenService extends ChainTokenService {
     return await this.getContract(erc20abi as AbiItem[], params.token.tokenAddress)
       .methods.balanceOf(params.account)
       .call();
+  }
+
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
+    return await this.web3.eth.getBalance(params.account);
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {

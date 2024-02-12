@@ -1,11 +1,13 @@
 import path from "path";
 import { build as esbuild, BuildOptions } from "esbuild";
+import {polyfillNode} from "esbuild-plugin-polyfill-node";
 
 const baseConfig: BuildOptions = {
   nodePaths: [path.join(__dirname, "../src")],
   sourcemap: true,
   external: [],
   bundle: true,
+  minify: true,
 };
 
 async function main() {
@@ -33,6 +35,11 @@ async function main() {
     format: "esm",
     outdir: path.join(__dirname, "../dist/browser"),
     entryPoints: [path.join(__dirname, "../src/index.ts")],
+    plugins: [
+      polyfillNode({
+        // Options (optional)
+      }),
+    ],
   });
 }
 

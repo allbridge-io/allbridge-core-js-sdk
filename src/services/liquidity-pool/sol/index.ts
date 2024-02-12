@@ -14,12 +14,8 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
-
-export interface SolanaPoolParams {
-  solanaRpcUrl: string;
-}
 
 interface LPAccounts {
   mint: PublicKey;
@@ -41,7 +37,7 @@ export class SolanaPoolService extends ChainPoolService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   private P = 48;
 
-  constructor(public params: SolanaPoolParams, public api: AllbridgeCoreClient) {
+  constructor(public solanaRpcUrl: string, public api: AllbridgeCoreClient) {
     super();
   }
 
@@ -57,12 +53,12 @@ export class SolanaPoolService extends ChainPoolService {
         bridge.programId
       );
       const { lpAmount, rewardDebt } = await bridge.account.userDeposit.fetch(userDepositAccount);
-      return new UserBalanceInfo({
+      return new UserBalance({
         lpAmount: lpAmount.toString(),
         rewardDebt: rewardDebt.toString(),
       });
     } catch (e) {
-      return new UserBalanceInfo({ lpAmount: "0", rewardDebt: "0" });
+      return new UserBalance({ lpAmount: "0", rewardDebt: "0" });
     }
   }
 
@@ -143,7 +139,7 @@ export class SolanaPoolService extends ChainPoolService {
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.params.solanaRpcUrl, "confirmed");
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
 
     const publicKey = new PublicKey(accountAddress);
 

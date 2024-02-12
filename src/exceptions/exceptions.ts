@@ -1,3 +1,5 @@
+import { ChainSymbol } from "../chains";
+
 export abstract class SdkRootError extends Error {
   public errorCode: ErrorCode;
 
@@ -10,6 +12,12 @@ export abstract class SdkRootError extends Error {
 export class SdkError extends SdkRootError {
   constructor(message?: string) {
     super(ErrorCode.SDK_ERROR, message);
+  }
+}
+
+export class InvalidAmountError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.INVALID_AMOUNT_ERROR, message);
   }
 }
 
@@ -82,8 +90,21 @@ export class TimeoutError extends SdkRootError {
   }
 }
 
+export class NodeRpcUrlNotInitializedError extends SdkRootError {
+  constructor(chainSymbol: ChainSymbol) {
+    super(ErrorCode.NODE_RPC_URL_NOT_INITIALIZED_ERROR, `For chain '${chainSymbol}' Node RPC URL not initialized`);
+  }
+}
+
+export class CCTPDoesNotSupportedError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.CCTP_DOES_NOT_SUPPORTED_ERROR, message);
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
+  INVALID_AMOUNT_ERROR = "InvalidAmountError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
   INSUFFICIENT_POOL_LIQUIDITY_ERROR = "InsufficientPoolLiquidityError",
   JUPITER_ERROR = "JupiterError",
@@ -95,4 +116,6 @@ export enum ErrorCode {
   EXTRA_GAS_MAX_LIMIT_EXCEEDED_ERROR = "ExtraGasMaxLimitExceededError",
   ARGUMENT_INVALID_DECIMALS_ERROR = "ArgumentInvalidDecimalsError",
   TIMEOUT_ERROR = "TimeoutError",
+  NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
+  CCTP_DOES_NOT_SUPPORTED_ERROR = "CCTPDoesNotSupportedError",
 }

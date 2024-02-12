@@ -5,6 +5,7 @@ node_modules/
 coverage/
 .DS_Store
 .idea
+**/*.iml
 .env
 docs/*
 !docs/404.html

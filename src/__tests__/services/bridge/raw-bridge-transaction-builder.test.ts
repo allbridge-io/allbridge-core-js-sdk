@@ -10,13 +10,14 @@ import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithCh
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawBridgeTransactionBuilder;
-  let bridgeService: any;
   let api: any;
   let solParams: any;
-  const tokenService = new DefaultTokenService(api, solParams);
+  let nodeRpcUrls: any;
+  let params: any;
+  const tokenService = new DefaultTokenService(api, nodeRpcUrls, params);
 
   beforeEach(() => {
-    rawTransactionBuilder = new DefaultRawBridgeTransactionBuilder(api, solParams, bridgeService, tokenService);
+    rawTransactionBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrls, solParams, tokenService);
   });
 
   test("approve should call buildRawTransactionApprove", async () => {

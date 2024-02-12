@@ -17,6 +17,7 @@ import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import {
   AmountNotEnoughError,
+  CCTPDoesNotSupportedError,
   JupiterError,
   MethodNotSupportedError,
   SdkError,
@@ -46,7 +47,6 @@ import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
 
 export interface SolanaBridgeParams {
-  solanaRpcUrl: string;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
 }
@@ -55,9 +55,9 @@ export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
 
-  constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
+  constructor(public solanaRpcUrl: string, public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
     super();
-    this.jupiterService = new JupiterService(params.solanaRpcUrl);
+    this.jupiterService = new JupiterService(solanaRpcUrl);
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
@@ -158,27 +158,27 @@ export class SolanaBridgeService extends ChainBridgeService {
     let jupTx;
     if (isJupiterForStableCoin) {
       try {
+        let amountToSwap = Big(solTxSendParams.fee);
+        if (solTxSendParams.extraGas) {
+          amountToSwap = amountToSwap.plus(solTxSendParams.extraGas);
+        }
+
         solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
           params.sourceToken.decimals,
           solTxSendParams
         );
 
-        let amountToGet = Big(solTxSendParams.fee);
-        if (solTxSendParams.extraGas) {
-          amountToGet = amountToGet.plus(solTxSendParams.extraGas);
-        }
-
-        const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
+        const { tx } = await this.jupiterService.getJupiterSwapTx(
           params.fromAccountAddress,
           params.sourceToken.tokenAddress,
-          amountToGet.toFixed(0)
+          amountToSwap.toFixed(0)
         );
         jupTx = tx;
-        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountToSwap).toFixed(0);
         if (Big(solTxSendParams.amount).lte(0)) {
           throw new AmountNotEnoughError(
             `Amount not enough to pay fee, ${convertIntAmountToFloat(
-              Big(solTxSendParams.amount).neg(),
+              Big(solTxSendParams.amount).minus(1).neg(),
               params.sourceToken.decimals
             ).toFixed()} stables is missing`
           );
@@ -207,6 +207,9 @@ export class SolanaBridgeService extends ChainBridgeService {
         swapAndBridgeTx = transaction;
         wormMessageSigner = messageAccount;
         break;
+      }
+      case Messenger.CCTP: {
+        throw new CCTPDoesNotSupportedError("Solana does not support CCTP yet");
       }
     }
 
@@ -565,7 +568,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.params.solanaRpcUrl, "confirmed");
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
 
     const publicKey = new PublicKey(accountAddress);
 

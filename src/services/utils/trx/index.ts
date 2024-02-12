@@ -1,5 +1,5 @@
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 import { InvalidTxError, VerifyTxError } from "../../../exceptions";
 import { RawTransaction } from "../../models";
 import { sleep } from "../index";

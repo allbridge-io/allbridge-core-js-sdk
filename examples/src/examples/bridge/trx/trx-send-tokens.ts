@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 
 dotenv.config({ path: ".env" });
 const main = async () => {

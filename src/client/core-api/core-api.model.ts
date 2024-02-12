@@ -12,6 +12,14 @@ export interface ChainDetailsDTO {
   confirmations: number;
 }
 
+export enum AddressStatus {
+  OK = "OK",
+  INVALID = "INVALID",
+  FORBIDDEN = "FORBIDDEN",
+  UNINITIALIZED = "UNINITIALIZED",
+  CONTRACT_ADDRESS = "CONTRACT_ADDRESS",
+}
+
 export interface TokenDTO {
   symbol: string;
   name: string;
@@ -37,6 +45,7 @@ export interface PoolInfoDTO {
 export enum MessengerKeyDTO {
   ALLBRIDGE = "allbridge",
   WORMHOLE = "wormhole",
+  CCTP = "cctp",
 }
 
 export type TransferTimeDTO = {
@@ -56,6 +65,7 @@ export type MessengerTransferTimeDTO = {
 export enum Messenger {
   ALLBRIDGE = 1,
   WORMHOLE = 2,
+  CCTP = 3,
 }
 
 export interface ReceiveTransactionCostRequest {
@@ -68,6 +78,11 @@ export interface ReceiveTransactionCostResponse {
   exchangeRate: string;
   fee: string;
   sourceNativeTokenPrice: string;
+}
+
+export interface GasBalanceResponse {
+  gasBalance: string | null;
+  status: AddressStatus;
 }
 
 export interface TransferStatusResponse {
@@ -118,6 +133,8 @@ export interface BridgeTransaction {
   sourceTokenAddress: string;
   destinationTokenAddress: string;
 
+  hash: string;
+
   messenger: Messenger;
 
   blockTime: number;
@@ -125,6 +142,8 @@ export interface BridgeTransaction {
 
   confirmations: number;
   confirmationsNeeded: number;
+
+  isClaimable?: boolean;
 }
 
 export type PoolInfoResponse = {
@@ -132,3 +151,11 @@ export type PoolInfoResponse = {
     string: PoolInfo;
   };
 };
+
+export type PendingInfoResponse = Record<ChainSymbol, TokenPendingInfoDTO>;
+export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
+
+export interface PendingInfoDTO {
+  pendingTxs: number;
+  totalSentAmount: string;
+}
