@@ -127,7 +127,6 @@ export class DefaultSolUtils implements SolUtils {
     connection: Connection,
     pricePerUnitInMicroLamports?: string
   ): Promise<string> {
-    //update UnitPrice Instruction
     const computeUnitPriceIndex = message.instructions.findIndex(
       (instruction) =>
         instruction.programId.equals(ComputeBudgetProgram.programId) &&
