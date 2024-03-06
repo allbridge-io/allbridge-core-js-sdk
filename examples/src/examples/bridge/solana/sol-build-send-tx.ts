@@ -32,6 +32,8 @@ const exampleViaWormhole = async () => {
     messenger: Messenger.WORMHOLE,
   })) as VersionedTransaction;
 
+  await sdk.utils.sol.addPriorityFeeToTx(transaction);
+
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);
 

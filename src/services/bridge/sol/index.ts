@@ -51,6 +51,8 @@ export interface SolanaBridgeParams {
   solanaLookUpTable: string;
 }
 
+const COMPUTE_UNIT_LIMIT = 1000000;
+
 export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
@@ -106,7 +108,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const preInstructions: TransactionInstruction[] = [
       web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 1000000,
+        units: COMPUTE_UNIT_LIMIT,
       }),
     ];
 
@@ -427,7 +429,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       })
       .preInstructions([
         web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 1000000,
+          units: COMPUTE_UNIT_LIMIT,
         }),
       ])
       .postInstructions(instructions)
@@ -555,7 +557,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .accounts(accounts)
       .preInstructions([
         web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 1000000,
+          units: COMPUTE_UNIT_LIMIT,
         }),
         feeInstruction,
       ])

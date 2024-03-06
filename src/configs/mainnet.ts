@@ -12,7 +12,7 @@ export const mainnet: AllbridgeCoreSdkOptions = {
 
 /**
  *  This is default rpc urls for Solana and Tron,<p/> Override and use your own for proper and stable work
- *  @Deprecated use {@link testnetNodeRpcUrlsDefault}
+ *  @Deprecated use {@link nodeRpcUrlsDefault}
  */
 export const nodeUrlsDefault: NodeUrlsConfig = {
   solanaRpcUrl: "https://api.mainnet-beta.solana.com",
