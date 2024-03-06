@@ -2,7 +2,7 @@ import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allb
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import solanaWeb3, { VersionedTransaction } from "@solana/web3.js";
+import solanaWeb3, { VersionedTransaction, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 
 dotenv.config({ path: ".env" });
@@ -23,20 +23,20 @@ const exampleViaWormhole = async () => {
   const destinationTokenInfoPol = ensure(destinationChainPol.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.WORMHOLE
-  const transaction = (await sdk.bridge.rawTxBuilder.send({
+  const { transaction, wormholeMessageSigner } = (await sdk.bridge.rawTxBuilder.send({
     amount: "0.2",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressPol,
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.WORMHOLE,
-  })) as VersionedTransaction;
+  })) as { transaction: VersionedTransaction; wormholeMessageSigner: Keypair };
 
   await sdk.utils.sol.addPriorityFeeToTx(transaction, "100000");
   // await sdk.utils.sol.addPriorityFeePerUnitToTx(transaction);
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
-  transaction.sign([keypair]);
+  transaction.sign([wormholeMessageSigner, keypair]);
 
   const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
   const txid = await connection.sendTransaction(transaction);

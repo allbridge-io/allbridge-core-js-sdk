@@ -1,4 +1,4 @@
-import { VersionedTransaction } from "@solana/web3.js";
+import { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { TronWeb } from "tronweb-typings";
 
 import type Web3 from "web3";
@@ -12,11 +12,15 @@ export type Provider = Web3 | TronWeb;
 
 /**
  * EVM TransactionConfig
- * Solana VersionedTransaction
  * Tron Object
  * Soroban string
+ * Solana {transaction: VersionedTransaction; wormholeMessageSigner?: Keypair}
  */
-export type RawTransaction = Object | VersionedTransaction | TransactionConfig | string;
+export type RawTransaction =
+  | Object
+  | TransactionConfig
+  | string
+  | { transaction: VersionedTransaction; wormholeMessageSigner?: Keypair };
 
 export interface SmartContractMethodParameter {
   type: string;

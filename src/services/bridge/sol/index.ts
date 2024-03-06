@@ -64,7 +64,12 @@ export class SolanaBridgeService extends ChainBridgeService {
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
-    return this.buildSwapTransaction(txSwapParams, params.sourceToken.poolAddress, params.destinationToken.poolAddress);
+    const transaction = await this.buildSwapTransaction(
+      txSwapParams,
+      params.sourceToken.poolAddress,
+      params.destinationToken.poolAddress
+    );
+    return { transaction };
   }
 
   private async buildSwapTransaction(
@@ -225,7 +230,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     if (wormMessageSigner) {
       swapAndBridgeTx.sign([wormMessageSigner]);
     }
-    return swapAndBridgeTx;
+    return { transaction: swapAndBridgeTx, wormholeMessageSigner: wormMessageSigner };
   }
 
   private addPoolAddress(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {

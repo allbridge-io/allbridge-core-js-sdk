@@ -92,7 +92,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return tx;
+    return { transaction: tx };
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
@@ -107,7 +107,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return tx;
+    return { transaction: tx };
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
@@ -118,7 +118,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return tx;
+    return { transaction: tx };
   }
 
   private async prepareDataForTransaction(params: LiquidityPoolsParams) {
