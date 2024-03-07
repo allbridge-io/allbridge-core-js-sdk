@@ -1,4 +1,4 @@
-import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program, Provider, Spl } from "@project-serum/anchor";
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -14,6 +14,7 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
+import { addUnitLimitAndUnitPriceToTx } from "../../utils/sol/compute-budget";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
@@ -92,7 +93,8 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return { transaction: tx };
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
+    return tx;
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
@@ -107,7 +109,8 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return { transaction: tx };
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
+    return tx;
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
@@ -118,7 +121,8 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
-    return { transaction: tx };
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
+    return tx;
   }
 
   private async prepareDataForTransaction(params: LiquidityPoolsParams) {
@@ -170,11 +174,7 @@ export class SolanaPoolService extends ChainPoolService {
     const bridgeTokenAccount = await getBridgeTokenAccount(tokenMintAccount, bridge.programId);
     const userDepositAccount = await getUserDepositAccount(user, tokenMintAccount, bridge.programId);
 
-    const preInstructions: TransactionInstruction[] = [
-      web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 1000000,
-      }),
-    ];
+    const preInstructions: TransactionInstruction[] = [];
 
     try {
       await getTokenAccountData(userToken, provider);

@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 import BN from "bn.js";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";

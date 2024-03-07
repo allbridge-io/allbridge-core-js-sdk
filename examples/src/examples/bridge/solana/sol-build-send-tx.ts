@@ -1,8 +1,15 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+  nodeUrlsDefault,
+  RawBridgeSolanaTransaction,
+  SolanaAutoTxFee,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import solanaWeb3, { VersionedTransaction, Keypair } from "@solana/web3.js";
+import solanaWeb3 from "@solana/web3.js";
 import bs58 from "bs58";
 
 dotenv.config({ path: ".env" });
@@ -23,20 +30,20 @@ const exampleViaWormhole = async () => {
   const destinationTokenInfoPol = ensure(destinationChainPol.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.WORMHOLE
-  const { transaction, wormholeMessageSigner } = (await sdk.bridge.rawTxBuilder.send({
+  const transaction = (await sdk.bridge.rawTxBuilder.send({
     amount: "0.2",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddressPol,
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.WORMHOLE,
-  })) as { transaction: VersionedTransaction; wormholeMessageSigner: Keypair };
-
-  await sdk.utils.sol.addPriorityFeeToTx(transaction, "100000");
-  // await sdk.utils.sol.addPriorityFeePerUnitToTx(transaction);
+    txFeeParams: {
+      solana: SolanaAutoTxFee,
+    },
+  })) as RawBridgeSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
-  transaction.sign([wormholeMessageSigner, keypair]);
+  transaction.sign([keypair]);
 
   const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
   const txid = await connection.sendTransaction(transaction);
@@ -62,7 +69,7 @@ const exampleViaAllbridge = async () => {
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.ALLBRIDGE,
-  })) as VersionedTransaction;
+  })) as RawBridgeSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);

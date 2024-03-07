@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 import { Address } from "stellar-sdk";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";

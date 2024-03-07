@@ -1,5 +1,4 @@
-import * as fs from "fs";
-import nock, { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
+import { abortPendingRequests, cleanAll, disableNetConnect } from "nock";
 import Web3 from "web3";
 import { ChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
@@ -88,19 +87,3 @@ describe("EvmPool", () => {
     });
   });
 });
-
-function nockRequests(recName: string) {
-  const nocks = load(`./src/__tests__/services/liquidity-pool/evm/data/nock/${recName}-rec.json`);
-  nocks.forEach(function (nock) {
-    nock.filteringRequestBody((b) => {
-      try {
-        const body = JSON.parse(b);
-        body[0].id = 8551125359729656;
-        body[1].id = 8551125359729657;
-        return JSON.stringify(body);
-      } catch (e) {
-        return b;
-      }
-    });
-  });
-}

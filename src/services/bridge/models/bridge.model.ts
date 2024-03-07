@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { AmountFormat, FeePaymentMethod } from "../../../models";
+import { AmountFormat, FeePaymentMethod, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
 export interface ApproveParams {
@@ -72,6 +72,8 @@ export interface BaseSendParams {
    * {@link TokenWithChainDetails |The token info object} on the destination chain.
    */
   destinationToken: TokenWithChainDetails;
+
+  txFeeParams?: TxFeeParams;
 }
 
 /**

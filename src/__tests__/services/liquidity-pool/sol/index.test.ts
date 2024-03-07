@@ -84,7 +84,7 @@ describe("SolanaPool", () => {
 function equalsExceptRecentBlockHash(actualRawTx: RawTransaction, expectedRawTx: string) {
   const actual = JSON.parse(JSON.stringify(actualRawTx, null, 2));
   const expected = JSON.parse(expectedRawTx);
-  expected.transaction.recentBlockhash = actual?.transaction?.recentBlockhash;
+  expected.recentBlockhash = actual?.recentBlockhash;
   expect(actual).toEqual(expected);
 }
 
