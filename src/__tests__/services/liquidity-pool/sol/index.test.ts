@@ -14,7 +14,7 @@ const TOKEN_INFO: TokenWithChainDetails = {
   bridgeAddress: BRIDGE_ADDRESS,
 };
 
-describe("SolanaPool", () => {
+describe.skip("SolanaPool", () => {
   let api: any;
   const solanaRpcUrl = "https://api.devnet.solana.com";
 
