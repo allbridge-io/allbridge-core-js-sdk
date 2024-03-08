@@ -33,7 +33,6 @@ export async function addUnitLimitAndUnitPriceToVersionedTx(
   const message = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts: addressLookupTableAccounts,
   });
-
   /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
   const simUnitsConsumed = (await connection.simulateTransaction(transaction)).value.unitsConsumed!;
   await addUnitLimitAndUnitPriceToInstructions(message.instructions, simUnitsConsumed, txFeeParams, connection);
@@ -47,16 +46,21 @@ async function addUnitLimitAndUnitPriceToInstructions(
   txFeeParams: TxFeeParams | undefined,
   connection: Connection
 ) {
-  const units = updateUnitLimit(simUnitsConsumed, instructions);
-  if (txFeeParams?.solana) {
-    const solanaTxFee = txFeeParams.solana;
-    if (solanaTxFee === SolanaAutoTxFee) {
-      await updateUnitPrice(instructions, connection);
-    } else if ("pricePerUnitInMicroLamports" in solanaTxFee) {
-      await updateUnitPrice(instructions, connection, solanaTxFee.pricePerUnitInMicroLamports);
-    } else {
-      const pricePerUnitInMicroLamports = Big(solanaTxFee.extraFeeInLamports).div(units).mul(toPowBase10(6)).toFixed(0);
-      await updateUnitPrice(instructions, connection, pricePerUnitInMicroLamports);
+  if (simUnitsConsumed > 0) {
+    const units = updateUnitLimit(simUnitsConsumed, instructions);
+    if (txFeeParams?.solana) {
+      const solanaTxFee = txFeeParams.solana;
+      if (solanaTxFee === SolanaAutoTxFee) {
+        await updateUnitPrice(instructions, connection);
+      } else if ("pricePerUnitInMicroLamports" in solanaTxFee) {
+        await updateUnitPrice(instructions, connection, solanaTxFee.pricePerUnitInMicroLamports);
+      } else {
+        const pricePerUnitInMicroLamports = Big(solanaTxFee.extraFeeInLamports)
+          .div(units)
+          .mul(toPowBase10(6))
+          .toFixed(0);
+        await updateUnitPrice(instructions, connection, pricePerUnitInMicroLamports);
+      }
     }
   }
 }

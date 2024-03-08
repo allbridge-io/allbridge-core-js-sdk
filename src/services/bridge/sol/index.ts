@@ -52,6 +52,8 @@ export interface SolanaBridgeParams {
   solanaLookUpTable: string;
 }
 
+const COMPUTE_UNIT_LIMIT = 1000000;
+
 export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
@@ -111,7 +113,11 @@ export class SolanaBridgeService extends ChainBridgeService {
     const receivePool = new PublicKey(receivePoolAddress);
     const receiveUserToken = await getAssociatedAccount(receiverAccount, receiveMint);
 
-    const preInstructions: TransactionInstruction[] = [];
+    const preInstructions: TransactionInstruction[] = [
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: COMPUTE_UNIT_LIMIT,
+      }),
+    ];
 
     try {
       await getTokenAccountData(receiveUserToken, provider);
@@ -431,6 +437,11 @@ export class SolanaBridgeService extends ChainBridgeService {
         sentMessageAccount,
         otherBridgeToken: otherBridgeTokenAccount,
       })
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: COMPUTE_UNIT_LIMIT,
+        }),
+      ])
       .postInstructions(instructions)
       .transaction();
     const connection = this.buildAnchorProvider(userAccount.toString()).connection;
@@ -554,7 +565,12 @@ export class SolanaBridgeService extends ChainBridgeService {
         receiveToken,
       })
       .accounts(accounts)
-      .preInstructions([feeInstruction])
+      .preInstructions([
+        web3.ComputeBudgetProgram.setComputeUnitLimit({
+          units: COMPUTE_UNIT_LIMIT,
+        }),
+        feeInstruction,
+      ])
       .postInstructions(instructions)
       .signers([messageAccount])
       .transaction();

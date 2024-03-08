@@ -1,4 +1,4 @@
-import { AnchorProvider, BN, Program, Provider, Spl } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -174,7 +174,11 @@ export class SolanaPoolService extends ChainPoolService {
     const bridgeTokenAccount = await getBridgeTokenAccount(tokenMintAccount, bridge.programId);
     const userDepositAccount = await getUserDepositAccount(user, tokenMintAccount, bridge.programId);
 
-    const preInstructions: TransactionInstruction[] = [];
+    const preInstructions: TransactionInstruction[] = [
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 1000000,
+      }),
+    ];
 
     try {
       await getTokenAccountData(userToken, provider);
