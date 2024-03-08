@@ -34,7 +34,8 @@ export async function addUnitLimitAndUnitPriceToVersionedTx(
     addressLookupTableAccounts: addressLookupTableAccounts,
   });
   /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-  const simUnitsConsumed = (await connection.simulateTransaction(transaction)).value.unitsConsumed!;
+  const simUnitsConsumed = (await connection.simulateTransaction(transaction, { replaceRecentBlockhash: true })).value
+    .unitsConsumed!;
   await addUnitLimitAndUnitPriceToInstructions(message.instructions, simUnitsConsumed, txFeeParams, connection);
 
   transaction.message = message.compileToV0Message(addressLookupTableAccounts);

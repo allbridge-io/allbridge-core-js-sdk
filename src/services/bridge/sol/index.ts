@@ -589,8 +589,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       // @ts-expect-error enough wallet for fetch actions
       { publicKey: publicKey },
       {
-        preflightCommitment: "processed",
-        commitment: "finalized",
+        preflightCommitment: "confirmed",
+        commitment: "confirmed",
       }
     );
   }
