@@ -14,6 +14,7 @@ import {
   getConfigAccount,
   getUserDepositAccount,
 } from "../../utils/sol/accounts";
+import { addUnitLimitAndUnitPriceToTx } from "../../utils/sol/compute-budget";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
@@ -92,6 +93,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }
 
@@ -107,6 +109,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }
 
@@ -118,6 +121,7 @@ export class SolanaPoolService extends ChainPoolService {
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
     tx.feePayer = new PublicKey(params.accountAddress);
+    await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }
 
@@ -148,8 +152,8 @@ export class SolanaPoolService extends ChainPoolService {
       // @ts-expect-error enough wallet for fetch actions
       { publicKey: publicKey },
       {
-        preflightCommitment: "processed",
-        commitment: "finalized",
+        preflightCommitment: "confirmed",
+        commitment: "confirmed",
       }
     );
   }

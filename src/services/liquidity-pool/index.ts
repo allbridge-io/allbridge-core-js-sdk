@@ -2,13 +2,15 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
+import { NodeRpcUrlsConfig } from "..";
 import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
+import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
+import { AllbridgeCoreSdkOptions } from "../../index";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { depositAmountToVUsd, vUsdToWithdrawalAmount } from "../utils/calculation";
@@ -16,6 +18,7 @@ import { EvmPoolService } from "./evm";
 import { ApproveParams, ChainPoolService, CheckAllowanceParams, GetAllowanceParams, UserBalanceInfo } from "./models";
 import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService } from "./sol";
+import { SrbPoolService } from "./srb";
 import { TronPoolService } from "./trx";
 
 export interface LiquidityPoolService {
@@ -112,11 +115,12 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   public rawTxBuilder: RawPoolTransactionBuilder;
 
   constructor(
-    private api: AllbridgeCoreClient,
+    private api: AllbridgeCoreClientPoolInfoCaching,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
   ) {
-    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, tokenService);
+    this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
@@ -176,19 +180,25 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return getChainPoolService(token.chainSymbol, this.api, this.nodeRpcUrlsConfig, provider).getUserBalanceInfo(
-      accountAddress,
-      token
-    );
-  }
-
-  async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<PoolInfo> {
-    return await getChainPoolService(
+    return getChainPoolService(
       token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
+      this.params,
+      provider
+    ).getUserBalanceInfo(accountAddress, token);
+  }
+
+  async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<PoolInfo> {
+    const poolInfo = await getChainPoolService(
+      token.chainSymbol,
+      this.api,
+      this.nodeRpcUrlsConfig,
+      this.params,
       provider
     ).getPoolInfoFromChain(token);
+    this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
+    return poolInfo;
   }
 }
 
@@ -196,6 +206,7 @@ export function getChainPoolService(
   chainSymbol: ChainSymbol,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+  params: AllbridgeCoreSdkOptions,
   provider?: Provider
 ): ChainPoolService {
   switch (chainProperties[chainSymbol].chainType) {
@@ -209,10 +220,12 @@ export function getChainPoolService(
     }
     case ChainType.TRX: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+      const tronJsonRpc = params.tronJsonRpc;
       if (provider) {
-        return new TronPoolService(provider, api, nodeRpcUrl);
+        return new TronPoolService(provider, api, tronJsonRpc);
       } else {
-        return new TronPoolService(new TronWeb({ fullHost: nodeRpcUrl }), api, nodeRpcUrl);
+        const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
+        return new TronPoolService(tronWeb, api, tronJsonRpc);
       }
     }
     case ChainType.SOLANA: {
@@ -220,7 +233,7 @@ export function getChainPoolService(
       return new SolanaPoolService(nodeRpcUrl, api);
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not support yet");
+      return new SrbPoolService(nodeRpcUrlsConfig, params, api);
     }
   }
 }

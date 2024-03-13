@@ -2,6 +2,9 @@ import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { ApiClient } from "./api-client";
 import {
+  CheckAddressResponse,
+  GasBalanceResponse,
+  PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -17,9 +20,13 @@ export interface AllbridgeCoreClient {
   getChainDetailsMap(): Promise<ChainDetailsMap>;
   tokens(): Promise<TokenWithChainDetails[]>;
 
+  getPendingInfo(): Promise<PendingInfoResponse>;
+
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
+
+  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -32,6 +39,18 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   async tokens(): Promise<TokenWithChainDetails[]> {
     const map = await this.getChainDetailsMap();
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
+  }
+
+  async getPendingInfo(): Promise<PendingInfoResponse> {
+    return this.apiClient.getPendingInfo();
+  }
+
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    return this.apiClient.getGasBalance(chainSymbol, address);
+  }
+
+  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
+    return this.apiClient.checkAddress(chainSymbol, address, tokenAddress);
   }
 
   async getChainDetailsMapAndPoolInfoMap(): Promise<{

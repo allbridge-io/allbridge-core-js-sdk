@@ -9,6 +9,9 @@ import {
 } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
+  CheckAddressResponse,
+  GasBalanceResponse,
+  PendingInfoResponse,
   PoolInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -23,8 +26,17 @@ export interface TokenInfo {
 
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
+
+  getPendingInfo(): Promise<PendingInfoResponse>;
+
+  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
+
+  checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse>;
+
   getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
+
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
+
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
@@ -49,6 +61,27 @@ export class ApiClientImpl implements ApiClient {
       chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
       poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
     };
+  }
+
+  async getPendingInfo(): Promise<PendingInfoResponse> {
+    const { data } = await this.api.get<PendingInfoResponse>("/pending-info");
+    return data;
+  }
+
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    const { data } = await this.api.get<GasBalanceResponse>(`/check/${chainSymbol}/${address}`);
+    return data;
+  }
+
+  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
+    if (tokenAddress) {
+      const { data } = await this.api.get<CheckAddressResponse>(`/check/${chainSymbol}/${address}`, {
+        params: { token: tokenAddress, ...this.api.defaults.params },
+      });
+      return data;
+    }
+    const { data } = await this.api.get<CheckAddressResponse>(`/check/${chainSymbol}/${address}`);
+    return data;
   }
 
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {

@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 import BN from "bn.js";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
@@ -142,7 +142,7 @@ export class EvmBridgeService extends ChainBridgeService {
     // prettier-ignore
     const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
-      ...rawTransaction,
+      ...(rawTransaction as Object),
       gas: estimateGas,
       ...feeOptions,
     });

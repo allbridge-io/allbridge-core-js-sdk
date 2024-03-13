@@ -6,11 +6,18 @@ export {
   GetTokenBalanceParams,
   SendParams,
   SwapParams,
+  GetNativeTokenBalanceParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
-export { TransactionResponse } from "../services/models/index";
-export { Messenger, TransferStatusResponse, BridgeTransaction } from "../client/core-api/core-api.model";
+export {
+  Messenger,
+  TransferStatusResponse,
+  BridgeTransaction,
+  GasBalanceResponse,
+  CheckAddressResponse,
+  AddressStatus,
+} from "../client/core-api/core-api.model";
 export { ChainSymbol, ChainType } from "../chains/index";
 export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
@@ -22,11 +29,6 @@ export {
   MessengerTransferTime,
 } from "../tokens-info/tokens-info.model";
 export {
-  CheckAllowanceParams as TokensCheckAllowanceParams,
-  GetAllowanceParams as TokensGetAllowanceParams,
-  GetTokenBalanceParams as TokensGetTokenBalanceParams,
-} from "../services/token/models/token.model";
-export {
   UserBalanceInfo,
   UserBalanceInfoDTO,
   LiquidityPoolsParams,
@@ -35,7 +37,7 @@ export {
   CheckAllowanceParams as LiquidityPoolsCheckAllowanceParams,
   GetAllowanceParams as LiquidityPoolsGetAllowanceParams,
 } from "../services/liquidity-pool/models/pool.model";
-export { Provider, RawTransaction } from "../services/models/index";
+export * from "../services/models/index";
 export {
   SwapAndBridgeCalculationData,
   SwapFromVUsdCalcResult,
@@ -43,6 +45,9 @@ export {
 } from "../utils/calculation/swap-and-bridge-fee-calc";
 export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
 export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
+export { Utils } from "../utils";
+export { SrbUtils, TrustLineParams } from "../utils/srb";
+export { SolUtils } from "../utils/sol";
 export * from "../exceptions";
 
 export enum FeePaymentMethod {
@@ -166,4 +171,22 @@ export interface ExtraGasMaxLimitResponse {
    * Source native token price
    */
   sourceNativeTokenPrice: string;
+}
+
+/**
+ * Provide pending status information
+ */
+export interface PendingStatusInfoResponse {
+  /**
+   * Number of pending transactions
+   */
+  pendingTxs: number;
+  /**
+   * Total amount of pending transactions
+   */
+  pendingAmount: AmountFormatted;
+  /**
+   * The amount of tokens can be received as a result of transfer considering pending transactions
+   */
+  estimatedAmount: { min: AmountFormatted; max: AmountFormatted };
 }

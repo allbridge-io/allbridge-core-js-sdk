@@ -11,7 +11,7 @@ import {
   TransactionMessageArgs,
   VersionedTransaction,
 } from "@solana/web3.js";
-import Big from "big.js";
+import { Big } from "big.js";
 import { ChainDecimalsByType, ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
@@ -23,7 +23,7 @@ import {
   SdkError,
   SdkRootError,
 } from "../../../exceptions";
-import { FeePaymentMethod, SwapParams } from "../../../models";
+import { FeePaymentMethod, SwapParams, TxFeeParams } from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
@@ -47,6 +47,7 @@ import {
   getPriceAccount,
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
+import { addUnitLimitAndUnitPriceToTx, addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
 import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
@@ -68,6 +69,8 @@ export type CctpDomains = {
   [key in ChainSymbol]?: number;
 };
 
+const COMPUTE_UNIT_LIMIT = 1000000;
+
 export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
@@ -79,13 +82,19 @@ export class SolanaBridgeService extends ChainBridgeService {
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
-    return this.buildSwapTransaction(txSwapParams, params.sourceToken.poolAddress, params.destinationToken.poolAddress);
+    return await this.buildSwapTransaction(
+      txSwapParams,
+      params.sourceToken.poolAddress,
+      params.destinationToken.poolAddress,
+      params.txFeeParams
+    );
   }
 
   private async buildSwapTransaction(
     params: TxSwapParams,
     poolAddress: string,
-    toPoolAddress: string
+    toPoolAddress: string,
+    txFeeParams?: TxFeeParams
   ): Promise<VersionedTransaction> {
     const {
       fromAccountAddress,
@@ -123,7 +132,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const preInstructions: TransactionInstruction[] = [
       web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 1000000,
+        units: COMPUTE_UNIT_LIMIT,
       }),
     ];
 
@@ -163,6 +172,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const connection = provider.connection;
     transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
+    await addUnitLimitAndUnitPriceToTx(transaction, txFeeParams, this.solanaRpcUrl);
     return await this.convertToVersionedTransaction(transaction, connection);
   }
 
@@ -175,23 +185,23 @@ export class SolanaBridgeService extends ChainBridgeService {
     let jupTx;
     if (isJupiterForStableCoin) {
       try {
+        let amountToSwap = Big(solTxSendParams.fee);
+        if (solTxSendParams.extraGas) {
+          amountToSwap = amountToSwap.plus(solTxSendParams.extraGas);
+        }
+
         solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
           params.sourceToken.decimals,
           solTxSendParams
         );
 
-        let amountToGet = Big(solTxSendParams.fee);
-        if (solTxSendParams.extraGas) {
-          amountToGet = amountToGet.plus(solTxSendParams.extraGas);
-        }
-
-        const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
+        const { tx } = await this.jupiterService.getJupiterSwapTx(
           params.fromAccountAddress,
           params.sourceToken.tokenAddress,
-          amountToGet.toFixed(0)
+          amountToSwap.toFixed(0)
         );
         jupTx = tx;
-        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountToSwap).toFixed(0);
         if (Big(solTxSendParams.amount).lte(0)) {
           throw new AmountNotEnoughError(
             `Amount not enough to pay fee, ${convertIntAmountToFloat(
@@ -213,21 +223,19 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     let swapAndBridgeTx: VersionedTransaction;
     let wormMessageSigner: Keypair | undefined = undefined;
+    const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
     switch (txSendParams.messenger) {
       case Messenger.ALLBRIDGE: {
-        const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
         swapAndBridgeTx = await this.buildSwapAndBridgeAllbridgeTransaction(swapAndBridgeSolData);
         break;
       }
       case Messenger.WORMHOLE: {
-        const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
         const { transaction, messageAccount } = await this.buildSwapAndBridgeWormholeTransaction(swapAndBridgeSolData);
         swapAndBridgeTx = transaction;
         wormMessageSigner = messageAccount;
         break;
       }
       case Messenger.CCTP: {
-        const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpData(solTxSendParams);
         swapAndBridgeTx = await this.buildSwapAndBridgeCctpTransaction(
           params.destinationToken.chainSymbol,
           swapAndBridgeSolData
@@ -242,6 +250,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       }
       swapAndBridgeTx = await this.jupiterService.amendJupiterWithSdkTx(jupTx, swapAndBridgeTx);
     }
+
+    await addUnitLimitAndUnitPriceToVersionedTx(swapAndBridgeTx, params.txFeeParams, this.solanaRpcUrl);
 
     if (wormMessageSigner) {
       swapAndBridgeTx.sign([wormMessageSigner]);
@@ -374,7 +384,6 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.gasPrice = priceAccount;
     swapAndBridgeData.thisGasPrice = thisGasPriceAccount;
     swapAndBridgeData.message = message;
-    swapAndBridgeData.provider = provider;
 
     if (extraGas) {
       swapAndBridgeData.extraGasInstruction = this.getExtraGasInstruction(
@@ -411,7 +420,6 @@ export class SolanaBridgeService extends ChainBridgeService {
       thisGasPrice,
       message,
       extraGasInstruction,
-      provider,
     } = swapAndBridgeData;
     const allbridgeMessengerProgramId = configAccountInfo.allbridgeMessengerProgramId;
     const messengerGasUsageAccount = await getGasUsageAccount(destinationChainId, allbridgeMessengerProgramId);
@@ -452,12 +460,12 @@ export class SolanaBridgeService extends ChainBridgeService {
       })
       .preInstructions([
         web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 1000000,
+          units: COMPUTE_UNIT_LIMIT,
         }),
       ])
       .postInstructions(instructions)
       .transaction();
-    const connection = provider.connection;
+    const connection = this.buildAnchorProvider(userAccount.toString()).connection;
     transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
     return await this.convertToVersionedTransaction(transaction, connection);
@@ -503,7 +511,6 @@ export class SolanaBridgeService extends ChainBridgeService {
       thisGasPrice,
       message,
       extraGasInstruction,
-      provider,
     } = swapAndBridgeData;
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
 
@@ -526,6 +533,8 @@ export class SolanaBridgeService extends ChainBridgeService {
     );
     const wormholeMessengerConfigAccount = await getConfigAccount(configAccountInfo.wormholeMessengerProgramId);
     const messageAccount = Keypair.generate();
+
+    const provider = this.buildAnchorProvider(userAccount.toString());
 
     const bridgeAccountInfo = await provider.connection.getAccountInfo(whBridgeAccount);
     if (bridgeAccountInfo == null) {
@@ -579,7 +588,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .accounts(accounts)
       .preInstructions([
         web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 1000000,
+          units: COMPUTE_UNIT_LIMIT,
         }),
         feeInstruction,
       ])
@@ -754,8 +763,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       // @ts-expect-error enough wallet for fetch actions
       { publicKey: publicKey },
       {
-        preflightCommitment: "processed",
-        commitment: "finalized",
+        preflightCommitment: "confirmed",
+        commitment: "confirmed",
       }
     );
   }

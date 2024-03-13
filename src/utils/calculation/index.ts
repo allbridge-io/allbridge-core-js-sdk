@@ -63,7 +63,7 @@ export function swapToVUsd(
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">
 ): string {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
@@ -74,6 +74,24 @@ export function swapFromVUsd(
   const result = fromSystemPrecision(Big(poolInfo.tokenBalance).minus(newAmount), decimals);
   const fee = Big(result).times(feeShare);
   return Big(result).minus(fee).round(0, Big.roundDown).toFixed();
+}
+
+export function getSwapFromVUsdPoolInfo(
+  vUsdAmount: BigSource,
+  poolInfo: Omit<PoolInfo, "imbalance">
+): Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance"> {
+  const amountValue = Big(vUsdAmount);
+  if (amountValue.lte(0)) {
+    return poolInfo;
+  }
+  const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
+  const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
+  return {
+    aValue: poolInfo.aValue,
+    dValue: poolInfo.dValue,
+    tokenBalance: newAmount.toFixed(0),
+    vUsdBalance: vUsdBalance.toFixed(0),
+  };
 }
 
 /**

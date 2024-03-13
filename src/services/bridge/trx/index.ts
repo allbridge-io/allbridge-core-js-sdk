@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import { ChainType } from "../../../chains";

@@ -1,8 +1,8 @@
-import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault, RawSolanaTransaction } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import solanaWeb3, { VersionedTransaction } from "@solana/web3.js";
+import solanaWeb3 from "@solana/web3.js";
 import bs58 from "bs58";
 
 dotenv.config({ path: ".env" });
@@ -30,7 +30,7 @@ const example = async () => {
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfo,
     minimumReceiveAmount: await sdk.getAmountToBeReceived(amount, sourceTokenInfo, destinationTokenInfo),
-  })) as VersionedTransaction;
+  })) as RawSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);

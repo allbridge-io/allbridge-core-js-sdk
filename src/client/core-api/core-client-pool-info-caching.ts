@@ -3,6 +3,9 @@ import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
+  CheckAddressResponse,
+  GasBalanceResponse,
+  PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -34,6 +37,18 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return this.client.getReceiveTransactionCost(args);
   }
 
+  getPendingInfo(): Promise<PendingInfoResponse> {
+    return this.client.getPendingInfo();
+  }
+
+  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    return this.client.getGasBalance(chainSymbol, address);
+  }
+
+  checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
+    return this.client.checkAddress(chainSymbol, address, tokenAddress);
+  }
+
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
     this.poolInfoCache.putAllIfNotExists((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
@@ -58,6 +73,10 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     }
     this.poolInfoCache.putAll(poolInfoMap);
   }
+
+  cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo) {
+    this.poolInfoCache.put(mapPoolKeyObjectToPoolKey(poolKeyObject), poolInfo);
+  }
 }
 
 class PoolInfoCache {
@@ -79,6 +98,10 @@ class PoolInfoCache {
         this.cache.put(key, value);
       }
     }
+  }
+
+  put(key: string, poolInfo: PoolInfo) {
+    this.cache.put(key, poolInfo);
   }
 
   get(poolKeyObject: PoolKeyObject): PoolInfo | undefined {

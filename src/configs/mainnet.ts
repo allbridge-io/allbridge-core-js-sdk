@@ -6,6 +6,8 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   coreApiHeaders: {},
   wormholeMessengerProgramId: "worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth",
   solanaLookUpTable: "2JcBAEVnAwVo4u8d61iqgHPrzZuugur7cVTjWubsVLHj",
+  sorobanNetworkPassphrase: "Public Global Stellar Network ; September 2015",
+  tronJsonRpc: "https://api.trongrid.io/jsonrpc",
   cctpParams: {
     cctpTransmitterProgramId: "",
     cctpTokenMessengerMinter: "",
@@ -15,7 +17,7 @@ export const mainnet: AllbridgeCoreSdkOptions = {
 
 /**
  *  This is default rpc urls for Solana and Tron,<p/> Override and use your own for proper and stable work
- *  @Deprecated use {@link testnetNodeRpcUrlsDefault}
+ *  @Deprecated use {@link nodeRpcUrlsDefault}
  */
 export const nodeUrlsDefault: NodeUrlsConfig = {
   solanaRpcUrl: "https://api.mainnet-beta.solana.com",
@@ -28,4 +30,6 @@ export const nodeUrlsDefault: NodeUrlsConfig = {
 export const nodeRpcUrlsDefault: NodeRpcUrls = {
   SOL: "https://api.mainnet-beta.solana.com",
   TRX: "https://api.trongrid.io",
+  SRB: "https://rpc.stellar.org:443",
+  STLR: "https://horizon.stellar.org",
 };

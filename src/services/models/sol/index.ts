@@ -3,6 +3,26 @@ import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { Bridge as BridgeType } from "./types/bridge";
 import { CctpBridge as CctpBridgeType } from "./types/cctp_bridge";
 
+export type SolanaTxFee = PricePerUnitInMicroLamports | ExtraFeeInLamports | typeof SolanaAutoTxFee;
+/**
+ * Priority Fee will be calculated based on {@link Connection#getRecentPrioritizationFees}
+ */
+export const SolanaAutoTxFee = "AUTO" as const;
+
+/**
+ * Add Priority Fee as price per unit in micro-lamports
+ */
+export interface PricePerUnitInMicroLamports {
+  pricePerUnitInMicroLamports: string;
+}
+
+/**
+ * Total Priority Fee impact will be as extraFeeInLamports param
+ */
+export interface ExtraFeeInLamports {
+  extraFeeInLamports: string;
+}
+
 export interface SwapAndBridgeSolData {
   bridge: Program<BridgeType>;
   amount: BN;

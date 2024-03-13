@@ -2,11 +2,14 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { MethodNotSupportedError, NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
+import { AllbridgeCoreSdkOptions } from "../../index";
+import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
+import { GetNativeTokenBalanceParams } from "../bridge/models";
+import { NodeRpcUrlsConfig } from "../index";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
 import { EvmTokenService } from "./evm";
 import {
@@ -19,6 +22,7 @@ import {
 } from "./models";
 import { ChainTokenService } from "./models/token";
 import { SolanaTokenService } from "./sol";
+import { SrbTokenService } from "./srb";
 import { TronTokenService } from "./trx";
 
 export interface TokenService {
@@ -31,10 +35,16 @@ export interface TokenService {
   buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction>;
 
   getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string>;
+
+  getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted>;
 }
 
 export class DefaultTokenService implements TokenService {
-  constructor(public api: AllbridgeCoreClient, public nodeRpcUrlsConfig: NodeRpcUrlsConfig) {}
+  constructor(
+    readonly api: AllbridgeCoreClient,
+    readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    readonly params: AllbridgeCoreSdkOptions
+  ) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
     const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
@@ -85,6 +95,21 @@ export class DefaultTokenService implements TokenService {
     return tokenBalance;
   }
 
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted> {
+    const tokenBalance = await this.getChainTokenService(
+      params.chainSymbol,
+      params.account,
+      provider
+    ).getNativeTokenBalance(params);
+    return {
+      [AmountFormat.INT]: tokenBalance,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        tokenBalance,
+        ChainDecimalsByType[chainProperties[params.chainSymbol].chainType]
+      ).toFixed(),
+    };
+  }
+
   private getChainTokenService(chainSymbol: ChainSymbol, ownerAddress: string, provider?: Provider): ChainTokenService {
     switch (chainProperties[chainSymbol].chainType) {
       case ChainType.EVM: {
@@ -110,7 +135,7 @@ export class DefaultTokenService implements TokenService {
         return new SolanaTokenService(nodeRpcUrl, this.api);
       }
       case ChainType.SRB: {
-        throw new MethodNotSupportedError("Soroban does not support yet");
+        return new SrbTokenService(this.nodeRpcUrlsConfig, this.params, this.api);
       }
     }
   }

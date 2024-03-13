@@ -1,10 +1,10 @@
+import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
+import { AllbridgeCoreSdkOptions } from "../../index";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
-import { SolanaBridgeParams } from "./sol";
 import { isSendParams } from "./utils";
 import { getChainBridgeService, getSpender } from "./index";
 
@@ -32,7 +32,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
   constructor(
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    private solParams: SolanaBridgeParams,
+    private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
   ) {}
 
@@ -63,7 +63,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
         params.sourceToken.chainSymbol,
         this.api,
         this.nodeRpcUrlsConfig,
-        this.solParams,
+        this.params,
         provider
       ).buildRawTransactionSend(params);
     }
@@ -71,7 +71,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
       params.sourceToken.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
-      this.solParams,
+      this.params,
       provider
     ).buildRawTransactionSwap(params);
   }

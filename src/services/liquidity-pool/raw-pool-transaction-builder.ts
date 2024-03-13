@@ -1,8 +1,9 @@
+import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { NodeRpcUrlsConfig } from "../../index";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils";
+import { AllbridgeCoreSdkOptions } from "../../index";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
+import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./models";
@@ -47,6 +48,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
   constructor(
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
   ) {}
 
@@ -78,6 +80,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       params.token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
+      this.params,
       provider
     ).buildRawTransactionDeposit(params);
   }
@@ -90,6 +93,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       params.token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
+      this.params,
       provider
     ).buildRawTransactionWithdraw(params);
   }
@@ -99,6 +103,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       params.token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
+      this.params,
       provider
     ).buildRawTransactionClaimRewards(params);
   }

@@ -14,6 +14,11 @@ export enum ChainSymbol {
   SPL = "SPL",
 
   /**
+   * The Holešky testnet.
+   */
+  HOL = "HOL",
+
+  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -22,6 +27,11 @@ export enum ChainSymbol {
    * The Ethereum main network.
    */
   ETH = "ETH",
+
+  /**
+   * The Base main network.
+   */
+  BAS = "BAS",
 
   /**
    * The Solana network.
@@ -57,6 +67,16 @@ export enum ChainSymbol {
    * The Soroban network.
    */
   SRB = "SRB",
+
+  /**
+   * The Stellar network.
+   */
+  STLR = "STLR",
+
+  /**
+   * The OP Mainnet network.
+   */
+  OPT = "OPT",
 }
 
 export enum ChainType {
@@ -89,6 +109,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Sepolia",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.HOL]: {
+    chainSymbol: ChainSymbol.HOL,
+    chainId: "0x4268",
+    name: "Holešky",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.BSC]: {
     chainSymbol: ChainSymbol.BSC,
     chainId: "0x38",
@@ -99,6 +125,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.ETH,
     chainId: "0x1",
     name: "Ethereum",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.BAS]: {
+    chainSymbol: ChainSymbol.BAS,
+    chainId: "0x2105",
+    name: "Base",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.ARB]: {
@@ -125,6 +157,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Mumbai",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.OPT]: {
+    chainSymbol: ChainSymbol.OPT,
+    chainId: "0xa",
+    name: "OP Mainnet",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",
@@ -138,6 +176,11 @@ export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.SRB]: {
     chainSymbol: ChainSymbol.SRB,
     name: "Soroban",
+    chainType: ChainType.SRB,
+  },
+  [ChainSymbol.STLR]: {
+    chainSymbol: ChainSymbol.STLR,
+    name: "Stellar",
     chainType: ChainType.SRB,
   },
 };

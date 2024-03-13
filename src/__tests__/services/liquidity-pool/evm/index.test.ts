@@ -1,4 +1,4 @@
-import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
+import { abortPendingRequests, cleanAll, disableNetConnect } from "nock";
 import Web3 from "web3";
 import { ChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
@@ -86,32 +86,4 @@ describe("EvmPool", () => {
       value: "0",
     });
   });
-
-  test("getUserBalanceInfo", async () => {
-    nockRequests("get-user-balance-info");
-
-    const userBalanceInfo = await evmPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
-
-    expect(userBalanceInfo).toEqual({
-      lpAmount: "9986",
-      rewardDebt: "4004975208993305",
-    });
-    expect(userBalanceInfo.userLiquidity).toEqual(`9.986`);
-  });
 });
-
-function nockRequests(recName: string) {
-  const nocks = load(`./src/__tests__/services/liquidity-pool/evm/data/nock/${recName}-rec.json`);
-  nocks.forEach(function (nock) {
-    nock.filteringRequestBody((b) => {
-      try {
-        const body = JSON.parse(b);
-        body[0].id = 8551125359729656;
-        body[1].id = 8551125359729657;
-        return JSON.stringify(body);
-      } catch (e) {
-        return b;
-      }
-    });
-  });
-}

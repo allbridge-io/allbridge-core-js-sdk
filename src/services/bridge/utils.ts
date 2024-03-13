@@ -1,8 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
-/* @ts-expect-error  Could not find a declaration file for module "base32.js"*/
-import base32 from "base32.js";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
+import { Address } from "stellar-sdk";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
@@ -13,7 +12,6 @@ import {
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
-  MethodNotSupportedError,
   SdkError,
 } from "../../exceptions";
 import {
@@ -44,7 +42,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       break;
     }
     case ChainType.SRB: {
-      buffer = Buffer.from(base32.decode(address).slice(1, 33));
+      buffer = new Address(address).toBuffer();
       break;
     }
   }
@@ -60,16 +58,16 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       return buffer.toJSON().data;
     }
     case ChainType.SRB: {
-      throw new MethodNotSupportedError("Soroban does not supported yet");
+      return buffer.toJSON().data;
     }
   }
 }
 
-function hexToBuffer(hex: string): Buffer {
+export function hexToBuffer(hex: string): Buffer {
   return Buffer.from(hex.replace(/^0x/i, ""), "hex");
 }
 
-function evmAddressToBuffer32(address: string): Buffer {
+export function evmAddressToBuffer32(address: string): Buffer {
   const length = 32;
   const buff = hexToBuffer(address);
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
@@ -110,6 +108,14 @@ export function getTokenByTokenAddress(
 
 export function getNonce(): Buffer {
   return randomBytes(32);
+}
+
+export function getNonceBigInt(): bigint {
+  const bigint = randomBytes(32).readBigInt64BE();
+  if (bigint < 0) {
+    return bigint * -1n;
+  }
+  return bigint;
 }
 
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
@@ -321,7 +327,9 @@ export async function getExtraGasMaxLimits(
     maxAmount,
     ChainDecimalsByType[destinationChainToken.chainType]
   ).toFixed();
-  const maxAmountFloatInSourceNative = Big(maxAmountFloat).div(transactionCostResponse.exchangeRate).toFixed();
+  const maxAmountFloatInSourceNative = Big(maxAmountFloat)
+    .div(transactionCostResponse.exchangeRate)
+    .toFixed(ChainDecimalsByType[sourceChainToken.chainType], Big.roundDown);
   const maxAmountInSourceNative = convertFloatAmountToInt(
     maxAmountFloatInSourceNative,
     ChainDecimalsByType[sourceChainToken.chainType]
@@ -333,7 +341,7 @@ export async function getExtraGasMaxLimits(
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.sourceNativeTokenPrice)
-      .toFixed();
+      .toFixed(sourceChainToken.decimals, Big.roundDown);
     extraGasMaxLimits[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: convertFloatAmountToInt(maxAmountFloatInStable, sourceChainToken.decimals).toFixed(0),
       [AmountFormat.FLOAT]: maxAmountFloatInStable,
