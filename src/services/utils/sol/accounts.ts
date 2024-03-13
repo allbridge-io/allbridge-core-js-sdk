@@ -118,6 +118,14 @@ export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridgeProg
   return poolPda;
 }
 
+export function getCctpLockAccount(cctpBridgeProgramId: PublicKey, messageSentEventDataAccount: PublicKey): PublicKey {
+  const [tokenMessengerEventAuthority] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("lock"), messageSentEventDataAccount.toBuffer()],
+    cctpBridgeProgramId
+  );
+  return tokenMessengerEventAuthority;
+}
+
 export function getCctpAccounts(
   domain: number,
   mintAccount: PublicKey,
@@ -126,6 +134,7 @@ export function getCctpAccounts(
 ) {
   const messageTransmitterAccount = findProgramAddress("message_transmitter", cctpTransmitterProgramId);
   const tokenMessenger = findProgramAddress("token_messenger", cctpTokenMessengerMinter);
+  const tokenMessengerEventAuthority = findProgramAddress("__event_authority", cctpTokenMessengerMinter);
   const tokenMinter = findProgramAddress("token_minter", cctpTokenMessengerMinter);
   const localToken = findProgramAddress("local_token", cctpTokenMessengerMinter, [mintAccount]);
   const remoteTokenMessengerKey = findProgramAddress("remote_token_messenger", cctpTokenMessengerMinter, [
@@ -135,6 +144,7 @@ export function getCctpAccounts(
   return {
     messageTransmitterAccount,
     tokenMessenger,
+    tokenMessengerEventAuthority,
     tokenMinter,
     localToken,
     remoteTokenMessengerKey,
@@ -152,7 +162,7 @@ function findProgramAddress(
     if (typeof extraSeed === "string") {
       seeds.push(Buffer.from(anchor.utils.bytes.utf8.encode(extraSeed)));
     } else if (Array.isArray(extraSeed)) {
-      seeds.push(Buffer.from(extraSeed ));
+      seeds.push(Buffer.from(extraSeed));
     } else if (Buffer.isBuffer(extraSeed)) {
       seeds.push(extraSeed);
     } else {

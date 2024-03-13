@@ -74,6 +74,16 @@ export interface CctpBridge {
           isSigner: true;
         },
         {
+          name: "messageSentEventData";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "lock";
+          isMut: true;
+          isSigner: false;
+        },
+        {
           name: "mint";
           isMut: true;
           isSigner: false;
@@ -120,6 +130,11 @@ export interface CctpBridge {
         },
         {
           name: "authorityPda";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "eventAuthority";
           isMut: false;
           isSigner: false;
         },
@@ -451,6 +466,44 @@ export interface CctpBridge {
           }
         ];
       };
+    },
+    {
+      name: "lock";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "sender";
+            type: "publicKey";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "adminFee";
+            type: "u64";
+          },
+          {
+            name: "relayerFee";
+            type: "u64";
+          },
+          {
+            name: "recipient";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "destinationChainId";
+            type: "u8";
+          },
+          {
+            name: "slot";
+            type: "u64";
+          }
+        ];
+      };
     }
   ];
   types: [
@@ -547,45 +600,6 @@ export interface CctpBridge {
       };
     }
   ];
-  events: [
-    {
-      name: "SendTokeEvent";
-      fields: [
-        {
-          name: "amount";
-          type: "u64";
-          index: false;
-        },
-        {
-          name: "adminFee";
-          type: "u64";
-          index: false;
-        },
-        {
-          name: "recipient";
-          type: {
-            array: ["u8", 32];
-          };
-          index: false;
-        },
-        {
-          name: "destinationChainId";
-          type: "u8";
-          index: false;
-        },
-        {
-          name: "sender";
-          type: "publicKey";
-          index: false;
-        },
-        {
-          name: "relayerFee";
-          type: "u64";
-          index: false;
-        }
-      ];
-    }
-  ];
   errors: [
     {
       code: 6000;
@@ -671,6 +685,16 @@ export const IDL: CctpBridge = {
           isSigner: true,
         },
         {
+          name: "messageSentEventData",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "lock",
+          isMut: true,
+          isSigner: false,
+        },
+        {
           name: "mint",
           isMut: true,
           isSigner: false,
@@ -717,6 +741,11 @@ export const IDL: CctpBridge = {
         },
         {
           name: "authorityPda",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "eventAuthority",
           isMut: false,
           isSigner: false,
         },
@@ -1049,6 +1078,44 @@ export const IDL: CctpBridge = {
         ],
       },
     },
+    {
+      name: "lock",
+      type: {
+        kind: "struct",
+        fields: [
+          {
+            name: "sender",
+            type: "publicKey",
+          },
+          {
+            name: "amount",
+            type: "u64",
+          },
+          {
+            name: "adminFee",
+            type: "u64",
+          },
+          {
+            name: "relayerFee",
+            type: "u64",
+          },
+          {
+            name: "recipient",
+            type: {
+              array: ["u8", 32],
+            },
+          },
+          {
+            name: "destinationChainId",
+            type: "u8",
+          },
+          {
+            name: "slot",
+            type: "u64",
+          },
+        ],
+      },
+    },
   ],
   types: [
     {
@@ -1142,45 +1209,6 @@ export const IDL: CctpBridge = {
           },
         ],
       },
-    },
-  ],
-  events: [
-    {
-      name: "SendTokeEvent",
-      fields: [
-        {
-          name: "amount",
-          type: "u64",
-          index: false,
-        },
-        {
-          name: "adminFee",
-          type: "u64",
-          index: false,
-        },
-        {
-          name: "recipient",
-          type: {
-            array: ["u8", 32],
-          },
-          index: false,
-        },
-        {
-          name: "destinationChainId",
-          type: "u8",
-          index: false,
-        },
-        {
-          name: "sender",
-          type: "publicKey",
-          index: false,
-        },
-        {
-          name: "relayerFee",
-          type: "u64",
-          index: false,
-        },
-      ],
     },
   ],
   errors: [

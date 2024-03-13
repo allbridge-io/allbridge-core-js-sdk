@@ -58,11 +58,11 @@ describe("SDK", () => {
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
     sorobanNetworkPassphrase: "sorobanNetworkPassphrase",
-    cctpParams:{
-      cctpDomains:{},
-      cctpTransmitterProgramId: '',
-      cctpTokenMessengerMinter: ''
-    }
+    cctpParams: {
+      cctpDomains: {},
+      cctpTransmitterProgramId: "",
+      cctpTokenMessengerMinter: "",
+    },
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);

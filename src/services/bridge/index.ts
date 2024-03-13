@@ -170,6 +170,7 @@ export function getChainBridgeService(
         {
           wormholeMessengerProgramId: params.wormholeMessengerProgramId,
           solanaLookUpTable: params.solanaLookUpTable,
+          cctpParams: params.cctpParams,
         },
         api
       );
