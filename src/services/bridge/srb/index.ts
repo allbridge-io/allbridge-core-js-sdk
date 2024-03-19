@@ -102,7 +102,8 @@ export class SrbBridgeService extends ChainBridgeService {
     });
   }
 
-  sendTx(): Promise<TransactionResponse> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  send(params: SendParams): Promise<TransactionResponse> {
     throw new MethodNotSupportedError();
   }
 

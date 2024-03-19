@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
+import { BN, Program, Spl, web3 } from "@project-serum/anchor";
 import {
   Connection,
   Keypair,
@@ -48,6 +48,7 @@ import {
   getPriceAccount,
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
+import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
 import { addUnitLimitAndUnitPriceToTx, addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
 import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
@@ -114,7 +115,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const receiverOriginal = toAccountAddress;
 
     const userAccount = new PublicKey(account);
-    const provider = this.buildAnchorProvider(userAccount.toString());
+    const provider = buildAnchorProvider(this.solanaRpcUrl, userAccount.toString());
     const bridge = new Program<BridgeType>(bridgeIdl, bridgeAddress, provider);
 
     const bridgeAuthority = await getAuthorityAccount(bridge.programId);
@@ -331,7 +332,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const bridgeAddress = contractAddress;
     const sourceChainId = fromChainId;
 
-    const provider = this.buildAnchorProvider(account);
+    const provider = buildAnchorProvider(this.solanaRpcUrl, account);
     const bridge = new Program<BridgeType>(bridgeIdl, bridgeAddress, provider);
     const nonce = Array.from(getNonce());
     const poolAccount = new PublicKey(poolAddress);
@@ -470,7 +471,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       ])
       .postInstructions(instructions)
       .transaction();
-    const connection = this.buildAnchorProvider(userAccount.toString()).connection;
+    const connection = buildAnchorProvider(this.solanaRpcUrl, userAccount.toString()).connection;
     transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     transaction.feePayer = userAccount;
     return await this.convertToVersionedTransaction(transaction, connection);
@@ -539,7 +540,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const wormholeMessengerConfigAccount = await getConfigAccount(configAccountInfo.wormholeMessengerProgramId);
     const messageAccount = Keypair.generate();
 
-    const provider = this.buildAnchorProvider(userAccount.toString());
+    const provider = buildAnchorProvider(this.solanaRpcUrl, userAccount.toString());
 
     const bridgeAccountInfo = await provider.connection.getAccountInfo(whBridgeAccount);
     if (bridgeAccountInfo == null) {
@@ -627,7 +628,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const receiveTokenAddress = toTokenAddress;
     const receiverInBuffer32 = toAccountAddress;
 
-    const provider = this.buildAnchorProvider(account);
+    const provider = buildAnchorProvider(this.solanaRpcUrl, account);
     const cctpBridge: Program<CctpBridgeType> = new Program<CctpBridgeType>(cctpBridgeIdl, cctpAddress, provider);
     const gasOracle = new Program<GasOracleType>(gasOracleIdl, gasOracleAddress, provider);
     const mint = new PublicKey(fromTokenAddress);
@@ -758,23 +759,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     return { transaction: await this.convertToVersionedTransaction(tx, connection), messageSentEventDataKeypair };
   }
 
-  private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.solanaRpcUrl, "confirmed");
-
-    const publicKey = new PublicKey(accountAddress);
-
-    return new AnchorProvider(
-      connection,
-      // @ts-expect-error enough wallet for fetch actions
-      { publicKey: publicKey },
-      {
-        preflightCommitment: "confirmed",
-        commitment: "confirmed",
-      }
-    );
-  }
-
-  sendTx(params: TxSendParams): Promise<TransactionResponse> {
+  send(params: SendParams): Promise<TransactionResponse> {
     throw new MethodNotSupportedError();
   }
 }

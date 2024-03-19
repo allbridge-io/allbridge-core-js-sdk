@@ -154,6 +154,12 @@
         "internalType": "uint256",
         "name": "adminFeeTokenAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "recipientWalletAddress",
+        "type": "bytes32"
       }
     ],
     "name": "TokensSent",
@@ -200,6 +206,39 @@
       }
     ],
     "name": "bridge",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "recipient",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "recipientWalletAddress",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "destinationChainId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "relayerFeeTokenAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "bridgeWithWalletAddress",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

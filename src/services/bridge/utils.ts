@@ -24,7 +24,6 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { getAssociatedAccount } from "../utils/sol/accounts";
 import { SendParams, TxSendParams, TxSwapParams } from "./models";
 
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
@@ -155,21 +154,12 @@ export async function prepareTxSendParams(
     // default FeePaymentMethod.WITH_NATIVE_CURRENCY
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
-
-  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
-
   const sourceToken = params.sourceToken;
   if (params.messenger === Messenger.CCTP) {
     if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
       throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
     }
     txSendParams.contractAddress = sourceToken.cctpAddress;
-    if (params.destinationToken.chainSymbol === ChainSymbol.SOL) {
-      const receiverAccount = new PublicKey(params.toAccountAddress);
-      const receiveMint = new PublicKey(params.destinationToken.tokenAddress);
-      const receiveUserToken = await getAssociatedAccount(receiverAccount, receiveMint);
-      txSendParams.toAccountAddress = formatAddress(receiveUserToken.toBase58(), toChainType, bridgeChainType);
-    }
   } else {
     txSendParams.contractAddress = sourceToken.bridgeAddress;
   }
@@ -236,6 +226,7 @@ export async function prepareTxSendParams(
   }
 
   txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
+  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
   txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
   if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
     validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);

@@ -50,6 +50,7 @@ export type TokensSent = ContractEventLog<{
   relayerFee: string;
   receivedRelayerFeeTokenAmount: string;
   adminFeeTokenAmount: string;
+  recipientWalletAddress: string;
   0: string;
   1: string;
   2: string;
@@ -60,6 +61,7 @@ export type TokensSent = ContractEventLog<{
   7: string;
   8: string;
   9: string;
+  10: string;
 }>;
 
 export interface CctpBridge extends BaseContract {
@@ -71,6 +73,14 @@ export interface CctpBridge extends BaseContract {
     bridge(
       amount: number | string | BN,
       recipient: string | number[],
+      destinationChainId: number | string | BN,
+      relayerFeeTokenAmount: number | string | BN
+    ): PayableTransactionObject<void>;
+
+    bridgeWithWalletAddress(
+      amount: number | string | BN,
+      recipient: string | number[],
+      recipientWalletAddress: string | number[],
       destinationChainId: number | string | BN,
       relayerFeeTokenAmount: number | string | BN
     ): PayableTransactionObject<void>;
