@@ -692,7 +692,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const cctpTransmitterProgramIdAddress = this.params.cctpParams.cctpTransmitterProgramId;
     const cctpTokenMessengerMinterAddress = this.params.cctpParams.cctpTokenMessengerMinter;
     if (domain == undefined || !cctpTransmitterProgramIdAddress || !cctpTokenMessengerMinterAddress) {
-      throw new SdkError("Cctp does not configured properly");
+      throw new SdkError("CCTP is not configured");
     }
     const cctpTransmitterProgramId = new PublicKey(cctpTransmitterProgramIdAddress);
     const cctpTokenMessengerMinter = new PublicKey(cctpTokenMessengerMinterAddress);
