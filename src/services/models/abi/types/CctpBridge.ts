@@ -39,6 +39,18 @@ export type ReceivedGas = ContractEventLog<{
   0: string;
   1: string;
 }>;
+export type RecipientReplaced = ContractEventLog<{
+  sender: string;
+  nonce: string;
+  newRecipient: string;
+  0: string;
+  1: string;
+  2: string;
+}>;
+export type TokensSentExtras = ContractEventLog<{
+  recipientWalletAddress: string;
+  0: string;
+}>;
 export type TokensSent = ContractEventLog<{
   amount: string;
   sender: string;
@@ -50,7 +62,6 @@ export type TokensSent = ContractEventLog<{
   relayerFee: string;
   receivedRelayerFeeTokenAmount: string;
   adminFeeTokenAmount: string;
-  recipientWalletAddress: string;
   0: string;
   1: string;
   2: string;
@@ -61,7 +72,6 @@ export type TokensSent = ContractEventLog<{
   7: string;
   8: string;
   9: string;
-  10: string;
 }>;
 
 export interface CctpBridge extends BaseContract {
@@ -86,6 +96,12 @@ export interface CctpBridge extends BaseContract {
     ): PayableTransactionObject<void>;
 
     chainId(): NonPayableTransactionObject<string>;
+
+    changeRecipient(
+      originalMessage: string | number[],
+      originalAttestation: string | number[],
+      newRecipient: string | number[]
+    ): NonPayableTransactionObject<void>;
 
     gasUsage(chainId: number | string | BN): NonPayableTransactionObject<string>;
 
@@ -139,6 +155,12 @@ export interface CctpBridge extends BaseContract {
     ReceivedGas(cb?: Callback<ReceivedGas>): EventEmitter;
     ReceivedGas(options?: EventOptions, cb?: Callback<ReceivedGas>): EventEmitter;
 
+    RecipientReplaced(cb?: Callback<RecipientReplaced>): EventEmitter;
+    RecipientReplaced(options?: EventOptions, cb?: Callback<RecipientReplaced>): EventEmitter;
+
+    TokensSentExtras(cb?: Callback<TokensSentExtras>): EventEmitter;
+    TokensSentExtras(options?: EventOptions, cb?: Callback<TokensSentExtras>): EventEmitter;
+
     TokensSent(cb?: Callback<TokensSent>): EventEmitter;
     TokensSent(options?: EventOptions, cb?: Callback<TokensSent>): EventEmitter;
 
@@ -153,6 +175,12 @@ export interface CctpBridge extends BaseContract {
 
   once(event: "ReceivedGas", cb: Callback<ReceivedGas>): void;
   once(event: "ReceivedGas", options: EventOptions, cb: Callback<ReceivedGas>): void;
+
+  once(event: "RecipientReplaced", cb: Callback<RecipientReplaced>): void;
+  once(event: "RecipientReplaced", options: EventOptions, cb: Callback<RecipientReplaced>): void;
+
+  once(event: "TokensSentExtras", cb: Callback<TokensSentExtras>): void;
+  once(event: "TokensSentExtras", options: EventOptions, cb: Callback<TokensSentExtras>): void;
 
   once(event: "TokensSent", cb: Callback<TokensSent>): void;
   once(event: "TokensSent", options: EventOptions, cb: Callback<TokensSent>): void;
