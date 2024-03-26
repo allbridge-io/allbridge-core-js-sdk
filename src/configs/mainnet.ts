@@ -9,9 +9,9 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   sorobanNetworkPassphrase: "Public Global Stellar Network ; September 2015",
   tronJsonRpc: "https://api.trongrid.io/jsonrpc",
   cctpParams: {
-    cctpTransmitterProgramId: "",
-    cctpTokenMessengerMinter: "",
-    cctpDomains: { ETH: 0, AVA: 1, ARB: 3 },
+    cctpTransmitterProgramId: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
+    cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+    cctpDomains: { ETH: 0, AVA: 1, ARB: 3, SOL: 5 },
   },
 };
 
