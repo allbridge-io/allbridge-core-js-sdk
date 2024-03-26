@@ -622,7 +622,6 @@ export class SolanaBridgeService extends ChainBridgeService {
       throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
     }
     const CHAIN_ID = 4;
-    const gasOracleAddress = "GTwX3oTgMS4pLQS8SvgZFS9Vyhxdfw1N7fijAhaS88Ff";
 
     const account = fromAccountAddress;
     const receiveTokenAddress = toTokenAddress;
@@ -630,10 +629,11 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const provider = buildAnchorProvider(this.solanaRpcUrl, account);
     const cctpBridge: Program<CctpBridgeType> = new Program<CctpBridgeType>(cctpBridgeIdl, cctpAddress, provider);
-    const gasOracle = new Program<GasOracleType>(gasOracleIdl, gasOracleAddress, provider);
     const mint = new PublicKey(fromTokenAddress);
     const cctpBridgeAccount = await getCctpBridgeAccount(mint, cctpBridge.programId);
     const userAccount = new PublicKey(account);
+
+    const configAccountInfo = await cctpBridge.account.cctpBridge.fetch(cctpBridgeAccount);
 
     const swapAndBridgeData = {} as SwapAndBridgeSolDataCctpData;
 
@@ -652,8 +652,8 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.userAccount = userAccount;
     swapAndBridgeData.destinationChainId = toChainId;
     swapAndBridgeData.mint = mint;
-    swapAndBridgeData.gasPrice = await getPriceAccount(toChainId, gasOracle.programId);
-    swapAndBridgeData.thisGasPrice = await getPriceAccount(CHAIN_ID, gasOracle.programId);
+    swapAndBridgeData.gasPrice = await getPriceAccount(toChainId, configAccountInfo.gasOracleProgramId);
+    swapAndBridgeData.thisGasPrice = await getPriceAccount(CHAIN_ID, configAccountInfo.gasOracleProgramId);
     swapAndBridgeData.provider = provider;
 
     if (extraGas) {
