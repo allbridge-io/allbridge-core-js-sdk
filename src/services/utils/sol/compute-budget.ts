@@ -39,9 +39,10 @@ export async function addUnitLimitAndUnitPriceToVersionedTx(
     throw new TxTooLargeError();
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-  const simUnitsConsumed = (await connection.simulateTransaction(transaction, { replaceRecentBlockhash: true })).value
-    .unitsConsumed!;
+  // const simUnitsConsumed = (await connection.simulateTransaction(transaction, { replaceRecentBlockhash: true })).value
+  //   .unitsConsumed!;
+  const simUnitsConsumed = 769230; // 1000000/1.3
+
   await addUnitLimitAndUnitPriceToInstructions(message.instructions, simUnitsConsumed, txFeeParams, connection);
 
   transaction.message = message.compileToV0Message(addressLookupTableAccounts);
