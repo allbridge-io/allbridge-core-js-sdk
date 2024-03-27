@@ -97,6 +97,44 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "newRecipient",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RecipientReplaced",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "recipientWalletAddress",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TokensSentExtras",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
@@ -205,6 +243,39 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "recipient",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "recipientWalletAddress",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "destinationChainId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "relayerFeeTokenAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "bridgeWithWalletAddress",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "chainId",
     "outputs": [
@@ -215,6 +286,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "originalMessage",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "originalAttestation",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "newRecipient",
+        "type": "bytes32"
+      }
+    ],
+    "name": "changeRecipient",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

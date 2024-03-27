@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 import { Address } from "stellar-sdk";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
@@ -102,7 +102,8 @@ export class SrbBridgeService extends ChainBridgeService {
     });
   }
 
-  sendTx(): Promise<TransactionResponse> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  send(params: SendParams): Promise<TransactionResponse> {
     throw new MethodNotSupportedError();
   }
 

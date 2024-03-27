@@ -1,4 +1,4 @@
-import Big from "big.js";
+import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
@@ -18,8 +18,9 @@ export class TronBridgeService extends ChainBridgeService {
     super();
   }
 
-  async sendTx(params: TxSendParams): Promise<TransactionResponse> {
-    const rawTransaction = await this.buildRawTransactionSendFromParams(params);
+  async send(params: SendParams): Promise<TransactionResponse> {
+    const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
+    const rawTransaction = await this.buildRawTransactionSendFromParams(txSendParams);
     return await sendRawTransaction(this.tronWeb, rawTransaction);
   }
 

@@ -24,6 +24,7 @@ import {
   TransferStatusResponse,
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
+import { CctpParams } from "./services/bridge/sol";
 import { DefaultUtils, Utils } from "./utils";
 
 export * from "./configs";
@@ -48,6 +49,7 @@ export interface AllbridgeCoreSdkOptions {
    * to fetch information from the blockchain with fewer HTTP requests using JSON-RPC API
    */
   tronJsonRpc?: string;
+  cctpParams: CctpParams;
 }
 
 /**

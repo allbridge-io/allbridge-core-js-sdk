@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeUrlsDefault, RawPoolSolanaTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import solanaWeb3, { sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -17,21 +17,21 @@ const main = async () => {
 
   const halfToken = "0.5";
   // create withdraw raw transaction
-  const transaction = await sdk.pool.rawTxBuilder.withdraw({
+  const transaction = (await sdk.pool.rawTxBuilder.withdraw({
     amount: halfToken,
     accountAddress: accountAddress,
     token: tokenInfo,
-  });
+  })) as RawPoolSolanaTransaction;
 
   const tx = await sendRawTransaction(transaction, privateKey, nodeUrlsDefault.solanaRpcUrl);
 
   console.log("Token withdraw:", tx);
 };
 
-async function sendRawTransaction(transaction: RawTransaction, privateKey: string, solanaRpcUrl: string) {
+async function sendRawTransaction(transaction: Transaction, privateKey: string, solanaRpcUrl: string) {
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   const connection = new solanaWeb3.Connection(solanaRpcUrl, "confirmed");
-  return await sendAndConfirmTransaction(connection, transaction as Transaction, [keypair]);
+  return await sendAndConfirmTransaction(connection, transaction, [keypair]);
 }
 
 main()

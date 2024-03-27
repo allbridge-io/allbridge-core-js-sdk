@@ -150,10 +150,10 @@ export function getChainBridgeService(
   switch (chainProperties[chainSymbol].chainType) {
     case ChainType.EVM: {
       if (provider) {
-        return new EvmBridgeService(provider as unknown as Web3, api);
+        return new EvmBridgeService(provider as unknown as Web3, api, nodeRpcUrlsConfig);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-        return new EvmBridgeService(new Web3(nodeRpcUrl), api);
+        return new EvmBridgeService(new Web3(nodeRpcUrl), api, nodeRpcUrlsConfig);
       }
     }
     case ChainType.TRX: {
@@ -170,6 +170,7 @@ export function getChainBridgeService(
         {
           wormholeMessengerProgramId: params.wormholeMessengerProgramId,
           solanaLookUpTable: params.solanaLookUpTable,
+          cctpParams: params.cctpParams,
         },
         api
       );

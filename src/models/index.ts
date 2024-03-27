@@ -10,7 +10,6 @@ export {
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
-export { TransactionResponse } from "../services/models/index";
 export {
   Messenger,
   TransferStatusResponse,
@@ -38,7 +37,7 @@ export {
   CheckAllowanceParams as LiquidityPoolsCheckAllowanceParams,
   GetAllowanceParams as LiquidityPoolsGetAllowanceParams,
 } from "../services/liquidity-pool/models/pool.model";
-export { Provider, RawTransaction } from "../services/models/index";
+export * from "../services/models/index";
 export {
   SwapAndBridgeCalculationData,
   SwapFromVUsdCalcResult,

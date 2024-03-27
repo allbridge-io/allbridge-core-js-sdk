@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, TxFeeParams } from "../../../models";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { convertIntAmountToFloat, getEarned } from "../../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../../utils/calculation/constants";
@@ -47,6 +47,8 @@ export interface LiquidityPoolsParams {
    * {@link TokenWithChainDetails |The token info object} of operation token.
    */
   token: TokenWithChainDetails;
+
+  txFeeParams?: TxFeeParams;
 }
 
 export interface LiquidityPoolsParamsWithAmount extends LiquidityPoolsParams {
@@ -63,6 +65,7 @@ export interface UserBalanceInfoDTO {
 
 export interface UserBalanceInfo extends UserBalanceInfoDTO {
   userLiquidity: string;
+
   earned(poolInfo: PoolInfo, decimals?: number): string;
 }
 

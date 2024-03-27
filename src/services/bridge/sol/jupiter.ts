@@ -78,6 +78,10 @@ export class JupiterService {
       addressLookupTableAccounts.push(...sdkAddressLookupTableAccounts);
 
       transaction.message = message.compileToV0Message(addressLookupTableAccounts);
+
+      if (sdkTx.message.header.numRequiredSignatures === 2 && transaction.signatures.length === 1) {
+        transaction.signatures.push(sdkTx.signatures[0]);
+      }
       return transaction;
     } catch (e) {
       if (e instanceof Error && e.message) {

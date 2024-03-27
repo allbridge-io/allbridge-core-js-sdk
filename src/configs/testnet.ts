@@ -8,6 +8,11 @@ export const testnet: AllbridgeCoreSdkOptions = {
   solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
   sorobanNetworkPassphrase: "Test SDF Network ; September 2015",
   tronJsonRpc: "https://nile.trongrid.io/jsonrpc",
+  cctpParams: {
+    cctpTransmitterProgramId: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
+    cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+    cctpDomains: { SPL: 0 },
+  },
 };
 
 /**

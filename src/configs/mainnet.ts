@@ -8,11 +8,16 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   solanaLookUpTable: "2JcBAEVnAwVo4u8d61iqgHPrzZuugur7cVTjWubsVLHj",
   sorobanNetworkPassphrase: "Public Global Stellar Network ; September 2015",
   tronJsonRpc: "https://api.trongrid.io/jsonrpc",
+  cctpParams: {
+    cctpTransmitterProgramId: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
+    cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+    cctpDomains: { ETH: 0, AVA: 1, OPT: 2, ARB: 3, SOL: 5, BAS: 6, POL: 7 },
+  },
 };
 
 /**
  *  This is default rpc urls for Solana and Tron,<p/> Override and use your own for proper and stable work
- *  @Deprecated use {@link testnetNodeRpcUrlsDefault}
+ *  @Deprecated use {@link nodeRpcUrlsDefault}
  */
 export const nodeUrlsDefault: NodeUrlsConfig = {
   solanaRpcUrl: "https://api.mainnet-beta.solana.com",

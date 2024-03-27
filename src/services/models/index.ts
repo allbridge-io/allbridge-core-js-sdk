@@ -1,8 +1,18 @@
-import { VersionedTransaction } from "@solana/web3.js";
+import { Transaction, VersionedTransaction } from "@solana/web3.js";
 import type { TronWeb } from "tronweb-typings";
 
 import type Web3 from "web3";
 import { TransactionConfig } from "web3-core";
+import { SolanaTxFee } from "./sol";
+
+export { SolanaTxFee, PricePerUnitInMicroLamports, ExtraFeeInLamports, SolanaAutoTxFee } from "./sol";
+
+/**
+ * Blockchain fee added to tx
+ */
+export interface TxFeeParams {
+  solana?: SolanaTxFee;
+}
 
 /**
  * The provider is type that combines connection implementations for different chains.<br/>
@@ -10,13 +20,17 @@ import { TransactionConfig } from "web3-core";
  */
 export type Provider = Web3 | TronWeb;
 
-/**
- * EVM TransactionConfig
- * Solana VersionedTransaction
- * Tron Object
- * Soroban string
- */
-export type RawTransaction = Object | VersionedTransaction | TransactionConfig | string;
+export type RawTransaction =
+  | RawTronTransaction
+  | RawEvmTransaction
+  | RawSorobanTransaction
+  | RawBridgeSolanaTransaction
+  | RawPoolSolanaTransaction;
+export type RawEvmTransaction = TransactionConfig;
+export type RawTronTransaction = Object;
+export type RawSorobanTransaction = string;
+export type RawPoolSolanaTransaction = Transaction;
+export type RawBridgeSolanaTransaction = VersionedTransaction;
 
 export interface SmartContractMethodParameter {
   type: string;

@@ -2,9 +2,9 @@ import Web3 from "web3";
 import { ChainSymbol } from "../../../../chains";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { Messenger } from "../../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../../models";
+import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
+import { NodeRpcUrlsConfig } from "../../../../services";
 import { EvmBridgeService } from "../../../../services/bridge/evm";
-import { TxSendParams } from "../../../../services/bridge/models";
 import { ChainDetailsMap } from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
 import { mockNonce } from "../../../mock/bridge/utils";
@@ -24,7 +24,7 @@ describe("EvmBridge", () => {
   };
 
   beforeEach(() => {
-    evmBridge = new EvmBridgeService(new Web3(), api);
+    evmBridge = new EvmBridgeService(new Web3(), api, new NodeRpcUrlsConfig({}));
   });
 
   describe("Given transfer params", () => {
@@ -35,27 +35,34 @@ describe("EvmBridge", () => {
     test("buildRawTransactionSend should return RawTransaction", async () => {
       mockNonce();
 
-      const params: TxSendParams = {
-        amount: "1330000000000000000",
-        contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
-        fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+      const params: SendParams = {
+        amount: "1.33",
+        sourceToken: {
+          bridgeAddress: bridgeAddress,
+          allbridgeChainId: 2,
+          chainSymbol: ChainSymbol.GRL,
+          decimals: 18,
+          tokenAddress: "0xc7dbc4a896b34b7a10dda2ef72052145a9122f43",
+        } as TokenWithChainDetails,
         fromAccountAddress: from,
-        fromTokenAddress: "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
-        toChainId: 4,
+        destinationToken: {
+          allbridgeChainId: 4,
+          chainSymbol: ChainSymbol.GRL,
+          decimals: 18,
+          tokenAddress: "0xb10388f04f8331b59a02732cc1b6ac0d7045574b",
+        } as TokenWithChainDetails,
         toAccountAddress: bridgeAddress,
-        toTokenAddress: "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
         messenger: Messenger.ALLBRIDGE,
         fee: gasFee,
         gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
       };
 
-      const actual = await evmBridge.buildRawTransactionSendFromParams(params);
+      const actual = await evmBridge.buildRawTransactionSend(params);
       expect(actual).toEqual({
         from: from,
         to: bridgeAddress,
         value: gasFee,
-        data: "0x4cd480bd000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000000000000000000000000000012751bf40f450000ba285a8f52601eabcc769706fcbde2645aa0af180000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b3b1200153e110000001b006132000000000000000000362600611e000000070c00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
+        data: "0x4cd480bd000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000000000000000000000000000012751bf40f450000000000000000000000000000ba285a8f52601eabcc769706fcbde2645aa0af180000000000000000000000000000000000000000000000000000000000000004000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b3b1200153e110000001b006132000000000000000000362600611e000000070c00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
       });
     });
   });

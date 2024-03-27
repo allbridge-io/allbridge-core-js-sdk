@@ -1,8 +1,15 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+  nodeUrlsDefault,
+  RawBridgeSolanaTransaction,
+  SolanaAutoTxFee,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
-import solanaWeb3, { VersionedTransaction } from "@solana/web3.js";
+import solanaWeb3 from "@solana/web3.js";
 import bs58 from "bs58";
 
 dotenv.config({ path: ".env" });
@@ -30,7 +37,10 @@ const exampleViaWormhole = async () => {
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.WORMHOLE,
-  })) as VersionedTransaction;
+    txFeeParams: {
+      solana: SolanaAutoTxFee,
+    },
+  })) as RawBridgeSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);
@@ -59,7 +69,7 @@ const exampleViaAllbridge = async () => {
     sourceToken: sourceTokenInfo,
     destinationToken: destinationTokenInfoPol,
     messenger: Messenger.ALLBRIDGE,
-  })) as VersionedTransaction;
+  })) as RawBridgeSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);
