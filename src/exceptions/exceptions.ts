@@ -102,6 +102,15 @@ export class CCTPDoesNotSupportedError extends SdkRootError {
   }
 }
 
+export class TxTooLargeError extends SdkRootError {
+  constructor() {
+    super(
+      ErrorCode.TX_TOO_LARGE,
+      "Transaction too large: try again later or switch to another messenger or pay relayer fee in native gas currency"
+    );
+  }
+}
+
 export enum ErrorCode {
   SDK_ERROR = "SdkError",
   INVALID_AMOUNT_ERROR = "InvalidAmountError",
@@ -118,4 +127,5 @@ export enum ErrorCode {
   TIMEOUT_ERROR = "TimeoutError",
   NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
   CCTP_DOES_NOT_SUPPORTED_ERROR = "CCTPDoesNotSupportedError",
+  TX_TOO_LARGE = "TxTooLargeError",
 }
