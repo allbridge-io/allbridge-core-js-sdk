@@ -8,6 +8,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { Big } from "big.js";
+import { TxTooLargeError } from "../../../exceptions";
 import { toPowBase10 } from "../../../utils/calculation";
 import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
 import { SolanaAutoTxFee, TxFeeParams } from "../../models";
@@ -33,6 +34,11 @@ export async function addUnitLimitAndUnitPriceToVersionedTx(
   const message = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts: addressLookupTableAccounts,
   });
+
+  if (transaction.serialize().length > 1232) {
+    throw new TxTooLargeError();
+  }
+
   /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
   const simUnitsConsumed = (await connection.simulateTransaction(transaction, { replaceRecentBlockhash: true })).value
     .unitsConsumed!;
