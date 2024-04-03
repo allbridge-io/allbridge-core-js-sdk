@@ -1,8 +1,11 @@
 import {
   Asset as StellarAsset,
+  BASE_FEE,
   Horizon,
+  Operation,
   Operation as StellarOperation,
   SorobanRpc,
+  TimeoutInfinite,
   Transaction,
   TransactionBuilder,
   TransactionBuilder as StellarTransactionBuilder,
@@ -38,6 +41,14 @@ export interface SrbUtils {
    * @param xdrTx
    */
   submitTransactionStellar(xdrTx: string): Promise<HorizonApi.SubmitTransactionResponse>;
+
+  /**
+   * Simulate and check if Restore needed
+   * @param xdrTx - restore
+   * @param sourceAccount
+   * @returns xdrTx restore transaction if it required after check
+   */
+  simulateAndCheckRestoreTxRequiredSoroban(xdrTx: string, sourceAccount: string): Promise<string | undefined>;
 
   /**
    * Submit tx
@@ -113,6 +124,25 @@ export class DefaultSrbUtils implements SrbUtils {
       this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR)
     );
     return await stellar.submitTransaction(transaction);
+  }
+
+  async simulateAndCheckRestoreTxRequiredSoroban(xdrTx: string, sourceAccount: string): Promise<string | undefined> {
+    const server = new SorobanRpc.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
+    const account = await server.getAccount(sourceAccount);
+    const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
+    const simulation = await server.simulateTransaction(transaction);
+    if (SorobanRpc.Api.isSimulationRestore(simulation)) {
+      return new TransactionBuilder(account, {
+        fee: (+BASE_FEE + +simulation.restorePreamble.minResourceFee).toString(),
+        networkPassphrase: this.params.sorobanNetworkPassphrase,
+      })
+        .setSorobanData(simulation.restorePreamble.transactionData.build())
+        .addOperation(Operation.restoreFootprint({}))
+        .setTimeout(TimeoutInfinite)
+        .build()
+        .toXDR();
+    }
+    return undefined;
   }
 
   async sendTransactionSoroban(xdrTx: string): Promise<SorobanRpc.Api.SendTransactionResponse> {

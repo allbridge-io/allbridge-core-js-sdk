@@ -144,15 +144,15 @@ export class AssembledTransaction<T> {
       throw new Error(`Transaction simulation failed: "${simulation.error}"`);
     }
 
-    if (SorobanRpc.Api.isSimulationRestore(simulation)) {
-      throw new ExpiredStateError(
-        `You need to restore some contract state before you can invoke this method. ${JSON.stringify(
-          simulation,
-          null,
-          2
-        )}`
-      );
-    }
+    // if (SorobanRpc.Api.isSimulationRestore(simulation)) {
+    //   throw new ExpiredStateError(
+    //     `You need to restore some contract state before you can invoke this method. ${JSON.stringify(
+    //       simulation,
+    //       null,
+    //       2
+    //     )}`
+    //   );
+    // }
 
     if (!simulation.result) {
       throw new Error(
