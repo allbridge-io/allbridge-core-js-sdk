@@ -175,7 +175,7 @@ export const chainProperties: Record<string, BasicChainProperties> = {
   },
   [ChainSymbol.SRB]: {
     chainSymbol: ChainSymbol.SRB,
-    name: "Soroban",
+    name: "Stellar",
     chainType: ChainType.SRB,
   },
   [ChainSymbol.STLR]: {
