@@ -14,6 +14,11 @@ export enum ChainSymbol {
   SPL = "SPL",
 
   /**
+   * The Holešky testnet.
+   */
+  HOL = "HOL",
+
+  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -47,12 +52,33 @@ export enum ChainSymbol {
    * The Arbitrum network.
    */
   ARB = "ARB",
+
+  /**
+   * The Avalanche main network.
+   */
+  AVA = "AVA",
+
+  /**
+   * The Soroban network.
+   */
+  SRB = "SRB",
+
+  /**
+   * The Stellar network.
+   */
+  STLR = "STLR",
+
+  /**
+   * The OP Mainnet network.
+   */
+  OPT = "OPT",
 }
 
 export enum ChainType {
   EVM = "EVM",
   SOLANA = "SOLANA",
   TRX = "TRX",
+  SRB = "SRB",
 }
 
 /**
@@ -62,6 +88,7 @@ export const ChainDecimalsByType: Record<ChainType, number> = {
   EVM: 18,
   SOLANA: 9,
   TRX: 6,
+  SRB: 7,
 };
 
 export const chainProperties: Record<string, BasicChainProperties> = {
@@ -75,6 +102,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.SPL,
     chainId: "0xaa36a7",
     name: "Sepolia",
+    chainType: ChainType.EVM,
+  },
+  [ChainSymbol.HOL]: {
+    chainSymbol: ChainSymbol.HOL,
+    chainId: "0x4268",
+    name: "Holešky",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.BSC]: {
@@ -95,6 +128,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Arbitrum",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.AVA]: {
+    chainSymbol: ChainSymbol.AVA,
+    chainId: "0xa86a",
+    name: "Avalanche",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.POL]: {
     chainSymbol: ChainSymbol.POL,
     chainId: "0x89",
@@ -107,6 +146,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Mumbai",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.OPT]: {
+    chainSymbol: ChainSymbol.OPT,
+    chainId: "0xa",
+    name: "OP Mainnet",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",
@@ -116,5 +161,15 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.TRX,
     name: "Tron",
     chainType: ChainType.TRX,
+  },
+  [ChainSymbol.SRB]: {
+    chainSymbol: ChainSymbol.SRB,
+    name: "Soroban",
+    chainType: ChainType.SRB,
+  },
+  [ChainSymbol.STLR]: {
+    chainSymbol: ChainSymbol.STLR,
+    name: "Stellar",
+    chainType: ChainType.SRB,
   },
 };

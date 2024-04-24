@@ -38,7 +38,7 @@ import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
 import { mockEvmTokenContract } from "./mock/token/evm/evm-token";
 import { mockTronTokenContract } from "./mock/token/trx/trx-token";
-import { getRequestBodyMatcher, mockPoolInfoEndpoint } from "./mock/utils";
+import { getRequestBodyMatcher, mockTokenInfoEndpoint } from "./mock/utils";
 
 const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithChainDetails;
 const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenWithChainDetails;
@@ -57,6 +57,7 @@ describe("SDK", () => {
     coreApiUrl: "http://localhost",
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
+    sorobanNetworkPassphrase: "sorobanNetworkPassphrase",
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
@@ -92,7 +93,7 @@ describe("SDK", () => {
     const amountToReceive = "84.18";
 
     beforeAll(() => {
-      mockPoolInfoEndpoint(scope, [
+      mockTokenInfoEndpoint(scope, [
         { token: sourceChainToken, poolInfo: poolInfo },
         { token: destinationChainToken, poolInfo: poolInfo },
       ]);
@@ -149,7 +150,7 @@ describe("SDK", () => {
       imbalance: "0",
     };
     beforeAll(() => {
-      mockPoolInfoEndpoint(scope, [
+      mockTokenInfoEndpoint(scope, [
         { token: sourceChainToken, poolInfo: sourcePoolInfo },
         { token: destinationChainToken, poolInfo: destinationPoolInfo },
       ]);
@@ -209,7 +210,7 @@ describe("SDK", () => {
       imbalance: "0",
     };
     beforeAll(() => {
-      mockPoolInfoEndpoint(scope, [
+      mockTokenInfoEndpoint(scope, [
         { token: sourceChainToken, poolInfo: sourcePoolInfo },
         { token: destinationChainToken, poolInfo: destinationPoolInfo },
       ]);
@@ -241,9 +242,9 @@ describe("SDK", () => {
         expect(actual).toEqual(expectedPercent);
       });
 
-      test("☁ calculateFeePercentOnSourceChain should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnSourceChain(0, sourceChainToken);
-        expect(actual).toEqual(0);
+      test("☁ calculateFeePercentOnSourceChain should return for amount: 0.1 -> 1%", async () => {
+        const actual = await sdk.calculateFeePercentOnSourceChain(0.1, sourceChainToken);
+        expect(actual).toEqual(1);
       });
     });
 
@@ -258,9 +259,9 @@ describe("SDK", () => {
         expect(actual).toBeCloseTo(expectedPercent, 2);
       });
 
-      test("☁ should return for amount: 0 -> 0%", async () => {
-        const actual = await sdk.calculateFeePercentOnDestinationChain(0, sourceChainToken, destinationChainToken);
-        expect(actual).toEqual(0);
+      test("☁ should return for amount: 0.1 -> 0.3%", async () => {
+        const actual = await sdk.calculateFeePercentOnDestinationChain(0.1, sourceChainToken, destinationChainToken);
+        expect(actual).toEqual(0.3);
       });
     });
 

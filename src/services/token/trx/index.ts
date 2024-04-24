@@ -1,9 +1,10 @@
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { SdkError } from "../../../exceptions";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
+import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { amountToHex } from "../../utils";
 import { sendRawTransaction } from "../../utils/trx";
@@ -14,6 +15,7 @@ export const MAX_AMOUNT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffff
 
 export class TronTokenService extends ChainTokenService {
   chainType: ChainType.TRX = ChainType.TRX;
+  private static contracts = new Map<string, any>();
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
     super();
@@ -35,6 +37,10 @@ export class TronTokenService extends ChainTokenService {
     return balance.toString();
   }
 
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
+    return (await this.tronWeb.trx.getBalance(params.account)).toString();
+  }
+
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
     const rawTransaction = await this.buildRawTransactionApprove(params);
     return await sendRawTransaction(this.tronWeb, rawTransaction);
@@ -53,8 +59,13 @@ export class TronTokenService extends ChainTokenService {
     return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
   }
 
-  private getContract(contractAddress: string): Promise<any> {
-    return this.tronWeb.contract().at(contractAddress);
+  private async getContract(contractAddress: string): Promise<any> {
+    if (TronTokenService.contracts.has(contractAddress)) {
+      return TronTokenService.contracts.get(contractAddress);
+    }
+    const contract = await this.tronWeb.contract().at(contractAddress);
+    TronTokenService.contracts.set(contractAddress, contract);
+    return contract;
   }
 
   private async buildRawTransaction(

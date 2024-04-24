@@ -79,6 +79,9 @@ function swapToVUsd(
 }
 
 function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "p" | "imbalance">): string {
+  if (amountInSystemPrecision.eq(0)) {
+    return "0";
+  }
   const tokenBalance = Big(poolInfo.tokenBalance).plus(amountInSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance.toFixed(), poolInfo.aValue, poolInfo.dValue);
   return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round().toFixed();
@@ -89,6 +92,13 @@ function swapFromVUsd(
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
   poolInfo: Omit<PoolInfo, "imbalance">
 ): SwapFromVUsdCalcResult {
+  if (Big(amount).eq(0)) {
+    return {
+      bridgeFeeInTokenPrecision: "0",
+      amountIncludingCommissionInTokenPrecision: "0",
+      amountExcludingCommissionInTokenPrecision: "0",
+    };
+  }
   const amountValue = Big(amount);
   const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
   const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
@@ -134,6 +144,13 @@ function swapFromVUsdReverse(
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
   poolInfo: PoolInfo
 ): SwapFromVUsdCalcResult {
+  if (Big(amountInSystemPrecision).eq(0)) {
+    return {
+      bridgeFeeInTokenPrecision: "0",
+      amountIncludingCommissionInTokenPrecision: "0",
+      amountExcludingCommissionInTokenPrecision: "0",
+    };
+  }
   const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amountInSystemPrecision);
   const tokenBalance = getY(vUsdNewAmount.toFixed(), poolInfo.aValue, poolInfo.dValue);
   const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);

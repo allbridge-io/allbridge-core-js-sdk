@@ -32,7 +32,19 @@
     "Seegxrqiu",
     "Arbitrum",
     "decompile",
-    "txid"
+    "txid",
+    "CCTP",
+    "cctp",
+    "Soroban",
+    "Holešky",
+    "STLR",
+    "alphanum",
+    "retval",
+    "typeahead",
+    "Timepoint",
+    "Typepoint",
+    "futurenet",
+    "Vals"
   ],
   "flagWords": [],
   "ignorePaths": [

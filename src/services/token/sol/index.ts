@@ -5,20 +5,17 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { MethodNotSupportedError } from "../../../exceptions";
+import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { getTokenAccountData } from "../../utils/sol";
 import { getAssociatedAccount } from "../../utils/sol/accounts";
 import { ApproveParamsDto, GetAllowanceParamsDto, GetTokenBalanceParams } from "../models";
 import { ChainTokenService } from "../models/token";
 
-export interface SolanaTokenParams {
-  solanaRpcUrl: string;
-}
-
 export class SolanaTokenService extends ChainTokenService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
 
-  constructor(public params: SolanaTokenParams, public api: AllbridgeCoreClient) {
+  constructor(public solanaRpcUrl: string, public api: AllbridgeCoreClient) {
     super();
   }
 
@@ -31,7 +28,7 @@ export class SolanaTokenService extends ChainTokenService {
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
-    const connection = new Connection(this.params.solanaRpcUrl, "confirmed");
+    const connection = new Connection(this.solanaRpcUrl, "confirmed");
 
     const publicKey = new PublicKey(accountAddress);
 
@@ -63,5 +60,11 @@ export class SolanaTokenService extends ChainTokenService {
       }
       throw e;
     }
+  }
+
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
+    return (
+      await this.buildAnchorProvider(params.account).connection.getBalance(new PublicKey(params.account))
+    ).toString();
   }
 }

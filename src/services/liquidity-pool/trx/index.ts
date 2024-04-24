@@ -1,5 +1,5 @@
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ChainType } from "../../../chains";
@@ -11,17 +11,18 @@ import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
 import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "../models";
+import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
 import { ChainPoolService } from "../models/pool";
 
 export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
+  private static contracts = new Map<string, any>();
   private P = 52;
   private web3: Web3;
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronRpcUrl: string) {
     super();
-    this.web3 = new Web3(tronRpcUrl);
+    this.web3 = new Web3(tronRpcUrl + "/jsonrpc");
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
@@ -46,7 +47,7 @@ export class TronPoolService extends ChainPoolService {
     );
     batch.execute();
     const [rewardDebt, lpAmount] = await Promise.all(arr);
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   private async getUserBalanceInfoPerProperty(
@@ -56,7 +57,7 @@ export class TronPoolService extends ChainPoolService {
     const contract = await this.getContract(token.poolAddress);
     const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
     const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
-    return new UserBalanceInfo({ lpAmount, rewardDebt });
+    return new UserBalance({ lpAmount, rewardDebt });
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
@@ -167,7 +168,12 @@ export class TronPoolService extends ChainPoolService {
     return transactionObject.transaction;
   }
 
-  private getContract(contractAddress: string): Promise<any> {
-    return this.tronWeb.contract().at(contractAddress);
+  private async getContract(contractAddress: string): Promise<any> {
+    if (TronPoolService.contracts.has(contractAddress)) {
+      return TronPoolService.contracts.get(contractAddress);
+    }
+    const contract = await this.tronWeb.contract().at(contractAddress);
+    TronPoolService.contracts.set(contractAddress, contract);
+    return contract;
   }
 }

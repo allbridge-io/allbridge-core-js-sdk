@@ -1,6 +1,7 @@
 import { Big } from "big.js";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
+import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { ApproveParamsDto, CheckAllowanceParamsDto, GetAllowanceParamsDto, GetTokenBalanceParams } from "./token.model";
 
@@ -9,6 +10,8 @@ export abstract class ChainTokenService {
   abstract api: AllbridgeCoreClient;
 
   abstract getTokenBalance(params: GetTokenBalanceParams): Promise<string>;
+
+  abstract getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string>;
 
   abstract getAllowance(params: GetAllowanceParamsDto): Promise<string>;
 

@@ -1,46 +1,29 @@
-import { Big } from "big.js";
-import { ChainSymbol } from "./chains";
-import { AllbridgeCoreClientImpl } from "./client/core-api";
-import { ApiClientImpl } from "./client/core-api/api-client";
-import { ApiClientCaching } from "./client/core-api/api-client-caching";
-import { TransferStatusResponse } from "./client/core-api/core-api.model";
-import { AllbridgeCoreClientPoolInfoCaching } from "./client/core-api/core-client-pool-info-caching";
+import { BigSource } from "big.js";
 import { mainnet } from "./configs";
-import { InsufficientPoolLiquidityError } from "./exceptions";
 import {
   AmountFormat,
   AmountFormatted,
   AmountsAndGasFeeOptions,
+  BridgeService,
+  ChainDetailsMap,
+  ChainSymbol,
   ExtraGasMaxLimitResponse,
   GasFeeOptions,
+  GetNativeTokenBalanceParams,
   GetTokenBalanceParams,
+  LiquidityPoolService,
   Messenger,
-} from "./models";
-import { BridgeService, DefaultBridgeService } from "./services/bridge";
-import { SolanaBridgeParams } from "./services/bridge/sol";
-import { getExtraGasMaxLimits, getGasFeeOptions } from "./services/bridge/utils";
-import { LiquidityPoolService, DefaultLiquidityPoolService } from "./services/liquidity-pool";
-import { SolanaPoolParams } from "./services/liquidity-pool/sol";
-import { Provider } from "./services/models";
-import { TokenService, DefaultTokenService } from "./services/token";
-import { ChainDetailsMap, PoolInfo, PoolKeyObject, TokenWithChainDetails } from "./tokens-info";
-import { getPoolInfoByToken, validateAmountDecimals } from "./utils";
-import {
-  aprInPercents,
-  convertFloatAmountToInt,
-  convertIntAmountToFloat,
-  fromSystemPrecision,
-  getFeePercent,
-  swapFromVUsd,
-  swapFromVUsdReverse,
-  swapToVUsd,
-  swapToVUsdReverse,
-} from "./utils/calculation";
-import {
+  PendingStatusInfoResponse,
+  PoolInfo,
+  Provider,
+  SendAmountDetails,
   SwapAndBridgeCalculationData,
-  swapAndBridgeFeeCalculation,
-  swapAndBridgeFeeCalculationReverse,
-} from "./utils/calculation/swap-and-bridge-fee-calc";
+  TokenWithChainDetails,
+  TransferStatusResponse,
+  GasBalanceResponse,
+} from "./models";
+import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
+import { DefaultUtils, Utils } from "./utils";
 
 export * from "./configs";
 export * from "./models";
@@ -57,27 +40,41 @@ export interface AllbridgeCoreSdkOptions {
   coreApiHeaders?: Record<string, string>;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
+  sorobanNetworkPassphrase: string;
 }
 
+/**
+ * Provide node RPC URL for chain connection you intend to communicate with</br>
+ * - required for SOL, TRX chains</br>
+ * - optional for EVM chains -- you can interact by passing a {@link Provider} that will be used to communicate with the chain</br>
+ */
+export type NodeRpcUrls = {
+  [key in ChainSymbol]?: string;
+};
+
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
   tronRpcUrl: string;
 }
 
-export class AllbridgeCoreSdk {
-  /**
-   * @internal
-   */
-  private readonly api: AllbridgeCoreClientPoolInfoCaching;
-  /**
-   * @internal
-   */
-  private readonly tokenService: TokenService;
+/**
+ * @Deprecated Use {@link NodeRpcUrls}
+ */
+function isNodeUrlsConfig(nodeUrls: NodeUrlsConfig | NodeRpcUrls): nodeUrls is NodeUrlsConfig {
+  return "solanaRpcUrl" in nodeUrls;
+}
 
+export class AllbridgeCoreSdk {
   readonly params: AllbridgeCoreSdkOptions;
 
   bridge: BridgeService;
   pool: LiquidityPoolService;
+  utils: Utils;
+
+  private service: AllbridgeCoreSdkService;
 
   /**
    * Initializes the SDK object.
@@ -86,23 +83,17 @@ export class AllbridgeCoreSdk {
    * Optional.
    * If not defined, the default {@link mainnet} parameters are used.
    */
-  constructor(nodeUrls: NodeUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
-    const apiClient = new ApiClientImpl(params);
-    const apiClientTokenInfoCaching = new ApiClientCaching(apiClient);
-    const coreClient = new AllbridgeCoreClientImpl(apiClientTokenInfoCaching);
-    this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
-
-    const solBridgeParams: SolanaBridgeParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
-      wormholeMessengerProgramId: params.wormholeMessengerProgramId,
-      solanaLookUpTable: params.solanaLookUpTable,
-    };
-    this.tokenService = new DefaultTokenService(this.api, solBridgeParams);
-    this.bridge = new DefaultBridgeService(this.api, solBridgeParams, this.tokenService);
-    const solPoolParams: SolanaPoolParams = {
-      solanaRpcUrl: nodeUrls.solanaRpcUrl,
-    };
-    this.pool = new DefaultLiquidityPoolService(this.api, solPoolParams, this.tokenService, nodeUrls.tronRpcUrl);
+  constructor(nodeUrls: NodeUrlsConfig | NodeRpcUrls, params: AllbridgeCoreSdkOptions = mainnet) {
+    let nodeRpcUrlsConfig: NodeRpcUrlsConfig;
+    if (isNodeUrlsConfig(nodeUrls)) {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig({ SOL: nodeUrls.solanaRpcUrl, TRX: nodeUrls.tronRpcUrl });
+    } else {
+      nodeRpcUrlsConfig = new NodeRpcUrlsConfig(nodeUrls);
+    }
+    this.service = new AllbridgeCoreSdkService(nodeRpcUrlsConfig, params);
+    this.bridge = this.service.bridge;
+    this.pool = this.service.pool;
+    this.utils = new DefaultUtils(nodeRpcUrlsConfig, params);
     this.params = params;
   }
 
@@ -110,22 +101,21 @@ export class AllbridgeCoreSdk {
    * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
    */
   async chainDetailsMap(): Promise<ChainDetailsMap> {
-    return this.api.getChainDetailsMap();
+    return this.service.chainDetailsMap();
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens}.
    */
   async tokens(): Promise<TokenWithChainDetails[]> {
-    return this.api.tokens();
+    return this.service.tokens();
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    */
   async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenWithChainDetails[]> {
-    const map = await this.api.getChainDetailsMap();
-    return map[chainSymbol].tokens;
+    return this.service.tokensByChain(chainSymbol);
   }
 
   /**
@@ -134,7 +124,33 @@ export class AllbridgeCoreSdk {
    * @param txId
    */
   async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
-    return this.api.getTransferStatus(chainSymbol, txId);
+    return this.service.getTransferStatus(chainSymbol, txId);
+  }
+
+  /**
+   * Get gas balance
+   * @param chainSymbol
+   * @param address
+   */
+  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+    return this.service.getGasBalance(chainSymbol, address);
+  }
+
+  /**
+   * Returns information about pending transactions for the same destination chain and the amount of tokens can be received as a result of transfer considering pending transactions.
+   * @param amount the amount of tokens that will be sent
+   * @param amountFormat amount format
+   * @param sourceToken selected token transfer from
+   * @param destToken selected token transfer to
+   * @returns range of possible amount based on already pending transactions
+   */
+  async getPendingStatusInfo(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<PendingStatusInfoResponse> {
+    return this.service.getPendingStatusInfo(amount, amountFormat, sourceToken, destToken);
   }
 
   /**
@@ -144,10 +160,21 @@ export class AllbridgeCoreSdk {
    * @returns Token balance
    */
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
-    return this.tokenService.getTokenBalance(params, provider);
+    return this.service.getTokenBalance(params, provider);
   }
 
   /**
+   * Get native (gas) token balance
+   * @param params
+   * @param provider
+   * @returns Token balance
+   */
+  async getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted> {
+    return this.service.getNativeTokenBalance(params, provider);
+  }
+
+  /**
+   * @Deprecated
    * Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
    * (Does not include fee related to the destination chain. Does not include gas fee)
    * @param amountFloat initial amount of tokens to swap
@@ -155,24 +182,14 @@ export class AllbridgeCoreSdk {
    * @returns fee percent
    */
   async calculateFeePercentOnSourceChain(
-    amountFloat: number | string | Big,
+    amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toString(), sourceChainToken.decimals);
-    const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
-    if (amountInt.eq(0)) {
-      return 0;
-    }
-    const vUsdInSystemPrecision = swapToVUsd(
-      amountInt,
-      sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken)
-    );
-    const vUsdInSourcePrecision = fromSystemPrecision(vUsdInSystemPrecision, sourceChainToken.decimals);
-    return getFeePercent(amountInt, vUsdInSourcePrecision);
+    return this.service.calculateFeePercentOnSourceChain(amountFloat, sourceChainToken);
   }
 
   /**
+   * @Deprecated
    * Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain fee percent applies to the amount after the source chain fee.
    * (Does not include fee related to the source chain. Does not include gas fee)
    * @see {@link calculateFeePercentOnSourceChain}
@@ -182,31 +199,15 @@ export class AllbridgeCoreSdk {
    * @returns fee percent
    */
   async calculateFeePercentOnDestinationChain(
-    amountFloat: number | string | Big,
+    amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
-    validateAmountDecimals("amountFloat", Big(amountFloat).toString(), sourceChainToken.decimals);
-    const amountInt = convertFloatAmountToInt(amountFloat, sourceChainToken.decimals);
-    if (amountInt.eq(0)) {
-      return 0;
-    }
-    const vUsdInSystemPrecision = swapToVUsd(
-      amountInt,
-      sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken)
-    );
-    const usd = swapFromVUsd(
-      vUsdInSystemPrecision,
-      destinationChainToken,
-      await getPoolInfoByToken(this.api, destinationChainToken)
-    );
-    const vUsdInDestinationPrecision = fromSystemPrecision(vUsdInSystemPrecision, destinationChainToken.decimals);
-    return getFeePercent(vUsdInDestinationPrecision, usd);
+    return this.service.calculateFeePercentOnDestinationChain(amountFloat, sourceChainToken, destinationChainToken);
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the transfer
+   * Calculates the amount of tokens to be received as a result of transfer
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
@@ -214,25 +215,21 @@ export class AllbridgeCoreSdk {
    * @param messenger
    */
   async getAmountToBeReceivedAndGasFeeOptions(
-    amountToSendFloat: number | string | Big,
+    amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toString(), sourceChainToken.decimals);
-    return {
-      amountToSendFloat: Big(amountToSendFloat).toFixed(),
-      amountToBeReceivedFloat: await this.getAmountToBeReceived(
-        amountToSendFloat,
-        sourceChainToken,
-        destinationChainToken
-      ),
-      gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
-    };
+    return this.service.getAmountToBeReceivedAndGasFeeOptions(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      messenger
+    );
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * and fetches {@link GasFeeOptions} which contains available ways to pay the gas fee.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
@@ -240,76 +237,177 @@ export class AllbridgeCoreSdk {
    * @param messenger
    */
   async getAmountToSendAndGasFeeOptions(
-    amountToBeReceivedFloat: number | string | Big,
+    amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toString(),
-      destinationChainToken.decimals
+    return this.service.getAmountToSendAndGasFeeOptions(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      messenger
     );
-    return {
-      amountToSendFloat: await this.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken),
-      amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
-      gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
-    };
   }
 
   /**
-   * Calculates the amount of tokens the receiving party will get as a result of the swap.
+   * Calculates the amount of tokens to be received as a result of transfer.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
    */
   async getAmountToBeReceived(
-    amountToSendFloat: number | string | Big,
+    amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals("amountToSendFloat", Big(amountToSendFloat).toString(), sourceChainToken.decimals);
-    const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
-
-    const vUsd = swapToVUsd(amountToSend, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
-    const resultInt = swapFromVUsd(
-      vUsd,
-      destinationChainToken,
-      await getPoolInfoByToken(this.api, destinationChainToken)
-    );
-    if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidityError();
-    }
-    return convertIntAmountToFloat(resultInt, destinationChainToken.decimals).toFixed();
+    return this.service.getAmountToBeReceived(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
   }
 
   /**
-   * Calculates the amount of tokens to send based on the required amount of tokens the receiving party should get as a result of the swap.
+   * Calculates the amount of tokens to be received as a result of transfer based on actual blockchain pool state.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
+   * @param sourceProvider Optional. source chain Provider
+   * @param destinationProvider Optional. destination chain Provider
+   */
+  async getAmountToBeReceivedFromChain(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    return this.service.getAmountToBeReceivedFromChain(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      messenger,
+      sourceProvider,
+      destinationProvider
+    );
+  }
+
+  /**
+   * Calculates the amount of tokens to be received as a result of transfer based on passed pool state.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param sourcePool source token pool state
+   * @param destinationPool destination token pool state
+   * @param messenger Optional. selected messenger
+   */
+  getAmountToBeReceivedFromPools(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
+    return this.service.getAmountToBeReceivedFromPools(
+      amountToSendFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destinationPool,
+      messenger
+    );
+  }
+
+  /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
    */
   async getAmountToSend(
-    amountToBeReceivedFloat: number | string | Big,
+    amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger
   ): Promise<string> {
-    validateAmountDecimals(
-      "amountToBeReceivedFloat",
-      Big(amountToBeReceivedFloat).toString(),
-      destinationChainToken.decimals
-    );
-    const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
-    const vUsd = swapFromVUsdReverse(
-      amountToBeReceived,
+    return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
+  }
+
+  /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer based on actual blockchain pool state.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger Optional. selected messenger
+   * @param sourceProvider Optional. source chain Provider
+   * @param destinationProvider Optional. destination chain Provider
+   */
+  async getAmountToSendFromChain(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    /**
+     * The Messengers for different routes.
+     * Optional.
+     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
+     */
+    messenger?: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string> {
+    return this.service.getAmountToSendFromChain(
+      amountToBeReceivedFloat,
+      sourceChainToken,
       destinationChainToken,
-      await getPoolInfoByToken(this.api, destinationChainToken)
+      messenger,
+      sourceProvider,
+      destinationProvider
     );
-    const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, await getPoolInfoByToken(this.api, sourceChainToken));
-    if (Big(resultInt).lte(0)) {
-      throw new InsufficientPoolLiquidityError();
-    }
-    return convertIntAmountToFloat(resultInt, sourceChainToken.decimals).toFixed();
+  }
+
+  /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer based on passed pool state.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param sourcePool source token pool state
+   * @param destinationPool destination token pool state
+   * @param messenger Optional. selected messenger
+   */
+  getAmountToSendFromPools(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger?: Messenger
+  ): string {
+    return this.service.getAmountToSendFromPools(
+      amountToBeReceivedFloat,
+      sourceChainToken,
+      destinationChainToken,
+      sourcePool,
+      destinationPool,
+      messenger
+    );
   }
 
   /**
@@ -324,14 +422,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<GasFeeOptions> {
-    return getGasFeeOptions(
-      sourceChainToken.allbridgeChainId,
-      sourceChainToken.chainType,
-      destinationChainToken.allbridgeChainId,
-      sourceChainToken.decimals,
-      messenger,
-      this.api
-    );
+    return this.service.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger);
   }
 
   /**
@@ -346,10 +437,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): number | null {
-    return (
-      /* eslint-disable-next-line  @typescript-eslint/no-unnecessary-condition */
-      sourceChainToken.transferTime?.[destinationChainToken.chainSymbol]?.[messenger] ?? null
-    );
+    return this.service.getAverageTransferTime(sourceChainToken, destinationChainToken, messenger);
   }
 
   /**
@@ -358,7 +446,7 @@ export class AllbridgeCoreSdk {
    * @returns poolInfo
    */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
-    return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
+    return this.service.getPoolInfoByToken(token);
   }
 
   /**
@@ -369,14 +457,7 @@ export class AllbridgeCoreSdk {
    * @param tokens if present, the corresponding liquidity pools will be updated
    */
   async refreshPoolInfo(tokens?: TokenWithChainDetails | TokenWithChainDetails[]): Promise<void> {
-    if (tokens) {
-      const tokensArray = tokens instanceof Array ? tokens : [tokens];
-      const poolKeys: PoolKeyObject[] = tokensArray.map((t) => {
-        return { chainSymbol: t.chainSymbol, poolAddress: t.poolAddress };
-      });
-      return this.api.refreshPoolInfo(poolKeys);
-    }
-    return this.api.refreshPoolInfo();
+    return this.service.refreshPoolInfo(tokens);
   }
 
   /**
@@ -385,7 +466,7 @@ export class AllbridgeCoreSdk {
    * @returns aprPercentageView
    */
   aprInPercents(apr: number): string {
-    return aprInPercents(apr);
+    return this.service.aprInPercents(apr);
   }
 
   /**
@@ -398,58 +479,69 @@ export class AllbridgeCoreSdk {
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
-    return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
+    return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken);
+  }
+
+  /**
+   * @param amount - amount
+   * @param amountFormat - AmountFormat
+   * @param sourceToken - selected token on the source chain
+   * @return virtual amount
+   */
+  async getVUsdFromAmount(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails
+  ): Promise<AmountFormatted> {
+    return this.service.getVUsdFromAmount(amount, amountFormat, sourceToken);
   }
 
   /**
    * @param vUsdAmount - amount of vUsd, int format
+   * @param destToken selected token on the destination chain
    * @return amount of destToken
    */
   async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {
-    const amount = swapFromVUsd(vUsdAmount, destToken, await getPoolInfoByToken(this.api, destToken));
-    return {
-      [AmountFormat.INT]: amount,
-      [AmountFormat.FLOAT]: convertIntAmountToFloat(amount, destToken.decimals).toFixed(),
-    };
+    return this.service.getAmountFromVUsd(vUsdAmount, destToken);
   }
 
+  /**
+   * @Deprecated Use {@link getSendAmountDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
-    return swapAndBridgeFeeCalculation(
-      amountInTokenPrecision,
-      {
-        decimals: sourceToken.decimals,
-        feeShare: sourceToken.feeShare,
-        poolInfo: await getPoolInfoByToken(this.api, sourceToken),
-      },
-      {
-        decimals: destToken.decimals,
-        feeShare: destToken.feeShare,
-        poolInfo: await getPoolInfoByToken(this.api, destToken),
-      }
-    );
+    return this.service.swapAndBridgeFeeCalculation(amountInTokenPrecision, sourceToken, destToken);
   }
 
+  /**
+   * @Deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
+   * @param amountInTokenPrecision
+   * @param sourceToken
+   * @param destToken
+   */
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
     destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
-    return swapAndBridgeFeeCalculationReverse(
-      amountInTokenPrecision,
-      {
-        decimals: sourceToken.decimals,
-        feeShare: sourceToken.feeShare,
-        poolInfo: await getPoolInfoByToken(this.api, sourceToken),
-      },
-      {
-        decimals: destToken.decimals,
-        feeShare: destToken.feeShare,
-        poolInfo: await getPoolInfoByToken(this.api, destToken),
-      }
-    );
+    return this.service.swapAndBridgeFeeCalculationReverse(amountInTokenPrecision, sourceToken, destToken);
+  }
+
+  /**
+   *  Show amount changes (fee and amount adjustment) during send through pools on source and destination chains
+   */
+  async getSendAmountDetails(
+    amount: string,
+    amountFormat: AmountFormat,
+    sourceToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
+  ): Promise<SendAmountDetails> {
+    return this.service.getSendAmountDetails(amount, amountFormat, sourceToken, destToken);
   }
 }

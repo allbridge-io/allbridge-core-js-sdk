@@ -13,7 +13,7 @@ const ACCOUNT_ADDRESS = "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN";
 const POOL_ADDRESS = "TTjb1Q2mSeegxrqiu7h28UEfiTEycD2sWU";
 // @ts-expect-error enough
 const TOKEN_INFO: TokenWithChainDetails = { poolAddress: POOL_ADDRESS };
-const LOCAL_NODE_URL = "https://nile.trongrid.io/jsonrpc";
+const LOCAL_NODE_URL = "https://nile.trongrid.io";
 
 describe("TronPool", () => {
   let api: any;

@@ -1,5 +1,6 @@
 import { Big, BigSource } from "big.js";
 import BN from "bn.js";
+import { InsufficientPoolLiquidityError } from "../../exceptions";
 import { PoolInfo, Token } from "../../tokens-info";
 import { SYSTEM_PRECISION } from "./constants";
 
@@ -8,7 +9,7 @@ export function getFeePercent(input: BigSource, output: BigSource): number {
 }
 
 export function toSystemPrecision(amount: BigSource, decimals: number): Big {
-  return convertAmountPrecision(amount, decimals, SYSTEM_PRECISION);
+  return convertAmountPrecision(amount, decimals, SYSTEM_PRECISION).round(0, Big.roundDown);
 }
 
 export function fromSystemPrecision(amount: BigSource, decimals: number): Big {
@@ -29,7 +30,11 @@ export function convertFloatAmountToInt(amountFloat: BigSource, decimals: number
 }
 
 export function convertIntAmountToFloat(amountInt: BigSource, decimals: number): Big {
-  return Big(amountInt).div(toPowBase10(decimals));
+  const amountValue = Big(amountInt);
+  if (amountValue.eq(0)) {
+    return Big(0);
+  }
+  return Big(amountValue).div(toPowBase10(decimals));
 }
 
 export function calculatePoolInfoImbalance(poolInfo: Pick<PoolInfo, "tokenBalance" | "vUsdBalance">): string {
@@ -52,13 +57,13 @@ export function swapToVUsd(
   const inSystemPrecision = toSystemPrecision(amountWithoutFee, decimals);
   const tokenBalance = Big(poolInfo.tokenBalance).plus(inSystemPrecision);
   const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
-  return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round(0, 0).toFixed();
+  return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round(0, Big.roundDown).toFixed();
 }
 
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">
 ): string {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
@@ -68,9 +73,33 @@ export function swapFromVUsd(
   const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
   const result = fromSystemPrecision(Big(poolInfo.tokenBalance).minus(newAmount), decimals);
   const fee = Big(result).times(feeShare);
-  return Big(result).minus(fee).round(0, 0).toFixed();
+  return Big(result).minus(fee).round(0, Big.roundDown).toFixed();
 }
 
+export function getSwapFromVUsdPoolInfo(
+  vUsdAmount: BigSource,
+  poolInfo: Omit<PoolInfo, "imbalance">
+): Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance"> {
+  const amountValue = Big(vUsdAmount);
+  if (amountValue.lte(0)) {
+    return poolInfo;
+  }
+  const vUsdBalance = amountValue.plus(poolInfo.vUsdBalance);
+  const newAmount = getY(vUsdBalance, poolInfo.aValue, poolInfo.dValue);
+  return {
+    aValue: poolInfo.aValue,
+    dValue: poolInfo.dValue,
+    tokenBalance: newAmount.toFixed(0),
+    vUsdBalance: vUsdBalance.toFixed(0),
+  };
+}
+
+/**
+ * @param amount - vUsd amount should be received
+ * @param feeShare
+ * @param decimals
+ * @param poolInfo
+ */
 export function swapToVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -80,14 +109,23 @@ export function swapToVUsdReverse(
     return Big(0);
   }
   const vUsdNewAmount = Big(poolInfo.vUsdBalance).minus(amount);
+  if (vUsdNewAmount.lte(0)) {
+    throw new InsufficientPoolLiquidityError();
+  }
   const tokenBalance = getY(vUsdNewAmount, poolInfo.aValue, poolInfo.dValue);
   const inSystemPrecision = Big(tokenBalance).minus(poolInfo.tokenBalance);
   const amountWithoutFee = fromSystemPrecision(inSystemPrecision, decimals);
   const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
   const fee = Big(amountWithoutFee).times(reversedFeeShare).round(0, Big.roundUp);
-  return Big(amountWithoutFee).plus(fee).round(0, 0);
+  return Big(amountWithoutFee).plus(fee).round(0, Big.roundDown);
 }
 
+/**
+ * @param amount - amount should be received
+ * @param feeShare
+ * @param decimals
+ * @param poolInfo
+ */
 export function swapFromVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -101,8 +139,11 @@ export function swapFromVUsdReverse(
   const amountWithFee = Big(amount).plus(fee);
   const inSystemPrecision = toSystemPrecision(amountWithFee, decimals);
   const tokenBalance = Big(poolInfo.tokenBalance).minus(inSystemPrecision);
+  if (tokenBalance.lte(0)) {
+    throw new InsufficientPoolLiquidityError();
+  }
   const vUsdNewAmount = getY(tokenBalance, poolInfo.aValue, poolInfo.dValue);
-  return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round(0, 0);
+  return Big(vUsdNewAmount).minus(poolInfo.vUsdBalance).round(0, Big.roundDown);
 }
 
 // y = (sqrt(x(4ad³ + x (4a(d - x) - d )²)) + x (4a(d - x) - d ))/8ax
@@ -116,9 +157,13 @@ export function getY(x: BigSource, a: BigSource, d: BigSource): Big {
   const sqrtBig = Big(x)
     .times(Big(x).times(commonPartSquared).plus(Big(4).times(a).times(dCubed)))
     .sqrt()
-    .round(0, 0);
+    .round(0, Big.roundDown);
   const dividerBig = Big(8).times(a).times(x);
-  return commonPartBig.times(x).plus(sqrtBig).div(dividerBig).round(0, 0).plus(1); // +1 to offset rounding errors
+  const result = commonPartBig.times(x).plus(sqrtBig).div(dividerBig).round(0, Big.roundDown);
+  if (result.eq(0)) {
+    return Big(0);
+  }
+  return result.plus(1); // +1 to offset rounding errors
 }
 
 export function getEarned(userLpAmount: string, userRewardDebt: string, accRewardPerShareP: string, p: number): string {

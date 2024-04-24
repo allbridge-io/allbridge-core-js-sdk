@@ -1,17 +1,15 @@
 import Big from "big.js";
 // @ts-expect-error import tron
-import * as TronWeb from "tronweb";
+import TronWeb from "tronweb";
 import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { SdkError } from "../../../exceptions";
-import { FeePaymentMethod, SwapParams, TransactionResponse } from "../../../models";
+import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
 import { SendParams, TxSendParams, TxSwapParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
-
-export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
@@ -80,32 +78,54 @@ export class TronBridgeService extends ChainBridgeService {
     const nonce = getNonce().toJSON().data;
     let parameters;
     let value: string;
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      parameters = [
-        { type: "bytes32", value: fromTokenAddress },
-        { type: "uint256", value: amount },
-        { type: "bytes32", value: toAccountAddress },
-        { type: "uint256", value: toChainId },
-        { type: "bytes32", value: toTokenAddress },
-        { type: "uint256", value: nonce },
-        { type: "uint8", value: messenger },
-        { type: "uint256", value: totalFee },
-      ];
-      value = "0";
+    let methodSignature: string;
+    if (messenger == Messenger.CCTP) {
+      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+        parameters = [
+          { type: "uint256", value: amount },
+          { type: "bytes32", value: toAccountAddress },
+          { type: "uint256", value: toChainId },
+          { type: "uint256", value: totalFee },
+        ];
+        value = "0";
+      } else {
+        parameters = [
+          { type: "uint256", value: amount },
+          { type: "bytes32", value: toAccountAddress },
+          { type: "uint256", value: toChainId },
+          { type: "uint256", value: 0 },
+        ];
+        value = totalFee;
+      }
+      methodSignature = "bridge(uint256,bytes32,uint256,uint256)";
     } else {
-      parameters = [
-        { type: "bytes32", value: fromTokenAddress },
-        { type: "uint256", value: amount },
-        { type: "bytes32", value: toAccountAddress },
-        { type: "uint256", value: toChainId },
-        { type: "bytes32", value: toTokenAddress },
-        { type: "uint256", value: nonce },
-        { type: "uint8", value: messenger },
-        { type: "uint256", value: 0 },
-      ];
-      value = totalFee;
+      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+        parameters = [
+          { type: "bytes32", value: fromTokenAddress },
+          { type: "uint256", value: amount },
+          { type: "bytes32", value: toAccountAddress },
+          { type: "uint256", value: toChainId },
+          { type: "bytes32", value: toTokenAddress },
+          { type: "uint256", value: nonce },
+          { type: "uint8", value: messenger },
+          { type: "uint256", value: totalFee },
+        ];
+        value = "0";
+      } else {
+        parameters = [
+          { type: "bytes32", value: fromTokenAddress },
+          { type: "uint256", value: amount },
+          { type: "bytes32", value: toAccountAddress },
+          { type: "uint256", value: toChainId },
+          { type: "bytes32", value: toTokenAddress },
+          { type: "uint256", value: nonce },
+          { type: "uint8", value: messenger },
+          { type: "uint256", value: 0 },
+        ];
+        value = totalFee;
+      }
+      methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
     }
-    const methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
     return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
   }
 
