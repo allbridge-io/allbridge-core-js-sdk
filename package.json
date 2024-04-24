@@ -97,7 +97,7 @@
     "@solana/web3.js": "^1.78.5",
     "@types/big.js": "^6.2.0",
     "assert": "^2.1.0",
-    "axios": "^1.5.0",
+    "axios": "^1.6.0",
     "base32.js": "^0.1.0",
     "big.js": "^6.2.1",
     "bn.js": "^5.2.1",
@@ -111,7 +111,7 @@
     "web3": "1.9.0",
     "web3-core": "1.9.0",
     "web3-eth-contract": "1.9.0",
-    "web3-utils": "1.9.0"
+    "web3-utils": "4.2.1"
   },
   "pnpm": {
     "auditConfig": {
