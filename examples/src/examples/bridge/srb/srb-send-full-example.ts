@@ -4,10 +4,10 @@ import {
   AmountFormat,
   ChainSymbol,
   FeePaymentMethod,
+  mainnet,
   Messenger,
   nodeRpcUrlsDefault,
   SendParams,
-  testnet,
 } from "@allbridge/bridge-core-sdk";
 import {
   Keypair,
@@ -46,11 +46,30 @@ const main = async () => {
   };
   const xdrTx: string = (await sdk.bridge.rawTxBuilder.send(sendParams)) as string;
 
-  //SignTx
+  // SendTx
   const srbKeypair = Keypair.fromSecret(privateKey);
-  const transaction = TransactionBuilder.fromXDR(xdrTx, testnet.sorobanNetworkPassphrase);
+  const transaction = TransactionBuilder.fromXDR(xdrTx, mainnet.sorobanNetworkPassphrase);
   transaction.sign(srbKeypair);
   const signedTx = transaction.toXDR();
+
+  const restoreXdrTx = await sdk.utils.srb.simulateAndCheckRestoreTxRequiredSoroban(signedTx, fromAddress);
+  if (restoreXdrTx) {
+    restoreXdrTx.sign(srbKeypair);
+    const signedRestoreXdrTx = restoreXdrTx.toXDR();
+    const sentRestoreXdrTx = await sdk.utils.srb.sendTransactionSoroban(signedRestoreXdrTx);
+    const confirmRestoreXdrTx = await sdk.utils.srb.confirmTx(sentRestoreXdrTx.hash);
+    if (confirmRestoreXdrTx.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND) {
+      console.log(
+        `Waited for Restore transaction to complete, but it did not. ` +
+          `Check the transaction status manually. ` +
+          `Hash: ${sentRestoreXdrTx.hash}`
+      );
+    } else if (confirmRestoreXdrTx.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+      console.log(`Transaction Restore failed. Check the transaction manually.` + `Hash: ${sentRestoreXdrTx.hash}`);
+    } else {
+      console.log(`Transaction Restore Confirmed. Hash: ${sentRestoreXdrTx.hash}`);
+    }
+  }
 
   const sent = await sdk.utils.srb.sendTransactionSoroban(signedTx);
   const confirm = await sdk.utils.srb.confirmTx(sent.hash);
@@ -81,7 +100,7 @@ const main = async () => {
 
     //SignTx
     const keypair = StellarKeypair.fromSecret(privateKey);
-    const transaction = StellarTransactionBuilder.fromXDR(xdrTx, testnet.sorobanNetworkPassphrase);
+    const transaction = StellarTransactionBuilder.fromXDR(xdrTx, mainnet.sorobanNetworkPassphrase);
     transaction.sign(keypair);
     const signedTrustLineTx = transaction.toXDR();
 

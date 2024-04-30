@@ -54,6 +54,11 @@ export enum ChainSymbol {
   MUM = "MUM",
 
   /**
+   * The Polygon Amoy testnet.
+   */
+  AMO = "AMO",
+
+  /**
    * The Arbitrum network.
    */
   ARB = "ARB",
@@ -157,6 +162,12 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Mumbai",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.AMO]: {
+    chainSymbol: ChainSymbol.AMO,
+    chainId: "0x13882",
+    name: "Amoy",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.OPT]: {
     chainSymbol: ChainSymbol.OPT,
     chainId: "0xa",
@@ -175,7 +186,7 @@ export const chainProperties: Record<string, BasicChainProperties> = {
   },
   [ChainSymbol.SRB]: {
     chainSymbol: ChainSymbol.SRB,
-    name: "Soroban",
+    name: "Stellar",
     chainType: ChainType.SRB,
   },
   [ChainSymbol.STLR]: {
