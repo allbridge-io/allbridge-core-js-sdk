@@ -50,7 +50,7 @@ const main = async () => {
   const srbKeypair = Keypair.fromSecret(privateKey);
   const transaction = TransactionBuilder.fromXDR(xdrTx, mainnet.sorobanNetworkPassphrase);
   transaction.sign(srbKeypair);
-  const signedTx = transaction.toXDR();
+  let signedTx = transaction.toXDR();
 
   const restoreXdrTx = await sdk.utils.srb.simulateAndCheckRestoreTxRequiredSoroban(signedTx, fromAddress);
   if (restoreXdrTx) {
@@ -69,6 +69,11 @@ const main = async () => {
     } else {
       console.log(`Transaction Restore Confirmed. Hash: ${sentRestoreXdrTx.hash}`);
     }
+    //get new tx with updated sequences
+    const xdrTx2 = (await sdk.bridge.rawTxBuilder.send(sendParams)) as string;
+    const transaction2 = TransactionBuilder.fromXDR(xdrTx2, mainnet.sorobanNetworkPassphrase);
+    transaction2.sign(srbKeypair);
+    signedTx = transaction2.toXDR();
   }
 
   const sent = await sdk.utils.srb.sendTransactionSoroban(signedTx);
