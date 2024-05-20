@@ -114,9 +114,9 @@ export enum AmountFormat {
 /**
  * Describes the same amount in two variation formats.
  *
- * For {@link AmountFormat.INT} value contains the amount in tokens denomination
+ * For {@link AmountFormat.INT} value contains the amount in the smallest denomination
  *
- * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
+ * For {@link AmountFormat.FLOAT} value contains the amount in tokens denomination
  */
 export type AmountFormatted = {
   [key in AmountFormat]: string;
