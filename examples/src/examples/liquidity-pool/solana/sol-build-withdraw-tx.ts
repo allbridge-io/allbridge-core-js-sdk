@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk, nodeUrlsDefault, RawPoolSolanaTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawPoolSolanaTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import solanaWeb3, { sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -12,7 +12,7 @@ const main = async () => {
   const privateKey = getEnvVar("SOL_PRIVATE_KEY");
   const tokenAddress = getEnvVar("SOL_TOKEN_ADDRESS");
 
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   const halfToken = "0.5";
@@ -23,7 +23,7 @@ const main = async () => {
     token: tokenInfo,
   })) as RawPoolSolanaTransaction;
 
-  const tx = await sendRawTransaction(transaction, privateKey, nodeUrlsDefault.solanaRpcUrl);
+  const tx = await sendRawTransaction(transaction, privateKey, ensure(nodeRpcUrlsDefault.SOL));
 
   console.log("Token withdraw:", tx);
 };

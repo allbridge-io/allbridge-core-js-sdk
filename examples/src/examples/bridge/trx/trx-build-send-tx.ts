@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, SwapParams, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -8,19 +8,19 @@ dotenv.config({ path: ".env" });
 
 const main = async () => {
   const fromAddress = getEnvVar("TRX_ACCOUNT_ADDRESS");
-  const toAddress = getEnvVar("TRX_ACCOUNT_ADDRESS");
+  const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
 
   const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.TRX];
-  const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
+  const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT"));
 
-  const destinationChain = chains[ChainSymbol.TRX];
+  const destinationChain = chains[ChainSymbol.ETH];
   const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const amount = "10";
+  const amount = "17.17";
 
   //check if sending tokens already approved
   if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amount }))) {
@@ -34,19 +34,17 @@ const main = async () => {
   }
 
   // initiate transfer
-  const swapParams: SwapParams = {
+  const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send({
     amount: amount,
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    minimumReceiveAmount: await sdk.getAmountToBeReceived(amount, sourceToken, destinationToken),
-  };
-  const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams);
+    messenger: Messenger.ALLBRIDGE,
+  });
 
-  console.log(`Sending ${amount} ${sourceToken.symbol}`);
-  const txReceipt = await sendTrxRawTransaction(rawTransactionTransfer);
-  console.log("tx id:", txReceipt.txid);
+  const transferReceipt = await sendTrxRawTransaction(rawTransactionTransfer);
+  console.log("Transfer tokens transaction receipt:", transferReceipt);
 };
 
 main()

@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, Messenger, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, Messenger, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../utils/utils";
 
 function msToTime(ms: number) {
@@ -12,7 +12,7 @@ function msToTime(ms: number) {
 }
 
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 
   const tokens = await sdk.tokens();
   const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT"));

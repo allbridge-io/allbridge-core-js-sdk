@@ -1,24 +1,21 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeRpcUrlsDefault, SendParams } from "@allbridge/bridge-core-sdk";
-import { TransactionConfig } from "web3-core";
-import Web3 from "web3";
-import { sendRawTransaction } from "../../utils/web3";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+  nodeRpcUrlsDefault,
+  RawEvmTransaction,
+  SendParams,
+} from "@allbridge/bridge-core-sdk";
+import { sendEvmRawTransaction } from "../../utils/web3";
 import { ensure } from "../../utils/utils";
 import { getEnvVar } from "../../utils/env";
 
 const ETH_NODE_RPC_URL = getEnvVar("ETH_NODE_RPC_URL");
-const privateKey = getEnvVar("ETH_PRIVATE_KEY");
 const fromAccountAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
 const toAccountAddress = getEnvVar("ARB_ACCOUNT_ADDRESS");
 
-const web3 = new Web3(ETH_NODE_RPC_URL);
-const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-web3.eth.accounts.wallet.add(account);
-
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk({
-    ...nodeRpcUrlsDefault,
-    ETH: ETH_NODE_RPC_URL,
-  });
+  const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, ETH: ETH_NODE_RPC_URL });
   const chainDetailsMap = await sdk.chainDetailsMap();
   const sourceToken = ensure(chainDetailsMap[ChainSymbol.ETH].tokens.find((t) => t.symbol == "USDC"));
   const destinationToken = ensure(chainDetailsMap[ChainSymbol.ARB].tokens.find((t) => t.symbol == "USDC"));
@@ -33,14 +30,14 @@ const main = async () => {
       messenger: Messenger.CCTP,
     });
     console.log("checkAllowance", checkAllowance);
-    if (checkAllowance == false) {
+    if (!checkAllowance) {
       const approveParams = {
         token: sourceToken,
         owner: fromAccountAddress,
         messenger: Messenger.CCTP,
       };
-      const tx = await sdk.bridge.rawTxBuilder.approve(approveParams);
-      const txReceipt = await sendRawTransaction(web3, tx as TransactionConfig);
+      const tx = (await sdk.bridge.rawTxBuilder.approve(approveParams)) as RawEvmTransaction;
+      const txReceipt = await sendEvmRawTransaction(tx);
       console.log("approve tx id:", txReceipt.transactionHash);
     }
     const willBeReceived = await sdk.getAmountToBeReceived(amount, destinationToken, sourceToken, Messenger.CCTP);
@@ -53,9 +50,9 @@ const main = async () => {
       sourceToken,
       messenger: Messenger.CCTP,
     };
-    const tx = await sdk.bridge.rawTxBuilder.send(sendParams);
+    const tx = (await sdk.bridge.rawTxBuilder.send(sendParams)) as RawEvmTransaction;
     //sign and send raw Tx
-    const txReceipt = await sendRawTransaction(web3, tx as TransactionConfig);
+    const txReceipt = await sendEvmRawTransaction(tx);
     console.log("tx id:", txReceipt.transactionHash);
   }
 };

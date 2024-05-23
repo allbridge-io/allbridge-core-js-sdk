@@ -27,12 +27,15 @@ const privateKey = getEnvVar("SRB_PRIVATE_KEY");
 const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
 
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
+  const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, SRB: getEnvVar("SRB_PROVIDER_URL") });
 
   const chainDetailsMap = await sdk.chainDetailsMap();
+
   const sourceToken = ensure(chainDetailsMap[ChainSymbol.SRB].tokens.find((t) => t.symbol == "USDT"));
   const destinationToken = ensure(chainDetailsMap[ChainSymbol.ETH].tokens.find((t) => t.symbol == "USDT"));
+
   const amount = "2";
+
   const sendParams: SendParams = {
     amount,
     fromAccountAddress: fromAddress,
@@ -54,8 +57,9 @@ const main = async () => {
 
   const restoreXdrTx = await sdk.utils.srb.simulateAndCheckRestoreTxRequiredSoroban(signedTx, fromAddress);
   if (restoreXdrTx) {
-    restoreXdrTx.sign(srbKeypair);
-    const signedRestoreXdrTx = restoreXdrTx.toXDR();
+    const restoreTx = TransactionBuilder.fromXDR(restoreXdrTx, mainnet.sorobanNetworkPassphrase);
+    restoreTx.sign(srbKeypair);
+    const signedRestoreXdrTx = restoreTx.toXDR();
     const sentRestoreXdrTx = await sdk.utils.srb.sendTransactionSoroban(signedRestoreXdrTx);
     const confirmRestoreXdrTx = await sdk.utils.srb.confirmTx(sentRestoreXdrTx.hash);
     if (confirmRestoreXdrTx.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND) {
