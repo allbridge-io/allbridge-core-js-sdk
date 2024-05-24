@@ -9,6 +9,7 @@ export {
   GetNativeTokenBalanceParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
+export { CctpParams, CctpDomains } from "../services/bridge/sol";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export {
   Messenger,
