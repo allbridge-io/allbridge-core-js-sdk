@@ -292,7 +292,7 @@ export async function getGasFeeOptions(
 }
 
 async function validateExtraGasNotExceeded(
-  extraGasInInt: string,
+  extraGasInt: string,
   gasFeePaymentMethod: FeePaymentMethod,
   sourceToken: TokenWithChainDetails,
   destinationToken: TokenWithChainDetails,
@@ -304,9 +304,9 @@ async function validateExtraGasNotExceeded(
     throw new InvalidGasFeePaymentOptionError(`Impossible to pay extra gas by '${gasFeePaymentMethod}' payment method`);
   }
   const extraGasMaxIntLimit = extraGasMaxLimit[AmountFormat.INT];
-  if (Big(extraGasInInt).gt(extraGasMaxIntLimit)) {
+  if (Big(extraGasInt).gt(extraGasMaxIntLimit)) {
     throw new ExtraGasMaxLimitExceededError(
-      `Extra gas ${extraGasInInt} in int format, exceeded limit ${extraGasMaxIntLimit} for '${gasFeePaymentMethod}' payment method`
+      `Extra gas ${extraGasInt} in int format, exceeded limit ${extraGasMaxIntLimit} for '${gasFeePaymentMethod}' payment method`
     );
   }
 }

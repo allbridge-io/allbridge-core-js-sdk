@@ -1,9 +1,9 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-import { AllbridgeCoreSdk, nodeUrlsDefault, RawTransaction } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawTronTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
+import { sendTrxRawTransaction } from "../../../utils/tronWeb";
+
 dotenv.config({ path: ".env" });
 
 const main = async () => {
@@ -11,41 +11,18 @@ const main = async () => {
   const accountAddress = getEnvVar("TRX_ACCOUNT_ADDRESS");
   const tokenAddress = getEnvVar("TRX_TOKEN_ADDRESS");
 
-  // configure TronWeb
-  const tronWeb = new TronWeb(
-    getEnvVar("TRONWEB_PROVIDER_URL"),
-    getEnvVar("TRONWEB_PROVIDER_URL"),
-    getEnvVar("TRONWEB_PROVIDER_URL"),
-    getEnvVar("TRX_PRIVATE_KEY")
-  );
-
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
   // create claim rewards raw transaction
-  const rawTransactionDeposit = await sdk.pool.rawTxBuilder.claimRewards(
-    {
-      accountAddress: accountAddress,
-      token: tokenInfo,
-    },
-    tronWeb
-  );
+  const rawTransactionDeposit = (await sdk.pool.rawTxBuilder.claimRewards({
+    accountAddress: accountAddress,
+    token: tokenInfo,
+  })) as RawTronTransaction;
 
-  const txReceipt = await sendRawTransaction(tronWeb, rawTransactionDeposit);
-
+  const txReceipt = await sendTrxRawTransaction(rawTransactionDeposit);
   console.log("Token claim rewards:", txReceipt.txid);
 };
-
-async function sendRawTransaction(tronWeb: TronWeb, rawTransaction: RawTransaction) {
-  const signedTx = await tronWeb.trx.sign(rawTransaction);
-
-  if (!signedTx.signature) {
-    throw Error("Transaction was not signed properly");
-  }
-
-  // Broadcasting the transaction
-  return tronWeb.trx.sendRawTransaction(signedTx);
-}
 
 main()
   .then(() => {

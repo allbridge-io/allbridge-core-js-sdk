@@ -1,29 +1,23 @@
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
 
-import { AllbridgeCoreSdk, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 dotenv.config({ path: ".env" });
 
 const main = async () => {
-  const providerUrl = getEnvVar("TRONWEB_PROVIDER_URL");
-  const privateKey = getEnvVar("TRX_PRIVATE_KEY");
   const tokenAddress = getEnvVar("TRX_TOKEN_ADDRESS");
   const accountAddress = getEnvVar("TRX_ACCOUNT_ADDRESS");
 
-  const tronWeb = new TronWeb(providerUrl, providerUrl, providerUrl, privateKey);
-
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
   const tokenInfo = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
-  const userBalanceInfo = await sdk.pool.getUserBalanceInfo(accountAddress, tokenInfo, tronWeb);
-  const poolInfo = await sdk.pool.getPoolInfoFromChain(tokenInfo, tronWeb);
+  const userBalanceInfo = await sdk.pool.getUserBalanceInfo(accountAddress, tokenInfo);
+  const poolInfo = await sdk.pool.getPoolInfoFromChain(tokenInfo);
 
   console.log("Tron User balance: ", userBalanceInfo.userLiquidity);
   console.log("Tron User rewards: ", userBalanceInfo.earned(poolInfo, tokenInfo.decimals));
-  console.log("Tron PoolInfo APR: ", sdk.aprInPercents(tokenInfo.apr));
+  console.log("Tron PoolInfo APR: ", sdk.aprInPercents(tokenInfo.apr7d));
 };
 
 main()

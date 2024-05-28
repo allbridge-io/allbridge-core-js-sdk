@@ -1,8 +1,8 @@
-import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../utils/utils";
 
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 
   const chainDetailsMap = await sdk.chainDetailsMap();
 

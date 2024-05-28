@@ -27,12 +27,15 @@ const privateKey = getEnvVar("SRB_PRIVATE_KEY");
 const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
 
 const main = async () => {
-  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
+  const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, SRB: getEnvVar("SRB_PROVIDER_URL") });
 
   const chainDetailsMap = await sdk.chainDetailsMap();
+
   const sourceToken = ensure(chainDetailsMap[ChainSymbol.SRB].tokens.find((t) => t.symbol == "USDT"));
   const destinationToken = ensure(chainDetailsMap[ChainSymbol.ETH].tokens.find((t) => t.symbol == "USDT"));
+
   const amount = "2";
+
   const sendParams: SendParams = {
     amount,
     fromAccountAddress: fromAddress,
@@ -50,12 +53,13 @@ const main = async () => {
   const srbKeypair = Keypair.fromSecret(privateKey);
   const transaction = TransactionBuilder.fromXDR(xdrTx, mainnet.sorobanNetworkPassphrase);
   transaction.sign(srbKeypair);
-  const signedTx = transaction.toXDR();
+  let signedTx = transaction.toXDR();
 
   const restoreXdrTx = await sdk.utils.srb.simulateAndCheckRestoreTxRequiredSoroban(signedTx, fromAddress);
   if (restoreXdrTx) {
-    restoreXdrTx.sign(srbKeypair);
-    const signedRestoreXdrTx = restoreXdrTx.toXDR();
+    const restoreTx = TransactionBuilder.fromXDR(restoreXdrTx, mainnet.sorobanNetworkPassphrase);
+    restoreTx.sign(srbKeypair);
+    const signedRestoreXdrTx = restoreTx.toXDR();
     const sentRestoreXdrTx = await sdk.utils.srb.sendTransactionSoroban(signedRestoreXdrTx);
     const confirmRestoreXdrTx = await sdk.utils.srb.confirmTx(sentRestoreXdrTx.hash);
     if (confirmRestoreXdrTx.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND) {
@@ -69,6 +73,11 @@ const main = async () => {
     } else {
       console.log(`Transaction Restore Confirmed. Hash: ${sentRestoreXdrTx.hash}`);
     }
+    //get new tx with updated sequences
+    const xdrTx2 = (await sdk.bridge.rawTxBuilder.send(sendParams)) as string;
+    const transaction2 = TransactionBuilder.fromXDR(xdrTx2, mainnet.sorobanNetworkPassphrase);
+    transaction2.sign(srbKeypair);
+    signedTx = transaction2.toXDR();
   }
 
   const sent = await sdk.utils.srb.sendTransactionSoroban(signedTx);

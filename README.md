@@ -19,9 +19,9 @@ Provides an easy integration with the Allbridge Core ChainBridgeService for DApp
 
 - [Installing](#installing)
 - [How to use](#how-to-use)
-  - [1. Initialize SDK instance](#1-initialize-sdk-instance)
+  - [1. Initialize SDK instance](#1-initialize-sdk)
   - [2. Get the list of supported tokens](#2-get-the-list-of-supported-tokens)
-  - [3.1 Approve the transfer of tokens](#31-approve-the-transfer-of-tokens)
+  - [3.1 Approve the transfer of tokens](#31-approve-the-transfer-of-tokens-only-for-evm-tron)
   - [3.2 Send Tokens](#32-send-tokens)
   - [Full example](#full-example)
 - [Other operations](#other-operations)
@@ -29,13 +29,11 @@ Provides an easy integration with the Allbridge Core ChainBridgeService for DApp
   - [Transaction builder](#transaction-builder)
     - [Approve Transaction](#approve-transaction)
     - [Send Transaction](#send-transaction)
-      - [Solana Blockchain](#solana-blockchain)
   - [Get information about sent transaction](#get-information-about-sent-transaction)
   - [Calculating amount of tokens to be received after fee](#calculating-amount-of-tokens-to-be-received-after-fee)
   - [Calculating amount of tokens to send](#calculating-amount-of-tokens-to-send)
   - [Getting the amount of gas fee](#getting-the-amount-of-gas-fee)
   - [Getting the average transfer time](#getting-the-average-transfer-time)
-- [Semver](#semver)
 
 ## Installing
 
@@ -45,29 +43,40 @@ $ npm install @allbridge/bridge-core-sdk
 
 ## How to use
 
+### Find out how to integrate Allbridge Core SDK and Browser Extension Wallet
+
+[***Evm***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/evm.md)
+[***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/solana.md)
+[***Stellar***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/stellar.md)
+[***Tron***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/tron.md)
+
 ### 1. Initialize SDK
-#### 1.1 Initialize SDK instance with your node Rpc urls (RECOMMENDED)
+
+#### 1) Initialize SDK instance with your node Rpc urls (RECOMMENDED)
+
 ```ts
-import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
+import {AllbridgeCoreSdk, nodeRpcUrlsDefault} from "@allbridge/bridge-core-sdk";
 // Connections to blockchains will be made through your rpc-urls passed during initialization
 const sdk = new AllbridgeCoreSdk({
   ...nodeRpcUrlsDefault,
   TRX: "your trx-rpc-url",
   ETH: "your eth-rpc-url"
 });
-// The Provider parameter may not be passed in methods where it is present, for example:
+// Sdk will be using your rpc url for fetch data from blockchain to create tx
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
 
-#### 1.2 Initialize SDK instance (using passed provider for blockchains connections)
+#### 2) Initialize SDK instance (using passed provider for blockchains connections)
+
 ```ts
-import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
+import {AllbridgeCoreSdk, nodeRpcUrlsDefault} from "@allbridge/bridge-core-sdk";
+
 const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 // The Provider parameter must be passed in order for it to be used to connect to the blockchain, for example:
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
 
-***TIP:*** Use 1.1 in case your provider differs from required by the SDK (Web3:v1.9.0, tronweb:v4.4.0)
+***TIP:*** tested and developed for (Web3:v1.9.0, tronweb:v4.4.0), in other case use approach 1)
 
 ### 2. Get the list of supported tokens
 
@@ -79,16 +88,16 @@ const {bridgeAddress, tokens, chainId, name} = supportedChains[ChainSymbol.ETH];
 const usdtOnEthToken = tokens.find(token => token.symbol === 'USDT');
 ```
 
-### 3.1 Approve the transfer of tokens
+### 3.1 Approve the transfer of tokens (only for Evm, Tron)
 
 Before sending tokens, the bridge has to be authorized to use the tokens of the owner.
-This is done by calling the `approve` method on SDK instance.</p>
+This is done by building the `approve` transaction with SDK instance.</p>
 For Ethereum USDT - due to specificity of the USDT contract:<br/>
 If the current allowance is not 0,
 this function will perform an additional transaction to set allowance to 0 before setting the new allowance value.
 
 ```ts
-const response = await sdk.bridge.approve(provider, {
+const rawTx = await sdk.bridge.rawTxBuilder.approve({
   token: sourceToken,
   owner: accountAddress
 });
@@ -99,7 +108,7 @@ const response = await sdk.bridge.approve(provider, {
 Initiate the transfer of tokens with `send` method on SDK instance.
 
 ```ts
-sdk.bridge.send(provider, {
+const rawTx = await sdk.bridge.rawTxBuilder.send({
   amount: "1.01",
   fromAccountAddress: fromAddress,
   toAccountAddress: toAddress,
@@ -111,7 +120,7 @@ sdk.bridge.send(provider, {
 
 ### Full example
 
-Swap BUSD on BSC chain to USDT on TRX chain
+Swap USDC on ETH chain to USDC on POL chain
 
 ```ts
 import {
@@ -121,50 +130,54 @@ import {
 } from "@allbridge/bridge-core-sdk";
 import Web3 from "web3";
 import * as dotenv from "dotenv";
-dotenv.config({ path: ".env" });
+// Utils method
+// For more details, see Examples (https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
+// import { getEnvVar } from "../../../utils/env";
+// import { sendEvmRawTransaction } from "../../../utils/web3";
+// import { ensure } from "../../../utils/utils";
+
+dotenv.config({path: ".env"});
 
 async function runExample() {
-  // sender address
-  const fromAddress = '0x01234567890abcdef01234567890abcdef012345';
-  // recipient address
-  const toAddress = 'AbcDefGHIJklmNoPQRStuvwXyz1aBcDefG';
+    const fromAddress = getEnvVar("ETH_ACCOUNT_ADDRESS"); // sender address
+    const toAddress = getEnvVar("TRX_ACCOUNT_ADDRESS"); // recipient address
 
-  // configure web3
-  const web3 = new Web3('https://bsc-dataseed1.binance.org:443');
-  const account = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
-  web3.eth.accounts.wallet.add(account);
+    const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, ETH: getEnvVar("WEB3_PROVIDER_URL") });
 
-  const sdk = new AllbridgeCoreSdk({
-    solanaRpcUrl: "your solana-rpc-url",
-    tronRpcUrl: "your tron-rpc-url",
-  });
+    const chains = await sdk.chainDetailsMap();
 
-  // fetch information about supported chains
-  const chains = await sdk.chainDetailsMap();
+    const sourceChain = chains[ChainSymbol.ETH];
+    const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const bscChain = chains[ChainSymbol.BSC];
-  const busdToken = bscChain.tokens.find(token => token.symbol === 'BUSD');
+    const destinationChain = chains[ChainSymbol.POL];
+    const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const trxChain = chains[ChainSymbol.TRX];
-  const usdtToken = trxChain.tokens.find(token => token.symbol === 'USDT');
+    const amount = "1.01";
 
-  // authorize a transfer of tokens from sender's address
-  await sdk.bridge.approve(web3, {
-    token: busdToken,
-    owner: fromAddress
-  });
+    //check if sending tokens already approved
+    if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amount }))) {
+      // authorize the bridge to transfer tokens from sender's address
+      const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
+        token: sourceToken,
+        owner: fromAddress,
+      })) as RawEvmTransaction;
+      const approveTxReceipt = await sendEvmRawTransaction(rawTransactionApprove);
+      console.log("Approve tx id:", approveTxReceipt.transactionHash);
+    }
 
-  // initiate transfer
-  const response = await sdk.bridge.send(web3, {
-    amount: "1.01",
-    fromAccountAddress: fromAddress,
-    toAccountAddress: toAddress,
-    sourceToken: busdToken,
-    destinationToken: usdtToken,
-    messenger: Messenger.ALLBRIDGE,
-  });
-  console.log("Tokens sent:", response.txId);
-}
+    // initiate transfer
+    const rawTransactionTransfer = (await sdk.bridge.rawTxBuilder.send({
+      amount: amount,
+      fromAccountAddress: fromAddress,
+      toAccountAddress: toAddress,
+      sourceToken: sourceToken,
+      destinationToken: destinationToken,
+      messenger: Messenger.ALLBRIDGE,
+    })) as RawEvmTransaction;
+    console.log(`Sending ${amount} ${sourceToken.symbol}`);
+    const txReceipt = await sendEvmRawTransaction(rawTransactionTransfer);
+    console.log("tx id:", txReceipt.transactionHash);
+  }
 
 runExample();
 ```
@@ -177,7 +190,8 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 ### Liquidity pools operations
 
 SDK supports operation with **Liquidity Pools**<br/>
-For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
+For more details, see [
+***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
 
 ### Transaction builder
 
@@ -186,7 +200,7 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 SDK method `bridge.rawTxBuilder.approve` can be used to create approve Transaction.
 
 ```ts
-const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(provider, approveParams);
+const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(approveParams);
 ```
 
 #### Send Transaction
@@ -194,20 +208,12 @@ const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve(provider, ap
 SDK method `bridge.rawTxBuilder.send` can be used to create send Transaction.
 
 ```ts
-const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
+const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
-
-**TIP:** </br>
-To interact with the **Solana** blockchain: </br>
-do not pass provider param </p>
-
-```ts
-const transaction = await sdk.bridge.rawTxBuilder.send(sendParams);
-```
-
 
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)
+For more details, see [***Example
+***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)
 
 ### Get information about sent transaction
 
@@ -257,7 +263,7 @@ The method returns an object with two properties:
   If this property is not present, it indicates that the stablecoin payment method is not available.
 
 ```ts
-const { native, stablecoin } = await sdk.getGasFeeOptions(
+const {native, stablecoin} = await sdk.getGasFeeOptions(
   usdtOnEthToken, // from ETH
   usdtOnTrxToken, // to TRX
   Messenger.ALLBRIDGE

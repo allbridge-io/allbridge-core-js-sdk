@@ -9,6 +9,7 @@ export {
   GetNativeTokenBalanceParams,
 } from "../services/bridge/models/bridge.model";
 export { BridgeService } from "../services/bridge/index";
+export { CctpParams, CctpDomains } from "../services/bridge/sol";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export {
   Messenger,
@@ -114,9 +115,9 @@ export enum AmountFormat {
 /**
  * Describes the same amount in two variation formats.
  *
- * For {@link AmountFormat.INT} value contains the amount in tokens denomination
+ * For {@link AmountFormat.INT} value contains the amount in the smallest denomination
  *
- * For {@link AmountFormat.FLOAT} value contains the amount in the smallest denomination
+ * For {@link AmountFormat.FLOAT} value contains the amount in tokens denomination
  */
 export type AmountFormatted = {
   [key in AmountFormat]: string;

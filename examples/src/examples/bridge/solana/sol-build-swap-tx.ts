@@ -1,4 +1,9 @@
-import { AllbridgeCoreSdk, ChainSymbol, nodeUrlsDefault, RawSolanaTransaction } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  nodeRpcUrlsDefault,
+  RawBridgeSolanaTransaction,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -11,15 +16,15 @@ const accountAddress = getEnvVar("SOL_ACCOUNT_ADDRESS");
 const privateKey = getEnvVar("SOL_PRIVATE_KEY");
 
 const example = async () => {
-  const sdk = new AllbridgeCoreSdk(nodeUrlsDefault);
+  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.SOL];
-  const sourceTokenInfo = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
+  const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChainPol = chains[ChainSymbol.SOL];
-  const destinationTokenInfo = ensure(destinationChainPol.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
+  const destinationChain = chains[ChainSymbol.SOL];
+  const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   // initiate transfer using Messenger.WORMHOLE
   const amount = "10";
@@ -27,15 +32,15 @@ const example = async () => {
     amount: amount,
     fromAccountAddress: accountAddress,
     toAccountAddress: accountAddress,
-    sourceToken: sourceTokenInfo,
-    destinationToken: destinationTokenInfo,
-    minimumReceiveAmount: await sdk.getAmountToBeReceived(amount, sourceTokenInfo, destinationTokenInfo),
-  })) as RawSolanaTransaction;
+    sourceToken: sourceToken,
+    destinationToken: destinationToken,
+    minimumReceiveAmount: await sdk.getAmountToBeReceived(amount, sourceToken, destinationToken),
+  })) as RawBridgeSolanaTransaction;
 
   const keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privateKey));
   transaction.sign([keypair]);
 
-  const connection = new solanaWeb3.Connection(nodeUrlsDefault.solanaRpcUrl, "confirmed");
+  const connection = new solanaWeb3.Connection(ensure(nodeRpcUrlsDefault.SOL), "confirmed");
   const txid = await connection.sendTransaction(transaction);
   console.log(`https://explorer.solana.com/tx/${txid}`);
 };

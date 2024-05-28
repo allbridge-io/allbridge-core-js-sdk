@@ -1,13 +1,18 @@
 import Web3 from "web3";
-import { Account, TransactionConfig } from "web3-core";
+import { TransactionConfig } from "web3-core";
+import { getEnvVar } from "./env";
 
-export async function sendRawTransaction(web3: Web3, rawTransaction: TransactionConfig) {
+export async function sendEvmRawTransaction(rawTransaction: TransactionConfig) {
+  // configure web3
+  const web3 = new Web3(getEnvVar("WEB3_PROVIDER_URL"));
+  const account = web3.eth.accounts.privateKeyToAccount(getEnvVar("ETH_PRIVATE_KEY"));
+  web3.eth.accounts.wallet.add(account);
+
   if (rawTransaction.from === undefined) {
     throw Error("rawTransaction.from is undefined");
   }
   const gasLimit = await web3.eth.estimateGas(rawTransaction);
-  // @ts-ignore
-  const account: Account = web3.eth.accounts.wallet[rawTransaction.from];
+
   const signedTx = await account.signTransaction({
     ...rawTransaction,
     gas: gasLimit,
