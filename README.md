@@ -19,9 +19,9 @@ Provides an easy integration with the Allbridge Core ChainBridgeService for DApp
 
 - [Installing](#installing)
 - [How to use](#how-to-use)
-  - [1. Initialize SDK instance](#1-initialize-sdk-instance)
+  - [1. Initialize SDK instance](#1-initialize-sdk)
   - [2. Get the list of supported tokens](#2-get-the-list-of-supported-tokens)
-  - [3.1 Approve the transfer of tokens](#31-approve-the-transfer-of-tokens)
+  - [3.1 Approve the transfer of tokens](#31-approve-the-transfer-of-tokens-only-for-evm-tron)
   - [3.2 Send Tokens](#32-send-tokens)
   - [Full example](#full-example)
 - [Other operations](#other-operations)
@@ -29,13 +29,11 @@ Provides an easy integration with the Allbridge Core ChainBridgeService for DApp
   - [Transaction builder](#transaction-builder)
     - [Approve Transaction](#approve-transaction)
     - [Send Transaction](#send-transaction)
-      - [Solana Blockchain](#solana-blockchain)
   - [Get information about sent transaction](#get-information-about-sent-transaction)
   - [Calculating amount of tokens to be received after fee](#calculating-amount-of-tokens-to-be-received-after-fee)
   - [Calculating amount of tokens to send](#calculating-amount-of-tokens-to-send)
   - [Getting the amount of gas fee](#getting-the-amount-of-gas-fee)
   - [Getting the average transfer time](#getting-the-average-transfer-time)
-- [Semver](#semver)
 
 ## Installing
 
@@ -70,8 +68,6 @@ const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
 
 #### 2) Initialize SDK instance (using passed provider for blockchains connections)
 
-@Deprecated use the approach described above
-
 ```ts
 import {AllbridgeCoreSdk, nodeRpcUrlsDefault} from "@allbridge/bridge-core-sdk";
 
@@ -80,7 +76,7 @@ const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams, provider);
 ```
 
-***TIP:*** Use 1.1 in case your provider differs from required by the SDK (Web3:v1.9.0, tronweb:v4.4.0)
+***TIP:*** tested and developed for (Web3:v1.9.0, tronweb:v4.4.0), in other case use approach 1)
 
 ### 2. Get the list of supported tokens
 
@@ -213,14 +209,6 @@ SDK method `bridge.rawTxBuilder.send` can be used to create send Transaction.
 
 ```ts
 const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams);
-```
-
-**TIP:** </br>
-To interact with the **Solana** blockchain: </br>
-do not pass provider param </p>
-
-```ts
-const transaction = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
 
 ***TIP:***

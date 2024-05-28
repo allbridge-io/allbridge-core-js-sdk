@@ -45,7 +45,7 @@ export interface AllbridgeCoreSdkOptions {
   sorobanNetworkPassphrase: string;
   /**
    * Optional. Will be used in methods</br>
-   * {@link AllbridgeCoreSdk.pool.getPoolInfoFromChain} and {@link AllbridgeCoreSdk.pool.getAmountToBeWithdrawn}</br>
+   * {@link LiquidityPoolService.getPoolInfoFromChain} and {@link LiquidityPoolService.getAmountToBeWithdrawn}</br>
    * to fetch information from the blockchain with fewer HTTP requests using JSON-RPC API
    */
   tronJsonRpc?: string;
