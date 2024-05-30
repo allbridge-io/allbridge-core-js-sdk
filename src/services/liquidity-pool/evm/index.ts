@@ -10,8 +10,13 @@ import PoolAbi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
 import { BaseContract } from "../../models/abi/types/types";
 import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
-import { ChainPoolService } from "../models/pool";
+import {
+  ChainPoolService,
+  LiquidityPoolsParams,
+  LiquidityPoolsParamsWithAmount,
+  UserBalance,
+  UserBalanceInfo,
+} from "../models";
 
 export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -33,8 +38,8 @@ export class EvmPoolService extends ChainPoolService {
       userBalanceInfo = await promiseWithTimeoutAndRetries(
         () => this.getUserBalanceInfoPerProperty(accountAddress, token),
         `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
-        3,
-        5000
+        5,
+        2000
       );
     }
     return userBalanceInfo;
@@ -75,8 +80,8 @@ export class EvmPoolService extends ChainPoolService {
       poolInfo = await promiseWithTimeoutAndRetries(
         () => this.getPoolInfoPerProperty(token),
         `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
-        3,
-        5000
+        5,
+        2000
       );
     }
     return poolInfo;
