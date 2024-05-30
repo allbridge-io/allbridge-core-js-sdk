@@ -108,14 +108,14 @@ export class EvmPoolService extends ChainPoolService {
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getPoolContract(token.poolAddress);
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
-      poolContract.methods.a().call(),
-      poolContract.methods.d().call(),
-      poolContract.methods.tokenBalance().call(),
-      poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalSupply().call(),
-      poolContract.methods.accRewardPerShareP().call(),
-    ]);
+
+    const aValue = await poolContract.methods.a().call();
+    const dValue = await poolContract.methods.d().call();
+    const tokenBalance = await poolContract.methods.tokenBalance().call();
+    const vUsdBalance = await poolContract.methods.vUsdBalance().call();
+    const totalLpAmount = await poolContract.methods.totalSupply().call();
+    const accRewardPerShareP = await poolContract.methods.accRewardPerShareP().call();
+
     const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
 
     return {
