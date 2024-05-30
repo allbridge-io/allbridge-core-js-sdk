@@ -4,7 +4,7 @@ import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
-import { promiseWithTimeout } from "../../../utils/utils";
+import { promiseWithTimeout, promiseWithTimeoutAndRetries } from "../../../utils/utils";
 import { RawTransaction } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
@@ -26,13 +26,14 @@ export class EvmPoolService extends ChainPoolService {
     try {
       userBalanceInfo = await promiseWithTimeout(
         this.getUserBalanceInfoByBatch(accountAddress, token),
-        `Cannot get UserBalanceInfo for ${token.name}`,
+        `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
         5000
       );
     } catch (err) {
-      userBalanceInfo = await promiseWithTimeout(
-        this.getUserBalanceInfoPerProperty(accountAddress, token),
-        `Cannot get UserBalanceInfo for ${token.name}`,
+      userBalanceInfo = await promiseWithTimeoutAndRetries(
+        () => this.getUserBalanceInfoPerProperty(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
+        3,
         5000
       );
     }
@@ -67,13 +68,14 @@ export class EvmPoolService extends ChainPoolService {
     try {
       poolInfo = await promiseWithTimeout(
         this.getPoolInfoByBatch(token),
-        `Cannot get PoolInfo for ${token.name}`,
+        `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
         5000
       );
     } catch (err) {
-      poolInfo = await promiseWithTimeout(
-        this.getPoolInfoPerProperty(token),
-        `Cannot get PoolInfo for ${token.name}`,
+      poolInfo = await promiseWithTimeoutAndRetries(
+        () => this.getPoolInfoPerProperty(token),
+        `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
+        3,
         5000
       );
     }

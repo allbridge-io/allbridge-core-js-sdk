@@ -35,6 +35,25 @@ export async function promiseWithTimeout<T>(promise: Promise<T>, msg: string, ti
   ])) as any as T;
 }
 
+export async function promiseWithTimeoutAndRetries<T>(
+  toTry: () => Promise<T>,
+  msg: string,
+  maxRetries: number,
+  timeoutMs: number
+): Promise<T> {
+  if (maxRetries < 1)
+    throw new Error(`Bad argument: 'maxRetries' must be greater than 0, but ${maxRetries} was received.`);
+  let attemptCount = 0;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
+  while (true) {
+    try {
+      return await promiseWithTimeout(toTry(), msg, timeoutMs);
+    } catch (error) {
+      if (++attemptCount >= maxRetries) throw new TimeoutError(msg);
+    }
+  }
+}
+
 /**
  * Keep calling a `fn` for `secondsToWait` seconds, if `keepWaitingIf` is true.
  * Returns an array of all attempts to call the function.
