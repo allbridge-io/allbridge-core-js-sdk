@@ -3,7 +3,6 @@ import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
-  CheckAddressResponse,
   GasBalanceResponse,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
@@ -43,10 +42,6 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
 
   getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
     return this.client.getGasBalance(chainSymbol, address);
-  }
-
-  checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
-    return this.client.checkAddress(chainSymbol, address, tokenAddress);
   }
 
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {

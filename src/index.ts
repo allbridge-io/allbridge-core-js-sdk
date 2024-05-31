@@ -147,11 +147,20 @@ export class AllbridgeCoreSdk {
 
   /**
    * Check address and show gas balance
+   * @Deprecated
    * @param chainSymbol
-   * @param address
+   * @param recipientAddress
+   * @param tokenAddress
    */
-  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
-    return this.service.checkAddress(chainSymbol, address, tokenAddress);
+  async checkAddress(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chainSymbol: ChainSymbol,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    recipientAddress: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    tokenAddress?: string
+  ): Promise<CheckAddressResponse> {
+    return await this.service.checkAddress();
   }
 
   /**
