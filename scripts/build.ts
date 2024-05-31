@@ -5,7 +5,7 @@ import {polyfillNode} from "esbuild-plugin-polyfill-node";
 const baseConfig: BuildOptions = {
   nodePaths: [path.join(__dirname, "../src")],
   sourcemap: true,
-  external: [],
+  packages: 'external',
   bundle: true,
   minify: true,
 };

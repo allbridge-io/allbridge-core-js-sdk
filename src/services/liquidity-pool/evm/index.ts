@@ -4,14 +4,19 @@ import { ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
-import { promiseWithTimeout } from "../../../utils/utils";
+import { promiseWithTimeout, promiseWithTimeoutAndRetries } from "../../../utils/utils";
 import { RawTransaction } from "../../models";
 import PoolAbi from "../../models/abi/Pool.json";
 import { Pool as PoolContract } from "../../models/abi/types/Pool";
 import { BaseContract } from "../../models/abi/types/types";
 import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
-import { ChainPoolService } from "../models/pool";
+import {
+  ChainPoolService,
+  LiquidityPoolsParams,
+  LiquidityPoolsParamsWithAmount,
+  UserBalance,
+  UserBalanceInfo,
+} from "../models";
 
 export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -26,14 +31,15 @@ export class EvmPoolService extends ChainPoolService {
     try {
       userBalanceInfo = await promiseWithTimeout(
         this.getUserBalanceInfoByBatch(accountAddress, token),
-        `Cannot get UserBalanceInfo for ${token.name}`,
+        `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
         5000
       );
     } catch (err) {
-      userBalanceInfo = await promiseWithTimeout(
-        this.getUserBalanceInfoPerProperty(accountAddress, token),
-        `Cannot get UserBalanceInfo for ${token.name}`,
-        5000
+      userBalanceInfo = await promiseWithTimeoutAndRetries(
+        () => this.getUserBalanceInfoPerProperty(accountAddress, token),
+        `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
+        5,
+        2000
       );
     }
     return userBalanceInfo;
@@ -67,14 +73,15 @@ export class EvmPoolService extends ChainPoolService {
     try {
       poolInfo = await promiseWithTimeout(
         this.getPoolInfoByBatch(token),
-        `Cannot get PoolInfo for ${token.name}`,
+        `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
         5000
       );
     } catch (err) {
-      poolInfo = await promiseWithTimeout(
-        this.getPoolInfoPerProperty(token),
-        `Cannot get PoolInfo for ${token.name}`,
-        5000
+      poolInfo = await promiseWithTimeoutAndRetries(
+        () => this.getPoolInfoPerProperty(token),
+        `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
+        5,
+        2000
       );
     }
     return poolInfo;
@@ -106,14 +113,14 @@ export class EvmPoolService extends ChainPoolService {
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getPoolContract(token.poolAddress);
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
-      poolContract.methods.a().call(),
-      poolContract.methods.d().call(),
-      poolContract.methods.tokenBalance().call(),
-      poolContract.methods.vUsdBalance().call(),
-      poolContract.methods.totalSupply().call(),
-      poolContract.methods.accRewardPerShareP().call(),
-    ]);
+
+    const aValue = await poolContract.methods.a().call();
+    const dValue = await poolContract.methods.d().call();
+    const tokenBalance = await poolContract.methods.tokenBalance().call();
+    const vUsdBalance = await poolContract.methods.vUsdBalance().call();
+    const totalLpAmount = await poolContract.methods.totalSupply().call();
+    const accRewardPerShareP = await poolContract.methods.accRewardPerShareP().call();
+
     const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
 
     return {
