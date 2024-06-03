@@ -6,7 +6,6 @@ import externalizeAllPackagesExcept from 'esbuild-plugin-noexternal';
 const baseConfig: BuildOptions = {
   nodePaths: [path.join(__dirname, "../src")],
   sourcemap: true,
-  packages: 'external',
   bundle: true,
   minify: true,
 };
