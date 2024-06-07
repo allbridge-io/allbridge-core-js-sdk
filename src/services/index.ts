@@ -4,6 +4,7 @@ import { AllbridgeCoreClientImpl } from "../client/core-api";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
 import {
+  AddressStatus,
   CheckAddressResponse,
   GasBalanceResponse,
   Messenger,
@@ -110,8 +111,13 @@ export class AllbridgeCoreSdkService {
     return this.api.getGasBalance(chainSymbol, address);
   }
 
-  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
-    return this.api.checkAddress(chainSymbol, address, tokenAddress);
+  async checkAddress(): Promise<CheckAddressResponse> {
+    return new Promise((resolve) => {
+      resolve({
+        status: AddressStatus.OK,
+        gasBalance: null,
+      });
+    });
   }
 
   async getPendingStatusInfo(

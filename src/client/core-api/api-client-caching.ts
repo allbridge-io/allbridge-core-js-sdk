@@ -3,7 +3,6 @@ import { ChainSymbol } from "../../chains";
 import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
-  CheckAddressResponse,
   GasBalanceResponse,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
@@ -47,10 +46,6 @@ export class ApiClientCaching implements ApiClient {
     const gasBalancePromise = this.apiClient.getGasBalance(chainSymbol, address);
     this.gasBalanceCache.put(GAS_BALANCE_CACHE_KEY, gasBalancePromise);
     return gasBalancePromise;
-  }
-
-  async checkAddress(chainSymbol: ChainSymbol, address: string, tokenAddress?: string): Promise<CheckAddressResponse> {
-    return this.apiClient.checkAddress(chainSymbol, address, tokenAddress);
   }
 
   async getPendingInfo(): Promise<PendingInfoResponse> {
