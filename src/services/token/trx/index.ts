@@ -6,6 +6,7 @@ import { SdkError } from "../../../exceptions";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
+import ERC20Abi from "../../models/abi/ERC20.json";
 import { amountToHex } from "../../utils";
 import { sendRawTransaction } from "../../utils/trx";
 import { ApproveParamsDto, GetAllowanceParamsDto } from "../models";
@@ -15,7 +16,6 @@ export const MAX_AMOUNT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffff
 
 export class TronTokenService extends ChainTokenService {
   chainType: ChainType.TRX = ChainType.TRX;
-  private static contracts = new Map<string, any>();
 
   constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
     super();
@@ -60,12 +60,7 @@ export class TronTokenService extends ChainTokenService {
   }
 
   private async getContract(contractAddress: string): Promise<any> {
-    if (TronTokenService.contracts.has(contractAddress)) {
-      return TronTokenService.contracts.get(contractAddress);
-    }
-    const contract = await this.tronWeb.contract().at(contractAddress);
-    TronTokenService.contracts.set(contractAddress, contract);
-    return contract;
+    return await this.tronWeb.contract(ERC20Abi, contractAddress);
   }
 
   private async buildRawTransaction(
