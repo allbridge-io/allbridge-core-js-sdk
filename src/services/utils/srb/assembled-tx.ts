@@ -47,7 +47,7 @@ export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
     throw new Error("No error");
   }
   unwrap(): T {
-    return this.value;
+    return "value" in (this.value as any) ? (this.value as any).value : this.value;
   }
 
   isOk(): boolean {
@@ -62,7 +62,7 @@ export class Ok<T, E extends Error_ = Error_> implements Result<T, E> {
 export class Err<E extends Error_ = Error_> implements Result<any, E> {
   constructor(readonly error: E) {}
   unwrapErr(): E {
-    return this.error;
+    return "error" in (this.error as any) ? (this.error as any).error : this.error;
   }
   unwrap(): never {
     throw new Error(this.error.message);
