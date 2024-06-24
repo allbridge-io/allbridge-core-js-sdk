@@ -29,10 +29,10 @@ export interface TokenDTO {
   tokenAddress: string;
   poolInfo: PoolInfoDTO;
   feeShare: string;
-  apr: number;
-  apr7d: number;
-  apr30d: number;
-  lpRate: number;
+  apr: string;
+  apr7d: string;
+  apr30d: string;
+  lpRate: string;
 }
 
 export interface PoolInfoDTO {

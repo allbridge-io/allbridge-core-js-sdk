@@ -90,10 +90,10 @@ describe("Calculation", () => {
       name: "name",
       poolAddress: "poolAddress",
       tokenAddress: "tokenAddress",
-      apr: 0,
-      apr7d: 0,
-      apr30d: 0,
-      lpRate: 0,
+      apr: "0",
+      apr7d: "0",
+      apr30d: "0",
+      lpRate: "0",
     };
 
     describe("Given token with a balanced poolInfo", () => {
@@ -241,11 +241,11 @@ describe("Calculation", () => {
 
   describe("aprInPercents", () => {
     test("convert apr to percent view", () => {
-      expect(aprInPercents(0.1256)).toEqual("12.56%");
+      expect(aprInPercents("0.1256")).toEqual("12.56%");
     });
     test("invalid apr to percent view", () => {
-      expect(aprInPercents(0)).toEqual("N/A");
-      expect(aprInPercents(-1)).toEqual("N/A");
+      expect(aprInPercents("0")).toEqual("N/A");
+      expect(aprInPercents("-1")).toEqual("N/A");
     });
   });
 });

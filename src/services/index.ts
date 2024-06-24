@@ -466,7 +466,7 @@ export class AllbridgeCoreSdkService {
     return this.api.refreshPoolInfo();
   }
 
-  aprInPercents(apr: number): string {
+  aprInPercents(apr: string): string {
     return aprInPercents(apr);
   }
 

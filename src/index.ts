@@ -492,7 +492,7 @@ export class AllbridgeCoreSdk {
    * @param apr
    * @returns aprPercentageView
    */
-  aprInPercents(apr: number): string {
+  aprInPercents(apr: string): string {
     return this.service.aprInPercents(apr);
   }
 
