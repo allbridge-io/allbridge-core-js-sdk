@@ -174,8 +174,8 @@ export function getEarned(userLpAmount: string, userRewardDebt: string, accRewar
   return rewards.sub(userRewardDebtBN).toString();
 }
 
-export function aprInPercents(apr: number): string {
-  return apr * 100 > 0 ? `${Number(Big(apr).times(100).toFixed(2)).toLocaleString()}%` : "N/A";
+export function aprInPercents(apr: string): string {
+  return Big(apr).gt(0) ? `${Number(Big(apr).times(100).toFixed(2)).toLocaleString()}%` : "N/A";
 }
 
 // a = 8Axy(x+y)

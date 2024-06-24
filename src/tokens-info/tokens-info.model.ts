@@ -88,19 +88,19 @@ export interface Token {
    * @Deprecated use {@link apr7d}</br>
    * Token APR
    */
-  apr: number;
+  apr: string;
   /**
    * Token APR based on last 7 days
    */
-  apr7d: number;
+  apr7d: string;
   /**
    * Token APR based on last 30 days
    */
-  apr30d: number;
+  apr30d: string;
   /**
    * Token LP rate
    */
-  lpRate: number;
+  lpRate: string;
 }
 
 /**
