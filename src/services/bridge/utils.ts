@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
+import { Address } from "@stellar/stellar-sdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
-import { Address } from "stellar-sdk";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";

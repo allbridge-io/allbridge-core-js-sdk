@@ -1,3 +1,4 @@
+import { contract } from "@stellar/stellar-sdk";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { AllbridgeCoreSdkOptions } from "../../../index";
@@ -12,9 +13,9 @@ import {
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
-import { PoolContract } from "../../models/srb/pool";
-import { ClassOptions } from "../../utils/srb/method-options";
+import { PoolContract } from "../../models/srb/pool-contract";
 import { ChainPoolService, UserBalance } from "../models";
+import ContractClientOptions = contract.ClientOptions;
 
 export class SrbPoolService extends ChainPoolService {
   chainType: ChainType.SRB = ChainType.SRB;
@@ -30,7 +31,7 @@ export class SrbPoolService extends ChainPoolService {
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const poolContract = this.getContract(token.poolAddress);
-    const result = (await poolContract.getUserDeposit({ user: accountAddress })).result;
+    const result = (await poolContract.get_user_deposit({ user: accountAddress })).result;
     if (result.isErr()) {
       throw new SdkError();
     }
@@ -43,7 +44,7 @@ export class SrbPoolService extends ChainPoolService {
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getContract(token.poolAddress);
-    const result = (await poolContract.getPool()).result;
+    const result = (await poolContract.get_pool()).result;
     if (result.isErr()) {
       throw new SdkError();
     }
@@ -64,30 +65,39 @@ export class SrbPoolService extends ChainPoolService {
   }
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    const poolContract = this.getContract(params.token.poolAddress);
-    return await poolContract.depositXdr({
-      sender: params.accountAddress,
-      amount: BigInt(params.amount),
-    });
+    const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    console.log("sender", params.accountAddress);
+    console.log("poolAddress", params.token.poolAddress);
+    return (
+      await poolContract.deposit({
+        sender: params.accountAddress,
+        amount: BigInt(params.amount),
+      })
+    ).toXDR();
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
-    const poolContract = this.getContract(params.token.poolAddress);
-    return await poolContract.withdrawXdr({
-      sender: params.accountAddress,
-      amount_lp: BigInt(params.amount),
-    });
+    const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    return (
+      await poolContract.withdraw({
+        sender: params.accountAddress,
+        amount_lp: BigInt(params.amount),
+      })
+    ).toXDR();
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
-    const poolContract = this.getContract(params.token.poolAddress);
-    return await poolContract.claimRewardsXdr({
-      sender: params.accountAddress,
-    });
+    const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    return (
+      await poolContract.claim_rewards({
+        sender: params.accountAddress,
+      })
+    ).toXDR();
   }
 
-  private getContract(address: string): PoolContract {
-    const config: ClassOptions = {
+  private getContract(address: string, sender?: string): PoolContract {
+    const config: ContractClientOptions = {
+      publicKey: sender,
       contractId: address,
       networkPassphrase: this.params.sorobanNetworkPassphrase,
       rpcUrl: this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB),

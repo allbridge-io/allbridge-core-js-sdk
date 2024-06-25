@@ -1,5 +1,5 @@
+import { Address, contract } from "@stellar/stellar-sdk";
 import { Big } from "big.js";
-import { Address } from "stellar-sdk";
 import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { MethodNotSupportedError } from "../../../exceptions";
@@ -7,10 +7,10 @@ import { AllbridgeCoreSdkOptions } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
-import { BridgeContract } from "../../models/srb/bridge";
-import { ClassOptions } from "../../utils/srb/method-options";
+import { BridgeContract } from "../../models/srb/bridge-contract";
 import { ChainBridgeService, SendParams, SwapParams, TxSendParams, TxSwapParams } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import ContractClientOptions = contract.ClientOptions;
 
 export class SrbBridgeService extends ChainBridgeService {
   chainType: ChainType.SRB = ChainType.SRB;
@@ -46,10 +46,10 @@ export class SrbBridgeService extends ChainBridgeService {
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
-    const contract = this.getContract(BridgeContract, contractAddress);
+    const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
     let tx;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      tx = await contract.swapAndBridge({
+      tx = await contract.swap_and_bridge({
         sender: fromAccountAddress,
         token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
         amount: BigInt(amount),
@@ -61,7 +61,7 @@ export class SrbBridgeService extends ChainBridgeService {
         fee_token_amount: BigInt(totalFee),
       });
     } else {
-      tx = await contract.swapAndBridge({
+      tx = await contract.swap_and_bridge({
         sender: fromAccountAddress,
         token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
         amount: BigInt(amount),
@@ -73,7 +73,7 @@ export class SrbBridgeService extends ChainBridgeService {
         fee_token_amount: BigInt(0),
       });
     }
-    return tx;
+    return tx.toXDR();
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
@@ -91,15 +91,17 @@ export class SrbBridgeService extends ChainBridgeService {
       toTokenAddress,
       minimumReceiveAmount,
     } = params;
-    const contract = this.getContract(BridgeContract, contractAddress);
-    return await contract.swap({
-      sender: fromAccountAddress,
-      amount: BigInt(amount),
-      token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
-      receive_token: Buffer.from(toTokenAddress),
-      recipient: toAccountAddress as string,
-      receive_amount_min: BigInt(minimumReceiveAmount),
-    });
+    const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
+    return (
+      await contract.swap({
+        sender: fromAccountAddress,
+        amount: BigInt(amount),
+        token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
+        receive_token: Buffer.from(toTokenAddress),
+        recipient: toAccountAddress as string,
+        receive_amount_min: BigInt(minimumReceiveAmount),
+      })
+    ).toXDR();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -107,8 +109,9 @@ export class SrbBridgeService extends ChainBridgeService {
     throw new MethodNotSupportedError();
   }
 
-  private getContract<T>(contract: new (args: ClassOptions) => T, address: string): T {
-    const config: ClassOptions = {
+  private getContract<T>(contract: new (args: ContractClientOptions) => T, address: string, sender?: string): T {
+    const config: ContractClientOptions = {
+      publicKey: sender,
       contractId: address,
       networkPassphrase: this.params.sorobanNetworkPassphrase,
       rpcUrl: this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB),
