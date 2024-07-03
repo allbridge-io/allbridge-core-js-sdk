@@ -4,6 +4,7 @@ export const testnet: AllbridgeCoreSdkOptions = {
   coreApiUrl: "https://core-dev.a11bd.net",
   coreApiQueryParams: {},
   coreApiHeaders: {},
+  jupiterUrl: "",
   wormholeMessengerProgramId: "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5",
   solanaLookUpTable: "C3jAxHRTZjM2Bs7EqPir4nvrT8zKtpcW7RvGR9R2qKtN",
   sorobanNetworkPassphrase: "Test SDF Network ; September 2015",

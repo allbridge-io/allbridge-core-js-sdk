@@ -58,6 +58,7 @@ describe("SDK", () => {
     wormholeMessengerProgramId: "wormholeMessengerProgramId",
     solanaLookUpTable: "solanaLookUpTable",
     sorobanNetworkPassphrase: "sorobanNetworkPassphrase",
+    jupiterUrl: "",
     cctpParams: {
       cctpDomains: {},
       cctpTransmitterProgramId: "",

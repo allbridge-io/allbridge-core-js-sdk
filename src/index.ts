@@ -40,6 +40,10 @@ export interface AllbridgeCoreSdkOptions {
    * A set of headers to be added to all requests to the Core API.
    */
   coreApiHeaders?: Record<string, string>;
+  /**
+   * Jupiter v6 Swap Api
+   */
+  jupiterUrl: string;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;
