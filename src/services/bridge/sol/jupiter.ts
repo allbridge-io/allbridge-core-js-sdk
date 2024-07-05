@@ -6,9 +6,11 @@ import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils"
 
 export class JupiterService {
   connection: Connection;
+  jupiterUrl: string;
 
-  constructor(solanaRpcUrl: string) {
+  constructor(solanaRpcUrl: string, jupiterUrl: string) {
     this.connection = new Connection(solanaRpcUrl);
+    this.jupiterUrl = jupiterUrl.replace(/\/$/, ""); // trim last "/" if exist
   }
 
   async getJupiterSwapTx(
@@ -18,7 +20,7 @@ export class JupiterService {
   ): Promise<{ tx: VersionedTransaction }> {
     let quoteResponse: any;
     try {
-      quoteResponse = await axios.get(`https://quote-api.jup.ag/v6/quote?inputMint=${stableTokenAddress}
+      quoteResponse = await axios.get(`${this.jupiterUrl}/quote?inputMint=${stableTokenAddress}
 &outputMint=${NATIVE_MINT.toString()}
 &amount=${amount}
 &slippageBps=100
@@ -33,7 +35,7 @@ export class JupiterService {
     let transactionResponse: any;
     try {
       transactionResponse = await axios.post(
-        "https://quote-api.jup.ag/v6/swap",
+        `${this.jupiterUrl}/swap`,
         JSON.stringify({
           quoteResponse: quoteResponse.data,
           userPublicKey: userAddress,
