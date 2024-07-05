@@ -94,6 +94,7 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
+    "@stellar/stellar-sdk": "12.1.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.5",
     "@types/big.js": "^6.2.0",
@@ -104,7 +105,6 @@
     "erc-20-abi": "^1.0.0",
     "querystring": "^0.2.1",
     "randombytes": "^2.1.0",
-    "stellar-sdk": "11.3.0",
     "timed-cache": "^2.0.0",
     "tronweb": "^4.4.0",
     "web3": "1.9.0",

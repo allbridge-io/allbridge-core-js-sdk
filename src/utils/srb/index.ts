@@ -9,14 +9,14 @@ import {
   Transaction,
   TransactionBuilder,
   TransactionBuilder as StellarTransactionBuilder,
-} from "stellar-sdk";
-import { HorizonApi } from "stellar-sdk/lib/horizon";
+  contract,
+} from "@stellar/stellar-sdk";
 import { AllbridgeCoreSdkOptions, ChainSymbol } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
-import { ClassOptions } from "../../services/utils/srb/method-options";
 import { withExponentialBackoff } from "../utils";
-import BalanceLineAsset = HorizonApi.BalanceLineAsset;
+import ContractClientOptions = contract.ClientOptions;
+import BalanceLineAsset = Horizon.HorizonApi.BalanceLineAsset;
 
 /**
  * Contains usefully Soroban methods
@@ -34,13 +34,13 @@ export interface SrbUtils {
    * @param sender
    * @param tokenAddress
    */
-  getBalanceLine(sender: string, tokenAddress: string): Promise<HorizonApi.BalanceLineAsset | undefined>;
+  getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.HorizonApi.BalanceLineAsset | undefined>;
 
   /**
    * Submit tx
    * @param xdrTx
    */
-  submitTransactionStellar(xdrTx: string): Promise<HorizonApi.SubmitTransactionResponse>;
+  submitTransactionStellar(xdrTx: string): Promise<Horizon.HorizonApi.SubmitTransactionResponse>;
 
   /**
    * Simulate and check if Restore needed
@@ -100,7 +100,7 @@ export class DefaultSrbUtils implements SrbUtils {
       .toXDR();
   }
 
-  async getBalanceLine(sender: string, tokenAddress: string): Promise<HorizonApi.BalanceLineAsset | undefined> {
+  async getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.HorizonApi.BalanceLineAsset | undefined> {
     const tokenContract = this.getContract(TokenContract, tokenAddress);
     const tokenName = (await tokenContract.name()).result;
     const [symbol, srbTokenAddress] = tokenName.split(":");
@@ -117,7 +117,7 @@ export class DefaultSrbUtils implements SrbUtils {
     );
   }
 
-  async submitTransactionStellar(xdrTx: string): Promise<HorizonApi.SubmitTransactionResponse> {
+  async submitTransactionStellar(xdrTx: string): Promise<Horizon.HorizonApi.SubmitTransactionResponse> {
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const transaction = StellarTransactionBuilder.fromXDR(
       xdrTx,
@@ -161,8 +161,8 @@ export class DefaultSrbUtils implements SrbUtils {
     return getTransactionResponseAll[getTransactionResponseAll.length - 1];
   }
 
-  private getContract<T>(contract: new (args: ClassOptions) => T, address: string): T {
-    const config: ClassOptions = {
+  private getContract<T>(contract: new (args: ContractClientOptions) => T, address: string): T {
+    const config: ContractClientOptions = {
       contractId: address,
       networkPassphrase: this.params.sorobanNetworkPassphrase,
       rpcUrl: this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB),

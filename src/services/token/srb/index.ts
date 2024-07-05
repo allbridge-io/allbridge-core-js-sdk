@@ -1,5 +1,4 @@
-import { Horizon, NotFoundError } from "stellar-sdk";
-import { HorizonApi } from "stellar-sdk/lib/horizon";
+import { Horizon, NotFoundError } from "@stellar/stellar-sdk";
 import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../../index";
@@ -10,8 +9,8 @@ import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import { ChainTokenService } from "../models";
 
-import BalanceLineAsset = HorizonApi.BalanceLineAsset;
-import BalanceLineNative = HorizonApi.BalanceLineNative;
+import BalanceLineAsset = Horizon.HorizonApi.BalanceLineAsset;
+import BalanceLineNative = Horizon.HorizonApi.BalanceLineNative;
 
 export class SrbTokenService extends ChainTokenService {
   chainType: ChainType.SRB = ChainType.SRB;
