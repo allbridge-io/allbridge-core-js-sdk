@@ -14,6 +14,7 @@ export const testnet: AllbridgeCoreSdkOptions = {
     cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
     cctpDomains: { SPL: 0, ARB: 3, AMO: 7 },
   },
+  cachePoolInfoChainSec: 20,
 };
 
 /**

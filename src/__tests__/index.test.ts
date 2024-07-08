@@ -64,6 +64,7 @@ describe("SDK", () => {
       cctpTransmitterProgramId: "",
       cctpTokenMessengerMinter: "",
     },
+    cachePoolInfoChainSec: 20,
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
