@@ -29,7 +29,6 @@ import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { CctpBridge as CctpBridgeType, IDL as cctpBridgeIdl } from "../../models/sol/types/cctp_bridge";
-import { GasOracle as GasOracleType, IDL as gasOracleIdl } from "../../models/sol/types/gas_oracle";
 import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
@@ -73,6 +72,8 @@ export type CctpDomains = {
 };
 
 const COMPUTE_UNIT_LIMIT = 1000000;
+
+const JUP_ADD_INDEX = 1.1;
 
 export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
@@ -188,39 +189,23 @@ export class SolanaBridgeService extends ChainBridgeService {
     let jupTx;
     if (isJupiterForStableCoin) {
       try {
-        let amountToSwap = Big(solTxSendParams.fee);
-        if (solTxSendParams.extraGas) {
-          amountToSwap = amountToSwap.plus(solTxSendParams.extraGas);
-        }
-
-        solTxSendParams = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
-          params.sourceToken.decimals,
-          solTxSendParams
-        );
-
-        const { tx } = await this.jupiterService.getJupiterSwapTx(
-          params.fromAccountAddress,
-          params.sourceToken.tokenAddress,
-          amountToSwap.toFixed(0)
-        );
+        const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, true);
         jupTx = tx;
-        solTxSendParams.amount = Big(solTxSendParams.amount).minus(amountToSwap).toFixed(0);
-        if (Big(solTxSendParams.amount).lte(0)) {
-          throw new AmountNotEnoughError(
-            `Amount not enough to pay fee, ${convertIntAmountToFloat(
-              Big(solTxSendParams.amount).minus(1).neg(),
-              params.sourceToken.decimals
-            ).toFixed()} stables is missing`
-          );
-        }
+        solTxSendParams = { ...solTxSendParams, ...solTxSendUpdatedParams };
       } catch (e) {
-        if (e instanceof SdkRootError) {
-          throw e;
+        try {
+          const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, false);
+          jupTx = tx;
+          solTxSendParams = { ...solTxSendParams, ...solTxSendUpdatedParams };
+        } catch (e) {
+          if (e instanceof SdkRootError) {
+            throw e;
+          }
+          if (e instanceof Error && e.message) {
+            throw new JupiterError(`Some error occurred during creation Jupiter swap transaction. ${e.message}`);
+          }
+          throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
         }
-        if (e instanceof Error && e.message) {
-          throw new JupiterError(`Some error occurred during creation Jupiter swap transaction. ${e.message}`);
-        }
-        throw new JupiterError("Some error occurred during creation Jupiter swap transaction");
       }
     }
 
@@ -266,6 +251,67 @@ export class SolanaBridgeService extends ChainBridgeService {
     return swapAndBridgeTx;
   }
 
+  private async processJup(
+    solTxSendParams: SolTxSendParams,
+    params: SendParams,
+    exactOut: boolean
+  ): Promise<{
+    tx: VersionedTransaction;
+    solTxSendUpdatedParams: {
+      amount: string;
+      fee: string;
+      extraGas?: string;
+      gasFeePaymentMethod: FeePaymentMethod;
+    };
+  }> {
+    const { fee, extraGas, gasFeePaymentMethod } = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
+      params.sourceToken.decimals,
+      solTxSendParams
+    );
+
+    let amountToProcess = exactOut ? Big(fee) : Big(solTxSendParams.fee);
+    if (extraGas) {
+      amountToProcess = amountToProcess.plus(extraGas);
+    }
+    if (!exactOut) {
+      amountToProcess = amountToProcess.mul(JUP_ADD_INDEX);
+    }
+
+    const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
+      params.fromAccountAddress,
+      params.sourceToken.tokenAddress,
+      amountToProcess.toFixed(0),
+      exactOut
+    );
+
+    let newAmount: string;
+    if (exactOut) {
+      if (!amountIn) {
+        throw new JupiterError("Cannot get inAmount");
+      }
+      newAmount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+    } else {
+      newAmount = Big(solTxSendParams.amount).minus(amountToProcess).toFixed(0);
+    }
+    if (Big(newAmount).lte(0)) {
+      throw new AmountNotEnoughError(
+        `Amount not enough to pay fee, ${convertIntAmountToFloat(
+          Big(newAmount).minus(1).neg(),
+          params.sourceToken.decimals
+        ).toFixed()} stables is missing`
+      );
+    }
+    return {
+      tx: tx,
+      solTxSendUpdatedParams: {
+        amount: newAmount,
+        fee: fee,
+        extraGas: extraGas,
+        gasFeePaymentMethod: gasFeePaymentMethod,
+      },
+    };
+  }
+
   private addPoolAddress(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
     return {
       ...txSendParams,
@@ -276,7 +322,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   async convertStableCoinFeeAndExtraGasToNativeCurrency(
     tokenDecimals: number,
     solTxSendParams: SolTxSendParams
-  ): Promise<SolTxSendParams> {
+  ): Promise<{ fee: string; extraGas?: string; gasFeePaymentMethod: FeePaymentMethod }> {
     if (solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
       const sourceNativeTokenPrice = (
         await this.api.getReceiveTransactionCost({
@@ -285,19 +331,24 @@ export class SolanaBridgeService extends ChainBridgeService {
           messenger: solTxSendParams.messenger,
         })
       ).sourceNativeTokenPrice;
-      solTxSendParams.fee = Big(solTxSendParams.fee)
+      const fee = Big(solTxSendParams.fee)
         .div(sourceNativeTokenPrice)
         .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
         .toFixed(0);
+      let extraGas;
       if (solTxSendParams.extraGas) {
-        solTxSendParams.extraGas = Big(solTxSendParams.extraGas)
+        extraGas = Big(solTxSendParams.extraGas)
           .div(sourceNativeTokenPrice)
           .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
           .toFixed(0);
       }
-      solTxSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
+      return { fee, extraGas, gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY };
     }
-    return solTxSendParams;
+    return {
+      fee: solTxSendParams.fee,
+      extraGas: solTxSendParams.extraGas,
+      gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
+    };
   }
 
   private getExtraGasInstruction(
