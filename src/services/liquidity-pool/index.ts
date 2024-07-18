@@ -1,4 +1,5 @@
 import { Big } from "big.js";
+import Cache from "timed-cache";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
@@ -7,7 +8,7 @@ import { chainProperties, ChainSymbol, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
 import { AllbridgeCoreSdkOptions } from "../../index";
-import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
+import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
@@ -113,6 +114,7 @@ export interface LiquidityPoolService {
 
 export class DefaultLiquidityPoolService implements LiquidityPoolService {
   public rawTxBuilder: RawPoolTransactionBuilder;
+  private cache: Cache<PoolInfo>;
 
   constructor(
     private api: AllbridgeCoreClientPoolInfoCaching,
@@ -121,6 +123,8 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private tokenService: TokenService
   ) {
     this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
+    const ttl = params.cachePoolInfoChainSec > 0 ? params.cachePoolInfoChainSec * 1000 : 20 * 1000;
+    this.cache = new Cache<PoolInfo>({ defaultTtl: ttl });
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
@@ -190,15 +194,22 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 
   async getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<PoolInfo> {
-    const poolInfo = await getChainPoolService(
-      token.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
-    ).getPoolInfoFromChain(token);
-    this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
-    return poolInfo;
+    const poolKey: PoolKeyObject = { chainSymbol: token.chainSymbol, poolAddress: token.poolAddress };
+    const fromCache = this.cache.get(poolKey);
+    if (fromCache) {
+      return fromCache;
+    } else {
+      const poolInfo = await getChainPoolService(
+        token.chainSymbol,
+        this.api,
+        this.nodeRpcUrlsConfig,
+        this.params,
+        provider
+      ).getPoolInfoFromChain(token);
+      this.cache.put(poolKey, poolInfo);
+      this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
+      return poolInfo;
+    }
   }
 }
 

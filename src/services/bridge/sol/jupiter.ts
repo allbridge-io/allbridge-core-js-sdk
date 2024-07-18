@@ -16,13 +16,16 @@ export class JupiterService {
   async getJupiterSwapTx(
     userAddress: string,
     stableTokenAddress: string,
-    amount: string
-  ): Promise<{ tx: VersionedTransaction }> {
+    amount: string,
+    exactOut: boolean
+  ): Promise<{ tx: VersionedTransaction; amountIn?: string }> {
     let quoteResponse: any;
     try {
+      const swapMode = exactOut ? "ExactOut" : "ExactIn";
       quoteResponse = await axios.get(`${this.jupiterUrl}/quote?inputMint=${stableTokenAddress}
 &outputMint=${NATIVE_MINT.toString()}
 &amount=${amount}
+&swapMode=${swapMode}
 &slippageBps=100
 &onlyDirectRoutes=true`);
     } catch (err) {
@@ -32,16 +35,20 @@ export class JupiterService {
       throw new JupiterError("Cannot get route");
     }
 
+    let inAmount;
+    if (exactOut && quoteResponse?.data?.inAmount) {
+      inAmount = quoteResponse.data.inAmount;
+    } else if (exactOut) {
+      throw new JupiterError("Cannot get inAmount");
+    }
+
     let transactionResponse: any;
     try {
-      transactionResponse = await axios.post(
-        `${this.jupiterUrl}/swap`,
-        JSON.stringify({
-          quoteResponse: quoteResponse.data,
-          userPublicKey: userAddress,
-          wrapAndUnwrapSol: true,
-        })
-      );
+      transactionResponse = await axios.post(`${this.jupiterUrl}/swap`, {
+        quoteResponse: quoteResponse.data,
+        userPublicKey: userAddress,
+        wrapAndUnwrapSol: true,
+      });
     } catch (err) {
       if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
         throw new JupiterError(err.response.data.error);
@@ -57,7 +64,9 @@ export class JupiterService {
     }
 
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
-    return { tx: VersionedTransaction.deserialize(swapTransactionBuf) };
+    const tx = VersionedTransaction.deserialize(swapTransactionBuf);
+
+    return exactOut ? { tx, amountIn: inAmount } : { tx };
   }
 
   async amendJupiterWithSdkTx(

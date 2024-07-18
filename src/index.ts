@@ -54,6 +54,12 @@ export interface AllbridgeCoreSdkOptions {
    */
   tronJsonRpc?: string;
   cctpParams: CctpParams;
+  /**
+   * The number of seconds that pool information taken from the chain will be cached.
+   *
+   * @type {number}
+   */
+  cachePoolInfoChainSec: number;
 }
 
 /**
