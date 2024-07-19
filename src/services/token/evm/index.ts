@@ -4,7 +4,7 @@ import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
 import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction } from "../../models";

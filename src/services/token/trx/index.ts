@@ -1,6 +1,6 @@
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
 import { ChainType, GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";

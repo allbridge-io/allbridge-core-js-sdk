@@ -1,5 +1,5 @@
 import axios, { Axios } from "axios";
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
+import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
@@ -15,10 +15,10 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "./core-api.model";
-import { AllbridgeCoreClientParams } from "./index";
+import { AllbridgeCoreClientParams } from "./core-client-base";
 
 export interface TokenInfo {
-  chainDetailsMap: ChainDetailsMap;
+  chainDetailsMap: ChainDetailsMapWithFlags;
   poolInfoMap: PoolInfoMap;
 }
 
@@ -52,7 +52,7 @@ export class ApiClientImpl implements ApiClient {
   }
 
   async getTokenInfo(): Promise<TokenInfo> {
-    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
+    const { data } = await this.api.get<ChainDetailsResponse>("/token-info", { params: { filter: "all" } });
     return {
       chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
       poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),

@@ -1,5 +1,5 @@
 import { contract } from "@stellar/stellar-sdk";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType } from "../../../index";
 import {
   LiquidityPoolsParams,

@@ -1,4 +1,9 @@
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
+import {
+  ChainDetailsMapWithFlags,
+  PoolInfoMap,
+  PoolKeyObject,
+  TokenWithChainDetailsWithFlags,
+} from "../../tokens-info";
 import { ApiClient } from "./api-client";
 import {
   GasBalanceResponse,
@@ -15,9 +20,6 @@ export interface AllbridgeCoreClientParams {
 }
 
 export interface AllbridgeCoreClient {
-  getChainDetailsMap(): Promise<ChainDetailsMap>;
-  tokens(): Promise<TokenWithChainDetails[]>;
-
   getPendingInfo(): Promise<PendingInfoResponse>;
 
   getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse>;
@@ -27,14 +29,29 @@ export interface AllbridgeCoreClient {
   getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
 }
 
-export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
+export interface AllbridgeCoreClientWithTokens extends AllbridgeCoreClient {
+  getChainDetailsMap(): Promise<ChainDetailsMapWithFlags>;
+
+  tokens(): Promise<TokenWithChainDetailsWithFlags[]>;
+}
+
+export interface AllbridgeCoreClientWithPoolInfo extends AllbridgeCoreClientWithTokens {
+  getChainDetailsMapAndPoolInfoMap(): Promise<{
+    chainDetailsMap: ChainDetailsMapWithFlags;
+    poolInfoMap: PoolInfoMap;
+  }>;
+
+  getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
+}
+
+export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo {
   constructor(private apiClient: ApiClient) {}
 
-  async getChainDetailsMap(): Promise<ChainDetailsMap> {
+  async getChainDetailsMap(): Promise<ChainDetailsMapWithFlags> {
     return (await this.apiClient.getTokenInfo()).chainDetailsMap;
   }
 
-  async tokens(): Promise<TokenWithChainDetails[]> {
+  async tokens(): Promise<TokenWithChainDetailsWithFlags[]> {
     const map = await this.getChainDetailsMap();
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
   }
@@ -48,7 +65,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
   }
 
   async getChainDetailsMapAndPoolInfoMap(): Promise<{
-    chainDetailsMap: ChainDetailsMap;
+    chainDetailsMap: ChainDetailsMapWithFlags;
     poolInfoMap: PoolInfoMap;
   }> {
     return await this.apiClient.getTokenInfo();

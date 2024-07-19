@@ -1,7 +1,7 @@
 import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { TronPoolService } from "../../../../services/liquidity-pool/trx";
 import { TokenWithChainDetails } from "../../../../tokens-info";
 
@@ -23,7 +23,11 @@ describe("TronPool", () => {
     },
   };
 
-  const tronPool = new TronPoolService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient, LOCAL_NODE_URL);
+  const tronPool = new TronPoolService(
+    tronWebMock as typeof TronWeb,
+    api as AllbridgeCoreClientWithPoolInfo,
+    LOCAL_NODE_URL
+  );
 
   beforeAll(() => {
     disableNetConnect();
@@ -124,7 +128,7 @@ describe("TronPool", () => {
 
       const tronWeb = new TronWeb({ fullHost: LOCAL_NODE_URL });
 
-      const tronPool = new TronPoolService(tronWeb, api as AllbridgeCoreClient, LOCAL_NODE_URL);
+      const tronPool = new TronPoolService(tronWeb, api as AllbridgeCoreClientWithPoolInfo, LOCAL_NODE_URL);
 
       const userBalanceInfo = await tronPool.getUserBalanceInfo(ACCOUNT_ADDRESS, TOKEN_INFO);
 

@@ -1,5 +1,5 @@
 import { ChainType } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";
 import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalanceInfo } from "./pool.model";

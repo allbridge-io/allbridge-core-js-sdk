@@ -338,7 +338,7 @@ describe("SDK", () => {
 
     describe("Get tokens info", () => {
       beforeAll(() => {
-        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+        scope.get("/token-info?filter=all").reply(200, tokenInfoResponse).persist();
       });
 
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {

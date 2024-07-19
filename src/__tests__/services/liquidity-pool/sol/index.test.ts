@@ -1,5 +1,5 @@
 import * as nock from "nock";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { SolanaPoolService } from "../../../../services/liquidity-pool/sol";
 import { RawTransaction } from "../../../../services/models";
 import { TokenWithChainDetails } from "../../../../tokens-info";
@@ -18,7 +18,7 @@ describe.skip("SolanaPool", () => {
   let api: any;
   const solanaRpcUrl = "https://api.devnet.solana.com";
 
-  const solanaPool = new SolanaPoolService(solanaRpcUrl, api as AllbridgeCoreClient);
+  const solanaPool = new SolanaPoolService(solanaRpcUrl, api as AllbridgeCoreClientWithPoolInfo);
 
   beforeAll(() => {
     nock.disableNetConnect();

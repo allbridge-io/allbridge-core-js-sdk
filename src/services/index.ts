@@ -1,6 +1,5 @@
 import { Big } from "big.js";
 import { Chains } from "../chains";
-import { AllbridgeCoreClientImpl } from "../client/core-api";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
 import {
@@ -11,6 +10,8 @@ import {
   PendingInfoDTO,
   TransferStatusResponse,
 } from "../client/core-api/core-api.model";
+import { AllbridgeCoreClientImpl } from "../client/core-api/core-client-base";
+import { AllbridgeCoreClientFiltered, AllbridgeCoreClientFilteredImpl } from "../client/core-api/core-client-filtered";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
 import { AllbridgeCoreSdkOptions, NodeRpcUrls, SdkError } from "../index";
@@ -70,7 +71,7 @@ export class NodeRpcUrlsConfig {
 }
 
 export class AllbridgeCoreSdkService {
-  private readonly api: AllbridgeCoreClientPoolInfoCaching;
+  private readonly api: AllbridgeCoreClientFiltered;
 
   private readonly tokenService: TokenService;
 
@@ -84,23 +85,24 @@ export class AllbridgeCoreSdkService {
     const apiClient = new ApiClientImpl(params);
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);
-    this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
+    const coreClientPoolInfoCaching = new AllbridgeCoreClientPoolInfoCaching(coreClient);
+    this.api = new AllbridgeCoreClientFilteredImpl(coreClientPoolInfoCaching, params);
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
     this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
   }
 
-  async chainDetailsMap(): Promise<ChainDetailsMap> {
-    return this.api.getChainDetailsMap();
+  async chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap> {
+    return this.api.getChainDetailsMap(type);
   }
 
-  async tokens(): Promise<TokenWithChainDetails[]> {
-    return this.api.tokens();
+  async tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
+    return this.api.tokens(type);
   }
 
-  async tokensByChain(chainSymbol: string): Promise<TokenWithChainDetails[]> {
-    const map = await this.api.getChainDetailsMap();
+  async tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap(type);
     const chainDetails = map[chainSymbol];
     if (!chainDetails) {
       return [];

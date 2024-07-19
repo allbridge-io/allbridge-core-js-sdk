@@ -1,7 +1,7 @@
 import { abortPendingRequests, cleanAll, disableNetConnect } from "nock";
 import Web3 from "web3";
 import { ChainSymbol } from "../../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { EvmPoolService } from "../../../../services/liquidity-pool/evm";
 import { TokenWithChainDetails } from "../../../../tokens-info";
 
@@ -12,7 +12,7 @@ const TOKEN_INFO: TokenWithChainDetails = { poolAddress: POOL_ADDRESS };
 const LOCAL_NODE_URL = "https://goerli.infura.io/";
 describe("EvmPool", () => {
   // @ts-expect-error enough
-  const api: AllbridgeCoreClient = {};
+  const api: AllbridgeCoreClientWithPoolInfo = {};
 
   const evmPool = new EvmPoolService(new Web3(LOCAL_NODE_URL), api);
 

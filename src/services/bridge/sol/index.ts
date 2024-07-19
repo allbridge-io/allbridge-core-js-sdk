@@ -13,8 +13,8 @@ import {
 } from "@solana/web3.js";
 import { Big } from "big.js";
 import { Chains } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import {
   AmountNotEnoughError,
   CCTPDoesNotSupportedError,

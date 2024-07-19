@@ -1,10 +1,10 @@
 import { Big, BigSource } from "big.js";
-import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
+import { AllbridgeCoreClientPoolsExt } from "../client/core-api/core-client-pool-info-caching";
 import { ArgumentInvalidDecimalsError, InvalidAmountError, TimeoutError } from "../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../tokens-info";
 
 export async function getPoolInfoByToken(
-  api: AllbridgeCoreClientPoolInfoCaching,
+  api: AllbridgeCoreClientPoolsExt,
   sourceChainToken: TokenWithChainDetails
 ): Promise<PoolInfo> {
   return await api.getPoolInfoByKey({

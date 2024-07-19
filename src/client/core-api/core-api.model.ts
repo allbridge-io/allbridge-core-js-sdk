@@ -32,6 +32,10 @@ export interface TokenDTO {
   apr7d: string;
   apr30d: string;
   lpRate: string;
+  flags: {
+    swap: boolean;
+    pool: boolean;
+  };
 }
 
 export interface PoolInfoDTO {

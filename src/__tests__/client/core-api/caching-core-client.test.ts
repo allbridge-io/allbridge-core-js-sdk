@@ -1,5 +1,5 @@
-import { AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../../client/core-api/core-client-pool-info-caching";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap } from "../../../tokens-info";
 import poolGRL from "../../data/pool-info/pool-info-GRL.json";

@@ -126,24 +126,36 @@ export class AllbridgeCoreSdk {
 
   /**
    * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
+   *
+   * @param type - A string value which specifies ChainDetailsMap to retrieve.
+   *               Can be either 'swap' for send or 'pool' for liquidity pools setup.
+   *               Defaults to 'swap'.
    */
-  async chainDetailsMap(): Promise<ChainDetailsMap> {
-    return this.service.chainDetailsMap();
+  async chainDetailsMap(type: "swap" | "pool" = "swap"): Promise<ChainDetailsMap> {
+    return this.service.chainDetailsMap(type);
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens}.
+   *
+   * @param type - A string value which specifies a set of tokens to retrieve.
+   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
+   *               Defaults to 'swap'.
+   * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
    */
-  async tokens(): Promise<TokenWithChainDetails[]> {
-    return this.service.tokens();
+  async tokens(type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
+    return this.service.tokens(type);
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param type - A string value which specifies a set of tokens to retrieve.
+   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
+   *               Defaults to 'swap'.
    */
-  async tokensByChain(chainSymbol: string): Promise<TokenWithChainDetails[]> {
-    return this.service.tokensByChain(chainSymbol);
+  async tokensByChain(chainSymbol: string, type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
+    return this.service.tokensByChain(chainSymbol, type);
   }
 
   /**

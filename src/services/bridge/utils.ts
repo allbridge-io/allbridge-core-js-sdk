@@ -5,8 +5,8 @@ import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
 import { Chains } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import {
   AmountNotEnoughError,
   CCTPDoesNotSupportedError,

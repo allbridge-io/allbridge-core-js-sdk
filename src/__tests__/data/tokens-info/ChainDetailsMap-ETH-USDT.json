@@ -59,7 +59,11 @@
           }
         },
         "confirmations": 80,
-        "chainName": "Ethereum"
+        "chainName": "Ethereum",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       }
     ]
   }

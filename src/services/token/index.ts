@@ -3,7 +3,7 @@ import { Big } from "big.js";
 import TronWeb from "tronweb";
 import Web3 from "web3";
 import { Chains } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";

@@ -3,13 +3,13 @@
 import bs58 from "bs58";
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { ChainType } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClientWithPoolInfo, AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
 import {
   AmountFormat,
   ChainSymbol,
@@ -29,7 +29,7 @@ import { initChainsWithTestnet } from "../../mock/utils";
 initChainsWithTestnet();
 
 describe("ChainBridgeService Utils", () => {
-  let api: AllbridgeCoreClient;
+  let api: AllbridgeCoreClientWithPoolInfo;
   let scope: nock.Scope;
 
   beforeEach(() => {
@@ -40,9 +40,10 @@ describe("ChainBridgeService Utils", () => {
   const exchangeRate = "0.12550590438537169016";
   const sourceNativeTokenPrice = "241.26";
   const receiveFeeResponse: ReceiveTransactionCostResponse = { fee, exchangeRate, sourceNativeTokenPrice };
+
   describe("prepareTxSendParams()", () => {
     beforeEach(() => {
-      scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
+      scope = nock("http://localhost").get("/token-info?filter=all").reply(200, tokenInfoResponse).persist();
     });
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {

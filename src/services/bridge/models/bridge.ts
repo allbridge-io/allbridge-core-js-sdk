@@ -1,5 +1,5 @@
 import { ChainType } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SendParams, SwapParams } from "./bridge.model";
 

@@ -5,8 +5,8 @@ import TronWeb from "tronweb";
 import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
-import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
+import { AllbridgeCoreClientFiltered } from "../../client/core-api/core-client-filtered";
 import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
@@ -117,7 +117,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   private cache: Cache<PoolInfo>;
 
   constructor(
-    private api: AllbridgeCoreClientPoolInfoCaching,
+    private api: AllbridgeCoreClientFiltered,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService

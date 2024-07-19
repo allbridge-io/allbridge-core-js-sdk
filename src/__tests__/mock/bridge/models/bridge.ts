@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
 import { ChainType } from "../../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { AllbridgeCoreClient, AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import {
   ApproveParams,
   ChainBridgeService,
   GetAllowanceParamsDto,
   GetTokenBalanceParams,
   SendParams,
+  SwapParams,
   TxSendParams,
 } from "../../../../services/bridge/models";
 import { SolanaBridgeParams } from "../../../../services/bridge/sol";
@@ -43,5 +44,13 @@ export class TestBridge extends ChainBridgeService {
   sendTx(params: TxSendParams): Promise<TransactionResponse> {
     // @ts-expect-error
     return Promise.resolve(undefined);
+  }
+
+  buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
+    return Promise.resolve("");
+  }
+
+  send(params: SendParams): Promise<TransactionResponse> {
+    return Promise.resolve({ txId: "txId" });
   }
 }

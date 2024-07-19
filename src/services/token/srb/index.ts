@@ -1,7 +1,7 @@
 import { Horizon, NotFoundError } from "@stellar/stellar-sdk";
 import { Chains } from "../../../chains";
 import { ChainSymbol } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType, SdkError } from "../../../index";
 import { GetTokenBalanceParams, MethodNotSupportedError, TransactionResponse } from "../../../models";
 import { convertFloatAmountToInt } from "../../../utils/calculation";

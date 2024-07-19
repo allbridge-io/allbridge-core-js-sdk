@@ -10,6 +10,8 @@ import { Messenger } from "../client/core-api/core-api.model";
  */
 export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 
+export type ChainDetailsMapWithFlags = Record<string, ChainDetailsWithTokensWithFlags>;
+
 /**
  * Contains some blockchain details
  */
@@ -44,6 +46,16 @@ export interface ChainDetailsWithTokens extends ChainDetails {
    * Tokens
    */
   tokens: TokenWithChainDetails[];
+}
+
+/**
+ * Contains tokens list
+ */
+export interface ChainDetailsWithTokensWithFlags extends ChainDetails {
+  /**
+   * Tokens
+   */
+  tokens: TokenWithChainDetailsWithFlags[];
 }
 
 /**
@@ -115,6 +127,10 @@ export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name">
    * Blockchain network name
    */
   chainName: string;
+}
+
+export interface TokenWithChainDetailsWithFlags extends TokenWithChainDetails {
+  flags: { swap: boolean; pool: boolean };
 }
 
 /**

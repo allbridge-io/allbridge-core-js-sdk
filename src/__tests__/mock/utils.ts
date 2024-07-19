@@ -50,7 +50,7 @@ export function mockTokenInfoEndpoint(
       ...infoResponse,
     };
   }
-  scope.get("/token-info").reply(200, resultInfo).persist();
+  scope.get("/token-info?filter=all").reply(200, resultInfo).persist();
 }
 
 export function rpcReply(result: any): (url: string, body: any) => Record<string, any> {

@@ -1,7 +1,7 @@
 import { Address, contract } from "@stellar/stellar-sdk";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains/chain.enums";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainType } from "../../../index";
 import { FeePaymentMethod } from "../../../models";

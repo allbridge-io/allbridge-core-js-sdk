@@ -5,7 +5,7 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import {
   ChainSymbol,
   ChainType,

@@ -2,11 +2,12 @@ import { Chains } from "../../chains";
 import {
   ChainDetails,
   ChainDetailsMap,
-  ChainDetailsWithTokens,
+  ChainDetailsMapWithFlags,
+  ChainDetailsWithTokensWithFlags,
   MessengerTransferTime,
   PoolInfoMap,
   PoolKeyObject,
-  TokenWithChainDetails,
+  TokenWithChainDetailsWithFlags,
   TransferTime,
 } from "../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../utils/calculation";
@@ -21,8 +22,8 @@ import {
   TransferTimeDTO,
 } from "./core-api.model";
 
-export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsResponse): ChainDetailsMap {
-  return Object.entries(response).reduce<ChainDetailsMap>((map, entry) => {
+export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsResponse): ChainDetailsMapWithFlags {
+  return Object.entries(response).reduce<ChainDetailsMapWithFlags>((map, entry) => {
     const chainSymbol = entry[0];
     const chainDetailsDTO = entry[1];
     const chainDetails = mapChainDetailsFromDto(chainSymbol, chainDetailsDTO);
@@ -49,7 +50,7 @@ export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsRespo
   return poolInfoMap;
 }
 
-function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetails {
+function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetailsWithFlags {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
   const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
@@ -89,7 +90,7 @@ function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): Messeng
   }, {});
 }
 
-function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokens | null {
+function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokensWithFlags | null {
   const basicChainProperties = Chains.getChainsProperties()[chainSymbol];
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
