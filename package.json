@@ -94,7 +94,7 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
-    "@stellar/stellar-sdk": "12.1.0",
+    "@stellar/stellar-sdk": "12.2.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.5",
     "@types/big.js": "^6.2.0",

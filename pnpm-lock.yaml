@@ -15,8 +15,8 @@ dependencies:
     specifier: ^1.78.5
     version: 1.78.5
   '@stellar/stellar-sdk':
-    specifier: 12.1.0
-    version: 12.1.0
+    specifier: 12.2.0
+    version: 12.2.0
   '@types/big.js':
     specifier: ^6.2.0
     version: 6.2.0
@@ -2211,14 +2211,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@stellar/js-xdr@3.1.1:
-    resolution: {integrity: sha512-3gnPjAz78htgqsNEDkEsKHKosV2BF2iZkoHCNxpmZwUxiPsw+2VaXMed8RRMe0rGk3d5GZe7RrSba8zV80J3Ag==}
+  /@stellar/js-xdr@3.1.2:
+    resolution: {integrity: sha512-VVolPL5goVEIsvuGqDc5uiKxV03lzfWdvYg1KikvwheDmTBO68CKDji3bAZ/kppZrx5iTA8z3Ld5yuytcvhvOQ==}
     dev: false
 
-  /@stellar/stellar-base@12.0.1:
-    resolution: {integrity: sha512-g6c27MNsDgEdUmoNQJn7zCWoCY50WHt0OIIOq3PhWaJRtUaT++qs1Jpb8+1bny2GmhtfRGOfPUFSyQBuHT9Mvg==}
+  /@stellar/stellar-base@12.1.0:
+    resolution: {integrity: sha512-pWwn+XWP5NotmIteZNuJzHeNn9DYSqH3lsYbtFUoSYy1QegzZdi9D8dK6fJ2fpBAnf/rcDjHgHOw3gtHaQFVbg==}
     dependencies:
-      '@stellar/js-xdr': 3.1.1
+      '@stellar/js-xdr': 3.1.2
       base32.js: 0.1.0
       bignumber.js: 9.1.2
       buffer: 6.0.3
@@ -2228,10 +2228,10 @@ packages:
       sodium-native: 4.1.1
     dev: false
 
-  /@stellar/stellar-sdk@12.1.0:
-    resolution: {integrity: sha512-Va0hu9SaPezmMbO5eMwL5D15Wrx1AGWRtxayUDRWV2Fr3ynY58mvCZS1vsgNQ4kE8MZe3nBVKv6T9Kzqwgx1PQ==}
+  /@stellar/stellar-sdk@12.2.0:
+    resolution: {integrity: sha512-Wy5sDOqb5JvAC76f4sQIV6Pe3JNyZb0PuyVNjwt3/uWsjtxRkFk6s2yTHTefBLWoR+mKxDjO7QfzhycF1v8FXQ==}
     dependencies:
-      '@stellar/stellar-base': 12.0.1
+      '@stellar/stellar-base': 12.1.0
       axios: 1.7.2
       bignumber.js: 9.1.2
       eventsource: 2.0.2
