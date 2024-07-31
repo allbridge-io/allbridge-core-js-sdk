@@ -1,4 +1,4 @@
-import { ChainType } from "./index";
+import { ChainType } from "./chain.enums";
 
 /**
  * Contains blockchain's basic information

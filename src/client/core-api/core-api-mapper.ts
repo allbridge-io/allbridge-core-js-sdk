@@ -1,4 +1,4 @@
-import { chainProperties } from "../../chains";
+import { Chains } from "../../chains";
 import {
   ChainDetails,
   ChainDetailsMap,
@@ -90,7 +90,7 @@ function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): Messeng
 }
 
 function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokens | null {
-  const basicChainProperties = chainProperties[chainSymbol];
+  const basicChainProperties = Chains.getChainsProperties()[chainSymbol];
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
     return null;

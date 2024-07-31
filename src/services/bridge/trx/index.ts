@@ -1,7 +1,7 @@
 import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import { ChainType } from "../../../chains";
+import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";

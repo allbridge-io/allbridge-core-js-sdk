@@ -1,6 +1,6 @@
 import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
-import { ChainType } from "../../../chains";
+import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";

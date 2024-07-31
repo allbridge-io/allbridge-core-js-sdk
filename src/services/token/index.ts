@@ -2,9 +2,9 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
-import { ChainDecimalsByType, ChainType, getChainProperty } from "../../chains";
+import { Chains } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
@@ -105,13 +105,13 @@ export class DefaultTokenService implements TokenService {
       [AmountFormat.INT]: tokenBalance,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         tokenBalance,
-        ChainDecimalsByType[getChainProperty(params.chainSymbol).chainType]
+        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType)
       ).toFixed(),
     };
   }
 
   private getChainTokenService(chainSymbol: string, ownerAddress: string, provider?: Provider): ChainTokenService {
-    switch (getChainProperty(chainSymbol).chainType) {
+    switch (Chains.getChainProperty(chainSymbol).chainType) {
       case ChainType.EVM: {
         if (provider) {
           return new EvmTokenService(provider as unknown as Web3, this.api);

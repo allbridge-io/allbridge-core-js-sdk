@@ -1,4 +1,5 @@
 import { Big } from "big.js";
+import { Chains } from "../chains";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
@@ -79,6 +80,7 @@ export class AllbridgeCoreSdkService {
   pool: LiquidityPoolService;
 
   constructor(nodeRpcUrlsConfig: NodeRpcUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
+    Chains.addChainsProperties(params.additionalChainsProperties);
     const apiClient = new ApiClientImpl(params);
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);

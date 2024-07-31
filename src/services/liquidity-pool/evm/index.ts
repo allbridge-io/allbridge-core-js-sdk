@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
-import { ChainType } from "../../../chains";
+import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";

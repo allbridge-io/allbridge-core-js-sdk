@@ -3,7 +3,7 @@ import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
+import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";

@@ -11,11 +11,12 @@ import {
   TransactionBuilder as StellarTransactionBuilder,
   contract,
 } from "@stellar/stellar-sdk";
-import { ChainSymbol } from "../../chains";
+import { ChainSymbol } from "../../chains/chain.enums";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
 import { withExponentialBackoff } from "../utils";
+
 import ContractClientOptions = contract.ClientOptions;
 import BalanceLineAsset = Horizon.HorizonApi.BalanceLineAsset;
 

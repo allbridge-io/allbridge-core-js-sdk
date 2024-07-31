@@ -1,4 +1,5 @@
 import { BigSource } from "big.js";
+import { BasicChainProperties } from "./chains/models";
 import { mainnet } from "./configs";
 import {
   AmountFormat,
@@ -59,6 +60,12 @@ export interface AllbridgeCoreSdkOptions {
    * @type {number}
    */
   cachePoolInfoChainSec: number;
+
+  /**
+   * @Internal
+   * Optional additional properties to merge with the default properties.
+   */
+  additionalChainsProperties?: Record<string, BasicChainProperties>;
 }
 
 /**

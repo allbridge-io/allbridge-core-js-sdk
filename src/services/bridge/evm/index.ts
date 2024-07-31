@@ -5,9 +5,16 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, Messenger, SdkError, SwapParams, TransactionResponse } from "../../../models";
+import {
+  ChainSymbol,
+  ChainType,
+  FeePaymentMethod,
+  Messenger,
+  SdkError,
+  SwapParams,
+  TransactionResponse,
+} from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import bridgeAbi from "../../models/abi/Bridge.json";

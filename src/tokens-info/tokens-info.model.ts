@@ -1,4 +1,4 @@
-import { BasicChainProperties } from "../chains";
+import { BasicChainProperties } from "../chains/models";
 import { Messenger } from "../client/core-api/core-api.model";
 
 /**

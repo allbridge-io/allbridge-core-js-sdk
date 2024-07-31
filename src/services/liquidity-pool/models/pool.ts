@@ -1,4 +1,4 @@
-import { ChainType } from "../../../chains";
+import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { RawTransaction } from "../../models";

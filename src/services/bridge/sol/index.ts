@@ -12,7 +12,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { Big } from "big.js";
-import { ChainDecimalsByType, ChainType } from "../../../chains";
+import { Chains } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import {
@@ -23,7 +23,7 @@ import {
   SdkError,
   SdkRootError,
 } from "../../../exceptions";
-import { FeePaymentMethod, SwapParams, TxFeeParams } from "../../../models";
+import { ChainType, FeePaymentMethod, SwapParams, TxFeeParams } from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
@@ -338,13 +338,13 @@ export class SolanaBridgeService extends ChainBridgeService {
       ).sourceNativeTokenPrice;
       const fee = Big(solTxSendParams.fee)
         .div(sourceNativeTokenPrice)
-        .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
+        .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - tokenDecimals))
         .toFixed(0);
       let extraGas;
       if (solTxSendParams.extraGas) {
         extraGas = Big(solTxSendParams.extraGas)
           .div(sourceNativeTokenPrice)
-          .mul(Big(10).pow(ChainDecimalsByType[ChainType.SOLANA] - tokenDecimals))
+          .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - tokenDecimals))
           .toFixed(0);
       }
       return { fee, extraGas, gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY };

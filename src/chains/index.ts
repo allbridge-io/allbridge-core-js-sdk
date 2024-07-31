@@ -1,97 +1,18 @@
 import { SdkError } from "../exceptions";
+import { ChainSymbol, ChainType } from "./chain.enums";
 import { BasicChainProperties } from "./models";
-
-export * from "./models";
-
-export enum ChainSymbol {
-  /**
-   * The BNB Smart Chain main network.
-   */
-  BSC = "BSC",
-
-  /**
-   * The Ethereum main network.
-   */
-  ETH = "ETH",
-
-  /**
-   * The Base main network.
-   */
-  BAS = "BAS",
-
-  /**
-   * The Solana network.
-   */
-  SOL = "SOL",
-
-  /**
-   * The TRON network.
-   */
-  TRX = "TRX",
-
-  /**
-   * The Polygon network.
-   */
-  POL = "POL",
-
-  /**
-   * The Arbitrum network.
-   */
-  ARB = "ARB",
-
-  /**
-   * The Celo network.
-   */
-  CEL = "CEL",
-
-  /**
-   * The Avalanche main network.
-   */
-  AVA = "AVA",
-
-  /**
-   * The Soroban network.
-   */
-  SRB = "SRB",
-
-  /**
-   * The Stellar network.
-   */
-  STLR = "STLR",
-
-  /**
-   * The OP Mainnet network.
-   */
-  OPT = "OPT",
-}
-
-export enum ChainType {
-  EVM = "EVM",
-  SOLANA = "SOLANA",
-  TRX = "TRX",
-  SRB = "SRB",
-}
 
 /**
  * Native gas tokens decimals by ChainType
  */
-export const ChainDecimalsByType: Record<ChainType, number> = {
+const chainDecimalsByType: Record<ChainType, number> = {
   EVM: 18,
   SOLANA: 9,
   TRX: 6,
   SRB: 7,
 };
 
-export function getChainProperty(chainSymbol: string): BasicChainProperties {
-  return (
-    chainProperties[chainSymbol] ??
-    (() => {
-      throw new SdkError(`Cannot find chain properties for ${chainSymbol}`);
-    })()
-  );
-}
-
-export const chainProperties: Record<string, BasicChainProperties> = {
+const defaultProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.BSC]: {
     chainSymbol: ChainSymbol.BSC,
     chainId: "0x38",
@@ -161,3 +82,29 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainType: ChainType.SRB,
   },
 };
+
+export const Chains = (() => {
+  let chainProperties: Record<string, BasicChainProperties> = { ...defaultProperties };
+
+  return {
+    addChainsProperties(additionalProperties?: Record<string, BasicChainProperties>) {
+      chainProperties = { ...chainProperties, ...additionalProperties };
+    },
+
+    getChainProperty(chainSymbol: string): BasicChainProperties {
+      const property = chainProperties[chainSymbol];
+      if (!property) {
+        throw new SdkError(`Cannot find chain properties for ${chainSymbol}`);
+      }
+      return property;
+    },
+
+    getChainsProperties(): Record<string, BasicChainProperties> {
+      return chainProperties;
+    },
+
+    getChainDecimalsByType(chainType: ChainType): number {
+      return chainDecimalsByType[chainType];
+    },
+  };
+})();

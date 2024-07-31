@@ -4,10 +4,10 @@ import Cache from "timed-cache";
 import TronWeb from "tronweb";
 import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
-import { ChainType, getChainProperty } from "../../chains";
+import { Chains } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
@@ -220,7 +220,7 @@ export function getChainPoolService(
   params: AllbridgeCoreSdkOptions,
   provider?: Provider
 ): ChainPoolService {
-  switch (getChainProperty(chainSymbol).chainType) {
+  switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
         return new EvmPoolService(provider as unknown as Web3, api);
