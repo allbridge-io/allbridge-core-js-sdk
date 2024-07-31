@@ -12,7 +12,7 @@ import {
 } from "../client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
-import { AllbridgeCoreSdkOptions, NodeRpcUrls } from "../index";
+import { AllbridgeCoreSdkOptions, NodeRpcUrls, SdkError } from "../index";
 import {
   AmountFormat,
   AmountFormatted,
@@ -99,7 +99,11 @@ export class AllbridgeCoreSdkService {
 
   async tokensByChain(chainSymbol: string): Promise<TokenWithChainDetails[]> {
     const map = await this.api.getChainDetailsMap();
-    return map[chainSymbol].tokens ?? [];
+    const chainDetails = map[chainSymbol];
+    if (!chainDetails) {
+      return [];
+    }
+    return chainDetails.tokens;
   }
 
   async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
@@ -149,9 +153,11 @@ export class AllbridgeCoreSdkService {
     let pendingInfoDTO: PendingInfoDTO | undefined;
     const pendingInfo = await this.api.getPendingInfo();
     for (const tokenAddress in pendingInfo[destToken.chainSymbol]) {
-      if (tokenAddress.toLowerCase() === destToken.tokenAddress.toLowerCase()) {
-        pendingInfoDTO = pendingInfo[destToken.chainSymbol][tokenAddress];
+      const info = pendingInfo[destToken.chainSymbol];
+      if (!info) {
+        throw new SdkError("Cannot find pending info for " + destToken.chainSymbol);
       }
+      pendingInfoDTO = info[tokenAddress];
     }
     if (pendingInfoDTO) {
       const destPoolAfterPending = getSwapFromVUsdPoolInfo(pendingInfoDTO.totalSentAmount, destPoolInfo);

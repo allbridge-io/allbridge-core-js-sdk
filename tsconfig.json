@@ -16,6 +16,8 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "resolveJsonModule": true,
-    "allowJs": true
+    "allowJs": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true
   }
 }

@@ -1,7 +1,7 @@
 import { NATIVE_MINT } from "@solana/spl-token";
 import { Connection, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import axios, { AxiosError } from "axios";
-import { JupiterError } from "../../../exceptions";
+import { JupiterError, SdkError } from "../../../exceptions";
 import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
 
 export class JupiterService {
@@ -91,7 +91,11 @@ export class JupiterService {
       transaction.message = message.compileToV0Message(addressLookupTableAccounts);
 
       if (sdkTx.message.header.numRequiredSignatures === 2 && transaction.signatures.length === 1) {
-        transaction.signatures.push(sdkTx.signatures[0]);
+        const signature = sdkTx.signatures[0];
+        if (!signature) {
+          throw new SdkError("Signature is undefined");
+        }
+        transaction.signatures.push(signature);
       }
       return transaction;
     } catch (e) {

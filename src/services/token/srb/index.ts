@@ -1,5 +1,5 @@
 import { Horizon, NotFoundError } from "@stellar/stellar-sdk";
-import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../../chains";
+import { ChainDecimalsByType, ChainSymbol, ChainType, getChainProperty } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../../index";
 import { GetTokenBalanceParams, MethodNotSupportedError, TransactionResponse } from "../../../models";
@@ -54,7 +54,7 @@ export class SrbTokenService extends ChainTokenService {
     if (balanceInfo?.balance) {
       return convertFloatAmountToInt(
         balanceInfo.balance,
-        ChainDecimalsByType[chainProperties[params.token.chainSymbol].chainType]
+        ChainDecimalsByType[getChainProperty(params.token.chainSymbol).chainType]
       ).toFixed();
     }
     return "0";
@@ -69,7 +69,7 @@ export class SrbTokenService extends ChainTokenService {
     if (nativeBalance?.balance) {
       return convertFloatAmountToInt(
         nativeBalance.balance,
-        ChainDecimalsByType[chainProperties[params.chainSymbol].chainType]
+        ChainDecimalsByType[getChainProperty(params.chainSymbol).chainType]
       ).toFixed();
     }
     return "0";

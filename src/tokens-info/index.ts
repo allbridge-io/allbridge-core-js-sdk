@@ -1,3 +1,4 @@
+import { SdkError } from "../exceptions";
 import { ChainDetailsMap, TokenWithChainDetails } from "./tokens-info.model";
 
 export * from "./tokens-info.model";
@@ -34,6 +35,10 @@ export class TokensInfo {
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    */
   tokensByChain(chainSymbol: string): TokenWithChainDetails[] {
-    return this._map[chainSymbol].tokens;
+    const chainDetails = this._map[chainSymbol];
+    if (!chainDetails) {
+      throw new SdkError(`Chain details not found for chain symbol: ${chainSymbol}`);
+    }
+    return chainDetails.tokens;
   }
 }

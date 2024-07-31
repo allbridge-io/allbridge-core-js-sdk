@@ -21,8 +21,11 @@ export function validateAmountGtZero(amount: BigSource) {
 
 export function validateAmountDecimals(argName: string, amountFloat: number | string | Big, decimalRequired: number) {
   const amount = Big(amountFloat).toFixed();
-  if (amount.split(".").length == 2 && amount.split(".")[1].length > decimalRequired) {
-    throw new ArgumentInvalidDecimalsError(argName, amount.split(".")[1].length, decimalRequired);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [integerPart, fractionalPart] = amount.split(".");
+
+  if (fractionalPart && fractionalPart.length > decimalRequired) {
+    throw new ArgumentInvalidDecimalsError(argName, fractionalPart.length, decimalRequired);
   }
 }
 
@@ -68,14 +71,18 @@ export async function withExponentialBackoff<T>(
   const attempts: T[] = [];
 
   let count = 0;
-  attempts.push(await fn());
-  if (!keepWaitingIf(attempts[attempts.length - 1])) return attempts;
+  const initialAttempt = await fn();
+  attempts.push(initialAttempt);
+  if (!keepWaitingIf(initialAttempt)) return attempts;
 
   const waitUntil = new Date(Date.now() + secondsToWait * 1000).valueOf();
   let waitTime = 1000;
   let totalWaitTime = waitTime;
 
-  while (Date.now() < waitUntil && keepWaitingIf(attempts[attempts.length - 1])) {
+  while (Date.now() < waitUntil) {
+    const lastAttempt = attempts[attempts.length - 1];
+    if (lastAttempt === undefined || !keepWaitingIf(lastAttempt)) break;
+
     count++;
     // Wait a beat
     if (verbose) {
@@ -96,8 +103,9 @@ export async function withExponentialBackoff<T>(
     }
     totalWaitTime = waitTime + totalWaitTime;
     // Try again
-    attempts.push(await fn(attempts[attempts.length - 1]));
-    if (verbose && keepWaitingIf(attempts[attempts.length - 1])) {
+    const nextAttempt = await fn(lastAttempt);
+    attempts.push(nextAttempt);
+    if (verbose && keepWaitingIf(nextAttempt)) {
       console.info(
         `${count}. Called ${fn.name}; ${attempts.length} prev attempts. Most recent: ${JSON.stringify(
           attempts[attempts.length - 1],

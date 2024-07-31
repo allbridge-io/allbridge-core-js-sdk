@@ -12,7 +12,7 @@ import {
   contract,
 } from "@stellar/stellar-sdk";
 import { ChainSymbol } from "../../chains";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
 import { withExponentialBackoff } from "../utils";
@@ -84,7 +84,9 @@ export class DefaultSrbUtils implements SrbUtils {
     const tokenContract = this.getContract(TokenContract, params.tokenAddress);
     const tokenName = (await tokenContract.name()).result;
     const [symbol, srbTokenAddress] = tokenName.split(":");
-
+    if (symbol === undefined || srbTokenAddress === undefined) {
+      throw new SdkError(`Invalid token name format. Expected format 'symbol:srbTokenAddress'`);
+    }
     const asset = new StellarAsset(symbol, srbTokenAddress);
     const changeTrust = StellarOperation.changeTrust({
       asset: asset,
@@ -159,7 +161,17 @@ export class DefaultSrbUtils implements SrbUtils {
       (resp) => resp.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND,
       secondsToWait
     );
-    return getTransactionResponseAll[getTransactionResponseAll.length - 1];
+
+    if (getTransactionResponseAll.length === 0) {
+      throw new SdkError("No transaction responses found.");
+    }
+
+    const lastResponse = getTransactionResponseAll[getTransactionResponseAll.length - 1];
+    if (!lastResponse) {
+      throw new SdkError("Unexpected error: last response is undefined.");
+    }
+
+    return lastResponse;
   }
 
   private getContract<T>(contract: new (args: ContractClientOptions) => T, address: string): T {

@@ -89,7 +89,7 @@ export class EvmTokenService extends ChainTokenService {
     // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
     // prettier-ignore
     const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
-    if (chainSymbol == ChainSymbol.POL) {
+    if ((chainSymbol as ChainSymbol) === ChainSymbol.POL) {
       transactionConfig.gas = POLYGON_GAS_LIMIT;
     } else {
       transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction as TransactionConfig);

@@ -4,7 +4,7 @@ import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { ChainDecimalsByType, chainProperties, ChainType } from "../../chains";
+import { ChainDecimalsByType, ChainType, getChainProperty } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
@@ -97,9 +97,11 @@ export function getTokenByTokenAddress(
   chainSymbol: string,
   tokenAddress: string
 ): TokenWithChainDetails {
-  const token = chainDetailsMap[chainSymbol].tokens.find(
-    (value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase()
-  );
+  const chainDetail = chainDetailsMap[chainSymbol];
+  if (!chainDetail) {
+    throw new SdkError("Cannot find chain detail for " + chainSymbol);
+  }
+  const token = chainDetail.tokens.find((value) => value.tokenAddress.toUpperCase() === tokenAddress.toUpperCase());
   if (!token) {
     throw new SdkError("Cannot find token info about token " + tokenAddress + " on chain " + chainSymbol);
   }
@@ -142,7 +144,7 @@ export async function prepareTxSendParams(
 
   txSendParams.fromChainId = params.sourceToken.allbridgeChainId;
   txSendParams.fromChainSymbol = params.sourceToken.chainSymbol;
-  const toChainType = chainProperties[params.destinationToken.chainSymbol].chainType;
+  const toChainType = getChainProperty(params.destinationToken.chainSymbol).chainType;
   txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
 
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;

@@ -1,3 +1,4 @@
+import { SdkError } from "../exceptions";
 import { BasicChainProperties } from "./models";
 
 export * from "./models";
@@ -80,6 +81,15 @@ export const ChainDecimalsByType: Record<ChainType, number> = {
   TRX: 6,
   SRB: 7,
 };
+
+export function getChainProperty(chainSymbol: string): BasicChainProperties {
+  return (
+    chainProperties[chainSymbol] ??
+    (() => {
+      throw new SdkError(`Cannot find chain properties for ${chainSymbol}`);
+    })()
+  );
+}
 
 export const chainProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.BSC]: {

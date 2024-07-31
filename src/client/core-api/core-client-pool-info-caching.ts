@@ -1,4 +1,5 @@
 import Cache from "timed-cache";
+import { SdkError } from "../../exceptions";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
@@ -52,7 +53,13 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     } else {
       const poolInfoMap = await this.client.getPoolInfoMap(poolKeyObject);
       this.poolInfoCache.putAll(poolInfoMap);
-      return poolInfoMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
+      const result = poolInfoMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
+      if (result) {
+        return result;
+      }
+      throw new SdkError(
+        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol
+      );
     }
   }
 

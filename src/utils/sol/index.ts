@@ -28,7 +28,12 @@ export class DefaultSolUtils implements SolUtils {
     const message = TransactionMessage.decompile(transaction.message, {
       addressLookupTableAccounts: addressLookupTableAccounts,
     });
-    message.instructions[message.instructions.length - 1].keys.push({
+    const lastInstruction = message.instructions[message.instructions.length - 1];
+    if (!lastInstruction?.keys) {
+      throw new SdkError("Last instruction or its keys are invalid.");
+    }
+
+    lastInstruction.keys.push({
       pubkey: new PublicKey(Buffer.from(memo)),
       isSigner: false,
       isWritable: false,
