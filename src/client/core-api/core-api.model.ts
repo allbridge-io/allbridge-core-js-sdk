@@ -1,4 +1,3 @@
-import { ChainSymbol } from "../../chains";
 import { PoolInfo } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
@@ -51,9 +50,7 @@ export enum MessengerKeyDTO {
   CCTP = "cctp",
 }
 
-export type TransferTimeDTO = {
-  [chain in ChainSymbol]: MessengerTransferTimeDTO;
-};
+export type TransferTimeDTO = Record<string, MessengerTransferTimeDTO>;
 
 export interface TxCostAmountDTO {
   maxAmount: string;
@@ -96,8 +93,8 @@ export interface CheckAddressResponse {
 export interface TransferStatusResponse {
   txId: string;
 
-  sourceChainSymbol: ChainSymbol;
-  destinationChainSymbol: ChainSymbol;
+  sourceChainSymbol: string;
+  destinationChainSymbol: string;
 
   sendAmount: string;
   sendAmountFormatted: number;
@@ -154,13 +151,8 @@ export interface BridgeTransaction {
   isClaimable?: boolean;
 }
 
-export type PoolInfoResponse = {
-  [chainSymbol in ChainSymbol]?: {
-    string: PoolInfo;
-  };
-};
-
-export type PendingInfoResponse = Record<ChainSymbol, TokenPendingInfoDTO>;
+export type PoolInfoResponse = Record<string, PoolInfo>;
+export type PendingInfoResponse = Record<string, TokenPendingInfoDTO>;
 export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
 
 export interface PendingInfoDTO {

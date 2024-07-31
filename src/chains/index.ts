@@ -4,21 +4,6 @@ export * from "./models";
 
 export enum ChainSymbol {
   /**
-   * The Goerli testnet.
-   */
-  GRL = "GRL",
-
-  /**
-   * The Sepolia testnet.
-   */
-  SPL = "SPL",
-
-  /**
-   * The Holešky testnet.
-   */
-  HOL = "HOL",
-
-  /**
    * The BNB Smart Chain main network.
    */
   BSC = "BSC",
@@ -47,16 +32,6 @@ export enum ChainSymbol {
    * The Polygon network.
    */
   POL = "POL",
-
-  /**
-   * The Polygon Mumbai testnet.
-   */
-  MUM = "MUM",
-
-  /**
-   * The Polygon Amoy testnet.
-   */
-  AMO = "AMO",
 
   /**
    * The Arbitrum network.
@@ -107,24 +82,6 @@ export const ChainDecimalsByType: Record<ChainType, number> = {
 };
 
 export const chainProperties: Record<string, BasicChainProperties> = {
-  [ChainSymbol.GRL]: {
-    chainSymbol: ChainSymbol.GRL,
-    chainId: "0x5",
-    name: "Goerli",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.SPL]: {
-    chainSymbol: ChainSymbol.SPL,
-    chainId: "0xaa36a7",
-    name: "Sepolia",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.HOL]: {
-    chainSymbol: ChainSymbol.HOL,
-    chainId: "0x4268",
-    name: "Holešky",
-    chainType: ChainType.EVM,
-  },
   [ChainSymbol.BSC]: {
     chainSymbol: ChainSymbol.BSC,
     chainId: "0x38",
@@ -165,18 +122,6 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.POL,
     chainId: "0x89",
     name: "Polygon",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.MUM]: {
-    chainSymbol: ChainSymbol.MUM,
-    chainId: "0x13881",
-    name: "Mumbai",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.AMO]: {
-    chainSymbol: ChainSymbol.AMO,
-    chainId: "0x13882",
-    name: "Amoy",
     chainType: ChainType.EVM,
   },
   [ChainSymbol.OPT]: {

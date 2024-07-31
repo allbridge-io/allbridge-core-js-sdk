@@ -4,7 +4,7 @@ import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 /* @ts-expect-error  Could not find a declaration file for module "tronweb"*/
 import * as TronWebLib from "tronweb";
-import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
@@ -94,7 +94,7 @@ function bufferToSize(buffer: Buffer, size: number): Buffer {
 
 export function getTokenByTokenAddress(
   chainDetailsMap: ChainDetailsMap,
-  chainSymbol: ChainSymbol,
+  chainSymbol: string,
   tokenAddress: string
 ): TokenWithChainDetails {
   const token = chainDetailsMap[chainSymbol].tokens.find(

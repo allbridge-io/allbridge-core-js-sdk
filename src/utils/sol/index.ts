@@ -1,5 +1,6 @@
 import { Connection, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { AllbridgeCoreSdkOptions, ChainSymbol, SdkError } from "../../index";
+import { ChainSymbol } from "../../chains";
+import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { fetchAddressLookupTableAccountsFromTx } from "./utils";
 

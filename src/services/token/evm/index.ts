@@ -83,7 +83,7 @@ export class EvmTokenService extends ChainTokenService {
     };
   }
 
-  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {
+  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: string) {
     const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK

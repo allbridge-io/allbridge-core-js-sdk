@@ -1,5 +1,4 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "../chains";
 import { AllbridgeCoreClientImpl } from "../client/core-api";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
@@ -59,7 +58,7 @@ import { DefaultTokenService, TokenService } from "./token";
 export class NodeRpcUrlsConfig {
   constructor(private nodeRpcUrls: NodeRpcUrls) {}
 
-  getNodeRpcUrl(chainSymbol: ChainSymbol): string {
+  getNodeRpcUrl(chainSymbol: string): string {
     const nodeRpcUrl = this.nodeRpcUrls[chainSymbol];
     if (nodeRpcUrl !== undefined) {
       return nodeRpcUrl;
@@ -98,16 +97,16 @@ export class AllbridgeCoreSdkService {
     return this.api.tokens();
   }
 
-  async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenWithChainDetails[]> {
+  async tokensByChain(chainSymbol: string): Promise<TokenWithChainDetails[]> {
     const map = await this.api.getChainDetailsMap();
-    return map[chainSymbol].tokens;
+    return map[chainSymbol].tokens ?? [];
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.api.getTransferStatus(chainSymbol, txId);
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.api.getGasBalance(chainSymbol, address);
   }
 

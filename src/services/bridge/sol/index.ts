@@ -12,7 +12,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { Big } from "big.js";
-import { ChainDecimalsByType, ChainSymbol, ChainType } from "../../../chains";
+import { ChainDecimalsByType, ChainType } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import {
@@ -67,9 +67,14 @@ export interface CctpParams {
   cctpDomains: CctpDomains;
 }
 
-export type CctpDomains = {
-  [key in ChainSymbol]?: number;
-};
+/**
+ * Type representing a map of CCTP domains to their corresponding numeric values.
+ *
+ * @typedef {Record<string, number>} CctpDomains
+ * @property {string} chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+ * @property {number} value - The numeric value associated with the specified chain.
+ */
+export type CctpDomains = Record<string, number>;
 
 const COMPUTE_UNIT_LIMIT = 1000000;
 
@@ -719,7 +724,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   async buildSwapAndBridgeCctpTransaction(
-    destinationChainSymbol: ChainSymbol,
+    destinationChainSymbol: string,
     swapAndBridgeData: SwapAndBridgeSolDataCctpData
   ): Promise<{ transaction: VersionedTransaction; messageSentEventDataKeypair: Keypair }> {
     const {

@@ -141,7 +141,7 @@ export function getSpender(token: TokenWithChainDetails, messenger?: Messenger):
 }
 
 export function getChainBridgeService(
-  chainSymbol: ChainSymbol,
+  chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,

@@ -4,7 +4,7 @@ import Cache from "timed-cache";
 import TronWeb from "tronweb";
 import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { chainProperties, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
 import { AllbridgeCoreSdkOptions } from "../../index";
@@ -214,7 +214,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
 }
 
 export function getChainPoolService(
-  chainSymbol: ChainSymbol,
+  chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,

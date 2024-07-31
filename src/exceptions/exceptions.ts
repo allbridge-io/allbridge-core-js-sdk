@@ -1,5 +1,3 @@
-import { ChainSymbol } from "../chains";
-
 export abstract class SdkRootError extends Error {
   public errorCode: ErrorCode;
 
@@ -91,7 +89,7 @@ export class TimeoutError extends SdkRootError {
 }
 
 export class NodeRpcUrlNotInitializedError extends SdkRootError {
-  constructor(chainSymbol: ChainSymbol) {
+  constructor(chainSymbol: string) {
     super(ErrorCode.NODE_RPC_URL_NOT_INITIALIZED_ERROR, `For chain '${chainSymbol}' Node RPC URL not initialized`);
   }
 }

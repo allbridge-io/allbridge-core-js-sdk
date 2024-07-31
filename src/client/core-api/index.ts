@@ -1,4 +1,3 @@
-import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { ApiClient } from "./api-client";
 import {
@@ -21,11 +20,11 @@ export interface AllbridgeCoreClient {
 
   getPendingInfo(): Promise<PendingInfoResponse>;
 
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
+  getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse>;
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 
-  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
+  getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
 }
 
 export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
@@ -44,7 +43,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     return this.apiClient.getPendingInfo();
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.apiClient.getGasBalance(chainSymbol, address);
   }
 
@@ -55,7 +54,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClient {
     return await this.apiClient.getTokenInfo();
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return await this.apiClient.getTransferStatus(chainSymbol, txId);
   }
 

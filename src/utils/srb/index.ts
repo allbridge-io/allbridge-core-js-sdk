@@ -11,7 +11,8 @@ import {
   TransactionBuilder as StellarTransactionBuilder,
   contract,
 } from "@stellar/stellar-sdk";
-import { AllbridgeCoreSdkOptions, ChainSymbol } from "../../index";
+import { ChainSymbol } from "../../chains";
+import { AllbridgeCoreSdkOptions } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
 import { withExponentialBackoff } from "../utils";

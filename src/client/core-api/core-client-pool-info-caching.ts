@@ -1,5 +1,4 @@
 import Cache from "timed-cache";
-import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
@@ -28,7 +27,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return await this.client.tokens();
   }
 
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
@@ -40,7 +39,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return this.client.getPendingInfo();
   }
 
-  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.client.getGasBalance(chainSymbol, address);
   }
 

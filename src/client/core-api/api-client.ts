@@ -1,5 +1,4 @@
 import axios, { Axios } from "axios";
-import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
@@ -28,9 +27,9 @@ export interface ApiClient {
 
   getPendingInfo(): Promise<PendingInfoResponse>;
 
-  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
+  getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
 
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
+  getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse>;
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 
@@ -65,12 +64,12 @@ export class ApiClientImpl implements ApiClient {
     return data;
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     const { data } = await this.api.get<GasBalanceResponse>(`/check/${chainSymbol}/${address}`);
     return data;
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
     return data;
   }

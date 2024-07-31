@@ -2,7 +2,7 @@ import { Big } from "big.js";
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
 import Web3 from "web3";
-import { ChainDecimalsByType, chainProperties, ChainSymbol, ChainType } from "../../chains";
+import { ChainDecimalsByType, chainProperties, ChainType } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api";
 import { AllbridgeCoreSdkOptions } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
@@ -110,7 +110,7 @@ export class DefaultTokenService implements TokenService {
     };
   }
 
-  private getChainTokenService(chainSymbol: ChainSymbol, ownerAddress: string, provider?: Provider): ChainTokenService {
+  private getChainTokenService(chainSymbol: string, ownerAddress: string, provider?: Provider): ChainTokenService {
     switch (chainProperties[chainSymbol].chainType) {
       case ChainType.EVM: {
         if (provider) {
