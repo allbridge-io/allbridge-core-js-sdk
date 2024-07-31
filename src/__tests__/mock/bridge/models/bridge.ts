@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
-import { ChainType } from "../../../../chains";
+import { ChainType } from "../../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import {
   ApproveParams,

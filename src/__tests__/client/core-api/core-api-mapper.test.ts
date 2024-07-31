@@ -4,8 +4,11 @@ import { ChainDetailsWithTokens, ChainDetailsMap } from "../../../tokens-info";
 import chainDetailsGRL from "../../data/tokens-info/ChainDetails-GRL.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
 import tokensInfo from "../../mock/core-api/token-info.json";
+import { initChainsWithTestnet } from "../../mock/utils";
 
 const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;
+
+initChainsWithTestnet();
 
 describe("Core API Mapper", () => {
   describe("given ChainDetailsMapDTO", () => {

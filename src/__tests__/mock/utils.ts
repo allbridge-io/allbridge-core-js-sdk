@@ -1,8 +1,20 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
+import { Chains } from "../../chains";
+import { ChainType } from "../../chains/chain.enums";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 
 export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
   return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
+}
+export function initChainsWithTestnet() {
+  Chains.addChainsProperties({
+    GRL: {
+      chainSymbol: "GRL",
+      chainId: "0x5",
+      name: "Goerli",
+      chainType: ChainType.EVM,
+    },
+  });
 }
 
 export function mockTokenInfoEndpoint(

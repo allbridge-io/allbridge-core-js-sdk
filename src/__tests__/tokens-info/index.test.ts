@@ -1,4 +1,3 @@
-import { ChainSymbol } from "../../chains";
 import { ChainDetailsMap, TokenWithChainDetails, TokensInfo } from "../../tokens-info";
 import tokensGroupedByChain from "../data/tokens-info/ChainDetailsMap.json";
 import tokenInfoWithChainDetailsGRL from "../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
@@ -20,6 +19,6 @@ describe("TokensInfo", () => {
   });
 
   it("☀️ tokensByChain(GRL) returns a list of TokenWithChainDetails on Goerli chain", () => {
-    expect(tokensInfo.tokensByChain(ChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGRL);
+    expect(tokensInfo.tokensByChain("GRL")).toEqual(expectedTokenInfoWithChainDetailsGRL);
   });
 });

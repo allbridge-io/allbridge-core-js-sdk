@@ -1,4 +1,3 @@
-import { ChainSymbol } from "../../../chains";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientPoolInfoCaching } from "../../../client/core-api/core-client-pool-info-caching";
@@ -6,6 +5,9 @@ import { ChainDetailsMap, PoolInfo, PoolInfoMap } from "../../../tokens-info";
 import poolGRL from "../../data/pool-info/pool-info-GRL.json";
 import poolMap from "../../data/pool-info/pool-info-map.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
+import { initChainsWithTestnet } from "../../mock/utils";
+
+initChainsWithTestnet();
 
 describe("AllbridgeCachingCoreClient", () => {
   let client: AllbridgeCoreClientPoolInfoCaching;
@@ -45,15 +47,15 @@ describe("AllbridgeCachingCoreClient", () => {
 
     describe("Given PoolInfoMap", () => {
       const poolKeyObject = {
-        chainSymbol: ChainSymbol.GRL,
+        chainSymbol: "GRL",
         poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
       };
       const poolKeyObject2 = {
-        chainSymbol: ChainSymbol.GRL,
+        chainSymbol: "GRL",
         poolAddress: "0x227e10f9E750C922bf9dee7620B58033F566b34F",
       };
       const poolKeyObjectNotInCash = {
-        chainSymbol: ChainSymbol.GRL,
+        chainSymbol: "GRL",
         poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34A",
       };
       const expectedPoolInfo = poolGRL as unknown as PoolInfo;
@@ -69,7 +71,9 @@ describe("AllbridgeCachingCoreClient", () => {
       });
 
       test("☀ getPoolInfoByKey should request not cashed from pool-info request", async () => {
-        await client.getPoolInfoByKey(poolKeyObjectNotInCash);
+        const expectedErrorMessage = `Cannot find pool info for ${poolKeyObjectNotInCash.poolAddress} on chain ${poolKeyObjectNotInCash.chainSymbol}`;
+
+        await expect(client.getPoolInfoByKey(poolKeyObjectNotInCash)).rejects.toThrow(expectedErrorMessage);
         expect(apiMock.getPoolInfoMap).toHaveBeenCalledTimes(1);
         expect(apiMock.getPoolInfoMap).toBeCalledWith(poolKeyObjectNotInCash);
       });
@@ -120,7 +124,7 @@ describe("AllbridgeCachingCoreClient", () => {
     });
 
     test("☀ getTransferStatus should call api.getTransferStatus", async () => {
-      const actual = await client.getTransferStatus(ChainSymbol.GRL, "txId");
+      const actual = await client.getTransferStatus("GRL", "txId");
       expect(actual).toEqual(expected);
 
       expect(apiMock.getTransferStatus).toHaveBeenCalledTimes(1);

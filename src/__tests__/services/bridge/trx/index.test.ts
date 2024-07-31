@@ -1,9 +1,9 @@
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import { ChainSymbol, ChainType } from "../../../../chains";
+import { ChainType } from "../../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { Messenger } from "../../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../../models";
+import { ChainSymbol, FeePaymentMethod } from "../../../../models";
 import { TxSendParams } from "../../../../services/bridge/models";
 import { TronBridgeService } from "../../../../services/bridge/trx";
 import { formatAddress } from "../../../../services/bridge/utils";

@@ -1,6 +1,6 @@
 import { abortPendingRequests, cleanAll, disableNetConnect } from "nock";
 import Web3 from "web3";
-import { ChainSymbol } from "../../../../chains";
+import { ChainSymbol } from "../../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { EvmPoolService } from "../../../../services/liquidity-pool/evm";
 import { TokenWithChainDetails } from "../../../../tokens-info";
