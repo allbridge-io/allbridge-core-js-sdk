@@ -65,8 +65,6 @@ export class SrbPoolService extends ChainPoolService {
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
-    console.log("sender", params.accountAddress);
-    console.log("poolAddress", params.token.poolAddress);
     return (
       await poolContract.deposit({
         sender: params.accountAddress,

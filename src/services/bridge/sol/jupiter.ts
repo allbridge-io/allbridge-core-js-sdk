@@ -20,7 +20,6 @@ export class JupiterService {
     exactOut: boolean
   ): Promise<{ tx: VersionedTransaction; amountIn?: string }> {
     let quoteResponse: any;
-    console.log("J amount", amount);
     try {
       const swapMode = exactOut ? "ExactOut" : "ExactIn";
       quoteResponse = await axios.get(`${this.jupiterUrl}/quote?inputMint=${stableTokenAddress}
