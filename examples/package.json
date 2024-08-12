@@ -26,6 +26,7 @@
     "run:bridge:getFeePercent": "tsx src/examples/bridge/get-fee-percent.ts",
     "run:bridge:getTransferStatus": "tsx src/examples/bridge/get-transfer-status.ts",
     "run:bridge:getExtraGasMaxLimits": "tsx src/examples/bridge/get-extra-gas-max-limits.ts",
+
     "run:general:evm:approveTokens": "tsx src/examples/general/evm/evm-approve-tokens.ts",
     "run:general:evm:getTokenBalance": "tsx src/examples/general/evm/evm-get-token-balance.ts",
     "run:general:solana:getTokenBalance": "tsx src/examples/general/solana/sol-get-token-balance.ts",
@@ -52,6 +53,7 @@
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:..",
     "@solana/web3.js": "^1.78.5",
+    "@stellar/stellar-sdk": "^12.2.0",
     "tronweb": "^4.4.0",
     "web3": "^1.9.0",
     "web3-core": "^1.9.0",
