@@ -1,3 +1,4 @@
+import { ChainSymbol } from "../chains/chain.enums";
 import { BasicChainProperties } from "../chains/models";
 import { Messenger } from "../client/core-api/core-api.model";
 
@@ -175,10 +176,12 @@ export interface PoolInfo {
  * Type representing transfer times for various blockchain chains.
  *
  * @typedef {Record<string, MessengerTransferTime>} TransferTime
- * @property {string} chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+ * @property {chain} chainSymbol
  * @property {MessengerTransferTime} transferTime - The average transfer time details for the specified chain.
  */
-export type TransferTime = Record<string, MessengerTransferTime>;
+export type TransferTime = {
+  [chain in ChainSymbol]?: MessengerTransferTime;
+};
 
 /**
  * Contains Avg transaction time withing different messenger protocols

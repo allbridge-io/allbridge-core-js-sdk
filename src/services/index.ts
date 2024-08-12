@@ -14,7 +14,7 @@ import { AllbridgeCoreClientImpl } from "../client/core-api/core-client-base";
 import { AllbridgeCoreClientFiltered, AllbridgeCoreClientFilteredImpl } from "../client/core-api/core-client-filtered";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
-import { AllbridgeCoreSdkOptions, NodeRpcUrls, SdkError } from "../index";
+import { AllbridgeCoreSdkOptions, BasicChainProperties, NodeRpcUrls, SdkError } from "../index";
 import {
   AmountFormat,
   AmountFormatted,
@@ -81,7 +81,7 @@ export class AllbridgeCoreSdkService {
   pool: LiquidityPoolService;
 
   constructor(nodeRpcUrlsConfig: NodeRpcUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
-    Chains.addChainsProperties(params.additionalChainsProperties);
+    Chains.addChainsProperties(params.additionalChainsProperties as Record<string, BasicChainProperties>);
     const apiClient = new ApiClientImpl(params);
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);

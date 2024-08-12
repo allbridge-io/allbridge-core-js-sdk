@@ -50,7 +50,7 @@ export { SrbUtils, TrustLineParams } from "../utils/srb";
 export { SolUtils } from "../utils/sol";
 export * from "../exceptions";
 export { ChainSymbol, ChainType } from "../chains/chain.enums";
-export { BasicChainProperties } from "../chains/models";
+export { AdditionalBasicChainProperties, BasicChainProperties } from "../chains/models";
 
 export enum FeePaymentMethod {
   /**

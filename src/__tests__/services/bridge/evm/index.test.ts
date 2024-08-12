@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
-import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
+import { ChainSymbol, FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
 import { NodeRpcUrlsConfig } from "../../../../services";
 import { EvmBridgeService } from "../../../../services/bridge/evm";
 import { ChainDetailsMapWithFlags } from "../../../../tokens-info";
@@ -42,14 +42,14 @@ describe("EvmBridge", () => {
         sourceToken: {
           bridgeAddress: bridgeAddress,
           allbridgeChainId: 2,
-          chainSymbol: "GRL",
+          chainSymbol: "GRL" as ChainSymbol,
           decimals: 18,
           tokenAddress: "0xc7dbc4a896b34b7a10dda2ef72052145a9122f43",
         } as TokenWithChainDetails,
         fromAccountAddress: from,
         destinationToken: {
           allbridgeChainId: 4,
-          chainSymbol: "GRL",
+          chainSymbol: "GRL" as ChainSymbol,
           decimals: 18,
           tokenAddress: "0xb10388f04f8331b59a02732cc1b6ac0d7045574b",
         } as TokenWithChainDetails,

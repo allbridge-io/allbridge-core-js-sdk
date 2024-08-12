@@ -1,4 +1,5 @@
 import { Chains } from "../../chains";
+import { ChainSymbol } from "../../chains/chain.enums";
 import {
   ChainDetails,
   ChainDetailsMap,
@@ -75,7 +76,7 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
 
 function mapTransferTimeFromDto(dto: TransferTimeDTO): TransferTime {
   return Object.entries(dto).reduce<TransferTime>((result, [key, value]) => {
-    result[key] = mapMessengerTransferTimeFromDto(value);
+    result[key as ChainSymbol] = mapMessengerTransferTimeFromDto(value);
     return result;
   }, {});
 }

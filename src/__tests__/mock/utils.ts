@@ -1,6 +1,6 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
 import { Chains } from "../../chains";
-import { ChainType } from "../../chains/chain.enums";
+import { ChainSymbol, ChainType } from "../../chains/chain.enums";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 
 export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
@@ -9,7 +9,7 @@ export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
 export function initChainsWithTestnet() {
   Chains.addChainsProperties({
     GRL: {
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       chainId: "0x5",
       name: "Goerli",
       chainType: ChainType.EVM,

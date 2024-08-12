@@ -1,5 +1,5 @@
 import { BigSource } from "big.js";
-import { BasicChainProperties } from "./chains/models";
+import { AdditionalBasicChainProperties } from "./chains/models";
 import { mainnet } from "./configs";
 import {
   AmountFormat,
@@ -65,7 +65,7 @@ export interface AllbridgeCoreSdkOptions {
    * @Internal
    * Optional additional properties to merge with the default properties.
    */
-  additionalChainsProperties?: Record<string, BasicChainProperties>;
+  additionalChainsProperties?: Record<string, AdditionalBasicChainProperties>;
 }
 
 /**

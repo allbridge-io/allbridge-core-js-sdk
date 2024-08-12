@@ -1,3 +1,4 @@
+import { ChainSymbol } from "../../chains/chain.enums";
 import { PoolInfo } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
@@ -97,8 +98,8 @@ export interface CheckAddressResponse {
 export interface TransferStatusResponse {
   txId: string;
 
-  sourceChainSymbol: string;
-  destinationChainSymbol: string;
+  sourceChainSymbol: ChainSymbol;
+  destinationChainSymbol: ChainSymbol;
 
   sendAmount: string;
   sendAmountFormatted: number;
@@ -155,8 +156,8 @@ export interface BridgeTransaction {
   isClaimable?: boolean;
 }
 
-export type PoolInfoResponse = Record<string, PoolInfo>;
-export type PendingInfoResponse = Record<string, TokenPendingInfoDTO>;
+export type PoolInfoResponse = Record<ChainSymbol, PoolInfo>;
+export type PendingInfoResponse = Partial<Record<ChainSymbol, TokenPendingInfoDTO>>;
 export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
 
 export interface PendingInfoDTO {

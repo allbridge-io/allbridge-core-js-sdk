@@ -83,7 +83,7 @@ describe("SDK", () => {
 
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 18,
       feeShare: "0",
     };
@@ -134,7 +134,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 6,
       feeShare: "0",
     };
@@ -194,7 +194,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 18,
       feeShare: "0.003",
     };
@@ -613,7 +613,7 @@ describe("SDK", () => {
     const grlChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
       decimals: 18,
@@ -622,7 +622,7 @@ describe("SDK", () => {
     const grlChainToken2: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: "GRL",
+      chainSymbol: "GRL" as ChainSymbol,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
       decimals: 18,
