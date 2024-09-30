@@ -18,7 +18,11 @@
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "1.000000275"
+        "lpRate": "1.000000275",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       },
       {
         "name": "YARO Stable",
@@ -37,7 +41,11 @@
         },
         "feeShare": "0.003",
         "apr": "0.1",
-        "lpRate": "1.00000003"
+        "lpRate": "1.00000003",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       }
     ],
     "chainId": 2,
@@ -87,7 +95,11 @@
         },
         "feeShare": "0.0015",
         "apr": "0.09296298756928563541",
-        "lpRate": "1.00002027324711969171"
+        "lpRate": "1.00002027324711969171",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       },
       {
         "name": "Tether USD",
@@ -106,7 +118,11 @@
         },
         "feeShare": "0.0015",
         "apr": "0.04748078844651022051",
-        "lpRate": "1.00001340306750352152"
+        "lpRate": "1.00001340306750352152",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       }
     ],
     "chainId": 5,
@@ -151,7 +167,11 @@
         },
         "feeShare": "0.003",
         "apr": "0",
-        "lpRate": "1.00000013499865136347"
+        "lpRate": "1.00000013499865136347",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       },
       {
         "name": "Yaro Stable",
@@ -170,7 +190,11 @@
         },
         "feeShare": "0.003",
         "apr": "0",
-        "lpRate": "1.00000007"
+        "lpRate": "1.00000007",
+        "flags": {
+          "swap": true,
+          "pool": true
+        }
       }
     ],
     "chainId": 4,
@@ -244,6 +268,10 @@
           "tokenBalance": "48785698",
           "accRewardPerShareP": "39021819959347844",
           "p": 48
+        },
+        "flags": {
+          "swap": true,
+          "pool": true
         }
       }
     ]

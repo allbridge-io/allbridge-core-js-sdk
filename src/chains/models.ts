@@ -1,11 +1,11 @@
-import { ChainSymbol, ChainType } from "./index";
+import { ChainSymbol, ChainType } from "./chain.enums";
 
 /**
  * Contains blockchain's basic information
  */
 export interface BasicChainProperties {
   /**
-   * Blockchain symbol
+   * The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    */
   chainSymbol: ChainSymbol;
   /**
@@ -19,7 +19,13 @@ export interface BasicChainProperties {
    */
   name: string;
   /**
-   * Blockchain type
+   * Blockchain type. For more details, see: {@link ChainType}.
    */
   chainType: ChainType;
+}
+export interface AdditionalBasicChainProperties extends Omit<BasicChainProperties, "chainSymbol"> {
+  /**
+   * The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   */
+  chainSymbol: string;
 }

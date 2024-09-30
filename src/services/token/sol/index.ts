@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnchorProvider, Provider } from "@project-serum/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { ChainType } from "../../../chains/chain.enums";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError } from "../../../exceptions";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, TransactionResponse } from "../../models";

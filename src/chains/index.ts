@@ -1,130 +1,18 @@
+import { SdkError } from "../exceptions";
+import { ChainSymbol, ChainType } from "./chain.enums";
 import { BasicChainProperties } from "./models";
-
-export * from "./models";
-
-export enum ChainSymbol {
-  /**
-   * The Goerli testnet.
-   */
-  GRL = "GRL",
-
-  /**
-   * The Sepolia testnet.
-   */
-  SPL = "SPL",
-
-  /**
-   * The Holešky testnet.
-   */
-  HOL = "HOL",
-
-  /**
-   * The BNB Smart Chain main network.
-   */
-  BSC = "BSC",
-
-  /**
-   * The Ethereum main network.
-   */
-  ETH = "ETH",
-
-  /**
-   * The Base main network.
-   */
-  BAS = "BAS",
-
-  /**
-   * The Solana network.
-   */
-  SOL = "SOL",
-
-  /**
-   * The TRON network.
-   */
-  TRX = "TRX",
-
-  /**
-   * The Polygon network.
-   */
-  POL = "POL",
-
-  /**
-   * The Polygon Mumbai testnet.
-   */
-  MUM = "MUM",
-
-  /**
-   * The Polygon Amoy testnet.
-   */
-  AMO = "AMO",
-
-  /**
-   * The Arbitrum network.
-   */
-  ARB = "ARB",
-
-  /**
-   * The Celo network.
-   */
-  CEL = "CEL",
-
-  /**
-   * The Avalanche main network.
-   */
-  AVA = "AVA",
-
-  /**
-   * The Soroban network.
-   */
-  SRB = "SRB",
-
-  /**
-   * The Stellar network.
-   */
-  STLR = "STLR",
-
-  /**
-   * The OP Mainnet network.
-   */
-  OPT = "OPT",
-}
-
-export enum ChainType {
-  EVM = "EVM",
-  SOLANA = "SOLANA",
-  TRX = "TRX",
-  SRB = "SRB",
-}
 
 /**
  * Native gas tokens decimals by ChainType
  */
-export const ChainDecimalsByType: Record<ChainType, number> = {
+const chainDecimalsByType: Record<ChainType, number> = {
   EVM: 18,
   SOLANA: 9,
   TRX: 6,
   SRB: 7,
 };
 
-export const chainProperties: Record<string, BasicChainProperties> = {
-  [ChainSymbol.GRL]: {
-    chainSymbol: ChainSymbol.GRL,
-    chainId: "0x5",
-    name: "Goerli",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.SPL]: {
-    chainSymbol: ChainSymbol.SPL,
-    chainId: "0xaa36a7",
-    name: "Sepolia",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.HOL]: {
-    chainSymbol: ChainSymbol.HOL,
-    chainId: "0x4268",
-    name: "Holešky",
-    chainType: ChainType.EVM,
-  },
+const defaultProperties: Record<string, BasicChainProperties> = {
   [ChainSymbol.BSC]: {
     chainSymbol: ChainSymbol.BSC,
     chainId: "0x38",
@@ -167,18 +55,6 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     name: "Polygon",
     chainType: ChainType.EVM,
   },
-  [ChainSymbol.MUM]: {
-    chainSymbol: ChainSymbol.MUM,
-    chainId: "0x13881",
-    name: "Mumbai",
-    chainType: ChainType.EVM,
-  },
-  [ChainSymbol.AMO]: {
-    chainSymbol: ChainSymbol.AMO,
-    chainId: "0x13882",
-    name: "Amoy",
-    chainType: ChainType.EVM,
-  },
   [ChainSymbol.OPT]: {
     chainSymbol: ChainSymbol.OPT,
     chainId: "0xa",
@@ -206,3 +82,29 @@ export const chainProperties: Record<string, BasicChainProperties> = {
     chainType: ChainType.SRB,
   },
 };
+
+export const Chains = (() => {
+  let chainProperties: Record<string, BasicChainProperties> = { ...defaultProperties };
+
+  return {
+    addChainsProperties(additionalProperties?: Record<string, BasicChainProperties>) {
+      chainProperties = { ...chainProperties, ...additionalProperties };
+    },
+
+    getChainProperty(chainSymbol: string): BasicChainProperties {
+      const property = chainProperties[chainSymbol];
+      if (!property) {
+        throw new SdkError(`Cannot find chain properties for ${chainSymbol}`);
+      }
+      return property;
+    },
+
+    getChainsProperties(): Record<string, BasicChainProperties> {
+      return chainProperties;
+    },
+
+    getChainDecimalsByType(chainType: ChainType): number {
+      return chainDecimalsByType[chainType];
+    },
+  };
+})();

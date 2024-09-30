@@ -1,10 +1,17 @@
-import { BasicChainProperties, ChainSymbol } from "../chains";
+import { ChainSymbol } from "../chains/chain.enums";
+import { BasicChainProperties } from "../chains/models";
 import { Messenger } from "../client/core-api/core-api.model";
 
 /**
- * Contains mapping of {@link ChainSymbol} and chain details.
+ * Type representing a map of blockchain chain symbols to their corresponding details, including token information.
+ *
+ * @typedef {Record<string, ChainDetailsWithTokens>} ChainDetailsMap
+ * @property {string} chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+ * @property {ChainDetailsWithTokens} chainDetails - The detailed information of the specified chain, including token information.
  */
 export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
+
+export type ChainDetailsMapWithFlags = Record<string, ChainDetailsWithTokensWithFlags>;
 
 /**
  * Contains some blockchain details
@@ -40,6 +47,16 @@ export interface ChainDetailsWithTokens extends ChainDetails {
    * Tokens
    */
   tokens: TokenWithChainDetails[];
+}
+
+/**
+ * Contains tokens list
+ */
+export interface ChainDetailsWithTokensWithFlags extends ChainDetails {
+  /**
+   * Tokens
+   */
+  tokens: TokenWithChainDetailsWithFlags[];
 }
 
 /**
@@ -113,6 +130,10 @@ export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name">
   chainName: string;
 }
 
+export interface TokenWithChainDetailsWithFlags extends TokenWithChainDetails {
+  flags: { swap: boolean; pool: boolean };
+}
+
 /**
  * General Pool Interface
  */
@@ -152,7 +173,11 @@ export interface PoolInfo {
 }
 
 /**
- * Contains average transaction times per chain per messenger.
+ * Type representing transfer times for various blockchain chains.
+ *
+ * @typedef {Record<string, MessengerTransferTime>} TransferTime
+ * @property {chain} chainSymbol
+ * @property {MessengerTransferTime} transferTime - The average transfer time details for the specified chain.
  */
 export type TransferTime = {
   [chain in ChainSymbol]?: MessengerTransferTime;
@@ -166,7 +191,7 @@ export type MessengerTransferTime = {
 };
 
 export interface PoolKeyObject {
-  chainSymbol: ChainSymbol;
+  chainSymbol: string;
   poolAddress: string;
 }
 

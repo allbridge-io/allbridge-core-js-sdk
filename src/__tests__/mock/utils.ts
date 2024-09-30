@@ -1,8 +1,20 @@
 import nock, { Body, RequestBodyMatcher } from "nock";
+import { Chains } from "../../chains";
+import { ChainSymbol, ChainType } from "../../chains/chain.enums";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 
 export function getRequestBodyMatcher(expectedBody: any): RequestBodyMatcher {
   return (body: Body) => JSON.stringify(body) === JSON.stringify(expectedBody);
+}
+export function initChainsWithTestnet() {
+  Chains.addChainsProperties({
+    GRL: {
+      chainSymbol: "GRL" as ChainSymbol,
+      chainId: "0x5",
+      name: "Goerli",
+      chainType: ChainType.EVM,
+    },
+  });
 }
 
 export function mockTokenInfoEndpoint(
@@ -38,7 +50,7 @@ export function mockTokenInfoEndpoint(
       ...infoResponse,
     };
   }
-  scope.get("/token-info").reply(200, resultInfo).persist();
+  scope.get("/token-info?filter=all").reply(200, resultInfo).persist();
 }
 
 export function rpcReply(result: any): (url: string, body: any) => Record<string, any> {

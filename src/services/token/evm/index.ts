@@ -3,8 +3,8 @@ import erc20abi from "erc-20-abi";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction } from "../../models";
@@ -83,13 +83,13 @@ export class EvmTokenService extends ChainTokenService {
     };
   }
 
-  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: ChainSymbol) {
+  private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: string) {
     const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
     // prettier-ignore
     const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
-    if (chainSymbol == ChainSymbol.POL) {
+    if ((chainSymbol as ChainSymbol) === ChainSymbol.POL) {
       transactionConfig.gas = POLYGON_GAS_LIMIT;
     } else {
       transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction as TransactionConfig);

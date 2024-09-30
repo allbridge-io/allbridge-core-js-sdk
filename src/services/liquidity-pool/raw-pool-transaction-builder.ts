@@ -1,5 +1,5 @@
 import { NodeRpcUrlsConfig } from "..";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions } from "../../index";
 import { convertFloatAmountToInt } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";

@@ -1,5 +1,6 @@
 import { Connection, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { AllbridgeCoreSdkOptions, ChainSymbol, SdkError } from "../../index";
+import { ChainSymbol } from "../../chains/chain.enums";
+import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { fetchAddressLookupTableAccountsFromTx } from "./utils";
 
@@ -27,7 +28,12 @@ export class DefaultSolUtils implements SolUtils {
     const message = TransactionMessage.decompile(transaction.message, {
       addressLookupTableAccounts: addressLookupTableAccounts,
     });
-    message.instructions[message.instructions.length - 1].keys.push({
+    const lastInstruction = message.instructions[message.instructions.length - 1];
+    if (!lastInstruction?.keys) {
+      throw new SdkError("Last instruction or its keys are invalid.");
+    }
+
+    lastInstruction.keys.push({
       pubkey: new PublicKey(Buffer.from(memo)),
       isSigner: false,
       isWritable: false,

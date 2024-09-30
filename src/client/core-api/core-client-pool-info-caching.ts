@@ -1,6 +1,12 @@
 import Cache from "timed-cache";
-import { ChainSymbol } from "../../chains";
-import { ChainDetailsMap, PoolInfo, PoolInfoMap, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
+import { SdkError } from "../../exceptions";
+import {
+  ChainDetailsMapWithFlags,
+  PoolInfo,
+  PoolInfoMap,
+  PoolKeyObject,
+  TokenWithChainDetailsWithFlags,
+} from "../../tokens-info";
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
   GasBalanceResponse,
@@ -9,26 +15,33 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "./core-api.model";
-import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "./index";
+import { AllbridgeCoreClientWithPoolInfo, AllbridgeCoreClientWithTokens } from "./core-client-base";
 
 const _55_SECONDS_TTL = 55 * 1000;
 
-export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
+export interface AllbridgeCoreClientPoolsExt {
+  getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo>;
+  refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void>;
+  cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo): void;
+}
+
+export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWithTokens, AllbridgeCoreClientPoolsExt {
   private readonly poolInfoCache;
 
-  constructor(private readonly client: AllbridgeCoreClientImpl) {
+  constructor(private readonly client: AllbridgeCoreClientWithPoolInfo) {
     this.poolInfoCache = new PoolInfoCache();
   }
 
-  async getChainDetailsMap(): Promise<ChainDetailsMap> {
+  async getChainDetailsMap(): Promise<ChainDetailsMapWithFlags> {
     const result = await this.client.getChainDetailsMapAndPoolInfoMap();
     return result.chainDetailsMap;
   }
-  async tokens(): Promise<TokenWithChainDetails[]> {
+
+  async tokens(): Promise<TokenWithChainDetailsWithFlags[]> {
     return await this.client.tokens();
   }
 
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.client.getTransferStatus(chainSymbol, txId);
   }
 
@@ -40,7 +53,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     return this.client.getPendingInfo();
   }
 
-  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.client.getGasBalance(chainSymbol, address);
   }
 
@@ -53,7 +66,13 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     } else {
       const poolInfoMap = await this.client.getPoolInfoMap(poolKeyObject);
       this.poolInfoCache.putAll(poolInfoMap);
-      return poolInfoMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
+      const result = poolInfoMap[mapPoolKeyObjectToPoolKey(poolKeyObject)];
+      if (result) {
+        return result;
+      }
+      throw new SdkError(
+        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol
+      );
     }
   }
 
@@ -69,7 +88,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClient {
     this.poolInfoCache.putAll(poolInfoMap);
   }
 
-  cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo) {
+  cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo): void {
     this.poolInfoCache.put(mapPoolKeyObjectToPoolKey(poolKeyObject), poolInfo);
   }
 }

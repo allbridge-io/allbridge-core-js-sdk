@@ -7,6 +7,9 @@ import { DefaultTokenService } from "../../../services/token";
 import { ApproveParams } from "../../../services/token/models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
+import { initChainsWithTestnet } from "../../mock/utils";
+
+initChainsWithTestnet();
 
 describe("RawTransactionBuilder", () => {
   let rawTransactionBuilder: RawBridgeTransactionBuilder;

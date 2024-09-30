@@ -1,9 +1,9 @@
 // @ts-expect-error import tron
 import TronWeb from "tronweb";
-import { ChainSymbol, ChainType } from "../../../../chains";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
+import { ChainType } from "../../../../chains/chain.enums";
 import { Messenger } from "../../../../client/core-api/core-api.model";
-import { FeePaymentMethod } from "../../../../models";
+import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
+import { ChainSymbol, FeePaymentMethod } from "../../../../models";
 import { TxSendParams } from "../../../../services/bridge/models";
 import { TronBridgeService } from "../../../../services/bridge/trx";
 import { formatAddress } from "../../../../services/bridge/utils";
@@ -23,7 +23,7 @@ describe("TrxBridge", () => {
         triggerSmartContract: jest.fn(),
       },
     };
-    trxBridge = new TronBridgeService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClient);
+    trxBridge = new TronBridgeService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClientWithPoolInfo);
   });
 
   afterEach(() => {

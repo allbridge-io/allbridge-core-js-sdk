@@ -1,11 +1,14 @@
 import { mapChainDetailsResponseToChainDetailsMap } from "../../../client/core-api/core-api-mapper";
 import { ChainDetailsResponse } from "../../../client/core-api/core-api.model";
-import { ChainDetailsWithTokens, ChainDetailsMap } from "../../../tokens-info";
+import { ChainDetailsWithTokens, ChainDetailsMapWithFlags } from "../../../tokens-info";
 import chainDetailsGRL from "../../data/tokens-info/ChainDetails-GRL.json";
-import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
+import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMapWithFlags.json";
 import tokensInfo from "../../mock/core-api/token-info.json";
+import { initChainsWithTestnet } from "../../mock/utils";
 
-const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;
+const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMapWithFlags;
+
+initChainsWithTestnet();
 
 describe("Core API Mapper", () => {
   describe("given ChainDetailsMapDTO", () => {

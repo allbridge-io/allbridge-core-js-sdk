@@ -19,7 +19,6 @@ export {
   CheckAddressResponse,
   AddressStatus,
 } from "../client/core-api/core-api.model";
-export { ChainSymbol, ChainType } from "../chains/index";
 export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {
@@ -50,6 +49,8 @@ export { Utils } from "../utils";
 export { SrbUtils, TrustLineParams } from "../utils/srb";
 export { SolUtils } from "../utils/sol";
 export * from "../exceptions";
+export { ChainSymbol, ChainType } from "../chains/chain.enums";
+export { AdditionalBasicChainProperties, BasicChainProperties } from "../chains/models";
 
 export enum FeePaymentMethod {
   /**

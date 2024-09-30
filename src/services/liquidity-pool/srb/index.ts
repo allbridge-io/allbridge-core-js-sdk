@@ -1,7 +1,6 @@
 import { contract } from "@stellar/stellar-sdk";
-import { ChainSymbol, ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
-import { AllbridgeCoreSdkOptions } from "../../../index";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
+import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType } from "../../../index";
 import {
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
@@ -66,8 +65,6 @@ export class SrbPoolService extends ChainPoolService {
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
-    console.log("sender", params.accountAddress);
-    console.log("poolAddress", params.token.poolAddress);
     return (
       await poolContract.deposit({
         sender: params.accountAddress,

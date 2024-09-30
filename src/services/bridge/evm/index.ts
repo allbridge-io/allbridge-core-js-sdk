@@ -5,9 +5,16 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { TransactionConfig } from "web3-core";
 import { AbiItem } from "web3-utils";
-import { ChainSymbol, ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
-import { FeePaymentMethod, Messenger, SdkError, SwapParams, TransactionResponse } from "../../../models";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
+import {
+  ChainSymbol,
+  ChainType,
+  FeePaymentMethod,
+  Messenger,
+  SdkError,
+  SwapParams,
+  TransactionResponse,
+} from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import bridgeAbi from "../../models/abi/Bridge.json";
@@ -165,11 +172,12 @@ export class EvmBridgeService extends ChainBridgeService {
         if (tokenAccounts.value.length === 0 && !accountData) {
           recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType);
         } else if (tokenAccounts.value.length > 0) {
-          recipientWalletAddress = formatAddress(
-            tokenAccounts.value[0].pubkey.toBase58(),
-            ChainType.SOLANA,
-            this.chainType
-          );
+          const firstTokenAccount = tokenAccounts.value[0];
+
+          if (!firstTokenAccount?.pubkey) {
+            throw new SdkError("First token account or its public key is undefined");
+          }
+          recipientWalletAddress = formatAddress(firstTokenAccount.pubkey.toBase58(), ChainType.SOLANA, this.chainType);
         } else {
           throw new SdkError("Associated account has wrong owner");
         }

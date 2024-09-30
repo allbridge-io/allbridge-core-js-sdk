@@ -1,12 +1,14 @@
-import { chainProperties, ChainSymbol } from "../../chains";
+import { Chains } from "../../chains";
+import { ChainSymbol } from "../../chains/chain.enums";
 import {
   ChainDetails,
   ChainDetailsMap,
-  ChainDetailsWithTokens,
+  ChainDetailsMapWithFlags,
+  ChainDetailsWithTokensWithFlags,
   MessengerTransferTime,
   PoolInfoMap,
   PoolKeyObject,
-  TokenWithChainDetails,
+  TokenWithChainDetailsWithFlags,
   TransferTime,
 } from "../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../utils/calculation";
@@ -21,8 +23,8 @@ import {
   TransferTimeDTO,
 } from "./core-api.model";
 
-export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsResponse): ChainDetailsMap {
-  return Object.entries(response).reduce<ChainDetailsMap>((map, entry) => {
+export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsResponse): ChainDetailsMapWithFlags {
+  return Object.entries(response).reduce<ChainDetailsMapWithFlags>((map, entry) => {
     const chainSymbol = entry[0];
     const chainDetailsDTO = entry[1];
     const chainDetails = mapChainDetailsFromDto(chainSymbol, chainDetailsDTO);
@@ -36,7 +38,7 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
 export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue;
     for (const token of chainDetailsDTO.tokens) {
       const poolKey = mapPoolKeyObjectToPoolKey({
         chainSymbol,
@@ -49,7 +51,7 @@ export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsRespo
   return poolInfoMap;
 }
 
-function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetails {
+function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetailsWithFlags {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
   const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
   return {
@@ -89,8 +91,8 @@ function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): Messeng
   }, {});
 }
 
-function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokens | null {
-  const basicChainProperties = chainProperties[chainSymbol];
+function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokensWithFlags | null {
+  const basicChainProperties = Chains.getChainsProperties()[chainSymbol];
   /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
     return null;
@@ -112,7 +114,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
 export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   const dividerPosition = poolKey.indexOf("_");
   return {
-    chainSymbol: poolKey.substring(0, dividerPosition) as ChainSymbol,
+    chainSymbol: poolKey.substring(0, dividerPosition),
     poolAddress: poolKey.substring(dividerPosition + 1),
   };
 }
@@ -124,7 +126,7 @@ export function mapPoolKeyObjectToPoolKey(poolKeyObject: PoolKeyObject): string 
 export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetailsMap): PoolKeyObject[] {
   const result = [];
   for (const [chainSymbolValue, chainDetails] of Object.entries(chainDetailsMap)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue;
     for (const token of chainDetails.tokens) {
       result.push({
         chainSymbol,
@@ -138,7 +140,7 @@ export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetails
 export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {
-    const chainSymbol = chainSymbolValue as ChainSymbol;
+    const chainSymbol = chainSymbolValue;
     for (const [poolAddress, poolInfo] of Object.entries(poolInfoByAddress)) {
       poolInfo.imbalance = calculatePoolInfoImbalance(poolInfo);
       poolInfoMap[mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress })] = poolInfo;

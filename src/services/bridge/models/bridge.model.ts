@@ -1,5 +1,4 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "../../../chains";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AmountFormat, FeePaymentMethod, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
@@ -43,7 +42,10 @@ export interface GetNativeTokenBalanceParams {
    *  The address for which we will find out the token balance
    */
   account: string;
-  chainSymbol: ChainSymbol;
+  /**
+   * The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   */
+  chainSymbol: string;
 }
 
 export interface BaseSendParams {
@@ -186,7 +188,7 @@ export interface TxSendParams {
   amount: string;
   contractAddress: string;
   fromChainId: number;
-  fromChainSymbol: ChainSymbol;
+  fromChainSymbol: string;
   fromAccountAddress: string;
   fromTokenAddress: AccountAddress;
   toChainId: number;

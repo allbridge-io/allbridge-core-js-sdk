@@ -1,4 +1,5 @@
 import { BigSource } from "big.js";
+import { AdditionalBasicChainProperties } from "./chains/models";
 import { mainnet } from "./configs";
 import {
   AmountFormat,
@@ -6,7 +7,6 @@ import {
   AmountsAndGasFeeOptions,
   BridgeService,
   ChainDetailsMap,
-  ChainSymbol,
   CheckAddressResponse,
   ExtraGasMaxLimitResponse,
   GasBalanceResponse,
@@ -60,16 +60,24 @@ export interface AllbridgeCoreSdkOptions {
    * @type {number}
    */
   cachePoolInfoChainSec: number;
+
+  /**
+   * @Internal
+   * Optional additional properties to merge with the default properties.
+   */
+  additionalChainsProperties?: Record<string, AdditionalBasicChainProperties>;
 }
 
 /**
+ * Type representing RPC node URLs for different blockchain chains.</br>
  * Provide node RPC URL for chain connection you intend to communicate with</br>
  * - required for SOL, TRX chains</br>
  * - optional for EVM chains -- you can interact by passing a {@link Provider} that will be used to communicate with the chain</br>
+ * @typedef {Record<string, string>} NodeRpcUrls
+ * @property {string} chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+ * @property {string} rpcUrl - The RPC node URL for the specified chain.
  */
-export type NodeRpcUrls = {
-  [key in ChainSymbol]?: string;
-};
+export type NodeRpcUrls = Record<string, string>;
 
 /**
  * @Deprecated Use {@link NodeRpcUrls}
@@ -118,53 +126,66 @@ export class AllbridgeCoreSdk {
 
   /**
    * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
+   *
+   * @param type - A string value which specifies ChainDetailsMap to retrieve.
+   *               Can be either 'swap' for send or 'pool' for liquidity pools setup.
+   *               Defaults to 'swap'.
    */
-  async chainDetailsMap(): Promise<ChainDetailsMap> {
-    return this.service.chainDetailsMap();
+  async chainDetailsMap(type: "swap" | "pool" = "swap"): Promise<ChainDetailsMap> {
+    return this.service.chainDetailsMap(type);
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens}.
+   *
+   * @param type - A string value which specifies a set of tokens to retrieve.
+   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
+   *               Defaults to 'swap'.
+   * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
    */
-  async tokens(): Promise<TokenWithChainDetails[]> {
-    return this.service.tokens();
+  async tokens(type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
+    return this.service.tokens(type);
   }
 
   /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param type - A string value which specifies a set of tokens to retrieve.
+   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
+   *               Defaults to 'swap'.
    */
-  async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenWithChainDetails[]> {
-    return this.service.tokensByChain(chainSymbol);
+  async tokensByChain(chainSymbol: string, type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
+    return this.service.tokensByChain(chainSymbol, type);
   }
 
   /**
    * Fetches information about tokens transfer by chosen chainSymbol and transaction Id from the Allbridge Core API.
-   * @param chainSymbol
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    * @param txId
    */
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.service.getTransferStatus(chainSymbol, txId);
   }
 
   /**
    * Get gas balance
-   * @param chainSymbol
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    * @param address
    */
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.service.getGasBalance(chainSymbol, address);
   }
 
   /**
    * Check address and show gas balance
    * @Deprecated
-   * @param chainSymbol
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    * @param recipientAddress
    * @param tokenAddress
    */
   async checkAddress(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    chainSymbol: ChainSymbol,
+    chainSymbol: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     recipientAddress: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

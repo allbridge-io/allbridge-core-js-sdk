@@ -2,16 +2,17 @@
 
 import bs58 from "bs58";
 import nock, { Body, RequestBodyMatcher } from "nock";
-import { ChainSymbol, ChainType } from "../../../chains";
-import { AllbridgeCoreClient, AllbridgeCoreClientImpl } from "../../../client/core-api";
+import { ChainType } from "../../../chains/chain.enums";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   Messenger,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
+import { AllbridgeCoreClientWithPoolInfo, AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
 import {
   AmountFormat,
+  ChainSymbol,
   ExtraGasMaxLimitResponse,
   FeePaymentMethod,
   SendParams,
@@ -23,9 +24,12 @@ import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithCh
 import tokenInfoWithChainDetailsSol from "../../data/tokens-info/TokenInfoWithChainDetails-SOL.json";
 import tokenInfoWithChainDetailsTrx from "../../data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
+import { initChainsWithTestnet } from "../../mock/utils";
+
+initChainsWithTestnet();
 
 describe("ChainBridgeService Utils", () => {
-  let api: AllbridgeCoreClient;
+  let api: AllbridgeCoreClientWithPoolInfo;
   let scope: nock.Scope;
 
   beforeEach(() => {
@@ -39,7 +43,7 @@ describe("ChainBridgeService Utils", () => {
 
   describe("prepareTxSendParams()", () => {
     beforeEach(() => {
-      scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse).persist();
+      scope = nock("http://localhost").get("/token-info?filter=all").reply(200, tokenInfoResponse).persist();
     });
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
@@ -59,7 +63,7 @@ describe("ChainBridgeService Utils", () => {
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
         toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
         sourceToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
-        destinationToken: tokenInfoWithChainDetailsTrx[0] as TokenWithChainDetails,
+        destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
 
@@ -68,7 +72,7 @@ describe("ChainBridgeService Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+        fromChainSymbol: "GRL",
         fromTokenAddress: "0x000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f43",
         toChainId: 4,
         toTokenAddress: "0x000000000000000000000000b10388f04f8331b59a02732cc1b6ac0d7045574b",
@@ -108,7 +112,7 @@ describe("ChainBridgeService Utils", () => {
       const expectedTxSendParams: TxSendParams = {
         contractAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
         fromChainId: 2,
-        fromChainSymbol: ChainSymbol.GRL,
+        fromChainSymbol: "GRL",
         fromTokenAddress: "0x000000000000000000000000ddac3cb57dea3fbeff4997d78215535eb5787117",
         toChainId: 5,
         toTokenAddress: "0x09c0917b1690e4929808fbc5378d9619a1ff49b3aaff441b2fa4bd58ab035a33",

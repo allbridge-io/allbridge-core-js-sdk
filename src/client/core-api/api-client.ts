@@ -1,6 +1,5 @@
 import axios, { Axios } from "axios";
-import { ChainSymbol } from "../../chains";
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
+import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
   mapChainDetailsResponseToChainDetailsMap,
@@ -16,10 +15,10 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "./core-api.model";
-import { AllbridgeCoreClientParams } from "./index";
+import { AllbridgeCoreClientParams } from "./core-client-base";
 
 export interface TokenInfo {
-  chainDetailsMap: ChainDetailsMap;
+  chainDetailsMap: ChainDetailsMapWithFlags;
   poolInfoMap: PoolInfoMap;
 }
 
@@ -28,9 +27,9 @@ export interface ApiClient {
 
   getPendingInfo(): Promise<PendingInfoResponse>;
 
-  getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse>;
+  getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
 
-  getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse>;
+  getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse>;
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 
@@ -53,7 +52,7 @@ export class ApiClientImpl implements ApiClient {
   }
 
   async getTokenInfo(): Promise<TokenInfo> {
-    const { data } = await this.api.get<ChainDetailsResponse>("/token-info");
+    const { data } = await this.api.get<ChainDetailsResponse>("/token-info", { params: { filter: "all" } });
     return {
       chainDetailsMap: mapChainDetailsResponseToChainDetailsMap(data),
       poolInfoMap: mapChainDetailsResponseToPoolInfoMap(data),
@@ -65,12 +64,12 @@ export class ApiClientImpl implements ApiClient {
     return data;
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     const { data } = await this.api.get<GasBalanceResponse>(`/check/${chainSymbol}/${address}`);
     return data;
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     const { data } = await this.api.get<TransferStatusResponse>(`/chain/${chainSymbol}/${txId}`);
     return data;
   }

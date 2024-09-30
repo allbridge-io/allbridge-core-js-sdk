@@ -4,10 +4,10 @@ import Cache from "timed-cache";
 import TronWeb from "tronweb";
 import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
-import { AllbridgeCoreClientPoolInfoCaching } from "../../client/core-api/core-client-pool-info-caching";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { Chains } from "../../chains";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
+import { AllbridgeCoreClientFiltered } from "../../client/core-api/core-client-filtered";
+import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
@@ -117,7 +117,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   private cache: Cache<PoolInfo>;
 
   constructor(
-    private api: AllbridgeCoreClientPoolInfoCaching,
+    private api: AllbridgeCoreClientFiltered,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService
@@ -214,13 +214,13 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
 }
 
 export function getChainPoolService(
-  chainSymbol: ChainSymbol,
+  chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
   provider?: Provider
 ): ChainPoolService {
-  switch (chainProperties[chainSymbol].chainType) {
+  switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
         return new EvmPoolService(provider as unknown as Web3, api);

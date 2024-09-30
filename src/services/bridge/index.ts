@@ -2,11 +2,11 @@
 import TronWeb from "tronweb";
 import Web3 from "web3";
 import { NodeRpcUrlsConfig } from "..";
-import { chainProperties, ChainSymbol, ChainType } from "../../chains";
-import { AllbridgeCoreClient } from "../../client/core-api";
+import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
+import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { CCTPDoesNotSupportedError } from "../../exceptions";
-import { AllbridgeCoreSdkOptions } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
@@ -141,13 +141,13 @@ export function getSpender(token: TokenWithChainDetails, messenger?: Messenger):
 }
 
 export function getChainBridgeService(
-  chainSymbol: ChainSymbol,
+  chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
   provider?: Provider
 ): ChainBridgeService {
-  switch (chainProperties[chainSymbol].chainType) {
+  switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
         return new EvmBridgeService(provider as unknown as Web3, api, nodeRpcUrlsConfig);

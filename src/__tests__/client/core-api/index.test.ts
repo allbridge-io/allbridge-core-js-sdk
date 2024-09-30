@@ -1,6 +1,5 @@
 import nock from "nock";
-import { ChainSymbol } from "../../../chains";
-import { AllbridgeCoreClientImpl } from "../../../client/core-api";
+import { ChainSymbol } from "../../../chains/chain.enums";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   Messenger,
@@ -8,17 +7,20 @@ import {
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
-import { ChainDetailsMap, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
+import { AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
+import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
 import poolMap from "../../data/pool-info/pool-info-map.json";
-import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMap.json";
+import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMapWithFlags.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
 import poolResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
-import { getRequestBodyMatcher } from "../../mock/utils";
+import { getRequestBodyMatcher, initChainsWithTestnet } from "../../mock/utils";
 
-const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMap;
+const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDetailsMapWithFlags;
 const expectedTransferStatus = transferStatus as unknown as TransferStatusResponse;
+
+initChainsWithTestnet();
 
 describe("AllbridgeCoreClient", () => {
   const api = new AllbridgeCoreClientImpl(
@@ -31,7 +33,7 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
 
     beforeEach(() => {
-      scope = nock("http://localhost").get("/token-info").reply(200, tokenInfoResponse);
+      scope = nock("http://localhost").get("/token-info?filter=all").reply(200, tokenInfoResponse);
     });
 
     it("☀️ getChainDetailsMap() returns ChainDetailsMap", async () => {
@@ -89,7 +91,7 @@ describe("AllbridgeCoreClient", () => {
     let scope: nock.Scope;
 
     const poolKey: PoolKeyObject = {
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL",
       poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
     };
 
@@ -120,7 +122,7 @@ describe("AllbridgeCoreClient", () => {
 
     it("☀️ should be present", async () => {
       const nockOptions = { reqheaders: customHeaders }; // cSpell:disable-line
-      const scope: nock.Scope = nock("http://localhost", nockOptions).get("/token-info").reply(200);
+      const scope: nock.Scope = nock("http://localhost", nockOptions).get("/token-info?filter=all").reply(200);
 
       await api.getChainDetailsMap();
 

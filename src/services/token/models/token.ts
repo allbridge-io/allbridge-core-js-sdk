@@ -1,6 +1,6 @@
 import { Big } from "big.js";
-import { ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { ChainType } from "../../../chains/chain.enums";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { ApproveParamsDto, CheckAllowanceParamsDto, GetAllowanceParamsDto, GetTokenBalanceParams } from "./token.model";

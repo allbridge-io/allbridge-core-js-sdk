@@ -1,6 +1,5 @@
 import { Big } from "big.js";
-import { ChainSymbol } from "../chains";
-import { AllbridgeCoreClientImpl } from "../client/core-api";
+import { Chains } from "../chains";
 import { ApiClientImpl } from "../client/core-api/api-client";
 import { ApiClientCaching } from "../client/core-api/api-client-caching";
 import {
@@ -11,9 +10,11 @@ import {
   PendingInfoDTO,
   TransferStatusResponse,
 } from "../client/core-api/core-api.model";
+import { AllbridgeCoreClientImpl } from "../client/core-api/core-client-base";
+import { AllbridgeCoreClientFiltered, AllbridgeCoreClientFilteredImpl } from "../client/core-api/core-client-filtered";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
-import { AllbridgeCoreSdkOptions, NodeRpcUrls } from "../index";
+import { AllbridgeCoreSdkOptions, BasicChainProperties, NodeRpcUrls, SdkError } from "../index";
 import {
   AmountFormat,
   AmountFormatted,
@@ -59,7 +60,7 @@ import { DefaultTokenService, TokenService } from "./token";
 export class NodeRpcUrlsConfig {
   constructor(private nodeRpcUrls: NodeRpcUrls) {}
 
-  getNodeRpcUrl(chainSymbol: ChainSymbol): string {
+  getNodeRpcUrl(chainSymbol: string): string {
     const nodeRpcUrl = this.nodeRpcUrls[chainSymbol];
     if (nodeRpcUrl !== undefined) {
       return nodeRpcUrl;
@@ -70,7 +71,7 @@ export class NodeRpcUrlsConfig {
 }
 
 export class AllbridgeCoreSdkService {
-  private readonly api: AllbridgeCoreClientPoolInfoCaching;
+  private readonly api: AllbridgeCoreClientFiltered;
 
   private readonly tokenService: TokenService;
 
@@ -80,34 +81,40 @@ export class AllbridgeCoreSdkService {
   pool: LiquidityPoolService;
 
   constructor(nodeRpcUrlsConfig: NodeRpcUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
+    Chains.addChainsProperties(params.additionalChainsProperties as Record<string, BasicChainProperties>);
     const apiClient = new ApiClientImpl(params);
     const apiClientCaching = new ApiClientCaching(apiClient);
     const coreClient = new AllbridgeCoreClientImpl(apiClientCaching);
-    this.api = new AllbridgeCoreClientPoolInfoCaching(coreClient);
+    const coreClientPoolInfoCaching = new AllbridgeCoreClientPoolInfoCaching(coreClient);
+    this.api = new AllbridgeCoreClientFilteredImpl(coreClientPoolInfoCaching, params);
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
     this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
   }
 
-  async chainDetailsMap(): Promise<ChainDetailsMap> {
-    return this.api.getChainDetailsMap();
+  async chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap> {
+    return this.api.getChainDetailsMap(type);
   }
 
-  async tokens(): Promise<TokenWithChainDetails[]> {
-    return this.api.tokens();
+  async tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
+    return this.api.tokens(type);
   }
 
-  async tokensByChain(chainSymbol: ChainSymbol): Promise<TokenWithChainDetails[]> {
-    const map = await this.api.getChainDetailsMap();
-    return map[chainSymbol].tokens;
+  async tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
+    const map = await this.api.getChainDetailsMap(type);
+    const chainDetails = map[chainSymbol];
+    if (!chainDetails) {
+      return [];
+    }
+    return chainDetails.tokens;
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.api.getTransferStatus(chainSymbol, txId);
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.api.getGasBalance(chainSymbol, address);
   }
 
@@ -150,9 +157,11 @@ export class AllbridgeCoreSdkService {
     let pendingInfoDTO: PendingInfoDTO | undefined;
     const pendingInfo = await this.api.getPendingInfo();
     for (const tokenAddress in pendingInfo[destToken.chainSymbol]) {
-      if (tokenAddress.toLowerCase() === destToken.tokenAddress.toLowerCase()) {
-        pendingInfoDTO = pendingInfo[destToken.chainSymbol][tokenAddress];
+      const info = pendingInfo[destToken.chainSymbol];
+      if (!info) {
+        throw new SdkError("Cannot find pending info for " + destToken.chainSymbol);
       }
+      pendingInfoDTO = info[tokenAddress];
     }
     if (pendingInfoDTO) {
       const destPoolAfterPending = getSwapFromVUsdPoolInfo(pendingInfoDTO.totalSentAmount, destPoolInfo);

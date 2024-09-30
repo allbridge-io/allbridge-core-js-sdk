@@ -15,7 +15,7 @@ import {
   SorobanRpc,
   TransactionBuilder as StellarTransactionBuilder,
   TransactionBuilder,
-} from "stellar-sdk";
+} from "@stellar/stellar-sdk";
 import { ensure } from "../../../utils/utils";
 import { getEnvVar } from "../../../utils/env";
 import * as dotenv from "dotenv";

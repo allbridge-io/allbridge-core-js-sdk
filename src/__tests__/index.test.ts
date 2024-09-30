@@ -4,7 +4,7 @@ import nock, { cleanAll as nockCleanAll } from "nock";
 import TronWeb from "tronweb";
 
 import Web3 from "web3";
-import { ChainDecimalsByType } from "../chains";
+import { Chains } from "../chains";
 import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
   AllbridgeCoreSdk,
@@ -65,6 +65,14 @@ describe("SDK", () => {
       cctpTokenMessengerMinter: "",
     },
     cachePoolInfoChainSec: 20,
+    additionalChainsProperties: {
+      GRL: {
+        chainSymbol: "GRL",
+        chainId: "0x5",
+        name: "Goerli",
+        chainType: ChainType.EVM,
+      },
+    },
   };
   beforeEach(() => {
     sdk = new AllbridgeCoreSdk(testNodeUrls, testConfig);
@@ -75,7 +83,7 @@ describe("SDK", () => {
 
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 18,
       feeShare: "0",
     };
@@ -126,7 +134,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 6,
       feeShare: "0",
     };
@@ -186,7 +194,7 @@ describe("SDK", () => {
     const scope: nock.Scope = nock("http://localhost");
     const sourceChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL" as ChainSymbol,
       decimals: 18,
       feeShare: "0.003",
     };
@@ -330,7 +338,7 @@ describe("SDK", () => {
 
     describe("Get tokens info", () => {
       beforeAll(() => {
-        scope.get("/token-info").reply(200, tokenInfoResponse).persist();
+        scope.get("/token-info?filter=all").reply(200, tokenInfoResponse).persist();
       });
 
       test("☀️ chainDetailsMap() returns ChainDetailsMap", async () => {
@@ -345,7 +353,7 @@ describe("SDK", () => {
 
       test("☀️ tokensByChain(GRL) returns a list of TokenWithChainDetails on Goerli chain", async () => {
         const expectedTokenInfoWithChainDetailsGrl = tokenInfoWithChainDetailsGrl as unknown as TokenWithChainDetails[];
-        expect(await sdk.tokensByChain(ChainSymbol.GRL)).toEqual(expectedTokenInfoWithChainDetailsGrl);
+        expect(await sdk.tokensByChain("GRL")).toEqual(expectedTokenInfoWithChainDetailsGrl);
       });
     });
 
@@ -605,7 +613,7 @@ describe("SDK", () => {
     const grlChainToken: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL" as ChainSymbol,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xDdaC3cb57DEa3fBEFF4997d78215535Eb5787117",
       decimals: 18,
@@ -614,7 +622,7 @@ describe("SDK", () => {
     const grlChainToken2: TokenWithChainDetails = {
       ...basicTokenInfoWithChainDetails,
       allbridgeChainId: 2,
-      chainSymbol: ChainSymbol.GRL,
+      chainSymbol: "GRL" as ChainSymbol,
       bridgeAddress: "0xba285A8F52601EabCc769706FcBDe2645aa0AF18",
       tokenAddress: "0xC7DBC4A896b34B7a10ddA2ef72052145A9122F43",
       decimals: 18,
@@ -1031,7 +1039,10 @@ describe("SDK", () => {
       const expected: GasFeeOptions = {
         [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
           [AmountFormat.INT]: fee,
-          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            fee,
+            Chains.getChainDecimalsByType(sourceChainToken.chainType)
+          ).toFixed(),
         },
         [FeePaymentMethod.WITH_STABLECOIN]: {
           [AmountFormat.INT]: expectedFeeAmountInStablecoin,
@@ -1059,7 +1070,10 @@ describe("SDK", () => {
       const expected: GasFeeOptions = {
         [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
           [AmountFormat.INT]: fee,
-          [AmountFormat.FLOAT]: convertIntAmountToFloat(fee, ChainDecimalsByType[sourceChainToken.chainType]).toFixed(),
+          [AmountFormat.FLOAT]: convertIntAmountToFloat(
+            fee,
+            Chains.getChainDecimalsByType(sourceChainToken.chainType)
+          ).toFixed(),
         },
       };
 

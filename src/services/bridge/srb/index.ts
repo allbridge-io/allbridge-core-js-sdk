@@ -1,9 +1,9 @@
 import { Address, contract } from "@stellar/stellar-sdk";
 import { Big } from "big.js";
-import { ChainSymbol, ChainType } from "../../../chains";
-import { AllbridgeCoreClient } from "../../../client/core-api";
+import { ChainSymbol } from "../../../chains/chain.enums";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError } from "../../../exceptions";
-import { AllbridgeCoreSdkOptions } from "../../../index";
+import { AllbridgeCoreSdkOptions, ChainType } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";

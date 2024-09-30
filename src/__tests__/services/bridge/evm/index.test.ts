@@ -1,22 +1,24 @@
 import Web3 from "web3";
-import { ChainSymbol } from "../../../../chains";
-import { AllbridgeCoreClient } from "../../../../client/core-api";
 import { Messenger } from "../../../../client/core-api/core-api.model";
-import { FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
+import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
+import { ChainSymbol, FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
 import { NodeRpcUrlsConfig } from "../../../../services";
 import { EvmBridgeService } from "../../../../services/bridge/evm";
-import { ChainDetailsMap } from "../../../../tokens-info";
+import { ChainDetailsMapWithFlags } from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
 import { mockNonce } from "../../../mock/bridge/utils";
+import { initChainsWithTestnet } from "../../../mock/utils";
+
+initChainsWithTestnet();
 
 describe("EvmBridge", () => {
   let evmBridge: EvmBridgeService;
 
-  const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMap;
+  const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMapWithFlags;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error enough for mock
-  const api: AllbridgeCoreClient = {
+  const api: AllbridgeCoreClientWithPoolInfo = {
     getChainDetailsMap: () =>
       new Promise((resolve) => {
         resolve(chainDetailsMap);
@@ -40,14 +42,14 @@ describe("EvmBridge", () => {
         sourceToken: {
           bridgeAddress: bridgeAddress,
           allbridgeChainId: 2,
-          chainSymbol: ChainSymbol.GRL,
+          chainSymbol: "GRL" as ChainSymbol,
           decimals: 18,
           tokenAddress: "0xc7dbc4a896b34b7a10dda2ef72052145a9122f43",
         } as TokenWithChainDetails,
         fromAccountAddress: from,
         destinationToken: {
           allbridgeChainId: 4,
-          chainSymbol: ChainSymbol.GRL,
+          chainSymbol: "GRL" as ChainSymbol,
           decimals: 18,
           tokenAddress: "0xb10388f04f8331b59a02732cc1b6ac0d7045574b",
         } as TokenWithChainDetails,

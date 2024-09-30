@@ -1,5 +1,4 @@
 import Cache from "timed-cache";
-import { ChainSymbol } from "../../chains";
 import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
@@ -37,7 +36,7 @@ export class ApiClientCaching implements ApiClient {
     return tokenInfoPromise;
   }
 
-  async getGasBalance(chainSymbol: ChainSymbol, address: string): Promise<GasBalanceResponse> {
+  async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     const GAS_BALANCE_CACHE_KEY = `GAS_BALANCE_${chainSymbol}_${address}`;
     const gasBalance = this.gasBalanceCache.get(GAS_BALANCE_CACHE_KEY);
     if (gasBalance) {
@@ -70,7 +69,7 @@ export class ApiClientCaching implements ApiClient {
     return fetchedTransactionCost;
   }
 
-  async getTransferStatus(chainSymbol: ChainSymbol, txId: string): Promise<TransferStatusResponse> {
+  async getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse> {
     return this.apiClient.getTransferStatus(chainSymbol, txId);
   }
 
