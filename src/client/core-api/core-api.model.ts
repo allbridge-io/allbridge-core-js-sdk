@@ -118,6 +118,8 @@ export interface TransferStatusResponse {
 
   send: BridgeTransaction;
   receive?: BridgeTransaction;
+
+  responseTime?: number;
 }
 
 export interface BridgeTransaction {
