@@ -294,7 +294,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       if (!amountIn) {
         throw new JupiterError("Cannot get inAmount");
       }
-      newAmount = Big(solTxSendParams.amount).minus(amountIn).toFixed(0);
+      newAmount = Big(solTxSendParams.amount).minus(Big(amountIn).mul(JUP_ADD_INDEX)).toFixed(0);
     } else {
       newAmount = Big(solTxSendParams.amount).minus(amountToProcess).toFixed(0);
     }
