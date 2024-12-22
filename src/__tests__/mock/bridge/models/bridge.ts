@@ -14,7 +14,11 @@ import { SolanaBridgeParams } from "../../../../services/bridge/sol";
 import { RawTransaction, TransactionResponse } from "../../../../services/models";
 
 export class TestBridge extends ChainBridgeService {
-  constructor(public params: SolanaBridgeParams, public api: AllbridgeCoreClient, public chainType: ChainType) {
+  constructor(
+    public params: SolanaBridgeParams,
+    public api: AllbridgeCoreClient,
+    public chainType: ChainType,
+  ) {
     super();
   }
 

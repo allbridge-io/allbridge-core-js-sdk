@@ -17,7 +17,7 @@ export function getSendAmountDetails(
   sourceToken: TokenWithChainDetails,
   sourcePool: PoolInfo,
   destToken: TokenWithChainDetails,
-  destPool: PoolInfo
+  destPool: PoolInfo,
 ): SendAmountDetails {
   const vUsd = swapToVUsd(amountInTokenPrecision, sourceToken, sourcePool);
   const vUsdInTokenPrecision = fromSystemPrecision(vUsd, sourceToken.decimals);
@@ -33,7 +33,7 @@ export function getSendAmountDetails(
         .toFixed(),
       swap: convertIntAmountToFloat(
         Big(amountInTokenPrecision).minus(vUsdInTokenPrecision).minus(swapToFeeInt),
-        sourceToken.decimals
+        sourceToken.decimals,
       )
         .neg()
         .round(sourceToken.decimals, Big.roundUp)
@@ -46,7 +46,7 @@ export function getSendAmountDetails(
         .toFixed(),
       swap: convertIntAmountToFloat(
         fromSystemPrecision(vUsd, destToken.decimals).minus(result).minus(swapFromFeeInt),
-        destToken.decimals
+        destToken.decimals,
       )
         .neg()
         .round(destToken.decimals, Big.roundUp)

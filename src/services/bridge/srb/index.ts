@@ -18,7 +18,7 @@ export class SrbBridgeService extends ChainBridgeService {
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     readonly params: AllbridgeCoreSdkOptions,
-    readonly api: AllbridgeCoreClient
+    readonly api: AllbridgeCoreClient,
   ) {
     super();
   }

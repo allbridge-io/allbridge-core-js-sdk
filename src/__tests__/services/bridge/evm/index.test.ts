@@ -1,4 +1,4 @@
-import Web3 from "web3";
+import { Web3 } from "web3";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { ChainSymbol, FeePaymentMethod, SendParams, TokenWithChainDetails } from "../../../../models";
@@ -16,7 +16,6 @@ describe("EvmBridge", () => {
 
   const chainDetailsMap = tokensGroupedByChain as unknown as ChainDetailsMapWithFlags;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error enough for mock
   const api: AllbridgeCoreClientWithPoolInfo = {
     getChainDetailsMap: () =>
@@ -26,7 +25,7 @@ describe("EvmBridge", () => {
   };
 
   beforeEach(() => {
-    evmBridge = new EvmBridgeService(new Web3(), api, new NodeRpcUrlsConfig({}));
+    evmBridge = new EvmBridgeService(new Web3("http://localhost/"), api, new NodeRpcUrlsConfig({}));
   });
 
   describe("Given transfer params", () => {

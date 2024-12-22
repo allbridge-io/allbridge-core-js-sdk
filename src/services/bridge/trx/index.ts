@@ -1,6 +1,5 @@
 import { Big } from "big.js";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -14,7 +13,10 @@ import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
+  constructor(
+    public tronWeb: TronWeb,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
   }
 
@@ -135,16 +137,16 @@ export class TronBridgeService extends ChainBridgeService {
     methodSignature: string,
     parameters: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string
+    fromAddress: string,
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
       methodSignature,
       {
-        callValue: value,
+        callValue: +value,
       },
       parameters,
-      fromAddress
+      fromAddress,
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));

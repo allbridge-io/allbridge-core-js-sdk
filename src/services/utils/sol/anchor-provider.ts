@@ -13,6 +13,6 @@ export function buildAnchorProvider(solanaRpcUrl: string, accountAddress: string
     {
       preflightCommitment: "confirmed",
       commitment: "confirmed",
-    }
+    },
   );
 }

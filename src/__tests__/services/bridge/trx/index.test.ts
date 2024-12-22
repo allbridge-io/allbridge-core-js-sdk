@@ -1,5 +1,4 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { ChainType } from "../../../../chains/chain.enums";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
@@ -23,7 +22,7 @@ describe("TrxBridge", () => {
         triggerSmartContract: jest.fn(),
       },
     };
-    trxBridge = new TronBridgeService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClientWithPoolInfo);
+    trxBridge = new TronBridgeService(tronWebMock as TronWeb, api as AllbridgeCoreClientWithPoolInfo);
   });
 
   afterEach(() => {
@@ -68,7 +67,7 @@ describe("TrxBridge", () => {
       expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         bridgeAddress,
         "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)",
-        { callValue: gasFee },
+        { callValue: +gasFee },
         [
           {
             type: "bytes32",
@@ -88,7 +87,7 @@ describe("TrxBridge", () => {
           { type: "uint8", value: messenger },
           { type: "uint256", value: 0 },
         ],
-        from
+        from,
       );
     });
   });

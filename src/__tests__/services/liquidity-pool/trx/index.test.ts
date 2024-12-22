@@ -1,6 +1,5 @@
 import { abortPendingRequests, cleanAll, disableNetConnect, load } from "nock";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { TronPoolService } from "../../../../services/liquidity-pool/trx";
 import { TokenWithChainDetails } from "../../../../tokens-info";
@@ -24,9 +23,9 @@ describe("TronPool", () => {
   };
 
   const tronPool = new TronPoolService(
-    tronWebMock as typeof TronWeb,
+    tronWebMock as any as TronWeb,
     api as AllbridgeCoreClientWithPoolInfo,
-    LOCAL_NODE_URL
+    LOCAL_NODE_URL,
   );
 
   beforeAll(() => {
@@ -59,7 +58,7 @@ describe("TronPool", () => {
       POOL_ADDRESS,
       "deposit(uint256)",
       {
-        callValue: "0",
+        callValue: +"0",
       },
       [
         {
@@ -67,7 +66,7 @@ describe("TronPool", () => {
           value: amount,
         },
       ],
-      ACCOUNT_ADDRESS
+      ACCOUNT_ADDRESS,
     );
   });
 
@@ -88,7 +87,7 @@ describe("TronPool", () => {
       POOL_ADDRESS,
       "withdraw(uint256)",
       {
-        callValue: "0",
+        callValue: +"0",
       },
       [
         {
@@ -96,7 +95,7 @@ describe("TronPool", () => {
           value: amount,
         },
       ],
-      ACCOUNT_ADDRESS
+      ACCOUNT_ADDRESS,
     );
   });
 
@@ -115,10 +114,10 @@ describe("TronPool", () => {
       POOL_ADDRESS,
       "claimRewards()",
       {
-        callValue: "0",
+        callValue: +"0",
       },
       [],
-      ACCOUNT_ADDRESS
+      ACCOUNT_ADDRESS,
     );
   });
 
@@ -149,7 +148,7 @@ function nockRequests(recName: string) {
         body[0].id = 1672338789028432;
         body[1].id = 1672338789028433;
         return JSON.stringify(body);
-      } catch (e) {
+      } catch (ignoreError) {
         return b;
       }
     });

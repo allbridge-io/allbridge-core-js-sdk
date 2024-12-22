@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnchorProvider, Provider } from "@project-serum/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -15,7 +14,10 @@ import { ChainTokenService } from "../models/token";
 export class SolanaTokenService extends ChainTokenService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
 
-  constructor(public solanaRpcUrl: string, public api: AllbridgeCoreClient) {
+  constructor(
+    public solanaRpcUrl: string,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
   }
 
@@ -39,7 +41,7 @@ export class SolanaTokenService extends ChainTokenService {
       {
         preflightCommitment: "confirmed",
         commitment: "confirmed",
-      }
+      },
     );
   }
 

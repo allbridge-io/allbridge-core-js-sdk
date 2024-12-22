@@ -1,19 +1,17 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
-import Web3 from "web3";
+import { TronWeb } from "tronweb";
+import { Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { CCTPDoesNotSupportedError } from "../../exceptions";
-import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3 } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
-import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
-import { ChainBridgeService } from "./models/bridge";
+import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams, ChainBridgeService } from "./models";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
@@ -53,7 +51,7 @@ export interface BridgeService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
-   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.approve}<p>
+   * @deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>
@@ -64,7 +62,7 @@ export interface BridgeService {
   approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse>;
 
   /**
-   * @Deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}<p>
+   * @deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}<p>
    * Send tokens through the ChainBridgeService
    * @param provider - will be used to access the network
    * @param params
@@ -79,7 +77,7 @@ export class DefaultBridgeService implements BridgeService {
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService
+    private tokenService: TokenService,
   ) {
     this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, params, tokenService);
   }
@@ -123,7 +121,7 @@ export class DefaultBridgeService implements BridgeService {
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider
+      provider,
     ).send(params);
   }
 }
@@ -145,12 +143,12 @@ export function getChainBridgeService(
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
-  provider?: Provider
+  provider?: Provider,
 ): ChainBridgeService {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
-        return new EvmBridgeService(provider as unknown as Web3, api, nodeRpcUrlsConfig);
+        return new EvmBridgeService(provider as EssentialWeb3, api, nodeRpcUrlsConfig);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
         return new EvmBridgeService(new Web3(nodeRpcUrl), api, nodeRpcUrlsConfig);
@@ -158,10 +156,17 @@ export function getChainBridgeService(
     }
     case ChainType.TRX: {
       if (provider) {
-        return new TronBridgeService(provider, api);
+        return new TronBridgeService(provider as TronWeb, api);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-        return new TronBridgeService(new TronWeb({ fullHost: nodeRpcUrl }), api);
+        return new TronBridgeService(
+          new TronWeb({
+            fullHost: nodeRpcUrl,
+            solidityNode: nodeRpcUrl,
+            eventServer: nodeRpcUrl,
+          }),
+          api,
+        );
       }
     }
     case ChainType.SOLANA: {
@@ -173,7 +178,7 @@ export function getChainBridgeService(
           cctpParams: params.cctpParams,
           jupiterUrl: params.jupiterUrl,
         },
-        api
+        api,
       );
     }
     case ChainType.SRB: {

@@ -49,7 +49,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService
+    private tokenService: TokenService,
   ) {}
 
   async approve(a: Provider | ApproveParams, b?: ApproveParams): Promise<RawTransaction> {
@@ -61,7 +61,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
           ...approveData,
           spender: approveData.token.poolAddress,
         },
-        provider
+        provider,
       );
     } else {
       const approveData: ApproveParams = a as ApproveParams;
@@ -81,7 +81,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider
+      provider,
     ).buildRawTransactionDeposit(params);
   }
 
@@ -94,7 +94,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider
+      provider,
     ).buildRawTransactionWithdraw(params);
   }
 
@@ -104,7 +104,7 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider
+      provider,
     ).buildRawTransactionClaimRewards(params);
   }
 }

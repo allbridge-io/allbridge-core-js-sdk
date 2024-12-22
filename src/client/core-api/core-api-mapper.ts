@@ -93,7 +93,6 @@ function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): Messeng
 
 function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): ChainDetailsWithTokensWithFlags | null {
   const basicChainProperties = Chains.getChainsProperties()[chainSymbol];
-  /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
   if (!basicChainProperties) {
     return null;
   }

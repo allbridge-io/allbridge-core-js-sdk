@@ -102,7 +102,7 @@ export interface Token {
    */
   feeShare: string;
   /**
-   * @Deprecated use {@link apr7d}</br>
+   * @deprecated use {@link apr7d}</br>
    * Token APR
    */
   apr: string;

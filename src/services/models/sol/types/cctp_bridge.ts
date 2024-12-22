@@ -49,7 +49,7 @@ export interface CctpBridge {
           name: "rent";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -57,7 +57,7 @@ export interface CctpBridge {
           type: {
             defined: "InitializeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -177,7 +177,7 @@ export interface CctpBridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -185,7 +185,7 @@ export interface CctpBridge {
           type: {
             defined: "BridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -215,7 +215,7 @@ export interface CctpBridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -223,7 +223,7 @@ export interface CctpBridge {
           type: {
             defined: "RegisterChainBridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -243,7 +243,7 @@ export interface CctpBridge {
           name: "chainBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -251,7 +251,7 @@ export interface CctpBridge {
           type: {
             defined: "UpdateChainBridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -271,13 +271,13 @@ export interface CctpBridge {
           name: "cctpBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "feeShareBp";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -297,13 +297,13 @@ export interface CctpBridge {
           name: "cctpBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "newProgramId";
           type: "publicKey";
-        }
+        },
       ];
     },
     {
@@ -328,13 +328,13 @@ export interface CctpBridge {
           name: "cctpBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -379,7 +379,7 @@ export interface CctpBridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -400,15 +400,15 @@ export interface CctpBridge {
           name: "cctpBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "newProgramId";
           type: "publicKey";
-        }
+        },
       ];
-    }
+    },
   ];
   accounts: [
     {
@@ -443,7 +443,7 @@ export interface CctpBridge {
           {
             name: "adminFeeAmount";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -463,7 +463,7 @@ export interface CctpBridge {
           {
             name: "domain";
             type: "u32";
-          }
+          },
         ];
       };
     },
@@ -501,10 +501,10 @@ export interface CctpBridge {
           {
             name: "slot";
             type: "u64";
-          }
+          },
         ];
       };
-    }
+    },
   ];
   types: [
     {
@@ -527,7 +527,7 @@ export interface CctpBridge {
           {
             name: "mint";
             type: "publicKey";
-          }
+          },
         ];
       };
     },
@@ -551,7 +551,7 @@ export interface CctpBridge {
           {
             name: "mint";
             type: "publicKey";
-          }
+          },
         ];
       };
     },
@@ -579,7 +579,7 @@ export interface CctpBridge {
           {
             name: "amount";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -595,17 +595,17 @@ export interface CctpBridge {
           {
             name: "cctpTokenMessengerMinter";
             type: "publicKey";
-          }
+          },
         ];
       };
-    }
+    },
   ];
   errors: [
     {
       code: 6000;
       name: "ValueTooHigh";
       msg: "Value is too high";
-    }
+    },
   ];
 }
 

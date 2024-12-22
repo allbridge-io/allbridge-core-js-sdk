@@ -19,7 +19,7 @@ export function initChainsWithTestnet() {
 
 export function mockTokenInfoEndpoint(
   scope: nock.Scope,
-  pools: { token: TokenWithChainDetails; poolInfo: PoolInfo }[]
+  pools: { token: TokenWithChainDetails; poolInfo: PoolInfo }[],
 ) {
   let resultInfo = {};
   for (const pool of pools) {

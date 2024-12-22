@@ -17,7 +17,10 @@ export interface SolUtils {
 }
 
 export class DefaultSolUtils implements SolUtils {
-  constructor(readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig, readonly params: AllbridgeCoreSdkOptions) {}
+  constructor(
+    readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    readonly params: AllbridgeCoreSdkOptions,
+  ) {}
 
   async addMemoToTx(transaction: VersionedTransaction, memo: string): Promise<void> {
     if (memo.length > 28) {

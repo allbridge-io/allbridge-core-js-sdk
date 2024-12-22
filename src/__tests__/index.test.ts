@@ -1,9 +1,8 @@
 import { Big } from "big.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 
-import Web3 from "web3";
+import { Web3 } from "web3";
 import { Chains } from "../chains";
 import { ReceiveTransactionCostRequest, ReceiveTransactionCostResponse } from "../client/core-api/core-api.model";
 import {
@@ -269,7 +268,7 @@ describe("SDK", () => {
         const actual = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
           sourceChainToken,
-          destinationChainToken
+          destinationChainToken,
         );
         expect(actual).toBeCloseTo(expectedPercent, 2);
       });
@@ -288,7 +287,7 @@ describe("SDK", () => {
         const feePercentOnDestination = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
           sourceChainToken,
-          destinationChainToken
+          destinationChainToken,
         );
         const partAfterFeeOnSource = 1 - feePercentOnSource / 100;
         const partAfterFeeOnDestination = partAfterFeeOnSource - (partAfterFeeOnSource * feePercentOnDestination) / 100;
@@ -322,7 +321,11 @@ describe("SDK", () => {
         const unsupportedMessenger = 999;
 
         test("☁ Should return null -> null", () => {
-          const actual = sdk.getAverageTransferTime(sourceChainToken, destinationChainToken, unsupportedMessenger);
+          const actual = sdk.getAverageTransferTime(
+            sourceChainToken,
+            destinationChainToken,
+            unsupportedMessenger as Messenger,
+          );
           expect(actual).toBeNull();
         });
       });
@@ -369,7 +372,7 @@ describe("SDK", () => {
         const grlTokenInfo = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
         /* cSpell:enable */
         const tokenDecimals = 18;
-        const provider = new Web3();
+        const provider = new Web3("http://localhost/");
 
         let methodCallMock: any;
         let allowanceMocked: any;
@@ -472,7 +475,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          }
+          },
         );
 
         test.each([
@@ -533,7 +536,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          }
+          },
         );
       });
 
@@ -601,7 +604,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          }
+          },
         );
       });
     });
@@ -709,7 +712,7 @@ describe("SDK", () => {
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
 
-        const transactionResponse = await sdk.bridge.send(new Web3(), sendParams);
+        const transactionResponse = await sdk.bridge.send(new Web3("http://localhost/"), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
         expect(methodSendRawTransactionSpy).toHaveBeenCalledTimes(1);
@@ -731,7 +734,7 @@ describe("SDK", () => {
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
-          0
+          0,
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
@@ -777,7 +780,7 @@ describe("SDK", () => {
         const methodVerifyTxMocked = jest.fn(() => {
           return { receipt: { result: "SUCCESS" } };
         });
-        const tronWebMock: TronWeb = {
+        const tronWebMock = {
           transactionBuilder: {
             triggerSmartContract: methodTriggerSmartContractMock,
           },
@@ -788,7 +791,7 @@ describe("SDK", () => {
           },
         };
 
-        const transactionResponse = await sdk.bridge.send(tronWebMock, sendParams);
+        const transactionResponse = await sdk.bridge.send(tronWebMock as any as TronWeb, sendParams);
         expect(methodTriggerSmartContractMock).toHaveBeenCalledTimes(1);
         const expectedAmount = Big(tokensAmount)
           .mul(10 ** trxChainToken.decimals)
@@ -796,7 +799,7 @@ describe("SDK", () => {
         expect(methodTriggerSmartContractMock).toBeCalledWith(
           trxChainToken.bridgeAddress,
           "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)",
-          { callValue: fee },
+          { callValue: +fee },
           [
             {
               type: "bytes32",
@@ -816,7 +819,7 @@ describe("SDK", () => {
             { type: "uint8", value: Messenger.ALLBRIDGE },
             { type: "uint256", value: 0 },
           ],
-          fromAccountAddress
+          fromAccountAddress,
         );
         expect(methodSignMock).toHaveBeenCalledTimes(1);
         expect(methodSignMock).toBeCalledWith(rawTx);
@@ -885,7 +888,7 @@ describe("SDK", () => {
         });
         const methodSendRawTransactionSpy = mockEvmSendRawTransaction(transactionHash);
 
-        const transactionResponse = await sdk.bridge.send(new Web3(), sendParams);
+        const transactionResponse = await sdk.bridge.send(new Web3("http://localhost/"), sendParams);
 
         expect(swapAndBridgeMocked).toBeCalledTimes(1);
         expect(methodSendRawTransactionSpy).toHaveBeenCalledTimes(1);
@@ -910,7 +913,7 @@ describe("SDK", () => {
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
-          expectedFeeAmount
+          expectedFeeAmount,
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
@@ -929,7 +932,7 @@ describe("SDK", () => {
           minimumReceiveAmount: "7",
         };
 
-        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, new Web3());
+        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, new Web3("http://localhost/"));
 
         expect(rawTransactionTransfer).toEqual({
           data: "0x331838b20000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000ddac3cb57dea3fbeff4997d78215535eb5787117000000000000000000000000c7dbc4a896b34b7a10dda2ef72052145a9122f4300000000000000000000000068d7ed9cf9881427f1db299b90fd63ef805dd10d0000000000000000000000000000000000000000000000006124fee993bc0000",
@@ -947,7 +950,7 @@ describe("SDK", () => {
             transaction: rawTx,
           };
         });
-        const tronWebMock: TronWeb = {
+        const tronWebMock = {
           transactionBuilder: {
             triggerSmartContract: methodTriggerSmartContractMock,
           },
@@ -963,11 +966,11 @@ describe("SDK", () => {
           minimumReceiveAmount: minimumReceiveAmount,
         };
 
-        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, tronWebMock);
+        const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(swapParams, tronWebMock as any as TronWeb);
         expect(methodTriggerSmartContractMock).toBeCalledWith(
           trxChainToken.bridgeAddress,
           "swap(uint256,bytes32,bytes32,address,uint256)",
-          { callValue: "0" },
+          { callValue: +"0" },
           [
             {
               type: "uint256",
@@ -987,7 +990,7 @@ describe("SDK", () => {
               value: convertFloatAmountToInt(minimumReceiveAmount, trxChainToken.decimals).toFixed(),
             },
           ],
-          accountAddress
+          accountAddress,
         );
         expect(rawTransactionTransfer).toEqual(rawTx);
       });
@@ -1041,14 +1044,14 @@ describe("SDK", () => {
           [AmountFormat.INT]: fee,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             fee,
-            Chains.getChainDecimalsByType(sourceChainToken.chainType)
+            Chains.getChainDecimalsByType(sourceChainToken.chainType),
           ).toFixed(),
         },
         [FeePaymentMethod.WITH_STABLECOIN]: {
           [AmountFormat.INT]: expectedFeeAmountInStablecoin,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             expectedFeeAmountInStablecoin,
-            sourceChainToken.decimals
+            sourceChainToken.decimals,
           ).toFixed(),
         },
       };
@@ -1072,7 +1075,7 @@ describe("SDK", () => {
           [AmountFormat.INT]: fee,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             fee,
-            Chains.getChainDecimalsByType(sourceChainToken.chainType)
+            Chains.getChainDecimalsByType(sourceChainToken.chainType),
           ).toFixed(),
         },
       };

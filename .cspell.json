@@ -58,7 +58,8 @@
     "node_modules/**",
     "src/configs/",
     "src/__tests__/services/liquidity-pool/sol/data/",
-    "src/services/models/srb/token-contract.ts",
+    "src/services/models/srb/",
+    "src/services/models/abi/",
     "src/services/utils/srb/assembled-tx.ts"
   ]
 }

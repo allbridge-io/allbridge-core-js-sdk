@@ -153,7 +153,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -176,7 +176,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -199,7 +199,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -222,7 +222,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<u128>>>;
 
   /**
@@ -255,7 +255,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<u128>>>;
 
   /**
@@ -278,7 +278,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -302,7 +302,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -345,7 +345,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -448,7 +448,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -471,7 +471,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -494,7 +494,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -517,7 +517,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 
   /**
@@ -561,7 +561,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<u128>>>;
 
   /**
@@ -664,7 +664,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<UserDeposit>>>;
 
   /**
@@ -687,7 +687,7 @@ export interface PoolContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    }
+    },
   ) => Promise<AssembledTransaction<Result<void>>>;
 }
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -736,7 +736,7 @@ export class PoolContract extends ContractClient {
         "AAAAAQAAAAAAAAAAAAAADVN0b3BBdXRob3JpdHkAAAAAAAABAAAAAAAAAAEwAAAAAAAAEw==",
         "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAAKAAAAAAAAAANVW5pbXBsZW1lbnRlZAAAAAAAAAAAAAAAAAAAC0luaXRpYWxpemVkAAAAAAEAAAAAAAAADVVuaW5pdGlhbGl6ZWQAAAAAAAACAAAAAAAAAAxVbmF1dGhvcml6ZWQAAAADAAAAAAAAAApJbnZhbGlkQXJnAAAAAAAEAAAAAAAAAA5JbnZhbGlkQ2hhaW5JZAAAAAAABQAAAAAAAAATSW52YWxpZE90aGVyQ2hhaW5JZAAAAAAGAAAAAAAAAA5HYXNVc2FnZU5vdFNldAAAAAAABwAAAAAAAAANQnJva2VuQWRkcmVzcwAAAAAAAAgAAAAAAAAACE5vdEZvdW5kAAAACQAAAAAAAAAYVG9rZW5JbnN1ZmZpY2llbnRCYWxhbmNlAAAACgAAAAAAAAAKQ2FzdEZhaWxlZAAAAAAACwAAAAAAAAAMVTI1Nk92ZXJmbG93AAAADAAAAAAAAAAKWmVyb0Ftb3VudAAAAAAAZwAAAAAAAAAMUG9vbE92ZXJmbG93AAAAaAAAAAAAAAALWmVyb0NoYW5nZXMAAAAAaQAAAAAAAAARUmVzZXJ2ZXNFeGhhdXN0ZWQAAAAAAABqAAAAAAAAABpJbnN1ZmZpY2llbnRSZWNlaXZlZEFtb3VudAAAAAAAawAAAAAAAAAUQmFsYW5jZVJhdGlvRXhjZWVkZWQAAABsAAAAAAAAAAlGb3JiaWRkZW4AAAAAAABtAAAAAAAAABlVbmF1dGhvcml6ZWRTdG9wQXV0aG9yaXR5AAAAAAAAywAAAAAAAAAOU3dhcFByb2hpYml0ZWQAAAAAAMwAAAAAAAAAEkFtb3VudFRvb0xvd0ZvckZlZQAAAAAAzQAAAAAAAAAWQnJpZGdlVG9UaGVaZXJvQWRkcmVzcwAAAAAAzgAAAAAAAAAORW1wdHlSZWNpcGllbnQAAAAAAM8AAAAAAAAAE1NvdXJjZU5vdFJlZ2lzdGVyZWQAAAAA0AAAAAAAAAAVV3JvbmdEZXN0aW5hdGlvbkNoYWluAAAAAAAA0QAAAAAAAAATVW5rbm93bkFub3RoZXJDaGFpbgAAAADSAAAAAAAAABFUb2tlbnNBbHJlYWR5U2VudAAAAAAAANMAAAAAAAAAEE1lc3NhZ2VQcm9jZXNzZWQAAADUAAAAAAAAAAxOb3RFbm91Z2hGZWUAAADWAAAAAAAAAAlOb01lc3NhZ2UAAAAAAADXAAAAAAAAAA1Ob1JlY2VpdmVQb29sAAAAAAAA2AAAAAAAAAAGTm9Qb29sAAAAAADZAAAAAAAAABNVbmtub3duQW5vdGhlclRva2VuAAAAANoAAAAAAAAAD1dyb25nQnl0ZUxlbmd0aAAAAAEsAAAAAAAAAApIYXNNZXNzYWdlAAAAAAEtAAAAAAAAABdJbnZhbGlkUHJpbWFyeVNpZ25hdHVyZQAAAAEuAAAAAAAAABlJbnZhbGlkU2Vjb25kYXJ5U2lnbmF0dXJlAAAAAAABLwAAAAAAAAARTm9HYXNEYXRhRm9yQ2hhaW4AAAAAAAGQ",
       ]),
-      options
+      options,
     );
   }
   public readonly fromJSON = {

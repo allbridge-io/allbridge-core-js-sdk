@@ -96,7 +96,7 @@ export class ApiClientImpl implements ApiClient {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     return mapPoolInfoResponseToPoolInfoMap(data);
   }

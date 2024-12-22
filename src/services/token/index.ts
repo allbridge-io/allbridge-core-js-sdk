@@ -1,10 +1,9 @@
 import { Big } from "big.js";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
-import Web3 from "web3";
+import { TronWeb } from "tronweb";
+import { Web3 } from "web3";
 import { Chains } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
-import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
@@ -19,8 +18,8 @@ import {
   CheckAllowanceParamsDto,
   GetAllowanceParams,
   GetTokenBalanceParams,
+  ChainTokenService,
 } from "./models";
-import { ChainTokenService } from "./models/token";
 import { SolanaTokenService } from "./sol";
 import { SrbTokenService } from "./srb";
 import { TronTokenService } from "./trx";
@@ -43,12 +42,12 @@ export class DefaultTokenService implements TokenService {
   constructor(
     readonly api: AllbridgeCoreClient,
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    readonly params: AllbridgeCoreSdkOptions
+    readonly params: AllbridgeCoreSdkOptions,
   ) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
     const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
-      params
+      params,
     );
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
@@ -57,7 +56,7 @@ export class DefaultTokenService implements TokenService {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
-      this.prepareCheckAllowanceParams(params)
+      this.prepareCheckAllowanceParams(params),
     );
   }
 
@@ -67,7 +66,7 @@ export class DefaultTokenService implements TokenService {
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
-      this.prepareApproveParams(approveData)
+      this.prepareApproveParams(approveData),
     );
   }
 
@@ -79,7 +78,7 @@ export class DefaultTokenService implements TokenService {
     return this.getChainTokenService(
       approveData.token.chainSymbol,
       approveData.owner,
-      provider
+      provider,
     ).buildRawTransactionApprove(this.prepareApproveParams(approveData));
   }
 
@@ -87,7 +86,7 @@ export class DefaultTokenService implements TokenService {
     const tokenBalance = await this.getChainTokenService(
       params.token.chainSymbol,
       params.account,
-      provider
+      provider,
     ).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
@@ -99,13 +98,13 @@ export class DefaultTokenService implements TokenService {
     const tokenBalance = await this.getChainTokenService(
       params.chainSymbol,
       params.account,
-      provider
+      provider,
     ).getNativeTokenBalance(params);
     return {
       [AmountFormat.INT]: tokenBalance,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         tokenBalance,
-        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType)
+        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType),
       ).toFixed(),
     };
   }
@@ -114,7 +113,7 @@ export class DefaultTokenService implements TokenService {
     switch (Chains.getChainProperty(chainSymbol).chainType) {
       case ChainType.EVM: {
         if (provider) {
-          return new EvmTokenService(provider as unknown as Web3, this.api);
+          return new EvmTokenService(provider as EssentialWeb3, this.api);
         } else {
           const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
           return new EvmTokenService(new Web3(nodeRpcUrl), this.api);
@@ -122,7 +121,7 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.TRX: {
         if (provider) {
-          return new TronTokenService(provider, this.api);
+          return new TronTokenService(provider as TronWeb, this.api);
         } else {
           const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
           const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });

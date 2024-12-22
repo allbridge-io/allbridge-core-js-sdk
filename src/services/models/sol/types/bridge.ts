@@ -19,7 +19,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -27,7 +27,7 @@ export interface Bridge {
           type: {
             defined: "InitializeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -82,7 +82,7 @@ export interface Bridge {
           name: "rent";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -90,7 +90,7 @@ export interface Bridge {
           type: {
             defined: "InitializePoolArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -120,7 +120,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -176,13 +176,13 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -237,13 +237,13 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "amountLp";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -343,7 +343,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -351,7 +351,7 @@ export interface Bridge {
           type: {
             defined: "BridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -481,7 +481,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -489,7 +489,7 @@ export interface Bridge {
           type: {
             defined: "BridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -559,7 +559,7 @@ export interface Bridge {
           name: "tokenProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -569,7 +569,7 @@ export interface Bridge {
         {
           name: "receiveAmountMin";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -599,7 +599,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -607,7 +607,7 @@ export interface Bridge {
           type: {
             defined: "RegisterChainBridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -627,7 +627,7 @@ export interface Bridge {
           name: "chainBridge";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -635,7 +635,7 @@ export interface Bridge {
           type: {
             defined: "UpdateChainBridgeArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -710,7 +710,7 @@ export interface Bridge {
           name: "messengerProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -718,7 +718,7 @@ export interface Bridge {
           type: {
             defined: "UnlockArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -793,7 +793,7 @@ export interface Bridge {
           name: "messengerProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -801,7 +801,7 @@ export interface Bridge {
           type: {
             defined: "UnlockArgs";
           };
-        }
+        },
       ];
     },
     {
@@ -821,13 +821,13 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "amount";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -882,7 +882,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -903,7 +903,7 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -919,7 +919,7 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -927,7 +927,7 @@ export interface Bridge {
           type: {
             defined: "ActionType";
           };
-        }
+        },
       ];
     },
     {
@@ -942,7 +942,7 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -950,7 +950,7 @@ export interface Bridge {
           type: {
             defined: "ActionType";
           };
-        }
+        },
       ];
     },
     {
@@ -970,7 +970,7 @@ export interface Bridge {
           name: "rebalancer";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -991,7 +991,7 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -1007,13 +1007,13 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "newProgramId";
           type: "publicKey";
-        }
+        },
       ];
     },
     {
@@ -1028,13 +1028,13 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "newProgramId";
           type: "publicKey";
-        }
+        },
       ];
     },
     {
@@ -1049,13 +1049,13 @@ export interface Bridge {
           name: "config";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "newProgramId";
           type: "publicKey";
-        }
+        },
       ];
     },
     {
@@ -1075,13 +1075,13 @@ export interface Bridge {
           name: "pool";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "feeShareBp";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -1101,13 +1101,13 @@ export interface Bridge {
           name: "pool";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "balanceRatioMinBp";
           type: "u16";
-        }
+        },
       ];
     },
     {
@@ -1127,13 +1127,13 @@ export interface Bridge {
           name: "pool";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "feeShareBp";
           type: "u64";
-        }
+        },
       ];
     },
     {
@@ -1163,7 +1163,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -1175,7 +1175,7 @@ export interface Bridge {
           type: {
             array: ["u8", 32];
           };
-        }
+        },
       ];
     },
     {
@@ -1205,7 +1205,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -1217,7 +1217,7 @@ export interface Bridge {
           type: {
             array: ["u8", 32];
           };
-        }
+        },
       ];
     },
     {
@@ -1267,7 +1267,7 @@ export interface Bridge {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -1318,10 +1318,10 @@ export interface Bridge {
           name: "tokenProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
-    }
+    },
   ];
   accounts: [
     {
@@ -1342,7 +1342,7 @@ export interface Bridge {
           {
             name: "gasUsage";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1390,7 +1390,7 @@ export interface Bridge {
           {
             name: "canWithdraw";
             type: "bool";
-          }
+          },
         ];
       };
     },
@@ -1450,7 +1450,7 @@ export interface Bridge {
           {
             name: "fee";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1517,7 +1517,7 @@ export interface Bridge {
           {
             name: "balanceRatioMinBp";
             type: "u16";
-          }
+          },
         ];
       };
     },
@@ -1547,7 +1547,7 @@ export interface Bridge {
           {
             name: "slot";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1571,10 +1571,10 @@ export interface Bridge {
           {
             name: "rewardDebt";
             type: "u64";
-          }
+          },
         ];
       };
-    }
+    },
   ];
   types: [
     {
@@ -1595,7 +1595,7 @@ export interface Bridge {
           {
             name: "gasUsage";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1617,7 +1617,7 @@ export interface Bridge {
           {
             name: "gasUsage";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1637,7 +1637,7 @@ export interface Bridge {
           {
             name: "gasOracleProgramId";
             type: "publicKey";
-          }
+          },
         ];
       };
     },
@@ -1661,7 +1661,7 @@ export interface Bridge {
           {
             name: "balanceRatioMinBp";
             type: "u16";
-          }
+          },
         ];
       };
     },
@@ -1695,7 +1695,7 @@ export interface Bridge {
           {
             name: "vusdAmount";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1741,7 +1741,7 @@ export interface Bridge {
           {
             name: "receiveAmountMin";
             type: "u64";
-          }
+          },
         ];
       };
     },
@@ -1752,7 +1752,7 @@ export interface Bridge {
         variants: [
           {
             name: "FeeTooHigh";
-          }
+          },
         ];
       };
     },
@@ -1769,7 +1769,7 @@ export interface Bridge {
           },
           {
             name: "Wormhole";
-          }
+          },
         ];
       };
     },
@@ -1786,10 +1786,10 @@ export interface Bridge {
           },
           {
             name: "Swap";
-          }
+          },
         ];
       };
-    }
+    },
   ];
   errors: [
     {
@@ -1856,7 +1856,7 @@ export interface Bridge {
       code: 6012;
       name: "ValueTooHigh";
       msg: "Value is too high";
-    }
+    },
   ];
 }
 

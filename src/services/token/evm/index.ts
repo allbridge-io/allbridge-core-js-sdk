@@ -1,17 +1,13 @@
 import BN from "bn.js";
-import erc20abi from "erc-20-abi";
-import Web3 from "web3";
-import { TransactionConfig } from "web3-core";
-import { AbiItem } from "web3-utils";
+import { Contract, Transaction as Web3Transaction } from "web3";
 import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
-import { GetTokenBalanceParams, TransactionResponse } from "../../../models";
+import { GetTokenBalanceParams, EssentialWeb3, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction } from "../../models";
-import { BaseContract } from "../../models/abi/types/types";
-import { amountToHex } from "../../utils/index";
-import { ApproveParamsDto, GetAllowanceParamsDto } from "../models";
-import { ChainTokenService } from "../models/token";
+import ERC20 from "../../models/abi/ERC20";
+import { amountToHex } from "../../utils";
+import { ApproveParamsDto, GetAllowanceParamsDto, ChainTokenService } from "../models";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
@@ -21,7 +17,10 @@ const POLYGON_GAS_LIMIT = 100_000;
 export class EvmTokenService extends ChainTokenService {
   chainType: ChainType.EVM = ChainType.EVM;
 
-  constructor(public web3: Web3, public api: AllbridgeCoreClient) {
+  constructor(
+    public web3: EssentialWeb3,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
   }
 
@@ -33,18 +32,16 @@ export class EvmTokenService extends ChainTokenService {
   }
 
   getAllowanceByTokenAddress(tokenAddress: string, owner: string, spender: string): Promise<string> {
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+    const tokenContract = this.getERC20Contract(tokenAddress);
     return tokenContract.methods.allowance(owner, spender).call();
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
-    return await this.getContract(erc20abi as AbiItem[], params.token.tokenAddress)
-      .methods.balanceOf(params.account)
-      .call();
+    return await this.getERC20Contract(params.token.tokenAddress).methods.balanceOf(params.account).call();
   }
 
   async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
-    return await this.web3.eth.getBalance(params.account);
+    return (await this.web3.eth.getBalance(params.account)).toString();
   }
 
   async approve(params: ApproveParamsDto): Promise<TransactionResponse> {
@@ -66,39 +63,43 @@ export class EvmTokenService extends ChainTokenService {
     return tokenAddress.toLowerCase() === USDT_TOKEN_ADDRESS;
   }
 
-  async buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
+  buildRawTransactionApprove(params: ApproveParamsDto): Promise<RawTransaction> {
     const { tokenAddress, spender, owner, amount } = params;
-    const tokenContract = this.getContract(erc20abi as AbiItem[], tokenAddress);
+    const tokenContract = this.getERC20Contract(tokenAddress);
 
-    const approveMethod = await tokenContract.methods.approve(
+    const approveMethod = tokenContract.methods.approve(
       spender,
-      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
+      amount == undefined ? MAX_AMOUNT : amountToHex(amount),
     );
 
-    return {
+    return Promise.resolve({
       from: owner,
       to: tokenAddress,
       value: "0",
       data: approveMethod.encodeABI(),
-    };
+    });
   }
 
   private async sendRawTransaction(rawTransaction: RawTransaction, chainSymbol: string) {
-    const transactionConfig: TransactionConfig = rawTransaction as TransactionConfig;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
+    const transactionConfig: Web3Transaction = rawTransaction as Web3Transaction;
     // prettier-ignore
-    const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
+    const feeOptions: {
+      maxPriorityFeePerGas?: number | string | BN;
+      maxFeePerGas?: number | string | BN
+    } = {maxPriorityFeePerGas: undefined, maxFeePerGas: undefined};
     if ((chainSymbol as ChainSymbol) === ChainSymbol.POL) {
       transactionConfig.gas = POLYGON_GAS_LIMIT;
     } else {
-      transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction as TransactionConfig);
+      transactionConfig.gas = await this.web3.eth.estimateGas(rawTransaction as Web3Transaction);
     }
-    const { transactionHash } = await this.web3.eth.sendTransaction({ ...transactionConfig, ...feeOptions });
-    return { txId: transactionHash };
+    const { transactionHash } = await this.web3.eth.sendTransaction({
+      ...transactionConfig,
+      ...feeOptions,
+    } as Web3Transaction);
+    return { txId: transactionHash.toString() };
   }
 
-  private getContract<T extends BaseContract>(abiItem: AbiItem[], contractAddress: string): T {
-    return new this.web3.eth.Contract(abiItem, contractAddress) as any;
+  private getERC20Contract(contractAddress: string) {
+    return new this.web3.eth.Contract(ERC20.abi, contractAddress) as Contract<typeof ERC20.abi>;
   }
 }
