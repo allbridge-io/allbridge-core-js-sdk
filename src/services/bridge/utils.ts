@@ -24,9 +24,28 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { SendParams, TxSendParams, TxSwapParams } from "./models";
+import {
+  SendParams,
+  TxSendParams,
+  TxSendParamsEvm,
+  TxSendParamsSol,
+  TxSendParamsSrb,
+  TxSendParamsTrx,
+  TxSwapParams,
+  TxSwapParamsEvm,
+  TxSwapParamsSol,
+  TxSwapParamsSrb,
+  TxSwapParamsTrx,
+} from "./models";
 
-export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] {
+// 1. OVERLOADS
+export function formatAddress(address: string, from: ChainType, to: ChainType.EVM): string;
+export function formatAddress(address: string, from: ChainType, to: ChainType.TRX): Buffer;
+export function formatAddress(address: string, from: ChainType, to: ChainType.SOLANA | ChainType.SRB): number[];
+export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] | Buffer;
+
+// 2. COMMON Realization
+export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] | Buffer {
   let buffer: Buffer;
   switch (from) {
     case ChainType.EVM: {
@@ -55,7 +74,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       return Array.from(buffer);
     }
     case ChainType.TRX: {
-      return buffer.toJSON().data;
+      return buffer;
     }
     case ChainType.SRB: {
       return buffer.toJSON().data;
@@ -73,7 +92,7 @@ export function evmAddressToBuffer32(address: string): Buffer {
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
 }
 
-function tronAddressToBuffer32(address: string): Buffer {
+export function tronAddressToBuffer32(address: string): Buffer {
   const ethAddress = tronAddressToEthAddress(address);
   const buffer = hexToBuffer(ethAddress);
   return bufferToSize(buffer, 32);
@@ -122,6 +141,16 @@ export function getNonceBigInt(): bigint {
   return bigint;
 }
 
+// 1. OVERLOADS
+export function prepareTxSwapParams(bridgeChainType: ChainType.EVM, params: SwapParams): TxSwapParamsEvm;
+export function prepareTxSwapParams(bridgeChainType: ChainType.TRX, params: SwapParams): TxSwapParamsTrx;
+export function prepareTxSwapParams(
+  bridgeChainType: ChainType.SOLANA | ChainType.SRB,
+  params: SwapParams,
+): TxSwapParamsSol | TxSwapParamsSrb;
+export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams;
+
+// 2. COMMON Realization
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
   const txSwapParams = {} as TxSwapParams;
   const sourceToken = params.sourceToken;
@@ -137,6 +166,29 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
   return txSwapParams;
 }
 
+// 1. OVERLOADS
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.EVM,
+  params: SendParams,
+  api: AllbridgeCoreClient,
+): Promise<TxSendParamsEvm>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.TRX,
+  params: SendParams,
+  api: AllbridgeCoreClient,
+): Promise<TxSendParamsTrx>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.SOLANA | ChainType.SRB,
+  params: SendParams,
+  api: AllbridgeCoreClient,
+): Promise<TxSendParamsSol | TxSendParamsSrb>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType,
+  params: SendParams,
+  api: AllbridgeCoreClient,
+): Promise<TxSendParams>;
+
+// 2. COMMON Realization
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
   params: SendParams,

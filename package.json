@@ -27,8 +27,8 @@
     "clean": "node -r ./esbuild-hook ./scripts/clean",
     "type:dts": "tsc --emitDeclarationOnly",
     "type:check": "tsc --noEmit",
-    "format": "prettier \"src/**/*.ts\" \"examples/**/*.ts\" --write",
-    "format:check": "prettier \"src/**/*.ts\" \"examples/**/*.ts\" --check",
+    "format": "prettier \"src/**/*.ts\" --write",
+    "format:check": "prettier \"src/**/*.ts\" --check",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
     "test": "jest",
@@ -110,7 +110,8 @@
     "timed-cache": "^2.0.0",
     "tronweb": "^6.0.0",
     "web3": "^4.16.0",
-    "web3-eth-contract": "^4.7.2"
+    "web3-eth-contract": "^4.7.2",
+    "web3-types": "^1.10.0"
   },
   "jest": {
     "transform": {
@@ -122,5 +123,6 @@
     "transformIgnorePatterns": [
       "<rootDir>/node_modules/.pnpm/(?!(timed-cache))"
     ]
-  }
+  },
+  "packageManager": "pnpm@9.15.4+sha256.9bee59c7313a216722c079c1e22160dea7f88df4e0c3450b1d7b01b882336c6a"
 }

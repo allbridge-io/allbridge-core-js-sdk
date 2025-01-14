@@ -8,7 +8,7 @@ import { FeePaymentMethod } from "../../../models";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge-contract";
-import { ChainBridgeService, SendParams, SwapParams, TxSendParams, TxSwapParams } from "../models";
+import { ChainBridgeService, SendParams, SwapParams, TxSendParamsSrb, TxSwapParamsSol } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
 
@@ -28,7 +28,7 @@ export class SrbBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(params: TxSendParams): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(params: TxSendParamsSrb): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -81,7 +81,7 @@ export class SrbBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
-  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+  async buildRawTransactionSwapFromParams(params: TxSwapParamsSol): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -98,7 +98,7 @@ export class SrbBridgeService extends ChainBridgeService {
         amount: BigInt(amount),
         token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
         receive_token: Buffer.from(toTokenAddress),
-        recipient: toAccountAddress as string,
+        recipient: toAccountAddress,
         receive_amount_min: BigInt(minimumReceiveAmount),
       })
     ).toXDR();

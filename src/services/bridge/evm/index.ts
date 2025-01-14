@@ -21,7 +21,7 @@ import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
 import { getAssociatedAccount } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
-import { SendParams, TxSendParams, TxSwapParams, ChainBridgeService } from "../models";
+import { SendParams, ChainBridgeService, TxSwapParamsEvm, TxSendParamsEvm } from "../models";
 import { formatAddress, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
@@ -45,7 +45,7 @@ export class EvmBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
-  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+  async buildRawTransactionSwapFromParams(params: TxSwapParamsEvm): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -60,9 +60,9 @@ export class EvmBridgeService extends ChainBridgeService {
 
     const swapMethod = bridgeContract.methods.swap(
       amount,
-      fromTokenAddress as string,
-      toTokenAddress as string,
-      toAccountAddress as string,
+      fromTokenAddress,
+      toTokenAddress,
+      toAccountAddress,
       minimumReceiveAmount,
     );
 
@@ -105,11 +105,11 @@ export class EvmBridgeService extends ChainBridgeService {
       const bridgeContract = this.getBridgeContract(contractAddress);
       if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
         sendMethod = bridgeContract.methods.swapAndBridge(
-          fromTokenAddress as string,
+          fromTokenAddress,
           amount,
-          toAccountAddress as string,
+          toAccountAddress,
           toChainId,
-          toTokenAddress as string,
+          toTokenAddress,
           nonce,
           messenger,
           totalFee,
@@ -117,11 +117,11 @@ export class EvmBridgeService extends ChainBridgeService {
         value = "0";
       } else {
         sendMethod = bridgeContract.methods.swapAndBridge(
-          fromTokenAddress as string,
+          fromTokenAddress,
           amount,
-          toAccountAddress as string,
+          toAccountAddress,
           toChainId,
-          toTokenAddress as string,
+          toTokenAddress,
           nonce,
           messenger,
           0,
@@ -140,7 +140,7 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private async buildRawTransactionCctpSend(
     params: SendParams,
-    txSendParams: TxSendParams,
+    txSendParams: TxSendParamsEvm,
     totalFee: string,
   ): Promise<{
     sendMethod: PayableMethodObject;
@@ -164,28 +164,20 @@ export class EvmBridgeService extends ChainBridgeService {
       anchor.setProvider(provider);
       const accountData = await anchor.Spl.token(provider).account.token.fetchNullable(receiveUserToken);
       if (accountData?.authority.equals(receiverAccount)) {
-        recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType) as string;
+        recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType);
       } else {
         const tokenAccounts = await provider.connection.getTokenAccountsByOwner(receiverAccount, {
           mint: receiveMint,
         });
         if (tokenAccounts.value.length === 0 && !accountData) {
-          recipientWalletAddress = formatAddress(
-            receiveUserToken.toBase58(),
-            ChainType.SOLANA,
-            this.chainType,
-          ) as string;
+          recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType);
         } else if (tokenAccounts.value.length > 0) {
           const firstTokenAccount = tokenAccounts.value[0];
 
           if (!firstTokenAccount?.pubkey) {
             throw new SdkError("First token account or its public key is undefined");
           }
-          recipientWalletAddress = formatAddress(
-            firstTokenAccount.pubkey.toBase58(),
-            ChainType.SOLANA,
-            this.chainType,
-          ) as string;
+          recipientWalletAddress = formatAddress(firstTokenAccount.pubkey.toBase58(), ChainType.SOLANA, this.chainType);
         } else {
           throw new SdkError("Associated account has wrong owner");
         }
@@ -195,7 +187,7 @@ export class EvmBridgeService extends ChainBridgeService {
         sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
           amount,
           recipientWalletAddress,
-          toAccountAddress as string,
+          toAccountAddress,
           toChainId,
           totalFee,
         );
@@ -204,7 +196,7 @@ export class EvmBridgeService extends ChainBridgeService {
         sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
           amount,
           recipientWalletAddress,
-          toAccountAddress as string,
+          toAccountAddress,
           toChainId,
           0,
         );
@@ -212,10 +204,10 @@ export class EvmBridgeService extends ChainBridgeService {
       }
     } else {
       if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress as string, toChainId, totalFee);
+        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, totalFee);
         value = "0";
       } else {
-        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress as string, toChainId, 0);
+        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, 0);
         value = totalFee;
       }
     }

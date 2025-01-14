@@ -32,7 +32,7 @@ import tokenInfoWithChainDetailsGrl from "./data/tokens-info/TokenInfoWithChainD
 import tokenInfoWithChainDetailsTrx from "./data/tokens-info/TokenInfoWithChainDetails-TRX.json";
 import tokenInfoList from "./data/tokens-info/TokenInfoWithChainDetails.json";
 import { mockEvmBridgeContract, mockEvmSendRawTransaction } from "./mock/bridge/evm/evm-bridge";
-import { mockNonce } from "./mock/bridge/utils";
+import { mockNonce, mockNonceBigInt } from "./mock/bridge/utils";
 import tokenInfoResponse from "./mock/core-api/token-info.json";
 import { mockedTokenBalance, mockTokenService_getTokenBalance } from "./mock/token";
 import { mockEvmTokenContract } from "./mock/token/evm/evm-token";
@@ -659,6 +659,7 @@ describe("SDK", () => {
     const exchangeRate = "0.12550590438537169016";
     const feeInStablecoins = "30.02";
     const nonceBuffer = mockNonce();
+    const nonceBigInt = mockNonceBigInt();
     const tokensAmount = "1.33";
 
     describe("when paying gas fee with native tokens", () => {
@@ -815,7 +816,7 @@ describe("SDK", () => {
               type: "bytes32",
               value: formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.TRX),
             },
-            { type: "uint256", value: nonceBuffer.toJSON().data },
+            { type: "uint256", value: nonceBigInt.toString() },
             { type: "uint8", value: Messenger.ALLBRIDGE },
             { type: "uint256", value: 0 },
           ],

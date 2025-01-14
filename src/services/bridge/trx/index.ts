@@ -6,9 +6,9 @@ import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
-import { SendParams, TxSendParams, TxSwapParams } from "../models";
+import { SendParams, TxSendParamsTrx, TxSwapParamsTrx } from "../models";
 import { ChainBridgeService } from "../models/bridge";
-import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
@@ -31,7 +31,7 @@ export class TronBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
-  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+  async buildRawTransactionSwapFromParams(params: TxSwapParamsTrx): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -58,7 +58,7 @@ export class TronBridgeService extends ChainBridgeService {
     return this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(params: TxSendParams): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(params: TxSendParamsTrx): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -78,7 +78,7 @@ export class TronBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    const nonce = getNonce().toJSON().data;
+    const nonce = getNonceBigInt().toString();
     let parameters;
     let value: string;
     let methodSignature: string;

@@ -6,7 +6,7 @@ import { ChainSymbol, FeePaymentMethod } from "../../../../models";
 import { TxSendParams } from "../../../../services/bridge/models";
 import { TronBridgeService } from "../../../../services/bridge/trx";
 import { formatAddress } from "../../../../services/bridge/utils";
-import { mockNonce } from "../../../mock/bridge/utils";
+import { mockNonceBigInt } from "../../../mock/bridge/utils";
 import triggerSmartContractSendResponse from "../../../mock/tron-web/trigger-smart-contract-send.json";
 
 describe("TrxBridge", () => {
@@ -14,7 +14,7 @@ describe("TrxBridge", () => {
   let tronWebMock: any;
   let api: any;
 
-  const nonceBuffer = mockNonce();
+  const nonceBigInt = mockNonceBigInt();
 
   beforeEach(() => {
     tronWebMock = {
@@ -83,7 +83,7 @@ describe("TrxBridge", () => {
             type: "bytes32",
             value: formatAddress(destinationTokenAddress, ChainType.EVM, ChainType.TRX),
           },
-          { type: "uint256", value: nonceBuffer.toJSON().data },
+          { type: "uint256", value: nonceBigInt.toString() },
           { type: "uint8", value: messenger },
           { type: "uint256", value: 0 },
         ],

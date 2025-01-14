@@ -49,7 +49,7 @@ import {
 } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
 import { addUnitLimitAndUnitPriceToTx, addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
-import { SendParams, TxSendParams, TxSwapParams } from "../models";
+import { SendParams, TxSendParamsSol, TxSwapParamsSol } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
@@ -104,7 +104,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private async buildSwapTransaction(
-    params: TxSwapParams,
+    params: TxSwapParamsSol,
     poolAddress: string,
     toPoolAddress: string,
     txFeeParams?: TxFeeParams,
@@ -321,7 +321,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     };
   }
 
-  private addPoolAddress(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
+  private addPoolAddress(params: SendParams, txSendParams: TxSendParamsSol): SolTxSendParams {
     return {
       ...txSendParams,
       poolAddress: params.sourceToken.poolAddress,
@@ -431,9 +431,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.amount = new BN(amount);
     swapAndBridgeData.vusdAmount = new BN(vUsdAmount);
     swapAndBridgeData.nonce = nonce;
-    // @ts-expect-error
     swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
-    // @ts-expect-error
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
     swapAndBridgeData.poolAccount = poolAccount;
     swapAndBridgeData.lockAccount = lockAccount;
@@ -702,9 +700,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.cctpBridgeAccount = cctpBridgeAccount;
     swapAndBridgeData.cctpAddressAccount = new PublicKey(cctpAddress);
     swapAndBridgeData.amount = new BN(amount);
-    // @ts-expect-error
     swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
-    // @ts-expect-error
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
     swapAndBridgeData.userToken = await getAssociatedAccount(userAccount, mint);
     swapAndBridgeData.bridgeAuthority = await getCctpAuthorityAccount(cctpBridgeAccount, cctpBridge.programId);
@@ -825,6 +821,6 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 }
 
-interface SolTxSendParams extends TxSendParams {
+interface SolTxSendParams extends TxSendParamsSol {
   poolAddress: string;
 }
