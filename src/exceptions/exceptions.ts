@@ -77,7 +77,7 @@ export class ArgumentInvalidDecimalsError extends SdkRootError {
   constructor(argName: string, decimalsIs: number, decimalsRequired: number) {
     super(
       ErrorCode.ARGUMENT_INVALID_DECIMALS_ERROR,
-      `Argument '${argName}' decimals '${decimalsIs}' cannot be greater than '${decimalsRequired}'`
+      `Argument '${argName}' decimals '${decimalsIs}' cannot be greater than '${decimalsRequired}'`,
     );
   }
 }
@@ -104,7 +104,7 @@ export class TxTooLargeError extends SdkRootError {
   constructor() {
     super(
       ErrorCode.TX_TOO_LARGE,
-      "Transaction too large: try again later or switch to another messenger or pay relayer fee in native gas currency"
+      "Transaction too large: try again later or switch to another messenger or pay relayer fee in native gas currency",
     );
   }
 }

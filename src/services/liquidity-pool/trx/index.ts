@@ -1,7 +1,5 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
-import Web3 from "web3";
-import { AbiItem } from "web3-utils";
+import { TronWeb } from "tronweb";
+import { Web3 } from "web3";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -9,17 +7,25 @@ import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import PoolAbi from "../../models/abi/Pool.json";
-import { promisify } from "../../utils";
-import { LiquidityPoolsParams, LiquidityPoolsParamsWithAmount, UserBalance, UserBalanceInfo } from "../models";
-import { ChainPoolService } from "../models/pool";
+import Pool from "../../models/abi/Pool";
+import {
+  LiquidityPoolsParams,
+  LiquidityPoolsParamsWithAmount,
+  UserBalance,
+  UserBalanceInfo,
+  ChainPoolService,
+} from "../models";
 
 export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private P = 52;
   private web3: Web3 | undefined;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient, tronJsonRpc: string | undefined) {
+  constructor(
+    public tronWeb: TronWeb,
+    public api: AllbridgeCoreClient,
+    tronJsonRpc: string | undefined,
+  ) {
     super();
     if (tronJsonRpc) {
       this.web3 = new Web3(tronJsonRpc);
@@ -31,7 +37,7 @@ export class TronPoolService extends ChainPoolService {
     if (this.web3) {
       try {
         userBalanceInfo = await this.getUserBalanceInfoByBatch(this.web3, accountAddress, token);
-      } catch (err) {
+      } catch (ignoreError) {
         userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
       }
     } else {
@@ -43,27 +49,42 @@ export class TronPoolService extends ChainPoolService {
   private async getUserBalanceInfoByBatch(
     web3: Web3,
     accountAddress: string,
-    token: TokenWithChainDetails
+    token: TokenWithChainDetails,
   ): Promise<UserBalanceInfo> {
     const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
-    const userAccount = tronAddressToEthAddress(accountAddress);
-    const arr = ["userRewardDebt", "balanceOf"].map((methodName) =>
-      promisify((cb: any) => batch.add(contract.methods[methodName](userAccount).call.request({}, cb)))()
-    );
-    batch.execute();
-    const [rewardDebt, lpAmount] = await Promise.all(arr);
-    return new UserBalance({ lpAmount, rewardDebt });
+    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress));
+
+    const userRewardDebtAbi = contract.methods.userRewardDebt(accountAddress).encodeABI();
+    const balanceOfAbi = contract.methods.balanceOf(accountAddress).encodeABI();
+
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: userRewardDebtAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: balanceOfAbi }, "latest"],
+    });
+
+    const [rewardDebtResult, lpAmountResult] = await batch.execute();
+
+    if (rewardDebtResult && lpAmountResult && !rewardDebtResult.error && !lpAmountResult.error) {
+      return new UserBalance({
+        lpAmount: Web3.utils.toBigInt(lpAmountResult.result).toString(),
+        rewardDebt: Web3.utils.toBigInt(rewardDebtResult.result).toString(),
+      });
+    }
+    throw new Error("Batched failed");
   }
 
   private async getUserBalanceInfoPerProperty(
     accountAddress: string,
-    token: TokenWithChainDetails
+    token: TokenWithChainDetails,
   ): Promise<UserBalanceInfo> {
     if (!this.tronWeb.defaultAddress.base58) {
       this.tronWeb.setAddress(accountAddress);
     }
-    const contract = await this.getContract(token.poolAddress);
+    const contract = this.getContract(token.poolAddress);
     const rewardDebt = (await contract.methods.userRewardDebt(accountAddress).call()).toString();
     const lpAmount = (await contract.methods.balanceOf(accountAddress).call()).toString();
     return new UserBalance({ lpAmount, rewardDebt });
@@ -74,7 +95,7 @@ export class TronPoolService extends ChainPoolService {
     if (this.web3) {
       try {
         poolInfo = await this.getPoolInfoByBatch(this.web3, token);
-      } catch (err) {
+      } catch (ignoreError) {
         poolInfo = await this.getPoolInfoPerProperty(token);
       }
     } else {
@@ -85,33 +106,79 @@ export class TronPoolService extends ChainPoolService {
 
   private async getPoolInfoByBatch(web3: Web3, token: TokenWithChainDetails): Promise<PoolInfo> {
     const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(PoolAbi as AbiItem[], tronAddressToEthAddress(token.poolAddress));
-    const arr = ["a", "d", "tokenBalance", "vUsdBalance", "totalSupply", "accRewardPerShareP"].map((methodName) =>
-      promisify((cb: any) => batch.add(contract.methods[methodName]().call.request({}, cb)))()
-    );
-    batch.execute();
+    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress), this.web3);
 
-    const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all(arr);
-    const tokenBalanceStr = tokenBalance.toString();
-    const vUsdBalanceStr = vUsdBalance.toString();
-    const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
-    return {
-      aValue: aValue.toString(),
-      dValue: dValue.toString(),
-      tokenBalance: tokenBalanceStr,
-      vUsdBalance: vUsdBalanceStr,
-      totalLpAmount: totalLpAmount.toString(),
-      accRewardPerShareP: accRewardPerShareP.toString(),
-      p: this.P,
-      imbalance,
-    };
+    const aAbi = contract.methods.a().encodeABI();
+    const dAbi = contract.methods.d().encodeABI();
+    const tokenBalanceAbi = contract.methods.tokenBalance().encodeABI();
+    const vUsdBalanceAbi = contract.methods.vUsdBalance().encodeABI();
+    const totalSupplyAbi = contract.methods.totalSupply().encodeABI();
+    const accRewardPerSharePAbi = contract.methods.accRewardPerShareP().encodeABI();
+
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: aAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: dAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: tokenBalanceAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: vUsdBalanceAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: totalSupplyAbi }, "latest"],
+    });
+    batch.add({
+      method: "eth_call",
+      params: [{ to: token.poolAddress, data: accRewardPerSharePAbi }, "latest"],
+    });
+
+    const [aResult, dResult, tokenBalanceResult, vUsdBalanceResult, totalSupplyResult, accRewardPerSharePResult] =
+      await batch.execute();
+
+    if (
+      aResult &&
+      dResult &&
+      tokenBalanceResult &&
+      vUsdBalanceResult &&
+      totalSupplyResult &&
+      accRewardPerSharePResult &&
+      !aResult.error &&
+      !dResult.error &&
+      !tokenBalanceResult.error &&
+      !vUsdBalanceResult.error &&
+      !totalSupplyResult.error &&
+      !accRewardPerSharePResult.error
+    ) {
+      const tokenBalanceStr = Web3.utils.toBigInt(tokenBalanceResult.result).toString();
+      const vUsdBalanceStr = Web3.utils.toBigInt(vUsdBalanceResult.result).toString();
+      const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
+      return {
+        aValue: Web3.utils.toBigInt(aResult.result).toString(),
+        dValue: Web3.utils.toBigInt(dResult.result).toString(),
+        tokenBalance: tokenBalanceStr,
+        vUsdBalance: vUsdBalanceStr,
+        totalLpAmount: Web3.utils.toBigInt(totalSupplyResult.result).toString(),
+        accRewardPerShareP: Web3.utils.toBigInt(accRewardPerSharePResult.result).toString(),
+        p: this.P,
+        imbalance,
+      };
+    }
+    throw new Error("Batched failed");
   }
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
     if (!this.tronWeb.defaultAddress.base58) {
       this.tronWeb.setAddress(token.poolAddress);
     }
-    const poolContract = await this.getContract(token.poolAddress);
+    const poolContract = this.getContract(token.poolAddress);
     const [aValue, dValue, tokenBalance, vUsdBalance, totalLpAmount, accRewardPerShareP] = await Promise.all([
       poolContract.methods.a().call(),
       poolContract.methods.d().call(),
@@ -167,16 +234,16 @@ export class TronPoolService extends ChainPoolService {
     methodSignature: string,
     parameter: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string
+    fromAddress: string,
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
       methodSignature,
       {
-        callValue: value,
+        callValue: +value,
       },
       parameter,
-      fromAddress
+      fromAddress,
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));
@@ -184,7 +251,7 @@ export class TronPoolService extends ChainPoolService {
     return transactionObject.transaction;
   }
 
-  private async getContract(contractAddress: string): Promise<any> {
-    return await this.tronWeb.contract(PoolAbi, contractAddress);
+  private getContract(contractAddress: string): any {
+    return this.tronWeb.contract(Pool.abi, contractAddress);
   }
 }

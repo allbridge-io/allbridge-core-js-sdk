@@ -49,7 +49,7 @@ import {
 } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
 import { addUnitLimitAndUnitPriceToTx, addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
-import { SendParams, TxSendParams, TxSwapParams } from "../models";
+import { SendParams, TxSendParamsSol, TxSwapParamsSol } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { JupiterService } from "./jupiter";
@@ -84,7 +84,11 @@ export class SolanaBridgeService extends ChainBridgeService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   jupiterService: JupiterService;
 
-  constructor(public solanaRpcUrl: string, public params: SolanaBridgeParams, public api: AllbridgeCoreClient) {
+  constructor(
+    public solanaRpcUrl: string,
+    public params: SolanaBridgeParams,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
     this.jupiterService = new JupiterService(solanaRpcUrl, params.jupiterUrl);
   }
@@ -95,15 +99,15 @@ export class SolanaBridgeService extends ChainBridgeService {
       txSwapParams,
       params.sourceToken.poolAddress,
       params.destinationToken.poolAddress,
-      params.txFeeParams
+      params.txFeeParams,
     );
   }
 
   private async buildSwapTransaction(
-    params: TxSwapParams,
+    params: TxSwapParamsSol,
     poolAddress: string,
     toPoolAddress: string,
-    txFeeParams?: TxFeeParams
+    txFeeParams?: TxFeeParams,
   ): Promise<VersionedTransaction> {
     const {
       fromAccountAddress,
@@ -233,7 +237,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpData(solTxSendParams);
         const { transaction, messageSentEventDataKeypair } = await this.buildSwapAndBridgeCctpTransaction(
           params.destinationToken.chainSymbol,
-          swapAndBridgeSolData
+          swapAndBridgeSolData,
         );
         swapAndBridgeTx = transaction;
         requiredMessageSigner = messageSentEventDataKeypair;
@@ -259,7 +263,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   private async processJup(
     solTxSendParams: SolTxSendParams,
     params: SendParams,
-    exactOut: boolean
+    exactOut: boolean,
   ): Promise<{
     tx: VersionedTransaction;
     solTxSendUpdatedParams: {
@@ -271,7 +275,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }> {
     const { fee, extraGas, gasFeePaymentMethod } = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
       params.sourceToken.decimals,
-      solTxSendParams
+      solTxSendParams,
     );
 
     let amountToProcess = exactOut ? Big(fee) : Big(solTxSendParams.fee);
@@ -286,7 +290,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
       amountToProcess.toFixed(0),
-      exactOut
+      exactOut,
     );
 
     let newAmount: string;
@@ -302,8 +306,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       throw new AmountNotEnoughError(
         `Amount not enough to pay fee, ${convertIntAmountToFloat(
           Big(newAmount).minus(1).neg(),
-          params.sourceToken.decimals
-        ).toFixed()} stables is missing`
+          params.sourceToken.decimals,
+        ).toFixed()} stables is missing`,
       );
     }
     return {
@@ -317,7 +321,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     };
   }
 
-  private addPoolAddress(params: SendParams, txSendParams: TxSendParams): SolTxSendParams {
+  private addPoolAddress(params: SendParams, txSendParams: TxSendParamsSol): SolTxSendParams {
     return {
       ...txSendParams,
       poolAddress: params.sourceToken.poolAddress,
@@ -326,7 +330,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
   async convertStableCoinFeeAndExtraGasToNativeCurrency(
     tokenDecimals: number,
-    solTxSendParams: SolTxSendParams
+    solTxSendParams: SolTxSendParams,
   ): Promise<{ fee: string; extraGas?: string; gasFeePaymentMethod: FeePaymentMethod }> {
     if (solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
       const sourceNativeTokenPrice = (
@@ -359,7 +363,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   private getExtraGasInstruction(
     extraGas: string,
     userAccount: PublicKey,
-    configAccount: PublicKey
+    configAccount: PublicKey,
   ): TransactionInstruction | undefined {
     return web3.SystemProgram.transfer({
       fromPubkey: userAccount,
@@ -403,7 +407,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const otherBridgeTokenAccount = await getOtherChainTokenAccount(
       destinationChainId,
       Buffer.from(receiveTokenAddress),
-      bridge.programId
+      bridge.programId,
     );
 
     const configAccount = await getConfigAccount(bridge.programId);
@@ -427,9 +431,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.amount = new BN(amount);
     swapAndBridgeData.vusdAmount = new BN(vUsdAmount);
     swapAndBridgeData.nonce = nonce;
-    // @ts-expect-error
     swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
-    // @ts-expect-error
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
     swapAndBridgeData.poolAccount = poolAccount;
     swapAndBridgeData.lockAccount = lockAccount;
@@ -452,14 +454,14 @@ export class SolanaBridgeService extends ChainBridgeService {
       swapAndBridgeData.extraGasInstruction = this.getExtraGasInstruction(
         extraGas,
         swapAndBridgeData.userAccount,
-        configAccount
+        configAccount,
       );
     }
     return swapAndBridgeData;
   }
 
   private async buildSwapAndBridgeAllbridgeTransaction(
-    swapAndBridgeData: SwapAndBridgeSolData
+    swapAndBridgeData: SwapAndBridgeSolData,
   ): Promise<VersionedTransaction> {
     const {
       bridge,
@@ -550,7 +552,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private async buildSwapAndBridgeWormholeTransaction(
-    swapAndBridgeData: SwapAndBridgeSolData
+    swapAndBridgeData: SwapAndBridgeSolData,
   ): Promise<{ transaction: VersionedTransaction; messageAccount: Keypair }> {
     const {
       bridge,
@@ -579,20 +581,20 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const [whBridgeAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("Bridge")],
-      new PublicKey(wormholeProgramId)
+      new PublicKey(wormholeProgramId),
     );
     const [whFeeCollectorAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("fee_collector")],
-      new PublicKey(wormholeProgramId)
+      new PublicKey(wormholeProgramId),
     );
     const [whSequenceAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("Sequence"), bridgeAuthority.toBuffer()],
-      new PublicKey(wormholeProgramId)
+      new PublicKey(wormholeProgramId),
     );
 
     const messengerGasUsageAccount = await getGasUsageAccount(
       destinationChainId,
-      configAccountInfo.wormholeMessengerProgramId
+      configAccountInfo.wormholeMessengerProgramId,
     );
     const wormholeMessengerConfigAccount = await getConfigAccount(configAccountInfo.wormholeMessengerProgramId);
     const messageAccount = Keypair.generate();
@@ -698,9 +700,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     swapAndBridgeData.cctpBridgeAccount = cctpBridgeAccount;
     swapAndBridgeData.cctpAddressAccount = new PublicKey(cctpAddress);
     swapAndBridgeData.amount = new BN(amount);
-    // @ts-expect-error
     swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
-    // @ts-expect-error
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
     swapAndBridgeData.userToken = await getAssociatedAccount(userAccount, mint);
     swapAndBridgeData.bridgeAuthority = await getCctpAuthorityAccount(cctpBridgeAccount, cctpBridge.programId);
@@ -717,7 +717,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       swapAndBridgeData.extraGasInstruction = this.getExtraGasInstruction(
         extraGas,
         swapAndBridgeData.userAccount,
-        cctpBridgeAccount
+        cctpBridgeAccount,
       );
     }
     return swapAndBridgeData;
@@ -725,7 +725,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
   async buildSwapAndBridgeCctpTransaction(
     destinationChainSymbol: string,
-    swapAndBridgeData: SwapAndBridgeSolDataCctpData
+    swapAndBridgeData: SwapAndBridgeSolDataCctpData,
   ): Promise<{ transaction: VersionedTransaction; messageSentEventDataKeypair: Keypair }> {
     const {
       cctpBridge,
@@ -821,6 +821,6 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 }
 
-interface SolTxSendParams extends TxSendParams {
+interface SolTxSendParams extends TxSendParamsSol {
   poolAddress: string;
 }

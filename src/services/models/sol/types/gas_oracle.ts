@@ -19,7 +19,7 @@ export interface GasOracle {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
     },
@@ -50,13 +50,13 @@ export interface GasOracle {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
           name: "chainId";
           type: "u8";
-        }
+        },
       ];
     },
     {
@@ -76,7 +76,7 @@ export interface GasOracle {
           name: "price";
           isMut: true;
           isSigner: false;
-        }
+        },
       ];
       args: [
         {
@@ -94,7 +94,7 @@ export interface GasOracle {
           type: {
             option: "u64";
           };
-        }
+        },
       ];
     },
     {
@@ -114,10 +114,10 @@ export interface GasOracle {
           name: "newAdmin";
           isMut: false;
           isSigner: false;
-        }
+        },
       ];
       args: [];
-    }
+    },
   ];
   accounts: [
     {
@@ -128,7 +128,7 @@ export interface GasOracle {
           {
             name: "admin";
             type: "publicKey";
-          }
+          },
         ];
       };
     },
@@ -148,10 +148,10 @@ export interface GasOracle {
           {
             name: "gasPrice";
             type: "u64";
-          }
+          },
         ];
       };
-    }
+    },
   ];
 }
 

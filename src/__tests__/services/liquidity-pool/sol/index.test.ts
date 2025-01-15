@@ -96,7 +96,7 @@ function nockRequests(recName: string) {
         const body = JSON.parse(b);
         body.id = "33350381-1589-416f-b02d-b6e0d850ea2b";
         return JSON.stringify(body);
-      } catch (e) {
+      } catch (ignoreError) {
         return b;
       }
     });

@@ -166,34 +166,44 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
   amount: string | number | Big;
 }
 
-type AccountAddress = string | number[];
-
 /**
  * @internal
  */
-export interface TxSwapParams {
+export type TxSwapParamsEvm = TxSwapParamsTyped<string>;
+export type TxSwapParamsTrx = TxSwapParamsTyped<Buffer>;
+export type TxSwapParamsSol = TxSwapParamsTyped<number[]>;
+export type TxSwapParamsSrb = TxSwapParamsTyped<number[]>;
+
+export interface TxSwapParamsTyped<T> {
   amount: string;
   contractAddress: string;
   fromAccountAddress: string;
-  fromTokenAddress: AccountAddress;
-  toAccountAddress: AccountAddress;
-  toTokenAddress: AccountAddress;
+  fromTokenAddress: T;
+  toAccountAddress: string;
+  toTokenAddress: T;
   minimumReceiveAmount: string;
 }
+
+export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol | TxSwapParamsSrb;
 
 /**
  * @internal
  */
-export interface TxSendParams {
+export type TxSendParamsEvm = TxSendParamsTyped<string>;
+export type TxSendParamsTrx = TxSendParamsTyped<Buffer>;
+export type TxSendParamsSol = TxSendParamsTyped<number[]>;
+export type TxSendParamsSrb = TxSendParamsTyped<number[]>;
+
+export interface TxSendParamsTyped<T> {
   amount: string;
   contractAddress: string;
   fromChainId: number;
   fromChainSymbol: string;
   fromAccountAddress: string;
-  fromTokenAddress: AccountAddress;
+  fromTokenAddress: T;
   toChainId: number;
-  toAccountAddress: AccountAddress;
-  toTokenAddress: AccountAddress;
+  toAccountAddress: T;
+  toTokenAddress: T;
   messenger: Messenger;
   /**
    * int format
@@ -205,3 +215,5 @@ export interface TxSendParams {
   extraGas?: string;
   gasFeePaymentMethod: FeePaymentMethod;
 }
+
+export type TxSendParams = TxSendParamsEvm | TxSendParamsTrx | TxSendParamsSol | TxSendParamsSrb;

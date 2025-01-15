@@ -60,7 +60,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
     this.poolInfoCache.putAllIfNotExists((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+
     if (poolInfo) {
       return poolInfo;
     } else {
@@ -71,7 +71,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
         return result;
       }
       throw new SdkError(
-        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol
+        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol,
       );
     }
   }

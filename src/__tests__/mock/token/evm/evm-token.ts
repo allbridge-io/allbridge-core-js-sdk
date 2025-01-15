@@ -5,7 +5,7 @@ export function mockEvmTokenContract(methods: any) {
     methods: methods,
   };
 
-  const methodGetContract = jest.spyOn(EvmTokenService.prototype as any, "getContract");
+  const methodGetContract = jest.spyOn(EvmTokenService.prototype as any, "getERC20Contract");
   methodGetContract.mockImplementation(() => {
     return contractMocked;
   });
@@ -22,7 +22,7 @@ export function mockEvmSendRawTransaction(transactionHash: string) {
 export function mockGetAllowanceByTokenAddress(allowance: string) {
   // prettier-ignore
   return jest.spyOn(EvmTokenService.prototype, "getAllowanceByTokenAddress")
-    /* eslint-disable-next-line @typescript-eslint/require-await,@typescript-eslint/no-misused-promises */
+    /* eslint-disable-next-line @typescript-eslint/require-await */
     .mockImplementation(async () => {
       return allowance;
     });

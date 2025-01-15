@@ -10,12 +10,10 @@ export function sleep(ms: number): Promise<void> {
 
 export const promisify =
   // prettier-ignore
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   (func: Function) =>
     (...args: any[]) =>
       new Promise<any>(
         (resolve, reject) =>
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           func(...args, (err: Error, result: any) => (err ? reject(err) : resolve(result)))
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       );

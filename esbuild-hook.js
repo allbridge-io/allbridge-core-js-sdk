@@ -6,7 +6,7 @@ const cache = {};
 
 function esbuildHook(code, filepath) {
   const result = transformSync(code, {
-    target: "node16",
+    target: "node22",
     sourcemap: "both",
     loader: "ts",
     format: "cjs",

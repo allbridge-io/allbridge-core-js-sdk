@@ -26,7 +26,7 @@ describe("AllbridgeCoreClient", () => {
   const api = new AllbridgeCoreClientImpl(
     new ApiClientImpl({
       coreApiUrl: "http://localhost",
-    })
+    }),
   );
 
   describe("given /token-info endpoint", () => {
@@ -117,7 +117,7 @@ describe("AllbridgeCoreClient", () => {
       new ApiClientImpl({
         coreApiUrl: "http://localhost",
         coreApiHeaders: customHeaders,
-      })
+      }),
     );
 
     it("☀️ should be present", async () => {

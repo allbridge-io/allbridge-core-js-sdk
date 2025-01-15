@@ -46,7 +46,7 @@ export function calculatePoolInfoImbalance(poolInfo: Pick<PoolInfo, "tokenBalanc
 export function swapToVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "p" | "imbalance">
+  poolInfo: Omit<PoolInfo, "p" | "imbalance">,
 ): string {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
@@ -63,7 +63,7 @@ export function swapToVUsd(
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">
+  poolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">,
 ): string {
   const amountValue = Big(amount);
   if (amountValue.lte(0)) {
@@ -78,7 +78,7 @@ export function swapFromVUsd(
 
 export function getSwapFromVUsdPoolInfo(
   vUsdAmount: BigSource,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Omit<PoolInfo, "imbalance">,
 ): Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance"> {
   const amountValue = Big(vUsdAmount);
   if (amountValue.lte(0)) {
@@ -103,7 +103,7 @@ export function getSwapFromVUsdPoolInfo(
 export function swapToVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Omit<PoolInfo, "imbalance">,
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);
@@ -129,7 +129,7 @@ export function swapToVUsdReverse(
 export function swapFromVUsdReverse(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Omit<PoolInfo, "imbalance">,
 ): Big {
   if (Big(amount).lte(0)) {
     return Big(0);

@@ -5,9 +5,9 @@ import { CctpBridge as CctpBridgeType } from "./types/cctp_bridge";
 
 export type SolanaTxFee = PricePerUnitInMicroLamports | ExtraFeeInLamports | typeof SolanaAutoTxFee;
 /**
- * Priority Fee will be calculated based on {@link @solana/web3.js:Connection.getRecentPrioritizationFees}
+ * Priority Fee will be calculated based on {@link https://solana-labs.github.io/solana-web3.js/classes/Connection.html#getRecentPrioritizationFees}
  */
-export const SolanaAutoTxFee = "AUTO" as const;
+export const SolanaAutoTxFee = "AUTO";
 
 /**
  * Add Priority Fee as price per unit in micro-lamports

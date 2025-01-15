@@ -18,7 +18,7 @@ import {
   SendParams,
   TokenWithChainDetails,
 } from "../../../models";
-import { TxSendParams } from "../../../services/bridge/models";
+import { TxSendParams, TxSendParamsTrx } from "../../../services/bridge/models";
 import { getExtraGasMaxLimits, prepareTxSendParams } from "../../../services/bridge/utils";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import tokenInfoWithChainDetailsSol from "../../data/tokens-info/TokenInfoWithChainDetails-SOL.json";
@@ -149,19 +149,19 @@ describe("ChainBridgeService Utils", () => {
 
       const txSendParams = await prepareTxSendParams(ChainType.TRX, sendParams, api);
 
-      const expectedTxSendParams: TxSendParams = {
+      const expectedTxSendParams: TxSendParamsTrx = {
         contractAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         fromChainId: 4,
         fromChainSymbol: ChainSymbol.TRX,
-        fromTokenAddress: Array.from(bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki")),
+        fromTokenAddress: Buffer.from(Array.from(bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki"))),
         toChainId: 2,
-        toTokenAddress: Array.from(bs58.decode("1111111111113nVbuaEbxzADW96189SLP23YyXkW")),
+        toTokenAddress: Buffer.from(Array.from(bs58.decode("1111111111113nVbuaEbxzADW96189SLP23YyXkW"))),
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
         gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
-        toAccountAddress: Array.from(bs58.decode("1111111111112TicWmEvkX7SrURa6r3JeZwDiG7n")),
+        toAccountAddress: Buffer.from(Array.from(bs58.decode("1111111111112TicWmEvkX7SrURa6r3JeZwDiG7n"))),
       };
       expect(txSendParams).toEqual(expectedTxSendParams);
     });
@@ -189,19 +189,19 @@ describe("ChainBridgeService Utils", () => {
 
       const txSendParams = await prepareTxSendParams(ChainType.TRX, sendParams, api);
 
-      const expectedTxSendParams: TxSendParams = {
+      const expectedTxSendParams: TxSendParamsTrx = {
         contractAddress: "TWU3j4etqPT4zSwABPrgmak3uXFSkxpPwM",
         fromChainId: 4,
         fromChainSymbol: ChainSymbol.TRX,
-        fromTokenAddress: Array.from(bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki")),
+        fromTokenAddress: Buffer.from(Array.from(bs58.decode("1111111111113U2xgKF5ainKTp7PfqaoUTGW3rki"))),
         toChainId: 5,
-        toTokenAddress: Array.from(bs58.decode("f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L")),
+        toTokenAddress: Buffer.from(Array.from(bs58.decode("f4yhod6Y7jzVwFfy3iHDg49GAerFTrtp1Ac1ubdWx7L"))),
         amount: "1330000000000000000",
         messenger: 1,
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
         gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
         fee: "20000000000000000",
-        toAccountAddress: Array.from(bs58.decode("6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr")),
+        toAccountAddress: Buffer.from(Array.from(bs58.decode("6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr"))),
       };
       expect(txSendParams).toEqual(expectedTxSendParams);
     });

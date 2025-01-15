@@ -1,13 +1,12 @@
 import { Big } from "big.js";
 import Cache from "timed-cache";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
-import Web3 from "web3";
+import { TronWeb } from "tronweb";
+import { FMT_BYTES, FMT_NUMBER, Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreClientFiltered } from "../../client/core-api/core-client-filtered";
-import { AllbridgeCoreSdkOptions, ChainType } from "../../index";
+import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
@@ -56,7 +55,7 @@ export interface LiquidityPoolService {
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
   /**
-   * @Deprecated Use {@link rawTxBuilder}.{@link RawPoolTransactionBuilder.approve}<p>
+   * @deprecated Use {@link rawTxBuilder}.{@link RawPoolTransactionBuilder.approve}<p>
    * Approve tokens usage by another address on chains
    * <p>
    * For ETH/USDT: due to specificity of the USDT contract:<br/>
@@ -87,7 +86,7 @@ export interface LiquidityPoolService {
     amount: string,
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider
+    provider?: Provider,
   ): Promise<string>;
 
   /**
@@ -100,7 +99,7 @@ export interface LiquidityPoolService {
   getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider
+    provider?: Provider,
   ): Promise<UserBalanceInfo>;
 
   /**
@@ -120,7 +119,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private api: AllbridgeCoreClientFiltered,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService
+    private tokenService: TokenService,
   ) {
     this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
     const ttl = params.cachePoolInfoChainSec > 0 ? params.cachePoolInfoChainSec * 1000 : 20 * 1000;
@@ -166,7 +165,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     amount: string,
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider
+    provider?: Provider,
   ): Promise<string> {
     validateAmountGtZero(amount);
     validateAmountDecimals("amount", amount, token.decimals);
@@ -182,14 +181,14 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   async getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider
+    provider?: Provider,
   ): Promise<UserBalanceInfo> {
     return getChainPoolService(
       token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider
+      provider,
     ).getUserBalanceInfo(accountAddress, token);
   }
 
@@ -204,7 +203,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
         this.api,
         this.nodeRpcUrlsConfig,
         this.params,
-        provider
+        provider,
       ).getPoolInfoFromChain(token);
       this.cache.put(poolKey, poolInfo);
       this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
@@ -218,22 +217,24 @@ export function getChainPoolService(
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
-  provider?: Provider
+  provider?: Provider,
 ): ChainPoolService {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
-        return new EvmPoolService(provider as unknown as Web3, api);
+        return new EvmPoolService(provider as EssentialWeb3, api);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-        return new EvmPoolService(new Web3(nodeRpcUrl), api);
+        const web3 = new Web3(nodeRpcUrl);
+        web3.defaultReturnFormat = { number: FMT_NUMBER.STR, bytes: FMT_BYTES.HEX };
+        return new EvmPoolService(web3, api);
       }
     }
     case ChainType.TRX: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
       const tronJsonRpc = params.tronJsonRpc;
       if (provider) {
-        return new TronPoolService(provider, api, tronJsonRpc);
+        return new TronPoolService(provider as TronWeb, api, tronJsonRpc);
       } else {
         const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
         return new TronPoolService(tronWeb, api, tronJsonRpc);
