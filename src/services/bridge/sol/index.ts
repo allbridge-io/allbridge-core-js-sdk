@@ -59,6 +59,7 @@ export interface SolanaBridgeParams {
   solanaLookUpTable: string;
   cctpParams: CctpParams;
   jupiterUrl: string;
+  jupiterMaxAccounts?: number;
 }
 
 export interface CctpParams {
@@ -90,7 +91,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     public api: AllbridgeCoreClient,
   ) {
     super();
-    this.jupiterService = new JupiterService(solanaRpcUrl, params.jupiterUrl);
+    this.jupiterService = new JupiterService(solanaRpcUrl, params.jupiterUrl, params.jupiterMaxAccounts);
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {

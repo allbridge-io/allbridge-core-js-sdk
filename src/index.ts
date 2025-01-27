@@ -44,6 +44,12 @@ export interface AllbridgeCoreSdkOptions {
    * Jupiter v6 Swap Api
    */
   jupiterUrl: string;
+  /**
+   * Jupiter v6 'maxAccounts' parameter</br>
+   * Rough estimate of the max accounts to be used for the quote, so that you can compose with your own accounts</br>
+   * {@link https://station.jup.ag/docs/apis/swap-api#using-maxaccounts}
+   */
+  jupiterMaxAccounts?: number;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;

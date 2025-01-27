@@ -7,10 +7,12 @@ import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils"
 export class JupiterService {
   connection: Connection;
   jupiterUrl: string;
+  maxAccounts?: number;
 
-  constructor(solanaRpcUrl: string, jupiterUrl: string) {
+  constructor(solanaRpcUrl: string, jupiterUrl: string, jupiterMaxAccounts?: number) {
     this.connection = new Connection(solanaRpcUrl);
     this.jupiterUrl = jupiterUrl.replace(/\/$/, ""); // trim last "/" if exist
+    this.maxAccounts = jupiterMaxAccounts;
   }
 
   async getJupiterSwapTx(
@@ -22,12 +24,12 @@ export class JupiterService {
     let quoteResponse: any;
     try {
       const swapMode = exactOut ? "ExactOut" : "ExactIn";
-      quoteResponse = await axios.get(`${this.jupiterUrl}/quote?inputMint=${stableTokenAddress}
-&outputMint=${NATIVE_MINT.toString()}
-&amount=${amount}
-&swapMode=${swapMode}
-&slippageBps=100
-&onlyDirectRoutes=true`);
+      let url = `${this.jupiterUrl}/quote?inputMint=${stableTokenAddress}&outputMint=${NATIVE_MINT.toString()}&amount=${amount}&swapMode=${swapMode}&slippageBps=100&onlyDirectRoutes=true`;
+
+      if (this.maxAccounts) {
+        url += `&maxAccounts=${this.maxAccounts}`;
+      }
+      quoteResponse = await axios.get(url);
     } catch (err) {
       if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
         throw new JupiterError(err.response.data.error);

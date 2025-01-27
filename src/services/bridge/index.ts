@@ -177,6 +177,7 @@ export function getChainBridgeService(
           solanaLookUpTable: params.solanaLookUpTable,
           cctpParams: params.cctpParams,
           jupiterUrl: params.jupiterUrl,
+          jupiterMaxAccounts: params.jupiterMaxAccounts,
         },
         api,
       );
