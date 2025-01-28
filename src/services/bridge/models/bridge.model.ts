@@ -170,6 +170,7 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
  * @internal
  */
 export type TxSwapParamsEvm = TxSwapParamsTyped<string>;
+export type TxSwapParamsSui = TxSwapParamsTyped<string>;
 export type TxSwapParamsTrx = TxSwapParamsTyped<Buffer>;
 export type TxSwapParamsSol = TxSwapParamsTyped<number[]>;
 export type TxSwapParamsSrb = TxSwapParamsTyped<number[]>;
@@ -184,12 +185,13 @@ export interface TxSwapParamsTyped<T> {
   minimumReceiveAmount: string;
 }
 
-export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol | TxSwapParamsSrb;
+export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol | TxSwapParamsSrb | TxSwapParamsSui;
 
 /**
  * @internal
  */
 export type TxSendParamsEvm = TxSendParamsTyped<string>;
+export type TxSendParamsSui = TxSendParamsTyped<string>;
 export type TxSendParamsTrx = TxSendParamsTyped<Buffer>;
 export type TxSendParamsSol = TxSendParamsTyped<number[]>;
 export type TxSendParamsSrb = TxSendParamsTyped<number[]>;
@@ -216,4 +218,4 @@ export interface TxSendParamsTyped<T> {
   gasFeePaymentMethod: FeePaymentMethod;
 }
 
-export type TxSendParams = TxSendParamsEvm | TxSendParamsTrx | TxSendParamsSol | TxSendParamsSrb;
+export type TxSendParams = TxSendParamsEvm | TxSendParamsTrx | TxSendParamsSol | TxSendParamsSrb | TxSendParamsSui;

@@ -26,6 +26,7 @@ export {
   TokenWithChainDetails,
   TransferTime,
   TxCostAmount,
+  SuiAddresses,
   MessengerTransferTime,
 } from "../tokens-info/tokens-info.model";
 export {

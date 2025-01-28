@@ -54,7 +54,7 @@ describe("Calculation", () => {
       "☀️ Convert %d with decimals %d to system precision -> %s",
       (amount, decimals, expectedSystemPrecisionAmount) => {
         expect(toSystemPrecision(amount, decimals)).toStrictEqual(expectedSystemPrecisionAmount);
-      },
+      }
     );
 
     test.each([
@@ -68,7 +68,7 @@ describe("Calculation", () => {
       "☀️ Convert %d from system precision to amount with decimals %d -> %s",
       (systemPrecisionAmount, decimals, expectedAmount) => {
         expect(fromSystemPrecision(systemPrecisionAmount, decimals)).toStrictEqual(expectedAmount);
-      },
+      }
     );
   });
 

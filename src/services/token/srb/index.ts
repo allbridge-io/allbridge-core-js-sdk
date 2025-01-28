@@ -19,7 +19,7 @@ export class SrbTokenService extends ChainTokenService {
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     readonly params: AllbridgeCoreSdkOptions,
-    readonly api: AllbridgeCoreClient,
+    readonly api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -50,12 +50,12 @@ export class SrbTokenService extends ChainTokenService {
       (balance): balance is BalanceLineAsset =>
         (balance.asset_type === "credit_alphanum4" || balance.asset_type === "credit_alphanum12") &&
         balance.asset_code == symbol &&
-        balance.asset_issuer == srbTokenAddress,
+        balance.asset_issuer == srbTokenAddress
     );
     if (balanceInfo?.balance) {
       return convertFloatAmountToInt(
         balanceInfo.balance,
-        Chains.getChainDecimalsByType(Chains.getChainProperty(params.token.chainSymbol).chainType),
+        Chains.getChainDecimalsByType(Chains.getChainProperty(params.token.chainSymbol).chainType)
       ).toFixed();
     }
     return "0";
@@ -70,7 +70,7 @@ export class SrbTokenService extends ChainTokenService {
     if (nativeBalance?.balance) {
       return convertFloatAmountToInt(
         nativeBalance.balance,
-        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType),
+        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType)
       ).toFixed();
     }
     return "0";

@@ -39,7 +39,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<i128>>;
 
   /**
@@ -67,7 +67,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<boolean>>;
 
   /**
@@ -123,7 +123,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -152,7 +152,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<i128>>;
 
   /**
@@ -190,7 +190,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -235,7 +235,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -271,7 +271,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -330,7 +330,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -389,7 +389,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -449,7 +449,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -510,7 +510,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -555,7 +555,7 @@ export interface TokenContract {
        * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
        */
       simulate?: boolean;
-    },
+    }
   ) => Promise<AssembledTransaction<null>>;
 }
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -580,7 +580,7 @@ export class TokenContract extends ContractClient {
         "AAAAAAAAAWRUcmFuc2ZlciBgYW1vdW50YCBmcm9tIGBmcm9tYCB0byBgdG9gLgoKIyBBcmd1bWVudHMKCiogYGZyb21gIC0gVGhlIGFkZHJlc3MgaG9sZGluZyB0aGUgYmFsYW5jZSBvZiB0b2tlbnMgd2hpY2ggd2lsbCBiZQp3aXRoZHJhd24gZnJvbS4KKiBgdG9gIC0gVGhlIGFkZHJlc3Mgd2hpY2ggd2lsbCByZWNlaXZlIHRoZSB0cmFuc2ZlcnJlZCB0b2tlbnMuCiogYGFtb3VudGAgLSBUaGUgYW1vdW50IG9mIHRva2VucyB0byBiZSB0cmFuc2ZlcnJlZC4KCiMgRXZlbnRzCgpFbWl0cyBhbiBldmVudCB3aXRoIHRvcGljcyBgWyJ0cmFuc2ZlciIsIGZyb206IEFkZHJlc3MsIHRvOiBBZGRyZXNzXSwKZGF0YSA9IFthbW91bnQ6IGkxMjhdYAAAAAh0cmFuc2ZlcgAAAAMAAAAAAAAABGZyb20AAAATAAAAAAAAAAJ0bwAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAA==",
         "AAAAAAAAAzNUcmFuc2ZlciBgYW1vdW50YCBmcm9tIGBmcm9tYCB0byBgdG9gLCBjb25zdW1pbmcgdGhlIGFsbG93YW5jZSB0aGF0CmBzcGVuZGVyYCBoYXMgb24gYGZyb21gJ3MgYmFsYW5jZS4gQXV0aG9yaXplZCBieSBzcGVuZGVyCihgc3BlbmRlci5yZXF1aXJlX2F1dGgoKWApLgoKVGhlIHNwZW5kZXIgd2lsbCBiZSBhbGxvd2VkIHRvIHRyYW5zZmVyIHRoZSBhbW91bnQgZnJvbSBmcm9tJ3MgYmFsYW5jZQppZiB0aGUgYW1vdW50IGlzIGxlc3MgdGhhbiBvciBlcXVhbCB0byB0aGUgYWxsb3dhbmNlIHRoYXQgdGhlIHNwZW5kZXIKaGFzIG9uIHRoZSBmcm9tJ3MgYmFsYW5jZS4gVGhlIHNwZW5kZXIncyBhbGxvd2FuY2Ugb24gZnJvbSdzIGJhbGFuY2UKd2lsbCBiZSByZWR1Y2VkIGJ5IHRoZSBhbW91bnQuCgojIEFyZ3VtZW50cwoKKiBgc3BlbmRlcmAgLSBUaGUgYWRkcmVzcyBhdXRob3JpemluZyB0aGUgdHJhbnNmZXIsIGFuZCBoYXZpbmcgaXRzCmFsbG93YW5jZSBjb25zdW1lZCBkdXJpbmcgdGhlIHRyYW5zZmVyLgoqIGBmcm9tYCAtIFRoZSBhZGRyZXNzIGhvbGRpbmcgdGhlIGJhbGFuY2Ugb2YgdG9rZW5zIHdoaWNoIHdpbGwgYmUKd2l0aGRyYXduIGZyb20uCiogYHRvYCAtIFRoZSBhZGRyZXNzIHdoaWNoIHdpbGwgcmVjZWl2ZSB0aGUgdHJhbnNmZXJyZWQgdG9rZW5zLgoqIGBhbW91bnRgIC0gVGhlIGFtb3VudCBvZiB0b2tlbnMgdG8gYmUgdHJhbnNmZXJyZWQuCgojIEV2ZW50cwoKRW1pdHMgYW4gZXZlbnQgd2l0aCB0b3BpY3MgYFsidHJhbnNmZXIiLCBmcm9tOiBBZGRyZXNzLCB0bzogQWRkcmVzc10sCmRhdGEgPSBbYW1vdW50OiBpMTI4XWAAAAAADXRyYW5zZmVyX2Zyb20AAAAAAAAEAAAAAAAAAAdzcGVuZGVyAAAAABMAAAAAAAAABGZyb20AAAATAAAAAAAAAAJ0bwAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAA==",
       ]),
-      options,
+      options
     );
   }
   public readonly fromJSON = {

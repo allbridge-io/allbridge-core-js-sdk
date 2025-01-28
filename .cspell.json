@@ -47,7 +47,8 @@
     "Vals",
     "Amoy",
     "Celo",
-    "crossrate"
+    "crossrate",
+    "mysten"
   ],
   "flagWords": [],
   "ignorePaths": [
@@ -58,8 +59,9 @@
     "node_modules/**",
     "src/configs/",
     "src/__tests__/services/liquidity-pool/sol/data/",
-    "src/services/models/srb/",
     "src/services/models/abi/",
+    "src/services/models/srb/",
+    "src/services/models/sui/",
     "src/services/utils/srb/assembled-tx.ts"
   ]
 }

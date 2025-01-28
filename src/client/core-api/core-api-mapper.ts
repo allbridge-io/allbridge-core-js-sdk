@@ -103,6 +103,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     transferTime: mapTransferTimeFromDto(dto.transferTime),
     txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,
+    suiAddresses: dto.suiAddresses,
   };
   return {
     ...chainDetails,

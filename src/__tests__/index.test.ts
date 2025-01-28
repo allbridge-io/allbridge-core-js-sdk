@@ -268,7 +268,7 @@ describe("SDK", () => {
         const actual = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
           sourceChainToken,
-          destinationChainToken,
+          destinationChainToken
         );
         expect(actual).toBeCloseTo(expectedPercent, 2);
       });
@@ -287,7 +287,7 @@ describe("SDK", () => {
         const feePercentOnDestination = await sdk.calculateFeePercentOnDestinationChain(
           amountToSend,
           sourceChainToken,
-          destinationChainToken,
+          destinationChainToken
         );
         const partAfterFeeOnSource = 1 - feePercentOnSource / 100;
         const partAfterFeeOnDestination = partAfterFeeOnSource - (partAfterFeeOnSource * feePercentOnDestination) / 100;
@@ -324,7 +324,7 @@ describe("SDK", () => {
           const actual = sdk.getAverageTransferTime(
             sourceChainToken,
             destinationChainToken,
-            unsupportedMessenger as Messenger,
+            unsupportedMessenger as Messenger
           );
           expect(actual).toBeNull();
         });
@@ -475,7 +475,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          },
+          }
         );
 
         test.each([
@@ -536,7 +536,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          },
+          }
         );
       });
 
@@ -604,7 +604,7 @@ describe("SDK", () => {
             expect(methodCallMock).toHaveBeenCalledTimes(1);
             expect(actual).toEqual(expected);
             scope.done();
-          },
+          }
         );
       });
     });
@@ -735,7 +735,7 @@ describe("SDK", () => {
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
-          0,
+          0
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
@@ -820,7 +820,7 @@ describe("SDK", () => {
             { type: "uint8", value: Messenger.ALLBRIDGE },
             { type: "uint256", value: 0 },
           ],
-          fromAccountAddress,
+          fromAccountAddress
         );
         expect(methodSignMock).toHaveBeenCalledTimes(1);
         expect(methodSignMock).toBeCalledWith(rawTx);
@@ -914,7 +914,7 @@ describe("SDK", () => {
           formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
-          expectedFeeAmount,
+          expectedFeeAmount
         );
         expect(transactionResponse).toEqual({ txId: transactionHash });
         scope.done();
@@ -991,7 +991,7 @@ describe("SDK", () => {
               value: convertFloatAmountToInt(minimumReceiveAmount, trxChainToken.decimals).toFixed(),
             },
           ],
-          accountAddress,
+          accountAddress
         );
         expect(rawTransactionTransfer).toEqual(rawTx);
       });
@@ -1045,14 +1045,14 @@ describe("SDK", () => {
           [AmountFormat.INT]: fee,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             fee,
-            Chains.getChainDecimalsByType(sourceChainToken.chainType),
+            Chains.getChainDecimalsByType(sourceChainToken.chainType)
           ).toFixed(),
         },
         [FeePaymentMethod.WITH_STABLECOIN]: {
           [AmountFormat.INT]: expectedFeeAmountInStablecoin,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             expectedFeeAmountInStablecoin,
-            sourceChainToken.decimals,
+            sourceChainToken.decimals
           ).toFixed(),
         },
       };
@@ -1076,7 +1076,7 @@ describe("SDK", () => {
           [AmountFormat.INT]: fee,
           [AmountFormat.FLOAT]: convertIntAmountToFloat(
             fee,
-            Chains.getChainDecimalsByType(sourceChainToken.chainType),
+            Chains.getChainDecimalsByType(sourceChainToken.chainType)
           ).toFixed(),
         },
       };

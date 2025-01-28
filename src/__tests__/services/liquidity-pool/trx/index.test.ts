@@ -25,7 +25,7 @@ describe("TronPool", () => {
   const tronPool = new TronPoolService(
     tronWebMock as any as TronWeb,
     api as AllbridgeCoreClientWithPoolInfo,
-    LOCAL_NODE_URL,
+    LOCAL_NODE_URL
   );
 
   beforeAll(() => {
@@ -66,7 +66,7 @@ describe("TronPool", () => {
           value: amount,
         },
       ],
-      ACCOUNT_ADDRESS,
+      ACCOUNT_ADDRESS
     );
   });
 
@@ -95,7 +95,7 @@ describe("TronPool", () => {
           value: amount,
         },
       ],
-      ACCOUNT_ADDRESS,
+      ACCOUNT_ADDRESS
     );
   });
 
@@ -117,7 +117,7 @@ describe("TronPool", () => {
         callValue: +"0",
       },
       [],
-      ACCOUNT_ADDRESS,
+      ACCOUNT_ADDRESS
     );
   });
 

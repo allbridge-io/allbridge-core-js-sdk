@@ -16,7 +16,7 @@ import { SolanaAutoTxFee, TxFeeParams } from "../../models";
 export async function addUnitLimitAndUnitPriceToTx(
   transaction: Transaction,
   txFeeParams: TxFeeParams | undefined,
-  solanaRpcUrl: string,
+  solanaRpcUrl: string
 ) {
   const connection = new Connection(solanaRpcUrl, "confirmed");
   /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
@@ -27,7 +27,7 @@ export async function addUnitLimitAndUnitPriceToTx(
 export async function addUnitLimitAndUnitPriceToVersionedTx(
   transaction: VersionedTransaction,
   txFeeParams: TxFeeParams | undefined,
-  solanaRpcUrl: string,
+  solanaRpcUrl: string
 ) {
   const connection = new Connection(solanaRpcUrl, "confirmed");
   const addressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(transaction, connection);
@@ -52,7 +52,7 @@ async function addUnitLimitAndUnitPriceToInstructions(
   instructions: TransactionInstruction[],
   simUnitsConsumed: number,
   txFeeParams: TxFeeParams | undefined,
-  connection: Connection,
+  connection: Connection
 ) {
   if (simUnitsConsumed > 0) {
     const units = updateUnitLimit(simUnitsConsumed, instructions);
@@ -77,7 +77,7 @@ function updateUnitLimit(simUnitsConsumed: number, instructions: TransactionInst
   const computeUnitLimitIndex = instructions.findIndex(
     (instruction) =>
       instruction.programId.equals(ComputeBudgetProgram.programId) &&
-      ComputeBudgetInstruction.decodeInstructionType(instruction) === "SetComputeUnitLimit",
+      ComputeBudgetInstruction.decodeInstructionType(instruction) === "SetComputeUnitLimit"
   );
   const units = Number((simUnitsConsumed * 1.3).toFixed(0));
   const computeUnitLimitInstruction = ComputeBudgetProgram.setComputeUnitLimit({
@@ -94,12 +94,12 @@ function updateUnitLimit(simUnitsConsumed: number, instructions: TransactionInst
 async function updateUnitPrice(
   instructions: TransactionInstruction[],
   connection: Connection,
-  pricePerUnitInMicroLamports?: string,
+  pricePerUnitInMicroLamports?: string
 ): Promise<string> {
   const computeUnitPriceIndex = instructions.findIndex(
     (instruction) =>
       instruction.programId.equals(ComputeBudgetProgram.programId) &&
-      ComputeBudgetInstruction.decodeInstructionType(instruction) === "SetComputeUnitPrice",
+      ComputeBudgetInstruction.decodeInstructionType(instruction) === "SetComputeUnitPrice"
   );
   const unitPrice = pricePerUnitInMicroLamports
     ? BigInt(pricePerUnitInMicroLamports)

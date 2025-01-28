@@ -33,7 +33,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService,
+    private tokenService: TokenService
   ) {}
 
   async approve(a: Provider | ApproveParams, b?: ApproveParams): Promise<RawTransaction> {
@@ -51,7 +51,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
         ...approveData,
         spender,
       },
-      provider,
+      provider
     );
   }
 
@@ -64,7 +64,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
         this.api,
         this.nodeRpcUrlsConfig,
         this.params,
-        provider,
+        provider
       ).buildRawTransactionSend(params);
     }
     return getChainBridgeService(
@@ -72,7 +72,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider,
+      provider
     ).buildRawTransactionSwap(params);
   }
 }

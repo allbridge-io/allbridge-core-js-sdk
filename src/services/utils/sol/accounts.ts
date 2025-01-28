@@ -16,7 +16,7 @@ export async function getConfigAccount(programId: PublicKey): Promise<PublicKey>
 export async function getLockAccount(nonce: number[], bridgeProgramId: PublicKey): Promise<PublicKey> {
   const [lockPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("lock"), Uint8Array.from(nonce)],
-    bridgeProgramId,
+    bridgeProgramId
   );
   return lockPda;
 }
@@ -24,7 +24,7 @@ export async function getLockAccount(nonce: number[], bridgeProgramId: PublicKey
 export async function getPriceAccount(chainId: number, gasOracleProgramId: PublicKey): Promise<PublicKey> {
   const [pricePda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("price_v2"), Uint8Array.from([chainId])],
-    gasOracleProgramId,
+    gasOracleProgramId
   );
   return pricePda;
 }
@@ -37,7 +37,7 @@ export async function getAuthorityAccount(bridgeProgramId: PublicKey): Promise<P
 
 export async function getCctpAuthorityAccount(
   cctpBridgeAccount: PublicKey,
-  cctpBridgeProgramId: PublicKey,
+  cctpBridgeProgramId: PublicKey
 ): Promise<PublicKey> {
   const [poolAuthority] = await PublicKey.findProgramAddress([cctpBridgeAccount.toBuffer()], cctpBridgeProgramId);
   return poolAuthority;
@@ -46,7 +46,7 @@ export async function getCctpAuthorityAccount(
 export async function getBridgeTokenAccount(mintAccount: PublicKey, bridgeProgramId: PublicKey): Promise<PublicKey> {
   const [poolPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("token"), mintAccount.toBytes()],
-    bridgeProgramId,
+    bridgeProgramId
   );
   return poolPda;
 }
@@ -54,11 +54,11 @@ export async function getBridgeTokenAccount(mintAccount: PublicKey, bridgeProgra
 export async function getOtherChainTokenAccount(
   chainId: number,
   token: Buffer,
-  bridgeProgramId: PublicKey,
+  bridgeProgramId: PublicKey
 ): Promise<PublicKey> {
   const [otherChainTokenPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("other_bridge_token"), Buffer.from([chainId]), token],
-    bridgeProgramId,
+    bridgeProgramId
   );
   return otherChainTokenPda;
 }
@@ -66,7 +66,7 @@ export async function getOtherChainTokenAccount(
 export async function getChainBridgeAccount(chainId: number, bridgeProgramId: PublicKey): Promise<PublicKey> {
   const [chainBridgePda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("chain_bridge"), Uint8Array.from([chainId])],
-    bridgeProgramId,
+    bridgeProgramId
   );
   return chainBridgePda;
 }
@@ -74,18 +74,18 @@ export async function getChainBridgeAccount(chainId: number, bridgeProgramId: Pu
 export async function getGasUsageAccount(chainId: number, messengerProgramId: PublicKey): Promise<PublicKey> {
   const [chainBridgePda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("gas_usage"), Uint8Array.from([chainId])],
-    messengerProgramId,
+    messengerProgramId
   );
   return chainBridgePda;
 }
 
 export async function getSendMessageAccount(
   messageWithSigner: Uint8Array,
-  messengerProgramId: PublicKey,
+  messengerProgramId: PublicKey
 ): Promise<PublicKey> {
   const [sentMessagePda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("sent_message"), messageWithSigner],
-    messengerProgramId,
+    messengerProgramId
   );
   return sentMessagePda;
 }
@@ -93,11 +93,11 @@ export async function getSendMessageAccount(
 export async function getUserDepositAccount(
   userPublicKey: PublicKey,
   tokenMintAccount: PublicKey,
-  bridgeProgramId: PublicKey,
+  bridgeProgramId: PublicKey
 ): Promise<PublicKey> {
   const [userDepositPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("user_deposit"), tokenMintAccount.toBytes(), userPublicKey.toBytes()],
-    bridgeProgramId,
+    bridgeProgramId
   );
   return userDepositPda;
 }
@@ -105,7 +105,7 @@ export async function getUserDepositAccount(
 export async function getCctpBridgeAccount(mintAccount: PublicKey, cctpBridgeProgramId: PublicKey): Promise<PublicKey> {
   const [configPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("cctp_bridge"), mintAccount.toBytes()],
-    cctpBridgeProgramId,
+    cctpBridgeProgramId
   );
   return configPda;
 }
@@ -113,7 +113,7 @@ export async function getCctpBridgeAccount(mintAccount: PublicKey, cctpBridgePro
 export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridgeProgramId: PublicKey): Promise<PublicKey> {
   const [poolPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("token"), token.toBytes()],
-    cctpBridgeProgramId,
+    cctpBridgeProgramId
   );
   return poolPda;
 }
@@ -121,7 +121,7 @@ export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridgeProg
 export function getCctpLockAccount(cctpBridgeProgramId: PublicKey, messageSentEventDataAccount: PublicKey): PublicKey {
   const [tokenMessengerEventAuthority] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("lock"), messageSentEventDataAccount.toBuffer()],
-    cctpBridgeProgramId,
+    cctpBridgeProgramId
   );
   return tokenMessengerEventAuthority;
 }
@@ -130,7 +130,7 @@ export function getCctpAccounts(
   domain: number,
   mintAccount: PublicKey,
   cctpTransmitterProgramId: PublicKey,
-  cctpTokenMessengerMinter: PublicKey,
+  cctpTokenMessengerMinter: PublicKey
 ) {
   const messageTransmitterAccount = findProgramAddress("message_transmitter", cctpTransmitterProgramId);
   const tokenMessenger = findProgramAddress("token_messenger", cctpTokenMessengerMinter);
@@ -155,7 +155,7 @@ export function getCctpAccounts(
 function findProgramAddress(
   label: string,
   programId: PublicKey,
-  extraSeeds: (string | number[] | Buffer | PublicKey)[] = [],
+  extraSeeds: (string | number[] | Buffer | PublicKey)[] = []
 ): PublicKey {
   const seeds = [Buffer.from(anchor.utils.bytes.utf8.encode(label))];
   for (const extraSeed of extraSeeds) {

@@ -17,7 +17,7 @@ export class TronTokenService extends ChainTokenService {
 
   constructor(
     public tronWeb: TronWeb,
-    public api: AllbridgeCoreClient,
+    public api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -69,7 +69,7 @@ export class TronTokenService extends ChainTokenService {
     methodSignature: string,
     parameters: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string,
+    fromAddress: string
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
@@ -78,7 +78,7 @@ export class TronTokenService extends ChainTokenService {
         callValue: +value,
       },
       parameters,
-      fromAddress,
+      fromAddress
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));

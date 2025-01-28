@@ -10,6 +10,7 @@ const chainDecimalsByType: Record<ChainType, number> = {
   SOLANA: 9,
   TRX: 6,
   SRB: 7,
+  SUI: 9,
 };
 
 const defaultProperties: Record<string, BasicChainProperties> = {
@@ -80,6 +81,11 @@ const defaultProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.STLR,
     name: "Stellar",
     chainType: ChainType.SRB,
+  },
+  [ChainSymbol.SUI]: {
+    chainSymbol: ChainSymbol.SUI,
+    name: "Sui",
+    chainType: ChainType.SUI,
   },
 };
 

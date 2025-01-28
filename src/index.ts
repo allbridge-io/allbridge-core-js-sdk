@@ -195,7 +195,7 @@ export class AllbridgeCoreSdk {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     recipientAddress: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    tokenAddress?: string,
+    tokenAddress?: string
   ): Promise<CheckAddressResponse> {
     return await this.service.checkAddress();
   }
@@ -212,7 +212,7 @@ export class AllbridgeCoreSdk {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<PendingStatusInfoResponse> {
     return this.service.getPendingStatusInfo(amount, amountFormat, sourceToken, destToken);
   }
@@ -247,7 +247,7 @@ export class AllbridgeCoreSdk {
    */
   async calculateFeePercentOnSourceChain(
     amountFloat: BigSource,
-    sourceChainToken: TokenWithChainDetails,
+    sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
     return this.service.calculateFeePercentOnSourceChain(amountFloat, sourceChainToken);
   }
@@ -265,7 +265,7 @@ export class AllbridgeCoreSdk {
   async calculateFeePercentOnDestinationChain(
     amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
     return this.service.calculateFeePercentOnDestinationChain(amountFloat, sourceChainToken, destinationChainToken);
   }
@@ -282,13 +282,13 @@ export class AllbridgeCoreSdk {
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
     return this.service.getAmountToBeReceivedAndGasFeeOptions(
       amountToSendFloat,
       sourceChainToken,
       destinationChainToken,
-      messenger,
+      messenger
     );
   }
 
@@ -304,13 +304,13 @@ export class AllbridgeCoreSdk {
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
     return this.service.getAmountToSendAndGasFeeOptions(
       amountToBeReceivedFloat,
       sourceChainToken,
       destinationChainToken,
-      messenger,
+      messenger
     );
   }
 
@@ -330,7 +330,7 @@ export class AllbridgeCoreSdk {
      * Optional.
      * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger,
+    messenger?: Messenger
   ): Promise<string> {
     return this.service.getAmountToBeReceived(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -355,7 +355,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider,
+    destinationProvider?: Provider
   ): Promise<string> {
     return this.service.getAmountToBeReceivedFromChain(
       amountToSendFloat,
@@ -363,7 +363,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       messenger,
       sourceProvider,
-      destinationProvider,
+      destinationProvider
     );
   }
 
@@ -382,7 +382,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): string {
     return this.service.getAmountToBeReceivedFromPools(
       amountToSendFloat,
@@ -390,7 +390,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       sourcePool,
       destinationPool,
-      messenger,
+      messenger
     );
   }
 
@@ -410,7 +410,7 @@ export class AllbridgeCoreSdk {
      * Optional.
      * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger,
+    messenger?: Messenger
   ): Promise<string> {
     return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -435,7 +435,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider,
+    destinationProvider?: Provider
   ): Promise<string> {
     return this.service.getAmountToSendFromChain(
       amountToBeReceivedFloat,
@@ -443,7 +443,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       messenger,
       sourceProvider,
-      destinationProvider,
+      destinationProvider
     );
   }
 
@@ -462,7 +462,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): string {
     return this.service.getAmountToSendFromPools(
       amountToBeReceivedFloat,
@@ -470,7 +470,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       sourcePool,
       destinationPool,
-      messenger,
+      messenger
     );
   }
 
@@ -484,7 +484,7 @@ export class AllbridgeCoreSdk {
   async getGasFeeOptions(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<GasFeeOptions> {
     return this.service.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger);
   }
@@ -499,7 +499,7 @@ export class AllbridgeCoreSdk {
   getAverageTransferTime(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): number | null {
     return this.service.getAverageTransferTime(sourceChainToken, destinationChainToken, messenger);
   }
@@ -541,7 +541,7 @@ export class AllbridgeCoreSdk {
    */
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
     return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken);
   }
@@ -555,7 +555,7 @@ export class AllbridgeCoreSdk {
   async getVUsdFromAmount(
     amount: string,
     amountFormat: AmountFormat,
-    sourceToken: TokenWithChainDetails,
+    sourceToken: TokenWithChainDetails
   ): Promise<AmountFormatted> {
     return this.service.getVUsdFromAmount(amount, amountFormat, sourceToken);
   }
@@ -578,7 +578,7 @@ export class AllbridgeCoreSdk {
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
     return this.service.swapAndBridgeFeeCalculation(amountInTokenPrecision, sourceToken, destToken);
   }
@@ -592,7 +592,7 @@ export class AllbridgeCoreSdk {
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
     return this.service.swapAndBridgeFeeCalculationReverse(amountInTokenPrecision, sourceToken, destToken);
   }
@@ -604,7 +604,7 @@ export class AllbridgeCoreSdk {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SendAmountDetails> {
     return this.service.getSendAmountDetails(amount, amountFormat, sourceToken, destToken);
   }

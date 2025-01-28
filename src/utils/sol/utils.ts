@@ -3,7 +3,7 @@ import { SdkError } from "../../exceptions";
 
 export async function fetchAddressLookupTableAccountsFromTx(
   transaction: VersionedTransaction,
-  connection: Connection,
+  connection: Connection
 ): Promise<AddressLookupTableAccount[]> {
   return await Promise.all(
     transaction.message.addressTableLookups.map(async (lookup) => {
@@ -15,9 +15,9 @@ export async function fetchAddressLookupTableAccountsFromTx(
               throw new SdkError("Cannot get AccountInfo");
             }
             return res.data;
-          }),
+          })
         ),
       });
-    }),
+    })
   );
 }

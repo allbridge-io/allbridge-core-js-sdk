@@ -7,7 +7,7 @@ export function depositAmountToVUsd(
   aValue: string,
   dValue: string,
   tokenBalance: string,
-  vUsdBalance: string,
+  vUsdBalance: string
 ): string {
   const amountSP = convertFloatAmountToInt(amount, SYSTEM_PRECISION);
   const amountSPBig = Big(amountSP);

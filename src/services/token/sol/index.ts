@@ -16,7 +16,7 @@ export class SolanaTokenService extends ChainTokenService {
 
   constructor(
     public solanaRpcUrl: string,
-    public api: AllbridgeCoreClient,
+    public api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -41,7 +41,7 @@ export class SolanaTokenService extends ChainTokenService {
       {
         preflightCommitment: "confirmed",
         commitment: "confirmed",
-      },
+      }
     );
   }
 

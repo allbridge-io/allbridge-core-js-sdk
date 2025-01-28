@@ -19,6 +19,7 @@ import { ApproveParams, ChainPoolService, CheckAllowanceParams, GetAllowancePara
 import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService } from "./sol";
 import { SrbPoolService } from "./srb";
+import { SuiPoolService } from "./sui";
 import { TronPoolService } from "./trx";
 
 export interface LiquidityPoolService {
@@ -86,7 +87,7 @@ export interface LiquidityPoolService {
     amount: string,
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider,
+    provider?: Provider
   ): Promise<string>;
 
   /**
@@ -99,7 +100,7 @@ export interface LiquidityPoolService {
   getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider,
+    provider?: Provider
   ): Promise<UserBalanceInfo>;
 
   /**
@@ -119,7 +120,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private api: AllbridgeCoreClientFiltered,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService,
+    private tokenService: TokenService
   ) {
     this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
     const ttl = params.cachePoolInfoChainSec > 0 ? params.cachePoolInfoChainSec * 1000 : 20 * 1000;
@@ -165,7 +166,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     amount: string,
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider,
+    provider?: Provider
   ): Promise<string> {
     validateAmountGtZero(amount);
     validateAmountDecimals("amount", amount, token.decimals);
@@ -181,14 +182,14 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   async getUserBalanceInfo(
     accountAddress: string,
     token: TokenWithChainDetails,
-    provider?: Provider,
+    provider?: Provider
   ): Promise<UserBalanceInfo> {
     return getChainPoolService(
       token.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider,
+      provider
     ).getUserBalanceInfo(accountAddress, token);
   }
 
@@ -203,7 +204,7 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
         this.api,
         this.nodeRpcUrlsConfig,
         this.params,
-        provider,
+        provider
       ).getPoolInfoFromChain(token);
       this.cache.put(poolKey, poolInfo);
       this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
@@ -217,7 +218,7 @@ export function getChainPoolService(
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
-  provider?: Provider,
+  provider?: Provider
 ): ChainPoolService {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
@@ -246,6 +247,9 @@ export function getChainPoolService(
     }
     case ChainType.SRB: {
       return new SrbPoolService(nodeRpcUrlsConfig, params, api);
+    }
+    case ChainType.SUI: {
+      return new SuiPoolService(nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), api);
     }
   }
 }

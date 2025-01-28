@@ -5,7 +5,7 @@ import { PoolInfo, TokenWithChainDetails } from "../tokens-info";
 
 export async function getPoolInfoByToken(
   api: AllbridgeCoreClientPoolsExt,
-  sourceChainToken: TokenWithChainDetails,
+  sourceChainToken: TokenWithChainDetails
 ): Promise<PoolInfo> {
   return await api.getPoolInfoByKey({
     chainSymbol: sourceChainToken.chainSymbol,
@@ -42,7 +42,7 @@ export async function promiseWithTimeoutAndRetries<T>(
   toTry: () => Promise<T>,
   msg: string,
   maxRetries: number,
-  timeoutMs: number,
+  timeoutMs: number
 ): Promise<T> {
   if (maxRetries < 1)
     throw new Error(`Bad argument: 'maxRetries' must be greater than 0, but ${maxRetries} was received.`);
@@ -65,7 +65,7 @@ export async function withExponentialBackoff<T>(
   keepWaitingIf: (result: T) => boolean,
   secondsToWait: number,
   exponentialFactor = 1.5,
-  verbose = false,
+  verbose = false
 ): Promise<T[]> {
   const attempts: T[] = [];
 
@@ -88,7 +88,7 @@ export async function withExponentialBackoff<T>(
       console.info(
         `Waiting ${waitTime}ms before trying again (bringing the total wait time to ${totalWaitTime}ms so far, of total ${
           secondsToWait * 1000
-        }ms)`,
+        }ms)`
       );
     }
     await new Promise((res) => setTimeout(res, waitTime));
@@ -109,8 +109,8 @@ export async function withExponentialBackoff<T>(
         `${count}. Called ${fn.name}; ${attempts.length} prev attempts. Most recent: ${JSON.stringify(
           attempts[attempts.length - 1],
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
     }
   }

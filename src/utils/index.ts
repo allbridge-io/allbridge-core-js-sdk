@@ -17,7 +17,7 @@ export class DefaultUtils implements Utils {
 
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    params: AllbridgeCoreSdkOptions,
+    params: AllbridgeCoreSdkOptions
   ) {
     this.srb = new DefaultSrbUtils(nodeRpcUrlsConfig, params);
     this.sol = new DefaultSolUtils(nodeRpcUrlsConfig, params);

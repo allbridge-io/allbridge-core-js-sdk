@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2023",
     "module": "commonjs",
     "lib": [
       "es6"

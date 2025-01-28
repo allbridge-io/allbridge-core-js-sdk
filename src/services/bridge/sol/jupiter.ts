@@ -19,7 +19,7 @@ export class JupiterService {
     userAddress: string,
     stableTokenAddress: string,
     amount: string,
-    exactOut: boolean,
+    exactOut: boolean
   ): Promise<{ tx: VersionedTransaction; amountIn?: string }> {
     let quoteResponse: any;
     try {
@@ -73,7 +73,7 @@ export class JupiterService {
 
   async amendJupiterWithSdkTx(
     transaction: VersionedTransaction,
-    sdkTx: VersionedTransaction,
+    sdkTx: VersionedTransaction
   ): Promise<VersionedTransaction> {
     try {
       const addressLookupTableAccounts = await fetchAddressLookupTableAccountsFromTx(transaction, this.connection);

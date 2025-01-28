@@ -22,6 +22,7 @@ import {
 } from "./models";
 import { SolanaTokenService } from "./sol";
 import { SrbTokenService } from "./srb";
+import { SuiTokenService } from "./sui";
 import { TronTokenService } from "./trx";
 
 export interface TokenService {
@@ -42,12 +43,12 @@ export class DefaultTokenService implements TokenService {
   constructor(
     readonly api: AllbridgeCoreClient,
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    readonly params: AllbridgeCoreSdkOptions,
+    readonly params: AllbridgeCoreSdkOptions
   ) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
     const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
-      params,
+      params
     );
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
@@ -56,7 +57,7 @@ export class DefaultTokenService implements TokenService {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
-      this.prepareCheckAllowanceParams(params),
+      this.prepareCheckAllowanceParams(params)
     );
   }
 
@@ -66,7 +67,7 @@ export class DefaultTokenService implements TokenService {
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
-      this.prepareApproveParams(approveData),
+      this.prepareApproveParams(approveData)
     );
   }
 
@@ -78,7 +79,7 @@ export class DefaultTokenService implements TokenService {
     return this.getChainTokenService(
       approveData.token.chainSymbol,
       approveData.owner,
-      provider,
+      provider
     ).buildRawTransactionApprove(this.prepareApproveParams(approveData));
   }
 
@@ -86,7 +87,7 @@ export class DefaultTokenService implements TokenService {
     const tokenBalance = await this.getChainTokenService(
       params.token.chainSymbol,
       params.account,
-      provider,
+      provider
     ).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
@@ -98,13 +99,13 @@ export class DefaultTokenService implements TokenService {
     const tokenBalance = await this.getChainTokenService(
       params.chainSymbol,
       params.account,
-      provider,
+      provider
     ).getNativeTokenBalance(params);
     return {
       [AmountFormat.INT]: tokenBalance,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         tokenBalance,
-        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType),
+        Chains.getChainDecimalsByType(Chains.getChainProperty(params.chainSymbol).chainType)
       ).toFixed(),
     };
   }
@@ -135,6 +136,9 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.SRB: {
         return new SrbTokenService(this.nodeRpcUrlsConfig, this.params, this.api);
+      }
+      case ChainType.SUI: {
+        return new SuiTokenService(this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), this.api);
       }
     }
   }
