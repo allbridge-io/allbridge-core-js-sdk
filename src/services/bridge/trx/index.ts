@@ -1,20 +1,22 @@
 import { Big } from "big.js";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
-import { SendParams, TxSendParams, TxSwapParams } from "../models";
+import { SendParams, TxSendParamsTrx, TxSwapParamsTrx } from "../models";
 import { ChainBridgeService } from "../models/bridge";
-import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class TronBridgeService extends ChainBridgeService {
   chainType: ChainType.TRX = ChainType.TRX;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
+  constructor(
+    public tronWeb: TronWeb,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
   }
 
@@ -29,7 +31,7 @@ export class TronBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
-  async buildRawTransactionSwapFromParams(params: TxSwapParams): Promise<RawTransaction> {
+  async buildRawTransactionSwapFromParams(params: TxSwapParamsTrx): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -56,7 +58,7 @@ export class TronBridgeService extends ChainBridgeService {
     return this.buildRawTransactionSendFromParams(txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(params: TxSendParams): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(params: TxSendParamsTrx): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -76,7 +78,7 @@ export class TronBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    const nonce = getNonce().toJSON().data;
+    const nonce = getNonceBigInt().toString();
     let parameters;
     let value: string;
     let methodSignature: string;
@@ -135,16 +137,16 @@ export class TronBridgeService extends ChainBridgeService {
     methodSignature: string,
     parameters: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string
+    fromAddress: string,
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
       methodSignature,
       {
-        callValue: value,
+        callValue: +value,
       },
       parameters,
-      fromAddress
+      fromAddress,
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));

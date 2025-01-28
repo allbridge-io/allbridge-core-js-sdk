@@ -44,6 +44,12 @@ export interface AllbridgeCoreSdkOptions {
    * Jupiter v6 Swap Api
    */
   jupiterUrl: string;
+  /**
+   * Jupiter v6 'maxAccounts' parameter</br>
+   * Rough estimate of the max accounts to be used for the quote, so that you can compose with your own accounts</br>
+   * {@link https://station.jup.ag/docs/apis/swap-api#using-maxaccounts}
+   */
+  jupiterMaxAccounts?: number;
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;
@@ -62,7 +68,7 @@ export interface AllbridgeCoreSdkOptions {
   cachePoolInfoChainSec: number;
 
   /**
-   * @Internal
+   * @internal
    * Optional additional properties to merge with the default properties.
    */
   additionalChainsProperties?: Record<string, AdditionalBasicChainProperties>;
@@ -80,7 +86,7 @@ export interface AllbridgeCoreSdkOptions {
 export type NodeRpcUrls = Record<string, string>;
 
 /**
- * @Deprecated Use {@link NodeRpcUrls}
+ * @deprecated Use {@link NodeRpcUrls}
  */
 export interface NodeUrlsConfig {
   solanaRpcUrl: string;
@@ -88,7 +94,7 @@ export interface NodeUrlsConfig {
 }
 
 /**
- * @Deprecated Use {@link NodeRpcUrls}
+ * @deprecated Use {@link NodeRpcUrls}
  */
 function isNodeUrlsConfig(nodeUrls: NodeUrlsConfig | NodeRpcUrls): nodeUrls is NodeUrlsConfig {
   return "solanaRpcUrl" in nodeUrls;
@@ -178,7 +184,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * Check address and show gas balance
-   * @Deprecated
+   * @deprecated
    * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    * @param recipientAddress
    * @param tokenAddress
@@ -189,7 +195,7 @@ export class AllbridgeCoreSdk {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     recipientAddress: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    tokenAddress?: string
+    tokenAddress?: string,
   ): Promise<CheckAddressResponse> {
     return await this.service.checkAddress();
   }
@@ -206,7 +212,7 @@ export class AllbridgeCoreSdk {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails
+    destToken: TokenWithChainDetails,
   ): Promise<PendingStatusInfoResponse> {
     return this.service.getPendingStatusInfo(amount, amountFormat, sourceToken, destToken);
   }
@@ -232,7 +238,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @Deprecated
+   * @deprecated
    * Calculates the percentage of fee from the initial amount that is charged when swapping from the selected source chain.
    * (Does not include fee related to the destination chain. Does not include gas fee)
    * @param amountFloat initial amount of tokens to swap
@@ -241,13 +247,13 @@ export class AllbridgeCoreSdk {
    */
   async calculateFeePercentOnSourceChain(
     amountFloat: BigSource,
-    sourceChainToken: TokenWithChainDetails
+    sourceChainToken: TokenWithChainDetails,
   ): Promise<number> {
     return this.service.calculateFeePercentOnSourceChain(amountFloat, sourceChainToken);
   }
 
   /**
-   * @Deprecated
+   * @deprecated
    * Calculates the percentage of fee that is charged when swapping to the selected destination chain. The destination chain fee percent applies to the amount after the source chain fee.
    * (Does not include fee related to the source chain. Does not include gas fee)
    * @see {@link calculateFeePercentOnSourceChain}
@@ -259,7 +265,7 @@ export class AllbridgeCoreSdk {
   async calculateFeePercentOnDestinationChain(
     amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
   ): Promise<number> {
     return this.service.calculateFeePercentOnDestinationChain(amountFloat, sourceChainToken, destinationChainToken);
   }
@@ -276,13 +282,13 @@ export class AllbridgeCoreSdk {
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger
+    messenger: Messenger,
   ): Promise<AmountsAndGasFeeOptions> {
     return this.service.getAmountToBeReceivedAndGasFeeOptions(
       amountToSendFloat,
       sourceChainToken,
       destinationChainToken,
-      messenger
+      messenger,
     );
   }
 
@@ -298,13 +304,13 @@ export class AllbridgeCoreSdk {
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger
+    messenger: Messenger,
   ): Promise<AmountsAndGasFeeOptions> {
     return this.service.getAmountToSendAndGasFeeOptions(
       amountToBeReceivedFloat,
       sourceChainToken,
       destinationChainToken,
-      messenger
+      messenger,
     );
   }
 
@@ -324,7 +330,7 @@ export class AllbridgeCoreSdk {
      * Optional.
      * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger
+    messenger?: Messenger,
   ): Promise<string> {
     return this.service.getAmountToBeReceived(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -349,7 +355,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider
+    destinationProvider?: Provider,
   ): Promise<string> {
     return this.service.getAmountToBeReceivedFromChain(
       amountToSendFloat,
@@ -357,7 +363,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       messenger,
       sourceProvider,
-      destinationProvider
+      destinationProvider,
     );
   }
 
@@ -376,7 +382,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger
+    messenger?: Messenger,
   ): string {
     return this.service.getAmountToBeReceivedFromPools(
       amountToSendFloat,
@@ -384,7 +390,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       sourcePool,
       destinationPool,
-      messenger
+      messenger,
     );
   }
 
@@ -404,7 +410,7 @@ export class AllbridgeCoreSdk {
      * Optional.
      * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger
+    messenger?: Messenger,
   ): Promise<string> {
     return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -429,7 +435,7 @@ export class AllbridgeCoreSdk {
      */
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider
+    destinationProvider?: Provider,
   ): Promise<string> {
     return this.service.getAmountToSendFromChain(
       amountToBeReceivedFloat,
@@ -437,7 +443,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       messenger,
       sourceProvider,
-      destinationProvider
+      destinationProvider,
     );
   }
 
@@ -456,7 +462,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger
+    messenger?: Messenger,
   ): string {
     return this.service.getAmountToSendFromPools(
       amountToBeReceivedFloat,
@@ -464,7 +470,7 @@ export class AllbridgeCoreSdk {
       destinationChainToken,
       sourcePool,
       destinationPool,
-      messenger
+      messenger,
     );
   }
 
@@ -478,7 +484,7 @@ export class AllbridgeCoreSdk {
   async getGasFeeOptions(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger
+    messenger: Messenger,
   ): Promise<GasFeeOptions> {
     return this.service.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger);
   }
@@ -493,7 +499,7 @@ export class AllbridgeCoreSdk {
   getAverageTransferTime(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger
+    messenger: Messenger,
   ): number | null {
     return this.service.getAverageTransferTime(sourceChainToken, destinationChainToken, messenger);
   }
@@ -535,7 +541,7 @@ export class AllbridgeCoreSdk {
    */
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
   ): Promise<ExtraGasMaxLimitResponse> {
     return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken);
   }
@@ -549,7 +555,7 @@ export class AllbridgeCoreSdk {
   async getVUsdFromAmount(
     amount: string,
     amountFormat: AmountFormat,
-    sourceToken: TokenWithChainDetails
+    sourceToken: TokenWithChainDetails,
   ): Promise<AmountFormatted> {
     return this.service.getVUsdFromAmount(amount, amountFormat, sourceToken);
   }
@@ -564,7 +570,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @Deprecated Use {@link getSendAmountDetails}
+   * @deprecated Use {@link getSendAmountDetails}
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken
@@ -572,13 +578,13 @@ export class AllbridgeCoreSdk {
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails
+    destToken: TokenWithChainDetails,
   ): Promise<SwapAndBridgeCalculationData> {
     return this.service.swapAndBridgeFeeCalculation(amountInTokenPrecision, sourceToken, destToken);
   }
 
   /**
-   * @Deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
+   * @deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken
@@ -586,7 +592,7 @@ export class AllbridgeCoreSdk {
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails
+    destToken: TokenWithChainDetails,
   ): Promise<SwapAndBridgeCalculationData> {
     return this.service.swapAndBridgeFeeCalculationReverse(amountInTokenPrecision, sourceToken, destToken);
   }
@@ -598,7 +604,7 @@ export class AllbridgeCoreSdk {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails
+    destToken: TokenWithChainDetails,
   ): Promise<SendAmountDetails> {
     return this.service.getSendAmountDetails(amount, amountFormat, sourceToken, destToken);
   }

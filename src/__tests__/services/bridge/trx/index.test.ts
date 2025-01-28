@@ -1,5 +1,4 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { ChainType } from "../../../../chains/chain.enums";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
@@ -7,7 +6,7 @@ import { ChainSymbol, FeePaymentMethod } from "../../../../models";
 import { TxSendParams } from "../../../../services/bridge/models";
 import { TronBridgeService } from "../../../../services/bridge/trx";
 import { formatAddress } from "../../../../services/bridge/utils";
-import { mockNonce } from "../../../mock/bridge/utils";
+import { mockNonceBigInt } from "../../../mock/bridge/utils";
 import triggerSmartContractSendResponse from "../../../mock/tron-web/trigger-smart-contract-send.json";
 
 describe("TrxBridge", () => {
@@ -15,7 +14,7 @@ describe("TrxBridge", () => {
   let tronWebMock: any;
   let api: any;
 
-  const nonceBuffer = mockNonce();
+  const nonceBigInt = mockNonceBigInt();
 
   beforeEach(() => {
     tronWebMock = {
@@ -23,7 +22,7 @@ describe("TrxBridge", () => {
         triggerSmartContract: jest.fn(),
       },
     };
-    trxBridge = new TronBridgeService(tronWebMock as typeof TronWeb, api as AllbridgeCoreClientWithPoolInfo);
+    trxBridge = new TronBridgeService(tronWebMock as TronWeb, api as AllbridgeCoreClientWithPoolInfo);
   });
 
   afterEach(() => {
@@ -68,7 +67,7 @@ describe("TrxBridge", () => {
       expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
         bridgeAddress,
         "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)",
-        { callValue: gasFee },
+        { callValue: +gasFee },
         [
           {
             type: "bytes32",
@@ -84,11 +83,11 @@ describe("TrxBridge", () => {
             type: "bytes32",
             value: formatAddress(destinationTokenAddress, ChainType.EVM, ChainType.TRX),
           },
-          { type: "uint256", value: nonceBuffer.toJSON().data },
+          { type: "uint256", value: nonceBigInt.toString() },
           { type: "uint8", value: messenger },
           { type: "uint256", value: 0 },
         ],
-        from
+        from,
       );
     });
   });

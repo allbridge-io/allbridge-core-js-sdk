@@ -23,7 +23,7 @@ const main = async () => {
   })) as RawTronTransaction;
 
   const txReceipt = await sendTrxRawTransaction(rawTransactionDeposit);
-  console.log("Token deposit:", txReceipt.txid);
+  console.log("Token deposit txReceipt:", txReceipt);
 };
 
 main()

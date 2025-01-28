@@ -23,7 +23,7 @@ export class SrbPoolService extends ChainPoolService {
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     readonly params: AllbridgeCoreSdkOptions,
-    readonly api: AllbridgeCoreClient
+    readonly api: AllbridgeCoreClient,
   ) {
     super();
   }

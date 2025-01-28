@@ -1,11 +1,10 @@
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
 import { ChainType, GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import ERC20Abi from "../../models/abi/ERC20.json";
+import ERC20 from "../../models/abi/ERC20";
 import { amountToHex } from "../../utils";
 import { sendRawTransaction } from "../../utils/trx";
 import { ApproveParamsDto, GetAllowanceParamsDto } from "../models";
@@ -16,7 +15,10 @@ export const MAX_AMOUNT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffff
 export class TronTokenService extends ChainTokenService {
   chainType: ChainType.TRX = ChainType.TRX;
 
-  constructor(public tronWeb: typeof TronWeb, public api: AllbridgeCoreClient) {
+  constructor(
+    public tronWeb: TronWeb,
+    public api: AllbridgeCoreClient,
+  ) {
     super();
   }
 
@@ -58,8 +60,8 @@ export class TronTokenService extends ChainTokenService {
     return this.buildRawTransaction(tokenAddress, methodSignature, parameter, value, owner);
   }
 
-  private async getContract(contractAddress: string): Promise<any> {
-    return await this.tronWeb.contract(ERC20Abi, contractAddress);
+  private getContract(contractAddress: string): any {
+    return this.tronWeb.contract(ERC20.abi, contractAddress);
   }
 
   private async buildRawTransaction(
@@ -67,16 +69,16 @@ export class TronTokenService extends ChainTokenService {
     methodSignature: string,
     parameters: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string
+    fromAddress: string,
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
       methodSignature,
       {
-        callValue: value,
+        callValue: +value,
       },
       parameters,
-      fromAddress
+      fromAddress,
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));

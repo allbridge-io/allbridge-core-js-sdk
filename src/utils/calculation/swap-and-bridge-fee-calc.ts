@@ -27,17 +27,17 @@ export interface SwapFromVUsdCalcResult {
 export function swapAndBridgeFeeCalculation(
   amountInTokenPrecision: string,
   sourcePoolInfo: SwapPoolInfo,
-  destinationPoolInfo: SwapPoolInfo
+  destinationPoolInfo: SwapPoolInfo,
 ): SwapAndBridgeCalculationData {
   const swapToVUsdCalcResult = swapToVUsd(
     amountInTokenPrecision,
     { decimals: sourcePoolInfo.decimals, feeShare: sourcePoolInfo.feeShare },
-    sourcePoolInfo.poolInfo
+    sourcePoolInfo.poolInfo,
   );
   const swapFromVUsdCalcResult = swapFromVUsd(
     swapToVUsdCalcResult.amountIncludingCommissionInSystemPrecision,
     { decimals: destinationPoolInfo.decimals, feeShare: destinationPoolInfo.feeShare },
-    destinationPoolInfo.poolInfo
+    destinationPoolInfo.poolInfo,
   );
   return { swapToVUsdCalcResult, swapFromVUsdCalcResult };
 }
@@ -45,17 +45,17 @@ export function swapAndBridgeFeeCalculation(
 export function swapAndBridgeFeeCalculationReverse(
   amountInTokenPrecision: string,
   sourcePoolInfo: SwapPoolInfo,
-  destinationPoolInfo: SwapPoolInfo
+  destinationPoolInfo: SwapPoolInfo,
 ): SwapAndBridgeCalculationData {
   const swapToVUsdCalcResult = swapToVUsdReverse(
     amountInTokenPrecision,
     { decimals: destinationPoolInfo.decimals, feeShare: destinationPoolInfo.feeShare },
-    destinationPoolInfo.poolInfo
+    destinationPoolInfo.poolInfo,
   );
   const swapFromVUsdCalcResult = swapFromVUsdReverse(
     swapToVUsdCalcResult.amountIncludingCommissionInSystemPrecision,
     { decimals: sourcePoolInfo.decimals, feeShare: sourcePoolInfo.feeShare },
-    sourcePoolInfo.poolInfo
+    sourcePoolInfo.poolInfo,
   );
   return {
     swapToVUsdCalcResult,
@@ -66,7 +66,7 @@ export function swapAndBridgeFeeCalculationReverse(
 function swapToVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "p" | "imbalance">
+  poolInfo: Omit<PoolInfo, "p" | "imbalance">,
 ): SwapToVUsdCalcResult {
   const amountValue = Big(amount);
   const fee = amountValue.times(feeShare);
@@ -90,7 +90,7 @@ function calcSwapToVUsd(amountInSystemPrecision: Big, poolInfo: Omit<PoolInfo, "
 function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: Omit<PoolInfo, "imbalance">
+  poolInfo: Omit<PoolInfo, "imbalance">,
 ): SwapFromVUsdCalcResult {
   if (Big(amount).eq(0)) {
     return {
@@ -115,7 +115,7 @@ function swapFromVUsd(
 function swapToVUsdReverse(
   amountInTokenPrecision: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: PoolInfo
+  poolInfo: PoolInfo,
 ): SwapToVUsdCalcResult {
   const reversedFeeShare = Big(feeShare).div(Big(1).minus(feeShare));
   const fee = Big(amountInTokenPrecision).times(reversedFeeShare);
@@ -124,11 +124,11 @@ function swapToVUsdReverse(
     bridgeFeeInTokenPrecision: fee.round().toFixed(),
     amountIncludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
       toSystemPrecision(amountWithFee, decimals),
-      poolInfo
+      poolInfo,
     ),
     amountExcludingCommissionInSystemPrecision: calcSwapToVUsdReverse(
       toSystemPrecision(amountInTokenPrecision, decimals),
-      poolInfo
+      poolInfo,
     ),
   };
 }
@@ -142,7 +142,7 @@ function calcSwapToVUsdReverse(amountInSystemPrecision: Big, poolInfo: PoolInfo)
 function swapFromVUsdReverse(
   amountInSystemPrecision: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
-  poolInfo: PoolInfo
+  poolInfo: PoolInfo,
 ): SwapFromVUsdCalcResult {
   if (Big(amountInSystemPrecision).eq(0)) {
     return {

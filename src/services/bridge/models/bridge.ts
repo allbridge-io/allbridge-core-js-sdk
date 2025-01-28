@@ -8,7 +8,7 @@ export abstract class ChainBridgeService {
   abstract api: AllbridgeCoreClient;
 
   /**
-   * @Deprecated Use {@link buildRawTransactionSend} or {@link buildRawTransactionSwap} instead<p>
+   * @deprecated Use {@link buildRawTransactionSend} or {@link buildRawTransactionSwap} instead<p>
    * Send tokens through the ChainBridgeService
    * @param params
    */

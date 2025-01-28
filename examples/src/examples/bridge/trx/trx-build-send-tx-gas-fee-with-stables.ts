@@ -4,6 +4,7 @@ import {
   FeePaymentMethod,
   Messenger,
   nodeRpcUrlsDefault,
+  RawTronTransaction,
 } from "@allbridge/bridge-core-sdk";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -32,10 +33,10 @@ const main = async () => {
   //check if sending tokens already approved
   if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amountToSendFloat }))) {
     // authorize the bridge to transfer tokens from sender's address
-    const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve({
+    const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
-    });
+    })) as RawTronTransaction;
     const approveReceipt = await sendTrxRawTransaction(rawTransactionApprove);
     console.log("Approve transaction receipt", JSON.stringify(approveReceipt, null, 2));
   }
@@ -60,7 +61,7 @@ const main = async () => {
     gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
     fee: gasFeeAmount.int,
   };
-  const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send(params);
+  const rawTransactionTransfer = (await sdk.bridge.rawTxBuilder.send(params)) as RawTronTransaction;
 
   const transferReceipt = await sendTrxRawTransaction(rawTransactionTransfer);
   console.log("Transfer tokens transaction receipt:", transferReceipt);

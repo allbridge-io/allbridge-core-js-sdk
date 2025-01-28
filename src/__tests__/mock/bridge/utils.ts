@@ -6,3 +6,10 @@ export function mockNonce() {
   nonceSpy.mockImplementation(() => nonceBuffer);
   return nonceBuffer;
 }
+
+export function mockNonceBigInt() {
+  const nonceSpy = jest.spyOn(UtilsModule, "getNonceBigInt");
+  const nonceBigInt = BigInt("8983284342576706806");
+  nonceSpy.mockImplementation(() => nonceBigInt);
+  return nonceBigInt;
+}

@@ -1,4 +1,10 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
+import {
+  AllbridgeCoreSdk,
+  ChainSymbol,
+  Messenger,
+  nodeRpcUrlsDefault,
+  RawTronTransaction,
+} from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -25,23 +31,23 @@ const main = async () => {
   //check if sending tokens already approved
   if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amount }))) {
     // authorize the bridge to transfer tokens from sender's address
-    const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve({
+    const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
-    });
+    })) as RawTronTransaction;
     const approveReceipt = await sendTrxRawTransaction(rawTransactionApprove);
     console.log("Approve transaction receipt", JSON.stringify(approveReceipt, null, 2));
   }
 
   // initiate transfer
-  const rawTransactionTransfer = await sdk.bridge.rawTxBuilder.send({
+  const rawTransactionTransfer = (await sdk.bridge.rawTxBuilder.send({
     amount: amount,
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
     messenger: Messenger.ALLBRIDGE,
-  });
+  })) as RawTronTransaction;
 
   const transferReceipt = await sendTrxRawTransaction(rawTransactionTransfer);
   console.log("Transfer tokens transaction receipt:", transferReceipt);

@@ -1,4 +1,4 @@
-import Web3 from "web3";
+import { Web3 } from "web3";
 import {
   DefaultRawBridgeTransactionBuilder,
   RawBridgeTransactionBuilder,
@@ -36,7 +36,7 @@ describe("RawTransactionBuilder", () => {
       owner: "owner",
       spender: "spender",
     };
-    const web3 = new Web3();
+    const web3 = new Web3("http://localhost/");
     const actual = await rawTransactionBuilder.approve(web3, approveData);
     expect(actual).toEqual(expectedApproveTransaction);
   });
