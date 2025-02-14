@@ -40,7 +40,7 @@ export class SolanaPoolService extends ChainPoolService {
 
   constructor(
     public solanaRpcUrl: string,
-    public api: AllbridgeCoreClient,
+    public api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -54,7 +54,7 @@ export class SolanaPoolService extends ChainPoolService {
       const userDepositAccount = await getUserDepositAccount(
         new PublicKey(accountAddress),
         poolAccountInfo.mint,
-        bridge.programId,
+        bridge.programId
       );
       const { lpAmount, rewardDebt } = await bridge.account.userDeposit.fetch(userDepositAccount);
       return new UserBalance({
@@ -136,7 +136,7 @@ export class SolanaPoolService extends ChainPoolService {
       bridge,
       params.token.poolAddress,
       params.accountAddress,
-      provider,
+      provider
     );
     return { bridge, accounts, preInstructions };
   }
@@ -157,7 +157,7 @@ export class SolanaPoolService extends ChainPoolService {
       {
         preflightCommitment: "confirmed",
         commitment: "confirmed",
-      },
+      }
     );
   }
 
@@ -165,7 +165,7 @@ export class SolanaPoolService extends ChainPoolService {
     bridge: Program<BridgeType>,
     poolAddress: string,
     account: string,
-    provider: Provider,
+    provider: Provider
   ): Promise<LPTransactionData> {
     const user = new PublicKey(account);
     const configAccount = await getConfigAccount(bridge.programId);

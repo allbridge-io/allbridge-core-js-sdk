@@ -37,6 +37,11 @@ export interface ChainDetails extends BasicChainProperties {
    * Number of confirmations required
    */
   confirmations: number;
+  /**
+   * Sui addresses
+   * Optional. Defined for SUI
+   */
+  suiAddresses?: SuiAddresses;
 }
 
 /**
@@ -118,6 +123,41 @@ export interface Token {
    * Token LP rate
    */
   lpRate: string;
+  /**
+   * Sui addresses
+   * Optional. Defined for SUI
+   */
+  suiAddresses?: SuiAddresses;
+}
+
+export interface SuiAddresses {
+  bridgeAddress: string;
+  bridgeAddressOrigin?: string;
+  bridgeObjectAddress: string;
+
+  allbridgeMessengerAddress: string;
+  allbridgeMessengerAddressOrigin?: string;
+  allbridgeMessengerObjectAddress: string;
+
+  gasOracleAddress: string;
+  gasOracleAddressOrigin?: string;
+  gasOracleObjectAddress: string;
+
+  utilsAddress: string;
+
+  wormholeMessengerAddress: string;
+  wormholeMessengerAddressOrigin?: string;
+  wormholeMessengerObjectAddress: string;
+  wormholeStateObjectAddress: string;
+
+  cctpAddress: string;
+  cctpAddressOrigin?: string;
+  cctpObjectAddress: string;
+
+  cctpDenyListObjectAddress: string;
+  cctpMessageTransmitterStateObjectAddress: string;
+  cctpTokenMessengerMinterStateObjectAddress: string;
+  cctpTreasuryObjectAddress: string;
 }
 
 /**

@@ -17,7 +17,7 @@ export class TestBridge extends ChainBridgeService {
   constructor(
     public params: SolanaBridgeParams,
     public api: AllbridgeCoreClient,
-    public chainType: ChainType,
+    public chainType: ChainType
   ) {
     super();
   }

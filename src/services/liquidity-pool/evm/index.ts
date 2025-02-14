@@ -20,7 +20,7 @@ export class EvmPoolService extends ChainPoolService {
 
   constructor(
     public web3: EssentialWeb3,
-    public api: AllbridgeCoreClient,
+    public api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -31,14 +31,14 @@ export class EvmPoolService extends ChainPoolService {
       userBalanceInfo = await promiseWithTimeout(
         this.getUserBalanceInfoByBatch(accountAddress, token),
         `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
-        5000,
+        5000
       );
     } catch (ignoreError) {
       userBalanceInfo = await promiseWithTimeoutAndRetries(
         () => this.getUserBalanceInfoPerProperty(accountAddress, token),
         `Cannot get UserBalanceInfo for ${token.name} on ${token.chainSymbol}`,
         5,
-        2000,
+        2000
       );
     }
     return userBalanceInfo;
@@ -50,14 +50,14 @@ export class EvmPoolService extends ChainPoolService {
       poolInfo = await promiseWithTimeout(
         this.getPoolInfoByBatch(token),
         `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
-        5000,
+        5000
       );
     } catch (ignoreError) {
       poolInfo = await promiseWithTimeoutAndRetries(
         () => this.getPoolInfoPerProperty(token),
         `Cannot get PoolInfo for ${token.name} on ${token.chainSymbol}`,
         5,
-        2000,
+        2000
       );
     }
     return poolInfo;
@@ -65,7 +65,7 @@ export class EvmPoolService extends ChainPoolService {
 
   private async getUserBalanceInfoByBatch(
     accountAddress: string,
-    token: TokenWithChainDetails,
+    token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
     const batch = new this.web3.eth.BatchRequest();
     const poolContract = this.getPoolContract(token.poolAddress);
@@ -95,7 +95,7 @@ export class EvmPoolService extends ChainPoolService {
 
   private async getUserBalanceInfoPerProperty(
     accountAddress: string,
-    token: TokenWithChainDetails,
+    token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
     const rewardDebt = (
       await this.getPoolContract(token.poolAddress).methods.userRewardDebt(accountAddress).call()

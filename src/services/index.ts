@@ -131,7 +131,7 @@ export class AllbridgeCoreSdkService {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<PendingStatusInfoResponse> {
     validateAmountGtZero(amount);
     let amountInTokenPrecision;
@@ -145,13 +145,13 @@ export class AllbridgeCoreSdkService {
     const vUsdAmountInt = swapToVUsd(
       amountInTokenPrecision,
       sourceToken,
-      await getPoolInfoByToken(this.api, sourceToken),
+      await getPoolInfoByToken(this.api, sourceToken)
     );
     const destPoolInfo = await getPoolInfoByToken(this.api, destToken);
     const amountResultIntFormatted: AmountFormatted = this.getAmountFromVUsdFormatted(
       vUsdAmountInt,
       destToken,
-      destPoolInfo,
+      destPoolInfo
     );
 
     let pendingInfoDTO: PendingInfoDTO | undefined;
@@ -168,7 +168,7 @@ export class AllbridgeCoreSdkService {
       const amountResultIntAfterPendingFormatted: AmountFormatted = this.getAmountFromVUsdFormatted(
         vUsdAmountInt,
         destToken,
-        destPoolAfterPending,
+        destPoolAfterPending
       );
 
       let estimatedAmount: { min: AmountFormatted; max: AmountFormatted };
@@ -184,7 +184,7 @@ export class AllbridgeCoreSdkService {
           [AmountFormat.INT]: convertAmountPrecision(
             pendingInfoDTO.totalSentAmount,
             SYSTEM_PRECISION,
-            destToken.decimals,
+            destToken.decimals
           ).toFixed(0),
           [AmountFormat.FLOAT]: convertIntAmountToFloat(pendingInfoDTO.totalSentAmount, SYSTEM_PRECISION).toFixed(),
         },
@@ -214,7 +214,7 @@ export class AllbridgeCoreSdkService {
 
   async calculateFeePercentOnSourceChain(
     amountFloat: number | string | Big,
-    sourceChainToken: TokenWithChainDetails,
+    sourceChainToken: TokenWithChainDetails
   ): Promise<number> {
     validateAmountGtZero(amountFloat);
     validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
@@ -225,7 +225,7 @@ export class AllbridgeCoreSdkService {
     const vUsdInSystemPrecision = swapToVUsd(
       amountInt,
       sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken),
+      await getPoolInfoByToken(this.api, sourceChainToken)
     );
     const vUsdInSourcePrecision = fromSystemPrecision(vUsdInSystemPrecision, sourceChainToken.decimals);
     return getFeePercent(amountInt, vUsdInSourcePrecision);
@@ -234,7 +234,7 @@ export class AllbridgeCoreSdkService {
   async calculateFeePercentOnDestinationChain(
     amountFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
   ): Promise<number> {
     validateAmountGtZero(amountFloat);
     validateAmountDecimals("amountFloat", amountFloat, sourceChainToken.decimals);
@@ -245,12 +245,12 @@ export class AllbridgeCoreSdkService {
     const vUsdInSystemPrecision = swapToVUsd(
       amountInt,
       sourceChainToken,
-      await getPoolInfoByToken(this.api, sourceChainToken),
+      await getPoolInfoByToken(this.api, sourceChainToken)
     );
     const usd = swapFromVUsd(
       vUsdInSystemPrecision,
       destinationChainToken,
-      await getPoolInfoByToken(this.api, destinationChainToken),
+      await getPoolInfoByToken(this.api, destinationChainToken)
     );
     const vUsdInDestinationPrecision = fromSystemPrecision(vUsdInSystemPrecision, destinationChainToken.decimals);
     return getFeePercent(vUsdInDestinationPrecision, usd);
@@ -260,7 +260,7 @@ export class AllbridgeCoreSdkService {
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
     validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
@@ -270,7 +270,7 @@ export class AllbridgeCoreSdkService {
         amountToSendFloat,
         sourceChainToken,
         destinationChainToken,
-        messenger,
+        messenger
       ),
       gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
     };
@@ -280,7 +280,7 @@ export class AllbridgeCoreSdkService {
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<AmountsAndGasFeeOptions> {
     validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
@@ -289,7 +289,7 @@ export class AllbridgeCoreSdkService {
         amountToBeReceivedFloat,
         sourceChainToken,
         destinationChainToken,
-        messenger,
+        messenger
       ),
       amountToBeReceivedFloat: Big(amountToBeReceivedFloat).toFixed(),
       gasFeeOptions: await this.getGasFeeOptions(sourceChainToken, destinationChainToken, messenger),
@@ -300,7 +300,7 @@ export class AllbridgeCoreSdkService {
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): Promise<string> {
     const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
     const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
@@ -310,7 +310,7 @@ export class AllbridgeCoreSdkService {
       destinationChainToken,
       sourcePool,
       destPool,
-      messenger,
+      messenger
     );
   }
 
@@ -320,7 +320,7 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider,
+    destinationProvider?: Provider
   ): Promise<string> {
     const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
     const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
@@ -330,7 +330,7 @@ export class AllbridgeCoreSdkService {
       destinationChainToken,
       sourcePool,
       destPool,
-      messenger,
+      messenger
     );
   }
 
@@ -340,7 +340,7 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): string {
     validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
@@ -354,7 +354,7 @@ export class AllbridgeCoreSdkService {
       const resultInDestPrecision = convertAmountPrecision(
         result,
         sourceChainToken.decimals,
-        destinationChainToken.decimals,
+        destinationChainToken.decimals
       ).round(0);
       return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
     }
@@ -367,7 +367,7 @@ export class AllbridgeCoreSdkService {
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): Promise<string> {
     const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
     const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
@@ -377,7 +377,7 @@ export class AllbridgeCoreSdkService {
       destinationChainToken,
       sourcePool,
       destPool,
-      messenger,
+      messenger
     );
   }
 
@@ -387,7 +387,7 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     messenger?: Messenger,
     sourceProvider?: Provider,
-    destinationProvider?: Provider,
+    destinationProvider?: Provider
   ): Promise<string> {
     const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
     const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
@@ -397,7 +397,7 @@ export class AllbridgeCoreSdkService {
       destinationChainToken,
       sourcePool,
       destPool,
-      messenger,
+      messenger
     );
   }
 
@@ -407,7 +407,7 @@ export class AllbridgeCoreSdkService {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger,
+    messenger?: Messenger
   ): string {
     validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
@@ -421,7 +421,7 @@ export class AllbridgeCoreSdkService {
       const resultInSourcePrecision = convertAmountPrecision(
         result,
         destinationChainToken.decimals,
-        sourceChainToken.decimals,
+        sourceChainToken.decimals
       ).round(0);
       return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
     }
@@ -437,7 +437,7 @@ export class AllbridgeCoreSdkService {
   async getGasFeeOptions(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): Promise<GasFeeOptions> {
     return getGasFeeOptions(
       sourceChainToken.allbridgeChainId,
@@ -445,14 +445,14 @@ export class AllbridgeCoreSdkService {
       destinationChainToken.allbridgeChainId,
       sourceChainToken.decimals,
       messenger,
-      this.api,
+      this.api
     );
   }
 
   getAverageTransferTime(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger,
+    messenger: Messenger
   ): number | null {
     return sourceChainToken.transferTime?.[destinationChainToken.chainSymbol]?.[messenger] ?? null;
   }
@@ -478,7 +478,7 @@ export class AllbridgeCoreSdkService {
 
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
   ): Promise<ExtraGasMaxLimitResponse> {
     return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
   }
@@ -486,7 +486,7 @@ export class AllbridgeCoreSdkService {
   async getVUsdFromAmount(
     amount: string,
     amountFormat: AmountFormat,
-    sourceToken: TokenWithChainDetails,
+    sourceToken: TokenWithChainDetails
   ): Promise<AmountFormatted> {
     validateAmountGtZero(amount);
     let amountInTokenPrecision;
@@ -511,7 +511,7 @@ export class AllbridgeCoreSdkService {
   private getAmountFromVUsdFormatted(
     vUsdAmountInt: string,
     destToken: TokenWithChainDetails,
-    destPoolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">,
+    destPoolInfo: Pick<PoolInfo, "vUsdBalance" | "aValue" | "dValue" | "tokenBalance">
   ): AmountFormatted {
     validateAmountGtZero(vUsdAmountInt);
     const amountResultInt = swapFromVUsd(vUsdAmountInt, destToken, destPoolInfo);
@@ -527,7 +527,7 @@ export class AllbridgeCoreSdkService {
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
     return swapAndBridgeFeeCalculation(
       amountInTokenPrecision,
@@ -540,14 +540,14 @@ export class AllbridgeCoreSdkService {
         decimals: destToken.decimals,
         feeShare: destToken.feeShare,
         poolInfo: await getPoolInfoByToken(this.api, destToken),
-      },
+      }
     );
   }
 
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SwapAndBridgeCalculationData> {
     const result = swapAndBridgeFeeCalculationReverse(
       amountInTokenPrecision,
@@ -560,7 +560,7 @@ export class AllbridgeCoreSdkService {
         decimals: destToken.decimals,
         feeShare: destToken.feeShare,
         poolInfo: await getPoolInfoByToken(this.api, destToken),
-      },
+      }
     );
     const newAmount = result.swapFromVUsdCalcResult.amountIncludingCommissionInTokenPrecision;
     if (Big(newAmount).lt(0)) {
@@ -573,7 +573,7 @@ export class AllbridgeCoreSdkService {
     amount: string,
     amountFormat: AmountFormat,
     sourceToken: TokenWithChainDetails,
-    destToken: TokenWithChainDetails,
+    destToken: TokenWithChainDetails
   ): Promise<SendAmountDetails> {
     validateAmountGtZero(amount);
     let amountInTokenPrecision;
@@ -589,7 +589,7 @@ export class AllbridgeCoreSdkService {
       sourceToken,
       await getPoolInfoByToken(this.api, sourceToken),
       destToken,
-      await getPoolInfoByToken(this.api, destToken),
+      await getPoolInfoByToken(this.api, destToken)
     );
   }
 }

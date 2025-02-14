@@ -24,7 +24,7 @@ export class TronPoolService extends ChainPoolService {
   constructor(
     public tronWeb: TronWeb,
     public api: AllbridgeCoreClient,
-    tronJsonRpc: string | undefined,
+    tronJsonRpc: string | undefined
   ) {
     super();
     if (tronJsonRpc) {
@@ -49,7 +49,7 @@ export class TronPoolService extends ChainPoolService {
   private async getUserBalanceInfoByBatch(
     web3: Web3,
     accountAddress: string,
-    token: TokenWithChainDetails,
+    token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
     const batch = new web3.BatchRequest();
     const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress));
@@ -79,7 +79,7 @@ export class TronPoolService extends ChainPoolService {
 
   private async getUserBalanceInfoPerProperty(
     accountAddress: string,
-    token: TokenWithChainDetails,
+    token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
     if (!this.tronWeb.defaultAddress.base58) {
       this.tronWeb.setAddress(accountAddress);
@@ -234,7 +234,7 @@ export class TronPoolService extends ChainPoolService {
     methodSignature: string,
     parameter: SmartContractMethodParameter[],
     value: string,
-    fromAddress: string,
+    fromAddress: string
   ): Promise<RawTransaction> {
     const transactionObject = await this.tronWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
@@ -243,7 +243,7 @@ export class TronPoolService extends ChainPoolService {
         callValue: +value,
       },
       parameter,
-      fromAddress,
+      fromAddress
     );
     if (!transactionObject?.result?.result) {
       throw new SdkError("Unknown error: " + JSON.stringify(transactionObject, null, 2));

@@ -19,7 +19,7 @@ export class EvmTokenService extends ChainTokenService {
 
   constructor(
     public web3: EssentialWeb3,
-    public api: AllbridgeCoreClient,
+    public api: AllbridgeCoreClient
   ) {
     super();
   }
@@ -69,7 +69,7 @@ export class EvmTokenService extends ChainTokenService {
 
     const approveMethod = tokenContract.methods.approve(
       spender,
-      amount == undefined ? MAX_AMOUNT : amountToHex(amount),
+      amount == undefined ? MAX_AMOUNT : amountToHex(amount)
     );
 
     return Promise.resolve({

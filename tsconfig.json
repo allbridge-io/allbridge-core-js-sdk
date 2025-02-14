@@ -22,7 +22,6 @@
     "declaration": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "allowSyntheticDefaultImports": true,
     "inlineSources": true,

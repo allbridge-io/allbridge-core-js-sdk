@@ -1,5 +1,3 @@
-import * as anchor from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
 import { Big } from "big.js";
 import BN from "bn.js";
 import { Contract, Transaction as Web3Transaction } from "web3";
@@ -11,7 +9,6 @@ import {
   FeePaymentMethod,
   Messenger,
   EssentialWeb3,
-  SdkError,
   SwapParams,
   TransactionResponse,
 } from "../../../models";
@@ -19,10 +16,9 @@ import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
-import { getAssociatedAccount } from "../../utils/sol/accounts";
-import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
+import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { SendParams, ChainBridgeService, TxSwapParamsEvm, TxSendParamsEvm } from "../models";
-import { formatAddress, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -30,7 +26,7 @@ export class EvmBridgeService extends ChainBridgeService {
   constructor(
     public web3: EssentialWeb3,
     public api: AllbridgeCoreClient,
-    private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    private nodeRpcUrlsConfig: NodeRpcUrlsConfig
   ) {
     super();
   }
@@ -63,7 +59,7 @@ export class EvmBridgeService extends ChainBridgeService {
       fromTokenAddress,
       toTokenAddress,
       toAccountAddress,
-      minimumReceiveAmount,
+      minimumReceiveAmount
     );
 
     return Promise.resolve({
@@ -112,7 +108,7 @@ export class EvmBridgeService extends ChainBridgeService {
           toTokenAddress,
           nonce,
           messenger,
-          totalFee,
+          totalFee
         );
         value = "0";
       } else {
@@ -124,7 +120,7 @@ export class EvmBridgeService extends ChainBridgeService {
           toTokenAddress,
           nonce,
           messenger,
-          0,
+          0
         );
         value = totalFee;
       }
@@ -141,7 +137,7 @@ export class EvmBridgeService extends ChainBridgeService {
   private async buildRawTransactionCctpSend(
     params: SendParams,
     txSendParams: TxSendParamsEvm,
-    totalFee: string,
+    totalFee: string
   ): Promise<{
     sendMethod: PayableMethodObject;
     value: string;
@@ -153,52 +149,29 @@ export class EvmBridgeService extends ChainBridgeService {
     let value: string;
 
     if (params.destinationToken.chainType === ChainType.SOLANA) {
-      let recipientWalletAddress: string;
-      const receiverAccount = new PublicKey(params.toAccountAddress);
-      const receiveMint = new PublicKey(params.destinationToken.tokenAddress);
-      const receiveUserToken = await getAssociatedAccount(receiverAccount, receiveMint);
-      const provider = buildAnchorProvider(
-        this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL),
+      const recipient = await getCctpSolTokenRecipientAddress(
+        this.chainType,
         params.toAccountAddress,
+        params.destinationToken.tokenAddress,
+        this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL)
       );
-      anchor.setProvider(provider);
-      const accountData = await anchor.Spl.token(provider).account.token.fetchNullable(receiveUserToken);
-      if (accountData?.authority.equals(receiverAccount)) {
-        recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType);
-      } else {
-        const tokenAccounts = await provider.connection.getTokenAccountsByOwner(receiverAccount, {
-          mint: receiveMint,
-        });
-        if (tokenAccounts.value.length === 0 && !accountData) {
-          recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, this.chainType);
-        } else if (tokenAccounts.value.length > 0) {
-          const firstTokenAccount = tokenAccounts.value[0];
-
-          if (!firstTokenAccount?.pubkey) {
-            throw new SdkError("First token account or its public key is undefined");
-          }
-          recipientWalletAddress = formatAddress(firstTokenAccount.pubkey.toBase58(), ChainType.SOLANA, this.chainType);
-        } else {
-          throw new SdkError("Associated account has wrong owner");
-        }
-      }
 
       if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
         sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
           amount,
-          recipientWalletAddress,
+          recipient,
           toAccountAddress,
           toChainId,
-          totalFee,
+          totalFee
         );
         value = "0";
       } else {
         sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
           amount,
-          recipientWalletAddress,
+          recipient,
           toAccountAddress,
           toChainId,
-          0,
+          0
         );
         value = totalFee;
       }

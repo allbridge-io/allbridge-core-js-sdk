@@ -30,16 +30,18 @@ import {
   TxSendParamsEvm,
   TxSendParamsSol,
   TxSendParamsSrb,
+  TxSendParamsSui,
   TxSendParamsTrx,
   TxSwapParams,
   TxSwapParamsEvm,
   TxSwapParamsSol,
   TxSwapParamsSrb,
+  TxSwapParamsSui,
   TxSwapParamsTrx,
 } from "./models";
 
 // 1. OVERLOADS
-export function formatAddress(address: string, from: ChainType, to: ChainType.EVM): string;
+export function formatAddress(address: string, from: ChainType, to: ChainType.EVM | ChainType.SUI): string;
 export function formatAddress(address: string, from: ChainType, to: ChainType.TRX): Buffer;
 export function formatAddress(address: string, from: ChainType, to: ChainType.SOLANA | ChainType.SRB): number[];
 export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] | Buffer;
@@ -64,6 +66,10 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = new Address(address).toBuffer();
       break;
     }
+    case ChainType.SUI: {
+      buffer = evmAddressToBuffer32(address);
+      break;
+    }
   }
 
   switch (to) {
@@ -79,7 +85,14 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     case ChainType.SRB: {
       return buffer.toJSON().data;
     }
+    case ChainType.SUI: {
+      return "0x" + buffer.toString("hex");
+    }
   }
+}
+
+export function normalizeSuiHex(hex: string): string {
+  return hex.replace(/^0x/i, "");
 }
 
 export function hexToBuffer(hex: string): Buffer {
@@ -116,7 +129,7 @@ function bufferToSize(buffer: Buffer, size: number): Buffer {
 export function getTokenByTokenAddress(
   chainDetailsMap: ChainDetailsMap,
   chainSymbol: string,
-  tokenAddress: string,
+  tokenAddress: string
 ): TokenWithChainDetails {
   const chainDetail = chainDetailsMap[chainSymbol];
   if (!chainDetail) {
@@ -142,11 +155,14 @@ export function getNonceBigInt(): bigint {
 }
 
 // 1. OVERLOADS
-export function prepareTxSwapParams(bridgeChainType: ChainType.EVM, params: SwapParams): TxSwapParamsEvm;
+export function prepareTxSwapParams(
+  bridgeChainType: ChainType.EVM | ChainType.SUI,
+  params: SwapParams
+): TxSwapParamsEvm | TxSwapParamsSui;
 export function prepareTxSwapParams(bridgeChainType: ChainType.TRX, params: SwapParams): TxSwapParamsTrx;
 export function prepareTxSwapParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
-  params: SwapParams,
+  params: SwapParams
 ): TxSwapParamsSol | TxSwapParamsSrb;
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams;
 
@@ -157,9 +173,23 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
   txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
   txSwapParams.contractAddress = sourceToken.bridgeAddress;
   txSwapParams.fromAccountAddress = params.fromAccountAddress;
-  txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+  if (bridgeChainType === ChainType.SUI) {
+    if (!sourceToken.originTokenAddress) {
+      throw new SdkError("SUI sourceToken must contain 'originTokenAddress'");
+    }
+    txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
+  } else {
+    txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+  }
   txSwapParams.toAccountAddress = params.toAccountAddress;
-  txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+  if (bridgeChainType === ChainType.SUI) {
+    if (!params.destinationToken.originTokenAddress) {
+      throw new SdkError("SUI destinationToken must contain 'originTokenAddress'");
+    }
+    txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
+  } else {
+    txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+  }
   txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
     ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
     : "0";
@@ -168,38 +198,45 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
 
 // 1. OVERLOADS
 export function prepareTxSendParams(
-  bridgeChainType: ChainType.EVM,
+  bridgeChainType: ChainType.EVM | ChainType.SUI,
   params: SendParams,
-  api: AllbridgeCoreClient,
-): Promise<TxSendParamsEvm>;
+  api: AllbridgeCoreClient
+): Promise<TxSendParamsEvm | TxSendParamsSui>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType.TRX,
   params: SendParams,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<TxSendParamsTrx>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SendParams,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<TxSendParamsSol | TxSendParamsSrb>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType,
   params: SendParams,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<TxSendParams>;
 
 // 2. COMMON Realization
 export async function prepareTxSendParams(
   bridgeChainType: ChainType,
   params: SendParams,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<TxSendParams> {
   const txSendParams = {} as TxSendParams;
 
   txSendParams.fromChainId = params.sourceToken.allbridgeChainId;
   txSendParams.fromChainSymbol = params.sourceToken.chainSymbol;
   const toChainType = Chains.getChainProperty(params.destinationToken.chainSymbol).chainType;
-  txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
+  if (bridgeChainType === ChainType.SUI) {
+    if (!params.sourceToken.originTokenAddress) {
+      throw new SdkError("SUI token must contain 'originTokenAddress'");
+    }
+    txSendParams.fromTokenAddress = params.sourceToken.originTokenAddress;
+  } else {
+    txSendParams.fromTokenAddress = params.sourceToken.tokenAddress;
+  }
 
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
@@ -232,7 +269,7 @@ export async function prepareTxSendParams(
       txSendParams.toChainId,
       sourceToken.decimals,
       txSendParams.messenger,
-      api,
+      api
     );
 
     const gasFeeOption = gasFeeOptions[txSendParams.gasFeePaymentMethod];
@@ -246,7 +283,7 @@ export async function prepareTxSendParams(
     switch (txSendParams.gasFeePaymentMethod) {
       case FeePaymentMethod.WITH_NATIVE_CURRENCY:
         txSendParams.fee = convertFloatAmountToInt(fee, Chains.getChainDecimalsByType(sourceToken.chainType)).toFixed(
-          0,
+          0
         );
         break;
       case FeePaymentMethod.WITH_STABLECOIN:
@@ -265,7 +302,7 @@ export async function prepareTxSendParams(
         case FeePaymentMethod.WITH_NATIVE_CURRENCY:
           txSendParams.extraGas = convertFloatAmountToInt(
             extraGas,
-            Chains.getChainDecimalsByType(sourceToken.chainType),
+            Chains.getChainDecimalsByType(sourceToken.chainType)
           ).toFixed(0);
           break;
         case FeePaymentMethod.WITH_STABLECOIN:
@@ -280,11 +317,13 @@ export async function prepareTxSendParams(
       txSendParams.gasFeePaymentMethod,
       sourceToken,
       params.destinationToken,
-      api,
+      api
     );
   }
 
-  txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
+  if (bridgeChainType !== ChainType.SUI) {
+    txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
+  }
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
   txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
   if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
@@ -297,7 +336,7 @@ function validateAmountEnough(
   amountInt: BigSource,
   decimals: number,
   feeInt: BigSource,
-  extraGasInt: BigSource | undefined,
+  extraGasInt: BigSource | undefined
 ) {
   const amountTotal = Big(amountInt)
     .minus(feeInt)
@@ -306,8 +345,8 @@ function validateAmountEnough(
     throw new AmountNotEnoughError(
       `Amount not enough to pay fee, ${convertIntAmountToFloat(
         Big(amountTotal).minus(1).neg(),
-        decimals,
-      ).toFixed()} stables is missing`,
+        decimals
+      ).toFixed()} stables is missing`
     );
   }
 }
@@ -318,7 +357,7 @@ export async function getGasFeeOptions(
   destinationAllbridgeChainId: number,
   sourceChainTokenDecimals: number,
   messenger: Messenger,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<GasFeeOptions> {
   const transactionCostResponse = await api.getReceiveTransactionCost({
     sourceChainId: sourceAllbridgeChainId,
@@ -331,7 +370,7 @@ export async function getGasFeeOptions(
       [AmountFormat.INT]: transactionCostResponse.fee,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         transactionCostResponse.fee,
-        Chains.getChainDecimalsByType(sourceChainType),
+        Chains.getChainDecimalsByType(sourceChainType)
       ).toFixed(),
     },
   };
@@ -339,7 +378,7 @@ export async function getGasFeeOptions(
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
       Chains.getChainDecimalsByType(sourceChainType),
-      sourceChainTokenDecimals,
+      sourceChainTokenDecimals
     ).toFixed(0, Big.roundUp);
     gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: gasFeeIntWithStables,
@@ -355,7 +394,7 @@ async function validateExtraGasNotExceeded(
   gasFeePaymentMethod: FeePaymentMethod,
   sourceToken: TokenWithChainDetails,
   destinationToken: TokenWithChainDetails,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ) {
   const extraGasLimits = await getExtraGasMaxLimits(sourceToken, destinationToken, api);
   const extraGasMaxLimit = extraGasLimits.extraGasMax[gasFeePaymentMethod];
@@ -365,7 +404,7 @@ async function validateExtraGasNotExceeded(
   const extraGasMaxIntLimit = extraGasMaxLimit[AmountFormat.INT];
   if (Big(extraGasInt).gt(extraGasMaxIntLimit)) {
     throw new ExtraGasMaxLimitExceededError(
-      `Extra gas ${extraGasInt} in int format, exceeded limit ${extraGasMaxIntLimit} for '${gasFeePaymentMethod}' payment method`,
+      `Extra gas ${extraGasInt} in int format, exceeded limit ${extraGasMaxIntLimit} for '${gasFeePaymentMethod}' payment method`
     );
   }
 }
@@ -373,7 +412,7 @@ async function validateExtraGasNotExceeded(
 export async function getExtraGasMaxLimits(
   sourceChainToken: TokenWithChainDetails,
   destinationChainToken: TokenWithChainDetails,
-  api: AllbridgeCoreClient,
+  api: AllbridgeCoreClient
 ): Promise<ExtraGasMaxLimitResponse> {
   const extraGasMaxLimits: ExtraGasMaxLimits = {};
   const transactionCostResponse = await api.getReceiveTransactionCost({
@@ -384,14 +423,14 @@ export async function getExtraGasMaxLimits(
   const maxAmount = destinationChainToken.txCostAmount.maxAmount;
   const maxAmountFloat = convertIntAmountToFloat(
     maxAmount,
-    Chains.getChainDecimalsByType(destinationChainToken.chainType),
+    Chains.getChainDecimalsByType(destinationChainToken.chainType)
   ).toFixed();
   const maxAmountFloatInSourceNative = Big(maxAmountFloat)
     .div(transactionCostResponse.exchangeRate)
     .toFixed(Chains.getChainDecimalsByType(sourceChainToken.chainType), Big.roundDown);
   const maxAmountInSourceNative = convertFloatAmountToInt(
     maxAmountFloatInSourceNative,
-    Chains.getChainDecimalsByType(sourceChainToken.chainType),
+    Chains.getChainDecimalsByType(sourceChainToken.chainType)
   ).toFixed(0);
   extraGasMaxLimits[FeePaymentMethod.WITH_NATIVE_CURRENCY] = {
     [AmountFormat.INT]: maxAmountInSourceNative,
@@ -417,14 +456,14 @@ export async function getExtraGasMaxLimits(
         [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
         [AmountFormat.FLOAT]: convertIntAmountToFloat(
           destinationChainToken.txCostAmount.swap,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType),
+          Chains.getChainDecimalsByType(destinationChainToken.chainType)
         ).toFixed(),
       },
       transfer: {
         [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
         [AmountFormat.FLOAT]: convertIntAmountToFloat(
           destinationChainToken.txCostAmount.transfer,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType),
+          Chains.getChainDecimalsByType(destinationChainToken.chainType)
         ).toFixed(),
       },
     },

@@ -17,7 +17,7 @@ const compat = new FlatCompat({
 });
 
 export default [{
-    ignores: ["scripts/*", "**/esbuild-hook.js"],
+    ignores: ["scripts/*", "**/esbuild-hook.js", "src/services/models/sui/*"],
 }, ...fixupConfigRules(compat.extends(
     "eslint:recommended",
     "plugin:eslint-comments/recommended",

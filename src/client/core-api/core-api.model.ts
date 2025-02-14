@@ -1,5 +1,5 @@
 import { ChainSymbol } from "../../chains/chain.enums";
-import { PoolInfo } from "../../tokens-info";
+import { PoolInfo, SuiAddresses } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
 
@@ -10,6 +10,7 @@ export interface ChainDetailsDTO {
   transferTime: TransferTimeDTO;
   txCostAmount: TxCostAmountDTO;
   confirmations: number;
+  suiAddresses?: SuiAddresses;
 }
 
 export enum AddressStatus {

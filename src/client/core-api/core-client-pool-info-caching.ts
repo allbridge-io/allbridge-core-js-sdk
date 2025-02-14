@@ -71,7 +71,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
         return result;
       }
       throw new SdkError(
-        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol,
+        "Cannot find pool info for " + poolKeyObject.poolAddress + " on chain " + poolKeyObject.chainSymbol
       );
     }
   }

@@ -27,7 +27,7 @@ export class AllbridgeCoreClientFilteredImpl implements AllbridgeCoreClientFilte
 
   constructor(
     private client: AllbridgeCoreClientWithTokens & AllbridgeCoreClientPoolsExt,
-    params: AllbridgeCoreSdkOptions,
+    params: AllbridgeCoreSdkOptions
   ) {
     this.isStaging = params.coreApiQueryParams?.staging === "true";
   }
@@ -84,7 +84,7 @@ export class AllbridgeCoreClientFilteredImpl implements AllbridgeCoreClientFilte
 function filterAndConvertToTokenWithChainDetails(
   tokens: TokenWithChainDetailsWithFlags[],
   type: "swap" | "pool",
-  isStaging: boolean,
+  isStaging: boolean
 ): TokenWithChainDetails[] {
   return tokens.filter((token) => (isStaging ? true : token.flags[type])).map(convertToTokenWithChainDetails);
 }

@@ -87,7 +87,7 @@ describe("TrxBridge", () => {
           { type: "uint8", value: messenger },
           { type: "uint256", value: 0 },
         ],
-        from,
+        from
       );
     });
   });

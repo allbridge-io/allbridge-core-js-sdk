@@ -16,7 +16,7 @@ export async function getTokenAccountData(account: PublicKey, provider: Provider
 export async function getVUsdAmount(
   amount: string,
   bridge: Program<BridgeType>,
-  poolAccount: PublicKey,
+  poolAccount: PublicKey
 ): Promise<string> {
   const poolAccountInfo = await bridge.account.pool.fetch(poolAccount);
   const decimals = poolAccountInfo.decimals;
@@ -56,7 +56,7 @@ export function getMessage(args: {
     { t: "uint256", v: sourceChainId },
     { t: "bytes32", v: receiveToken },
     { t: "uint256", v: nonce },
-    { t: "uint8", v: messenger },
+    { t: "uint8", v: messenger }
   );
 
   if (!message) {
@@ -70,7 +70,7 @@ export function getMessage(args: {
 
   const messageWithSigner = Web3.utils.encodePacked(
     { t: "bytes32", v: "0x" + hashBuffer.toString("hex") },
-    { t: "bytes32", v: chainBridge },
+    { t: "bytes32", v: chainBridge }
   );
 
   if (!messageWithSigner) {

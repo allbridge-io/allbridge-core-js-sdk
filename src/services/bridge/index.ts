@@ -15,6 +15,7 @@ import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams, Ch
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
+import { SuiBridgeService } from "./sui";
 import { TronBridgeService } from "./trx";
 
 export interface BridgeService {
@@ -77,7 +78,7 @@ export class DefaultBridgeService implements BridgeService {
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService,
+    private tokenService: TokenService
   ) {
     this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, params, tokenService);
   }
@@ -121,7 +122,7 @@ export class DefaultBridgeService implements BridgeService {
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
-      provider,
+      provider
     ).send(params);
   }
 }
@@ -143,7 +144,7 @@ export function getChainBridgeService(
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
-  provider?: Provider,
+  provider?: Provider
 ): ChainBridgeService {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
@@ -165,7 +166,7 @@ export function getChainBridgeService(
             solidityNode: nodeRpcUrl,
             eventServer: nodeRpcUrl,
           }),
-          api,
+          api
         );
       }
     }
@@ -179,11 +180,14 @@ export function getChainBridgeService(
           jupiterUrl: params.jupiterUrl,
           jupiterMaxAccounts: params.jupiterMaxAccounts,
         },
-        api,
+        api
       );
     }
     case ChainType.SRB: {
       return new SrbBridgeService(nodeRpcUrlsConfig, params, api);
+    }
+    case ChainType.SUI: {
+      return new SuiBridgeService(nodeRpcUrlsConfig, api);
     }
   }
 }

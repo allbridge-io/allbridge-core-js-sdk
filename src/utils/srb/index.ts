@@ -78,7 +78,7 @@ const SEND_TRANSACTION_TIMEOUT = 180;
 export class DefaultSrbUtils implements SrbUtils {
   constructor(
     readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    readonly params: AllbridgeCoreSdkOptions,
+    readonly params: AllbridgeCoreSdkOptions
   ) {}
 
   async buildChangeTrustLineXdrTx(params: TrustLineParams): Promise<string> {
@@ -119,7 +119,7 @@ export class DefaultSrbUtils implements SrbUtils {
       (balance): balance is BalanceLineAsset =>
         (balance.asset_type === "credit_alphanum4" || balance.asset_type === "credit_alphanum12") &&
         balance.asset_code == symbol &&
-        balance.asset_issuer == srbTokenAddress,
+        balance.asset_issuer == srbTokenAddress
     );
   }
 
@@ -127,7 +127,7 @@ export class DefaultSrbUtils implements SrbUtils {
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const transaction = StellarTransactionBuilder.fromXDR(
       xdrTx,
-      this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR),
+      this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR)
     );
     return await stellar.submitTransaction(transaction);
   }
@@ -162,7 +162,7 @@ export class DefaultSrbUtils implements SrbUtils {
     const getTransactionResponseAll = await withExponentialBackoff(
       () => server.getTransaction(hash),
       (resp) => resp.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND,
-      secondsToWait,
+      secondsToWait
     );
 
     if (getTransactionResponseAll.length === 0) {

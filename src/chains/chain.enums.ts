@@ -58,6 +58,11 @@ export enum ChainSymbol {
    * The OP Mainnet network.
    */
   OPT = "OPT",
+
+  /**
+   * The SUI network.
+   */
+  SUI = "SUI",
 }
 
 export enum ChainType {
@@ -65,4 +70,5 @@ export enum ChainType {
   SOLANA = "SOLANA",
   TRX = "TRX",
   SRB = "SRB",
+  SUI = "SUI",
 }
