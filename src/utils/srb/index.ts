@@ -15,6 +15,7 @@ import { ChainSymbol } from "../../chains/chain.enums";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
+import { getViewResultSoroban, isErrorSorobanResult } from "../../services/models/srb/utils";
 import { withExponentialBackoff } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
 import BalanceLineAsset = Horizon.HorizonApi.BalanceLineAsset;
@@ -85,7 +86,15 @@ export class DefaultSrbUtils implements SrbUtils {
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
     const stellarAccount = await stellar.loadAccount(params.sender);
     const tokenContract = this.getContract(TokenContract, params.tokenAddress);
-    const tokenName = (await tokenContract.name()).result;
+    const result = await tokenContract.name();
+    if (isErrorSorobanResult(result)) {
+      throw new SdkError();
+    }
+    const tokenName = getViewResultSoroban(result);
+    if (!tokenName) {
+      throw new SdkError();
+    }
+
     const [symbol, srbTokenAddress] = tokenName.split(":");
     if (symbol === undefined || srbTokenAddress === undefined) {
       throw new SdkError(`Invalid token name format. Expected format 'symbol:srbTokenAddress'`);
@@ -108,7 +117,15 @@ export class DefaultSrbUtils implements SrbUtils {
 
   async getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.HorizonApi.BalanceLineAsset | undefined> {
     const tokenContract = this.getContract(TokenContract, tokenAddress);
-    const tokenName = (await tokenContract.name()).result;
+    const result = await tokenContract.name();
+    if (isErrorSorobanResult(result)) {
+      throw new SdkError();
+    }
+    const tokenName = getViewResultSoroban(result);
+    if (!tokenName) {
+      throw new SdkError();
+    }
+
     const [symbol, srbTokenAddress] = tokenName.split(":");
     const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR);
     const stellar = new Horizon.Server(nodeRpcUrl);
