@@ -13,6 +13,7 @@ import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import { PoolContract } from "../../models/srb/pool-contract";
+import { getViewResultSoroban, isErrorSorobanResult } from "../../models/srb/utils";
 import { ChainPoolService, UserBalance } from "../models";
 import ContractClientOptions = contract.ClientOptions;
 
@@ -30,11 +31,16 @@ export class SrbPoolService extends ChainPoolService {
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     const poolContract = this.getContract(token.poolAddress);
-    const result = (await poolContract.get_user_deposit({ user: accountAddress })).result;
-    if (result.isErr()) {
+    const result = await poolContract.get_user_deposit({ user: accountAddress });
+    if (isErrorSorobanResult(result)) {
       throw new SdkError();
     }
-    const userDeposit = result.unwrap();
+    const viewResultSoroban = getViewResultSoroban(result);
+    if (!viewResultSoroban) {
+      throw new SdkError();
+    }
+
+    const userDeposit = viewResultSoroban.unwrap();
     return new UserBalance({
       lpAmount: userDeposit.lp_amount.toString(),
       rewardDebt: userDeposit.reward_debt.toString(),
@@ -43,11 +49,16 @@ export class SrbPoolService extends ChainPoolService {
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     const poolContract = this.getContract(token.poolAddress);
-    const result = (await poolContract.get_pool()).result;
-    if (result.isErr()) {
+    const result = await poolContract.get_pool();
+    if (isErrorSorobanResult(result)) {
       throw new SdkError();
     }
-    const pool = result.unwrap();
+    const viewResultSoroban = getViewResultSoroban(result);
+    if (!viewResultSoroban) {
+      throw new SdkError();
+    }
+
+    const pool = viewResultSoroban.unwrap();
     return {
       aValue: pool.a.toString(),
       accRewardPerShareP: pool.acc_reward_per_share_p.toString(),

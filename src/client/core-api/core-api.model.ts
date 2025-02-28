@@ -111,6 +111,9 @@ export interface TransferStatusResponse {
   sourceTokenAddress: string;
   destinationTokenAddress: string;
 
+  originSourceTokenAddress?: string;
+  originDestinationTokenAddress?: string;
+
   senderAddress: string;
   recipientAddress: string;
 
@@ -145,6 +148,9 @@ export interface BridgeTransaction {
 
   sourceTokenAddress: string;
   destinationTokenAddress: string;
+
+  originSourceTokenAddress?: string;
+  originDestinationTokenAddress?: string;
 
   hash: string;
 
