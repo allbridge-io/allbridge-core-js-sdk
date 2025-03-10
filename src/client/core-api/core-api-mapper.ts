@@ -86,7 +86,7 @@ function mapTransferTimeFromDto(dto: TransferTimeDTO): TransferTime {
 function mapMessengerTransferTimeFromDto(dto: MessengerTransferTimeDTO): MessengerTransferTime {
   return Object.entries(dto).reduce<MessengerTransferTime>((messengerTransferTime, [key, value]) => {
     const messenger = mapMessengerKeyDtoToMessenger(key as MessengerKeyDTO);
-    if (messenger) {
+    if (messenger && value != null) {
       messengerTransferTime[messenger] = value;
     }
     return messengerTransferTime;
@@ -103,6 +103,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
     oftBridgeAddress: dto.oftBridgeAddress,
+    yieldAddress: dto.yieldAddress,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
     txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,

@@ -106,6 +106,12 @@ export class OFTDoesNotSupportedError extends SdkRootError {
   }
 }
 
+export class YieldDoesNotSupportedError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.YIELD_DOES_NOT_SUPPORTED_ERROR, message);
+  }
+}
+
 export class TxTooLargeError extends SdkRootError {
   constructor() {
     super(
@@ -132,5 +138,6 @@ export enum ErrorCode {
   NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
   CCTP_DOES_NOT_SUPPORTED_ERROR = "CCTPDoesNotSupportedError",
   OFT_DOES_NOT_SUPPORTED_ERROR = "OFTDoesNotSupportedError",
+  YIELD_DOES_NOT_SUPPORTED_ERROR = "YieldDoesNotSupportedError",
   TX_TOO_LARGE = "TxTooLargeError",
 }

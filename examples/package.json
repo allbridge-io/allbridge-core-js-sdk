@@ -58,7 +58,9 @@
     "run:liquidity-pool:trx:withdraw": "tsx src/examples/liquidity-pool/trx/trx-build-withdraw-tx.ts",
     "run:liquidity-pool:trx:getAmountToBeWithdrawn": "tsx src/examples/liquidity-pool/trx/get-amount-to-be-withdrawn.ts",
     "run:liquidity-pool:trx:getBalance": "tsx src/examples/liquidity-pool/trx/get-liquidity-balance.ts",
-    "run:liquidity-pool:trx:getLPamountOnDeposit": "tsx src/examples/liquidity-pool/trx/get-lp-amount-on-deposit.ts"
+    "run:liquidity-pool:trx:getLPamountOnDeposit": "tsx src/examples/liquidity-pool/trx/get-lp-amount-on-deposit.ts",
+
+    "run:yield:evm:example": "tsx src/examples/yield/evm/example.ts.ts"
   },
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:..",

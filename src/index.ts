@@ -25,6 +25,7 @@ import {
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
 import { CctpParams } from "./services/bridge/sol";
+import { YieldService } from "./services/yield";
 import { DefaultUtils, Utils } from "./utils";
 
 export * from "./configs";
@@ -112,6 +113,7 @@ export class AllbridgeCoreSdk {
 
   bridge: BridgeService;
   pool: LiquidityPoolService;
+  yield: YieldService;
   utils: Utils;
 
   private service: AllbridgeCoreSdkService;
@@ -133,6 +135,7 @@ export class AllbridgeCoreSdk {
     this.service = new AllbridgeCoreSdkService(nodeRpcUrlsConfig, params);
     this.bridge = this.service.bridge;
     this.pool = this.service.pool;
+    this.yield = this.service.yield;
     this.utils = new DefaultUtils(this.service);
     this.params = params;
   }

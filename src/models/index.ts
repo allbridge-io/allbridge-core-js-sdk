@@ -39,6 +39,22 @@ export {
   GetAllowanceParams as LiquidityPoolsGetAllowanceParams,
 } from "../services/liquidity-pool/models/pool.model";
 export * from "../services/models/index";
+export { YieldService } from "../services/yield/index";
+export { assertYieldIsSupported, isYieldSupported } from "../services/yield/validations";
+export {
+  TokenWithChainDetailsYield,
+  CYDToken,
+  YieldGetAllowanceParams,
+  YieldCheckAllowanceParams,
+  YieldBalanceParams,
+  YieldGetEstimatedAmountOnDepositParams,
+  YieldGetWithdrawProportionAmountParams,
+  YieldWithdrawAmount,
+  YieldApproveParams,
+  YieldDepositParams,
+  YieldWithdrawParams,
+} from "../services/yield//models/yield.model";
+export { RawYieldTransactionBuilder } from "../services/yield/raw-yield-transaction-builder";
 export {
   SwapAndBridgeCalculationData,
   SwapFromVUsdCalcResult,

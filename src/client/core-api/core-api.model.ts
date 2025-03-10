@@ -8,6 +8,8 @@ export interface ChainDetailsDTO {
   chainId: number;
   bridgeAddress: string;
   oftBridgeAddress?: string;
+  swapAddress: string;
+  yieldAddress?: string;
   transferTime: TransferTimeDTO;
   txCostAmount: TxCostAmountDTO;
   confirmations: number;
@@ -36,6 +38,9 @@ export interface TokenDTO {
   apr7d: string;
   apr30d: string;
   lpRate: string;
+  cctpAddress?: string;
+  cctpFeeShare?: string;
+  yieldId?: number;
   flags: {
     swap: boolean;
     pool: boolean;
@@ -69,7 +74,7 @@ export interface TxCostAmountDTO {
 }
 
 export type MessengerTransferTimeDTO = {
-  [messenger in MessengerKeyDTO]: number;
+  [messenger in MessengerKeyDTO]: number | null;
 };
 
 export enum Messenger {
