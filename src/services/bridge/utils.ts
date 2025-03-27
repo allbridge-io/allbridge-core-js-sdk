@@ -38,7 +38,7 @@ import {
   TxSwapParamsSrb,
   TxSwapParamsSui,
   TxSwapParamsTrx,
-} from "./models";
+} from "./models"; // 1. OVERLOADS
 
 // 1. OVERLOADS
 export function formatAddress(address: string, from: ChainType, to: ChainType.EVM | ChainType.SUI): string;
@@ -248,14 +248,21 @@ export async function prepareTxSendParams(
     txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
   }
   const sourceToken = params.sourceToken;
+
   if (params.messenger === Messenger.CCTP) {
     if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
       throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
     }
     txSendParams.contractAddress = sourceToken.cctpAddress;
+  } else if (params.messenger === Messenger.CCTP_V2) {
+    if (!sourceToken.cctpV2Address || !params.destinationToken.cctpV2Address) {
+      throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+    }
+    txSendParams.contractAddress = sourceToken.cctpV2Address;
   } else {
     txSendParams.contractAddress = sourceToken.bridgeAddress;
   }
+
   txSendParams.messenger = params.messenger;
   txSendParams.fromAccountAddress = params.fromAccountAddress;
   txSendParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();

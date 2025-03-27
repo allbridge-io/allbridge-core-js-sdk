@@ -54,6 +54,7 @@ export enum MessengerKeyDTO {
   ALLBRIDGE = "allbridge",
   WORMHOLE = "wormhole",
   CCTP = "cctp",
+  CCTP_V2 = "cctpV2",
 }
 
 export type TransferTimeDTO = Record<string, MessengerTransferTimeDTO>;
@@ -72,6 +73,7 @@ export enum Messenger {
   ALLBRIDGE = 1,
   WORMHOLE = 2,
   CCTP = 3,
+  CCTP_V2 = 4,
 }
 
 export interface ReceiveTransactionCostRequest {

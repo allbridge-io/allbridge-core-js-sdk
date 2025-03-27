@@ -239,7 +239,8 @@ export class SolanaBridgeService extends ChainBridgeService {
         requiredMessageSigner = messageAccount;
         break;
       }
-      case Messenger.CCTP: {
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2: {
         const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpData(solTxSendParams);
         const { transaction, messageSentEventDataKeypair } = await this.buildSwapAndBridgeCctpTransaction(
           params.destinationToken.chainSymbol,

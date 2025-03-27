@@ -106,6 +106,7 @@ export class SuiBridgeService extends ChainBridgeService {
       case Messenger.WORMHOLE:
         return this.buildRawTransactionWormholeSend(txSendParams, suiAddresses);
       case Messenger.CCTP:
+      case Messenger.CCTP_V2:
         return this.buildRawTransactionCctpSend(params, txSendParams, suiAddresses);
     }
   }

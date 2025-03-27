@@ -93,7 +93,7 @@ export class EvmBridgeService extends ChainBridgeService {
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
-    if (messenger === Messenger.CCTP) {
+    if (messenger === Messenger.CCTP || messenger === Messenger.CCTP_V2) {
       const cctp = await this.buildRawTransactionCctpSend(params, txSendParams, totalFee);
       sendMethod = cctp.sendMethod;
       value = cctp.value;

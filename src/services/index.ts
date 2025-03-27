@@ -359,6 +359,20 @@ export class AllbridgeCoreSdkService {
       return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
     }
 
+    if (messenger && messenger == Messenger.CCTP_V2) {
+      if (!sourceChainToken.cctpV2Address || !destinationChainToken.cctpV2Address || !sourceChainToken.cctpV2FeeShare) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+      }
+      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundUp);
+      const resultInDestPrecision = convertAmountPrecision(
+        result,
+        sourceChainToken.decimals,
+        destinationChainToken.decimals
+      ).round(0);
+
+      return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
+    }
+
     const vUsd = swapToVUsd(amountToSend, sourceChainToken, sourcePool);
     return this.getAmountFromVUsdFormatted(vUsd, destinationChainToken, destinationPool).float;
   }
@@ -418,6 +432,19 @@ export class AllbridgeCoreSdkService {
         throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
       }
       const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundDown);
+      const resultInSourcePrecision = convertAmountPrecision(
+        result,
+        destinationChainToken.decimals,
+        sourceChainToken.decimals
+      ).round(0);
+      return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+    }
+
+    if (messenger && messenger == Messenger.CCTP_V2) {
+      if (!sourceChainToken.cctpV2Address || !destinationChainToken.cctpV2Address || !sourceChainToken.cctpV2FeeShare) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+      }
+      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundDown);
       const resultInSourcePrecision = convertAmountPrecision(
         result,
         destinationChainToken.decimals,
