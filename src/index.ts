@@ -41,9 +41,16 @@ export interface AllbridgeCoreSdkOptions {
    */
   coreApiHeaders?: Record<string, string>;
   /**
-   * Jupiter v6 Swap Api
+   * Jupiter Swap Api</br>
+   * Default: https://lite-api.jup.ag/swap/v1</br>
+   * {@link https://dev.jup.ag/docs/swap-api/}
    */
   jupiterUrl: string;
+  /**
+   * Jupiter Api Key Header</br>
+   * {@link https://dev.jup.ag/docs/api-setup}
+   */
+  jupiterApiKeyHeader?: string;
   /**
    * Jupiter v6 'maxAccounts' parameter</br>
    * Rough estimate of the max accounts to be used for the quote, so that you can compose with your own accounts</br>

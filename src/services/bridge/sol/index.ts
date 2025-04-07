@@ -58,7 +58,12 @@ export interface SolanaBridgeParams {
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   cctpParams: CctpParams;
+  jupiterParams: JupiterParams;
+}
+
+export interface JupiterParams {
   jupiterUrl: string;
+  jupiterApiKeyHeader?: string;
   jupiterMaxAccounts?: number;
 }
 
@@ -91,7 +96,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     public api: AllbridgeCoreClient
   ) {
     super();
-    this.jupiterService = new JupiterService(solanaRpcUrl, params.jupiterUrl, params.jupiterMaxAccounts);
+    this.jupiterService = new JupiterService(solanaRpcUrl, params.jupiterParams);
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {

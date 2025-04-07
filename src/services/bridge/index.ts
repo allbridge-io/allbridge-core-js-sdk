@@ -177,8 +177,11 @@ export function getChainBridgeService(
           wormholeMessengerProgramId: params.wormholeMessengerProgramId,
           solanaLookUpTable: params.solanaLookUpTable,
           cctpParams: params.cctpParams,
-          jupiterUrl: params.jupiterUrl,
-          jupiterMaxAccounts: params.jupiterMaxAccounts,
+          jupiterParams: {
+            jupiterUrl: params.jupiterUrl,
+            jupiterApiKeyHeader: params.jupiterApiKeyHeader,
+            jupiterMaxAccounts: params.jupiterMaxAccounts,
+          },
         },
         api
       );
