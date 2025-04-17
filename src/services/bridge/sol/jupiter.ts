@@ -3,16 +3,19 @@ import { Connection, TransactionMessage, VersionedTransaction } from "@solana/we
 import axios, { AxiosError } from "axios";
 import { JupiterError, SdkError } from "../../../exceptions";
 import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
+import { JupiterParams } from "./index";
 
 export class JupiterService {
   connection: Connection;
   jupiterUrl: string;
+  apiKeyHeader?: string;
   maxAccounts?: number;
 
-  constructor(solanaRpcUrl: string, jupiterUrl: string, jupiterMaxAccounts?: number) {
+  constructor(solanaRpcUrl: string, jupiterParams: JupiterParams) {
     this.connection = new Connection(solanaRpcUrl);
-    this.jupiterUrl = jupiterUrl.replace(/\/$/, ""); // trim last "/" if exist
-    this.maxAccounts = jupiterMaxAccounts;
+    this.jupiterUrl = jupiterParams.jupiterUrl.replace(/\/$/, ""); // trim last "/" if exist
+    this.apiKeyHeader = jupiterParams.jupiterApiKeyHeader;
+    this.maxAccounts = jupiterParams.jupiterMaxAccounts;
   }
 
   async getJupiterSwapTx(
@@ -29,7 +32,9 @@ export class JupiterService {
       if (this.maxAccounts) {
         url += `&maxAccounts=${this.maxAccounts}`;
       }
-      quoteResponse = await axios.get(url);
+      quoteResponse = await axios.get(url, {
+        headers: this.apiKeyHeader ? { "x-api-key": this.apiKeyHeader } : undefined,
+      });
     } catch (err) {
       if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
         throw new JupiterError(err.response.data.error);
@@ -46,11 +51,17 @@ export class JupiterService {
 
     let transactionResponse: any;
     try {
-      transactionResponse = await axios.post(`${this.jupiterUrl}/swap`, {
-        quoteResponse: quoteResponse.data,
-        userPublicKey: userAddress,
-        wrapAndUnwrapSol: true,
-      });
+      transactionResponse = await axios.post(
+        `${this.jupiterUrl}/swap`,
+        {
+          quoteResponse: quoteResponse.data,
+          userPublicKey: userAddress,
+          wrapAndUnwrapSol: true,
+        },
+        {
+          headers: this.apiKeyHeader ? { "x-api-key": this.apiKeyHeader } : undefined,
+        }
+      );
     } catch (err) {
       if (err instanceof AxiosError && err.response && err.response.data && err.response.data.error) {
         throw new JupiterError(err.response.data.error);

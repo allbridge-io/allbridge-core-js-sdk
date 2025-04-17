@@ -98,10 +98,20 @@ export interface Token {
    */
   cctpAddress?: string;
   /**
-   * Token CCTP address</br>
+   * Token CCTP V2 address</br>
    * Optional. Defined if CCTP supported by token
    */
   cctpFeeShare?: string;
+  /**
+   * Token CCTP address</br>
+   * Optional. Defined if CCTP supported by token
+   */
+  cctpV2Address?: string;
+  /**
+   * Token CCTP V2 address</br>
+   * Optional. Defined if CCTP supported by token
+   */
+  cctpV2FeeShare?: string;
   /**
    * Token fee share
    */

@@ -4,7 +4,7 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   coreApiUrl: "https://core.api.allbridgecoreapi.net",
   coreApiQueryParams: {},
   coreApiHeaders: {},
-  jupiterUrl: "https://quote-api.jup.ag/v6",
+  jupiterUrl: "https://lite-api.jup.ag/swap/v1",
   wormholeMessengerProgramId: "worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth",
   solanaLookUpTable: "2JcBAEVnAwVo4u8d61iqgHPrzZuugur7cVTjWubsVLHj",
   sorobanNetworkPassphrase: "Public Global Stellar Network ; September 2015",

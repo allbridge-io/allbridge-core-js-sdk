@@ -134,6 +134,12 @@ export function getSpender(token: TokenWithChainDetails, messenger?: Messenger):
     } else {
       throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
     }
+  } else if (messenger && messenger == Messenger.CCTP_V2) {
+    if (token.cctpV2Address) {
+      return token.cctpV2Address;
+    } else {
+      throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+    }
   } else {
     return token.bridgeAddress;
   }
@@ -177,8 +183,11 @@ export function getChainBridgeService(
           wormholeMessengerProgramId: params.wormholeMessengerProgramId,
           solanaLookUpTable: params.solanaLookUpTable,
           cctpParams: params.cctpParams,
-          jupiterUrl: params.jupiterUrl,
-          jupiterMaxAccounts: params.jupiterMaxAccounts,
+          jupiterParams: {
+            jupiterUrl: params.jupiterUrl,
+            jupiterApiKeyHeader: params.jupiterApiKeyHeader,
+            jupiterMaxAccounts: params.jupiterMaxAccounts,
+          },
         },
         api
       );

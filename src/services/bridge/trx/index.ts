@@ -82,7 +82,7 @@ export class TronBridgeService extends ChainBridgeService {
     let parameters;
     let value: string;
     let methodSignature: string;
-    if (messenger == Messenger.CCTP) {
+    if (messenger == Messenger.CCTP || messenger == Messenger.CCTP_V2) {
       if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
         parameters = [
           { type: "uint256", value: amount },

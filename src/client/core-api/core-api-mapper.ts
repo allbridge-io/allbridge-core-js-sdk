@@ -69,8 +69,8 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
       return Messenger.WORMHOLE;
     case MessengerKeyDTO.CCTP:
       return Messenger.CCTP;
-    default:
-      return null;
+    case MessengerKeyDTO.CCTP_V2:
+      return Messenger.CCTP_V2;
   }
 }
 
