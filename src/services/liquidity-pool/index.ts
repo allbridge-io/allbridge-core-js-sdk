@@ -9,7 +9,7 @@ import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
-import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
+import { getTronWebModuleDefault } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -228,10 +228,11 @@ export async function getChainPoolService(
       const tronJsonRpc = params.tronJsonRpc;
       if (provider) {
         /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
-        const TronWeb = await getTronWeb();
+        const { TronWeb } = await getTronWebModuleDefault();
         return new TronPoolService(provider as InstanceType<typeof TronWeb>, api, tronJsonRpc);
       } else {
-        const tronWeb = new (await getTronWeb())({ fullHost: nodeRpcUrl });
+        const { TronWeb } = await getTronWebModuleDefault();
+        const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
         return new TronPoolService(tronWeb, api, tronJsonRpc);
       }
     }

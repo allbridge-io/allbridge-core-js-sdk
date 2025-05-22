@@ -23,7 +23,7 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
+import { getTronWebModuleDefault } from "../../utils/tronweb/lazy-load-tronweb-import";
 import {
   SendParams,
   TxSendParams,
@@ -128,10 +128,10 @@ export async function tronAddressToBuffer32(address: string): Promise<Buffer> {
 }
 
 export async function tronAddressToEthAddress(address: string): Promise<string> {
-  const TronWeb = await getTronWeb();
-  const bytes = TronWeb.utils.crypto.decodeBase58Address(address);
+  const { utils: TronWebUtils } = await getTronWebModuleDefault();
+  const bytes = TronWebUtils.crypto.decodeBase58Address(address);
   if (!bytes) return "";
-  return TronWeb.utils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
+  return TronWebUtils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
 }
 
 function bufferToSize(buffer: Buffer, size: number): Buffer {

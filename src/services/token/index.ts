@@ -5,7 +5,7 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
+import { getTronWebModuleDefault } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { NodeRpcUrlsConfig } from "../index";
@@ -121,11 +121,12 @@ export class DefaultTokenService implements TokenService {
       case ChainType.TRX: {
         if (provider) {
           /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
-          const TronWeb = await getTronWeb();
+          const { TronWeb } = await getTronWebModuleDefault();
           return new TronTokenService(provider as InstanceType<typeof TronWeb>, this.api);
         } else {
           const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-          const tronWeb = new (await getTronWeb())({ fullHost: nodeRpcUrl });
+          const { TronWeb } = await getTronWebModuleDefault();
+          const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
           tronWeb.setAddress(ownerAddress);
           return new TronTokenService(tronWeb, this.api);
         }

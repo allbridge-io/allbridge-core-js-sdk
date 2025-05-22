@@ -6,7 +6,7 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { CCTPDoesNotSupportedError } from "../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3 } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
-import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
+import { getTronWebModuleDefault } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -166,12 +166,13 @@ export async function getChainBridgeService(
     case ChainType.TRX: {
       if (provider) {
         /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
-        const TronWeb = await getTronWeb();
+        const { TronWeb } = await getTronWebModuleDefault();
         return new TronBridgeService(provider as InstanceType<typeof TronWeb>, api);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        const { TronWeb } = await getTronWebModuleDefault();
         return new TronBridgeService(
-          new (await getTronWeb())({
+          new TronWeb({
             fullHost: nodeRpcUrl,
             solidityNode: nodeRpcUrl,
             eventServer: nodeRpcUrl,
