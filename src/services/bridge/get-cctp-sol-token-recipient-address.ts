@@ -47,20 +47,20 @@ export async function getCctpSolTokenRecipientAddress(
   anchor.setProvider(provider);
   const accountData = await anchor.Spl.token(provider).account.token.fetchNullable(receiveUserToken);
   if (accountData?.authority.equals(receiverAccount)) {
-    recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, chainType);
+    recipientWalletAddress = await formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, chainType);
   } else {
     const tokenAccounts = await provider.connection.getTokenAccountsByOwner(receiverAccount, {
       mint: receiveMint,
     });
     if (tokenAccounts.value.length === 0 && !accountData) {
-      recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, chainType);
+      recipientWalletAddress = await formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, chainType);
     } else if (tokenAccounts.value.length > 0) {
       const firstTokenAccount = tokenAccounts.value[0];
 
       if (!firstTokenAccount?.pubkey) {
         throw new SdkError("First token account or its public key is undefined");
       }
-      recipientWalletAddress = formatAddress(firstTokenAccount.pubkey.toBase58(), ChainType.SOLANA, chainType);
+      recipientWalletAddress = await formatAddress(firstTokenAccount.pubkey.toBase58(), ChainType.SOLANA, chainType);
     } else {
       throw new SdkError("Associated account has wrong owner");
     }

@@ -1,11 +1,11 @@
 import { Big } from "big.js";
-import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
 import { Chains } from "../../chains";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { NodeRpcUrlsConfig } from "../index";
@@ -47,16 +47,16 @@ export class DefaultTokenService implements TokenService {
   ) {}
 
   async getAllowance(params: GetAllowanceParams, provider?: Provider): Promise<string> {
-    const allowanceInt = await this.getChainTokenService(params.token.chainSymbol, params.owner, provider).getAllowance(
-      params
-    );
+    const allowanceInt = await (
+      await this.getChainTokenService(params.token.chainSymbol, params.owner, provider)
+    ).getAllowance(params);
     return convertIntAmountToFloat(allowanceInt, params.token.decimals).toFixed();
   }
 
   async checkAllowance(params: CheckAllowanceParams, provider?: Provider): Promise<boolean> {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
-    return this.getChainTokenService(params.token.chainSymbol, params.owner, provider).checkAllowance(
+    return (await this.getChainTokenService(params.token.chainSymbol, params.owner, provider)).checkAllowance(
       this.prepareCheckAllowanceParams(params)
     );
   }
@@ -66,7 +66,7 @@ export class DefaultTokenService implements TokenService {
       validateAmountGtZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
-    return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
+    return (await this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider)).approve(
       this.prepareApproveParams(approveData)
     );
   }
@@ -76,18 +76,14 @@ export class DefaultTokenService implements TokenService {
       validateAmountGtZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
-    return this.getChainTokenService(
-      approveData.token.chainSymbol,
-      approveData.owner,
-      provider
+    return (
+      await this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider)
     ).buildRawTransactionApprove(this.prepareApproveParams(approveData));
   }
 
   async getTokenBalance(params: GetTokenBalanceParams, provider?: Provider): Promise<string> {
-    const tokenBalance = await this.getChainTokenService(
-      params.token.chainSymbol,
-      params.account,
-      provider
+    const tokenBalance = await (
+      await this.getChainTokenService(params.token.chainSymbol, params.account, provider)
     ).getTokenBalance(params);
     if (params.token.decimals) {
       return convertIntAmountToFloat(tokenBalance, params.token.decimals).toFixed();
@@ -96,10 +92,8 @@ export class DefaultTokenService implements TokenService {
   }
 
   async getNativeTokenBalance(params: GetNativeTokenBalanceParams, provider?: Provider): Promise<AmountFormatted> {
-    const tokenBalance = await this.getChainTokenService(
-      params.chainSymbol,
-      params.account,
-      provider
+    const tokenBalance = await (
+      await this.getChainTokenService(params.chainSymbol, params.account, provider)
     ).getNativeTokenBalance(params);
     return {
       [AmountFormat.INT]: tokenBalance,
@@ -110,7 +104,11 @@ export class DefaultTokenService implements TokenService {
     };
   }
 
-  private getChainTokenService(chainSymbol: string, ownerAddress: string, provider?: Provider): ChainTokenService {
+  private async getChainTokenService(
+    chainSymbol: string,
+    ownerAddress: string,
+    provider?: Provider
+  ): Promise<ChainTokenService> {
     switch (Chains.getChainProperty(chainSymbol).chainType) {
       case ChainType.EVM: {
         if (provider) {
@@ -122,10 +120,12 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.TRX: {
         if (provider) {
-          return new TronTokenService(provider as TronWeb, this.api);
+          /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+          const TronWeb = await getTronWeb();
+          return new TronTokenService(provider as InstanceType<typeof TronWeb>, this.api);
         } else {
           const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-          const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
+          const tronWeb = new (await getTronWeb())({ fullHost: nodeRpcUrl });
           tronWeb.setAddress(ownerAddress);
           return new TronTokenService(tronWeb, this.api);
         }

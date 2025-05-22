@@ -1,4 +1,3 @@
-import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
@@ -7,11 +6,12 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { CCTPDoesNotSupportedError } from "../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3 } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
+import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
-import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams, ChainBridgeService } from "./models";
+import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
@@ -117,12 +117,14 @@ export class DefaultBridgeService implements BridgeService {
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
-    return getChainBridgeService(
-      params.sourceToken.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+    return (
+      await getChainBridgeService(
+        params.sourceToken.chainSymbol,
+        this.api,
+        this.nodeRpcUrlsConfig,
+        this.params,
+        provider
+      )
     ).send(params);
   }
 }
@@ -145,13 +147,13 @@ export function getSpender(token: TokenWithChainDetails, messenger?: Messenger):
   }
 }
 
-export function getChainBridgeService(
+export async function getChainBridgeService(
   chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
   provider?: Provider
-): ChainBridgeService {
+): Promise<ChainBridgeService> {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
@@ -163,11 +165,13 @@ export function getChainBridgeService(
     }
     case ChainType.TRX: {
       if (provider) {
-        return new TronBridgeService(provider as TronWeb, api);
+        /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+        const TronWeb = await getTronWeb();
+        return new TronBridgeService(provider as InstanceType<typeof TronWeb>, api);
       } else {
         const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
         return new TronBridgeService(
-          new TronWeb({
+          new (await getTronWeb())({
             fullHost: nodeRpcUrl,
             solidityNode: nodeRpcUrl,
             eventServer: nodeRpcUrl,

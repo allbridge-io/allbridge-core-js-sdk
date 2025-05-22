@@ -52,7 +52,7 @@ export class TronPoolService extends ChainPoolService {
     token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
     const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress));
+    const contract = new web3.eth.Contract(Pool.abi, await tronAddressToEthAddress(token.poolAddress));
 
     const userRewardDebtAbi = contract.methods.userRewardDebt(accountAddress).encodeABI();
     const balanceOfAbi = contract.methods.balanceOf(accountAddress).encodeABI();
@@ -106,7 +106,7 @@ export class TronPoolService extends ChainPoolService {
 
   private async getPoolInfoByBatch(web3: Web3, token: TokenWithChainDetails): Promise<PoolInfo> {
     const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress), this.web3);
+    const contract = new web3.eth.Contract(Pool.abi, await tronAddressToEthAddress(token.poolAddress), this.web3);
 
     const aAbi = contract.methods.a().encodeABI();
     const dAbi = contract.methods.d().encodeABI();

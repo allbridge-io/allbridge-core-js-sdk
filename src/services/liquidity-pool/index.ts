@@ -1,6 +1,5 @@
 import { Big } from "big.js";
 import Cache from "timed-cache";
-import { TronWeb } from "tronweb";
 import { FMT_BYTES, FMT_NUMBER, Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
@@ -10,6 +9,7 @@ import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { PoolInfo, PoolKeyObject, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision } from "../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../utils/calculation/constants";
+import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
@@ -184,12 +184,8 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     token: TokenWithChainDetails,
     provider?: Provider
   ): Promise<UserBalanceInfo> {
-    return getChainPoolService(
-      token.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+    return (
+      await getChainPoolService(token.chainSymbol, this.api, this.nodeRpcUrlsConfig, this.params, provider)
     ).getUserBalanceInfo(accountAddress, token);
   }
 
@@ -199,12 +195,8 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     if (fromCache) {
       return fromCache;
     } else {
-      const poolInfo = await getChainPoolService(
-        token.chainSymbol,
-        this.api,
-        this.nodeRpcUrlsConfig,
-        this.params,
-        provider
+      const poolInfo = await (
+        await getChainPoolService(token.chainSymbol, this.api, this.nodeRpcUrlsConfig, this.params, provider)
       ).getPoolInfoFromChain(token);
       this.cache.put(poolKey, poolInfo);
       this.api.cachePut({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress }, poolInfo);
@@ -213,13 +205,13 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 }
 
-export function getChainPoolService(
+export async function getChainPoolService(
   chainSymbol: string,
   api: AllbridgeCoreClient,
   nodeRpcUrlsConfig: NodeRpcUrlsConfig,
   params: AllbridgeCoreSdkOptions,
   provider?: Provider
-): ChainPoolService {
+): Promise<ChainPoolService> {
   switch (Chains.getChainProperty(chainSymbol).chainType) {
     case ChainType.EVM: {
       if (provider) {
@@ -235,9 +227,11 @@ export function getChainPoolService(
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
       const tronJsonRpc = params.tronJsonRpc;
       if (provider) {
-        return new TronPoolService(provider as TronWeb, api, tronJsonRpc);
+        /* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+        const TronWeb = await getTronWeb();
+        return new TronPoolService(provider as InstanceType<typeof TronWeb>, api, tronJsonRpc);
       } else {
-        const tronWeb = new TronWeb({ fullHost: nodeRpcUrl });
+        const tronWeb = new (await getTronWeb())({ fullHost: nodeRpcUrl });
         return new TronPoolService(tronWeb, api, tronJsonRpc);
       }
     }

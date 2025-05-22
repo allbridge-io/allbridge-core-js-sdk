@@ -59,20 +59,24 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     if (isSendParams(params)) {
-      return getChainBridgeService(
+      return (
+        await getChainBridgeService(
+          params.sourceToken.chainSymbol,
+          this.api,
+          this.nodeRpcUrlsConfig,
+          this.params,
+          provider
+        )
+      ).buildRawTransactionSend(params);
+    }
+    return (
+      await getChainBridgeService(
         params.sourceToken.chainSymbol,
         this.api,
         this.nodeRpcUrlsConfig,
         this.params,
         provider
-      ).buildRawTransactionSend(params);
-    }
-    return getChainBridgeService(
-      params.sourceToken.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+      )
     ).buildRawTransactionSwap(params);
   }
 }

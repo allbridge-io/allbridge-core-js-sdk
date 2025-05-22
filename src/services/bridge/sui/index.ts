@@ -54,7 +54,7 @@ export class SuiBridgeService extends ChainBridgeService {
     }
     setAddress(suiAddresses.bridgeAddress, suiAddresses.bridgeAddressOrigin);
 
-    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    const txSwapParams = await prepareTxSwapParams(this.chainType, params);
     return await this.buildRawTransactionSwapFromParams(txSwapParams, suiAddresses);
   }
 

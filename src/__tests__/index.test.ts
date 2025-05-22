@@ -728,11 +728,11 @@ describe("SDK", () => {
           .mul(10 ** grlChainToken.decimals)
           .toFixed();
         expect(swapAndBridgeMocked).lastCalledWith(
-          formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.EVM),
+          await formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.EVM),
           expectedAmount,
-          formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
+          await formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
           trxChainToken.allbridgeChainId,
-          formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
+          await formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
           0
@@ -804,17 +804,17 @@ describe("SDK", () => {
           [
             {
               type: "bytes32",
-              value: formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.TRX),
+              value: await formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.TRX),
             },
             { type: "uint256", value: expectedAmount },
             {
               type: "bytes32",
-              value: formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
+              value: await formatAddress(toAccountAddress, ChainType.EVM, ChainType.TRX),
             },
             { type: "uint256", value: grlChainToken.allbridgeChainId },
             {
               type: "bytes32",
-              value: formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.TRX),
+              value: await formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.TRX),
             },
             { type: "uint256", value: nonceBigInt.toString() },
             { type: "uint8", value: Messenger.ALLBRIDGE },
@@ -907,11 +907,11 @@ describe("SDK", () => {
           .mul(10 ** grlChainToken.decimals)
           .toFixed();
         expect(swapAndBridgeMocked).lastCalledWith(
-          formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.EVM),
+          await formatAddress(grlChainToken.tokenAddress, ChainType.EVM, ChainType.EVM),
           expectedTotalAmount,
-          formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
+          await formatAddress(toAccountAddress, ChainType.TRX, ChainType.EVM),
           trxChainToken.allbridgeChainId,
-          formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
+          await formatAddress(trxChainToken.tokenAddress, ChainType.TRX, ChainType.EVM),
           "0x" + nonceBuffer.toString("hex"),
           Messenger.ALLBRIDGE,
           expectedFeeAmount
@@ -979,11 +979,11 @@ describe("SDK", () => {
             },
             {
               type: "bytes32",
-              value: formatAddress(swapParams.sourceToken.tokenAddress, ChainType.TRX, ChainType.TRX),
+              value: await formatAddress(swapParams.sourceToken.tokenAddress, ChainType.TRX, ChainType.TRX),
             },
             {
               type: "bytes32",
-              value: formatAddress(swapParams.destinationToken.tokenAddress, ChainType.TRX, ChainType.TRX),
+              value: await formatAddress(swapParams.destinationToken.tokenAddress, ChainType.TRX, ChainType.TRX),
             },
             { type: "address", value: accountAddress },
             {

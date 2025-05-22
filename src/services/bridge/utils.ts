@@ -2,7 +2,6 @@ import { PublicKey } from "@solana/web3.js";
 import { Address } from "@stellar/stellar-sdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
-import { utils as TronWebUtils } from "tronweb";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
@@ -24,6 +23,7 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { getTronWeb } from "../../utils/tronweb/lazy-load-tronweb-import";
 import {
   SendParams,
   TxSendParams,
@@ -38,16 +38,32 @@ import {
   TxSwapParamsSrb,
   TxSwapParamsSui,
   TxSwapParamsTrx,
-} from "./models"; // 1. OVERLOADS
+} from "./models";
 
 // 1. OVERLOADS
-export function formatAddress(address: string, from: ChainType, to: ChainType.EVM | ChainType.SUI): string;
-export function formatAddress(address: string, from: ChainType, to: ChainType.TRX): Buffer;
-export function formatAddress(address: string, from: ChainType, to: ChainType.SOLANA | ChainType.SRB): number[];
-export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] | Buffer;
+export async function formatAddress(
+  address: string,
+  from: ChainType,
+  to: ChainType.EVM | ChainType.SUI
+): Promise<string>;
+export async function formatAddress(address: string, from: ChainType, to: ChainType.TRX): Promise<Buffer>;
+export async function formatAddress(
+  address: string,
+  from: ChainType,
+  to: ChainType.SOLANA | ChainType.SRB
+): Promise<number[]>;
+export async function formatAddress(
+  address: string,
+  from: ChainType,
+  to: ChainType
+): Promise<string | number[] | Buffer>;
 
 // 2. COMMON Realization
-export function formatAddress(address: string, from: ChainType, to: ChainType): string | number[] | Buffer {
+export async function formatAddress(
+  address: string,
+  from: ChainType,
+  to: ChainType
+): Promise<string | number[] | Buffer> {
   let buffer: Buffer;
   switch (from) {
     case ChainType.EVM: {
@@ -59,7 +75,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       break;
     }
     case ChainType.TRX: {
-      buffer = tronAddressToBuffer32(address);
+      buffer = await tronAddressToBuffer32(address);
       break;
     }
     case ChainType.SRB: {
@@ -105,16 +121,17 @@ export function evmAddressToBuffer32(address: string): Buffer {
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
 }
 
-export function tronAddressToBuffer32(address: string): Buffer {
-  const ethAddress = tronAddressToEthAddress(address);
+export async function tronAddressToBuffer32(address: string): Promise<Buffer> {
+  const ethAddress = await tronAddressToEthAddress(address);
   const buffer = hexToBuffer(ethAddress);
   return bufferToSize(buffer, 32);
 }
 
-export function tronAddressToEthAddress(address: string): string {
-  const bytes = TronWebUtils.crypto.decodeBase58Address(address);
+export async function tronAddressToEthAddress(address: string): Promise<string> {
+  const TronWeb = await getTronWeb();
+  const bytes = TronWeb.utils.crypto.decodeBase58Address(address);
   if (!bytes) return "";
-  return TronWebUtils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
+  return TronWeb.utils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
 }
 
 function bufferToSize(buffer: Buffer, size: number): Buffer {
@@ -155,19 +172,19 @@ export function getNonceBigInt(): bigint {
 }
 
 // 1. OVERLOADS
-export function prepareTxSwapParams(
+export async function prepareTxSwapParams(
   bridgeChainType: ChainType.EVM | ChainType.SUI,
   params: SwapParams
-): TxSwapParamsEvm | TxSwapParamsSui;
-export function prepareTxSwapParams(bridgeChainType: ChainType.TRX, params: SwapParams): TxSwapParamsTrx;
-export function prepareTxSwapParams(
+): Promise<TxSwapParamsEvm | TxSwapParamsSui>;
+export async function prepareTxSwapParams(bridgeChainType: ChainType.TRX, params: SwapParams): Promise<TxSwapParamsTrx>;
+export async function prepareTxSwapParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SwapParams
-): TxSwapParamsSol | TxSwapParamsSrb;
-export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams;
+): Promise<TxSwapParamsSol | TxSwapParamsSrb>;
+export async function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): Promise<TxSwapParams>;
 
 // 2. COMMON Realization
-export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
+export async function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): Promise<TxSwapParams> {
   const txSwapParams = {} as TxSwapParams;
   const sourceToken = params.sourceToken;
   txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
@@ -179,7 +196,7 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
     }
     txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
   } else {
-    txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+    txSwapParams.fromTokenAddress = await formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
   }
   txSwapParams.toAccountAddress = params.toAccountAddress;
   if (bridgeChainType === ChainType.SUI) {
@@ -188,7 +205,11 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
     }
     txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
   } else {
-    txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+    txSwapParams.toTokenAddress = await formatAddress(
+      params.destinationToken.tokenAddress,
+      bridgeChainType,
+      bridgeChainType
+    );
   }
   txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
     ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
@@ -329,10 +350,14 @@ export async function prepareTxSendParams(
   }
 
   if (bridgeChainType !== ChainType.SUI) {
-    txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
+    txSendParams.fromTokenAddress = await formatAddress(
+      txSendParams.fromTokenAddress,
+      bridgeChainType,
+      bridgeChainType
+    );
   }
-  txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
-  txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
+  txSendParams.toAccountAddress = await formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
+  txSendParams.toTokenAddress = await formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
   if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
     validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
   }

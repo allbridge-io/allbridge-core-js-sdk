@@ -37,7 +37,7 @@ export class EvmBridgeService extends ChainBridgeService {
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
-    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    const txSwapParams = await prepareTxSwapParams(this.chainType, params);
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 

@@ -76,12 +76,8 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, params.token.decimals).toFixed();
-    return getChainPoolService(
-      params.token.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+    return (
+      await getChainPoolService(params.token.chainSymbol, this.api, this.nodeRpcUrlsConfig, this.params, provider)
     ).buildRawTransactionDeposit(params);
   }
 
@@ -89,22 +85,14 @@ export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuild
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.token.decimals);
     params.amount = convertFloatAmountToInt(params.amount, SYSTEM_PRECISION).toFixed();
-    return getChainPoolService(
-      params.token.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+    return (
+      await getChainPoolService(params.token.chainSymbol, this.api, this.nodeRpcUrlsConfig, this.params, provider)
     ).buildRawTransactionWithdraw(params);
   }
 
   async claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction> {
-    return getChainPoolService(
-      params.token.chainSymbol,
-      this.api,
-      this.nodeRpcUrlsConfig,
-      this.params,
-      provider
+    return (
+      await getChainPoolService(params.token.chainSymbol, this.api, this.nodeRpcUrlsConfig, this.params, provider)
     ).buildRawTransactionClaimRewards(params);
   }
 }
