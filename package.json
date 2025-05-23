@@ -114,6 +114,7 @@
     "tronweb": "^6.0.0",
     "web3": "^4.16.0",
     "web3-eth-contract": "^4.7.2",
+    "web3-eth-abi": "^4.4.1",
     "web3-types": "^1.10.0"
   },
   "jest": {
