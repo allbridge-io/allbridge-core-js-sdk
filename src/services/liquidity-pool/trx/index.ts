@@ -1,5 +1,7 @@
 import { TronWeb } from "tronweb";
-import { Web3 } from "web3";
+import { AbiItem, Web3 } from "web3";
+import { encodeFunctionCall } from "web3-eth-abi";
+import { AbiFunctionFragment } from "web3-types";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -9,34 +11,30 @@ import { tronAddressToEthAddress } from "../../bridge/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import Pool from "../../models/abi/Pool";
 import {
+  ChainPoolService,
   LiquidityPoolsParams,
   LiquidityPoolsParamsWithAmount,
   UserBalance,
   UserBalanceInfo,
-  ChainPoolService,
 } from "../models";
 
 export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private P = 52;
-  private web3: Web3 | undefined;
 
   constructor(
     public tronWeb: TronWeb,
     public api: AllbridgeCoreClient,
-    tronJsonRpc: string | undefined
+    private readonly tronJsonRpc: string | undefined
   ) {
     super();
-    if (tronJsonRpc) {
-      this.web3 = new Web3(tronJsonRpc);
-    }
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
     let userBalanceInfo;
-    if (this.web3) {
+    if (this.tronJsonRpc) {
       try {
-        userBalanceInfo = await this.getUserBalanceInfoByBatch(this.web3, accountAddress, token);
+        userBalanceInfo = await this.getUserBalanceInfoByBatch(this.tronJsonRpc, accountAddress, token);
       } catch (ignoreError) {
         userBalanceInfo = await this.getUserBalanceInfoPerProperty(accountAddress, token);
       }
@@ -47,34 +45,52 @@ export class TronPoolService extends ChainPoolService {
   }
 
   private async getUserBalanceInfoByBatch(
-    web3: Web3,
+    tronJsonRpc: string,
     accountAddress: string,
     token: TokenWithChainDetails
   ): Promise<UserBalanceInfo> {
-    const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress));
+    const contractAddress = tronAddressToEthAddress(token.poolAddress);
+    const userAddress = tronAddressToEthAddress(accountAddress);
 
-    const userRewardDebtAbi = contract.methods.userRewardDebt(accountAddress).encodeABI();
-    const balanceOfAbi = contract.methods.balanceOf(accountAddress).encodeABI();
+    const payload = [
+      {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("userRewardDebt", userAddress) }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 2,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("balanceOf", userAddress) }, "latest"],
+      },
+    ];
 
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: userRewardDebtAbi }, "latest"],
+    const response = await fetch(tronJsonRpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: balanceOfAbi }, "latest"],
-    });
 
-    const [rewardDebtResult, lpAmountResult] = await batch.execute();
+    const results = await response.json();
 
-    if (rewardDebtResult && lpAmountResult && !rewardDebtResult.error && !lpAmountResult.error) {
+    if (Array.isArray(results) && results.length === 2) {
+      const getResult = (id: number) => {
+        const entry = results.find((r) => r.id === id);
+        if (!entry || !entry.result) {
+          throw new Error(`Missing or invalid result for id ${id}`);
+        }
+        return Web3.utils.toBigInt(entry.result).toString();
+      };
+
       return new UserBalance({
-        lpAmount: Web3.utils.toBigInt(lpAmountResult.result).toString(),
-        rewardDebt: Web3.utils.toBigInt(rewardDebtResult.result).toString(),
+        lpAmount: Web3.utils.toBigInt(getResult(2)).toString(),
+        rewardDebt: Web3.utils.toBigInt(getResult(1)).toString(),
       });
     }
-    throw new Error("Batched failed");
+
+    throw new Error("Batched HTTP call failed");
   }
 
   private async getUserBalanceInfoPerProperty(
@@ -92,9 +108,9 @@ export class TronPoolService extends ChainPoolService {
 
   async getPoolInfoFromChain(token: TokenWithChainDetails): Promise<PoolInfo> {
     let poolInfo;
-    if (this.web3) {
+    if (this.tronJsonRpc) {
       try {
-        poolInfo = await this.getPoolInfoByBatch(this.web3, token);
+        poolInfo = await this.getPoolInfoByBatch(this.tronJsonRpc, token);
       } catch (ignoreError) {
         poolInfo = await this.getPoolInfoPerProperty(token);
       }
@@ -104,74 +120,82 @@ export class TronPoolService extends ChainPoolService {
     return poolInfo;
   }
 
-  private async getPoolInfoByBatch(web3: Web3, token: TokenWithChainDetails): Promise<PoolInfo> {
-    const batch = new web3.BatchRequest();
-    const contract = new web3.eth.Contract(Pool.abi, tronAddressToEthAddress(token.poolAddress), this.web3);
+  private async getPoolInfoByBatch(tronJsonRpc: string, token: TokenWithChainDetails): Promise<PoolInfo> {
+    const contractAddress = tronAddressToEthAddress(token.poolAddress);
 
-    const aAbi = contract.methods.a().encodeABI();
-    const dAbi = contract.methods.d().encodeABI();
-    const tokenBalanceAbi = contract.methods.tokenBalance().encodeABI();
-    const vUsdBalanceAbi = contract.methods.vUsdBalance().encodeABI();
-    const totalSupplyAbi = contract.methods.totalSupply().encodeABI();
-    const accRewardPerSharePAbi = contract.methods.accRewardPerShareP().encodeABI();
+    const payload = [
+      {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("a") }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 2,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("d") }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 3,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("tokenBalance") }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 4,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("vUsdBalance") }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 5,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("totalSupply") }, "latest"],
+      },
+      {
+        jsonrpc: "2.0",
+        id: 6,
+        method: "eth_call",
+        params: [{ to: contractAddress, data: this.getFunctionAbi("accRewardPerShareP") }, "latest"],
+      },
+    ];
 
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: aAbi }, "latest"],
-    });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: dAbi }, "latest"],
-    });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: tokenBalanceAbi }, "latest"],
-    });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: vUsdBalanceAbi }, "latest"],
-    });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: totalSupplyAbi }, "latest"],
-    });
-    batch.add({
-      method: "eth_call",
-      params: [{ to: token.poolAddress, data: accRewardPerSharePAbi }, "latest"],
+    const response = await fetch(tronJsonRpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    const [aResult, dResult, tokenBalanceResult, vUsdBalanceResult, totalSupplyResult, accRewardPerSharePResult] =
-      await batch.execute();
+    const results = await response.json();
 
-    if (
-      aResult &&
-      dResult &&
-      tokenBalanceResult &&
-      vUsdBalanceResult &&
-      totalSupplyResult &&
-      accRewardPerSharePResult &&
-      !aResult.error &&
-      !dResult.error &&
-      !tokenBalanceResult.error &&
-      !vUsdBalanceResult.error &&
-      !totalSupplyResult.error &&
-      !accRewardPerSharePResult.error
-    ) {
-      const tokenBalanceStr = Web3.utils.toBigInt(tokenBalanceResult.result).toString();
-      const vUsdBalanceStr = Web3.utils.toBigInt(vUsdBalanceResult.result).toString();
+    if (Array.isArray(results) && results.length === 6) {
+      const getResult = (id: number) => {
+        const entry = results.find((r) => r.id === id);
+        if (!entry || !entry.result) {
+          throw new Error(`Missing or invalid result for id ${id}`);
+        }
+        return Web3.utils.toBigInt(entry.result).toString();
+      };
+
+      const tokenBalanceStr = getResult(3);
+      const vUsdBalanceStr = getResult(4);
       const imbalance = calculatePoolInfoImbalance({ tokenBalance: tokenBalanceStr, vUsdBalance: vUsdBalanceStr });
+
       return {
-        aValue: Web3.utils.toBigInt(aResult.result).toString(),
-        dValue: Web3.utils.toBigInt(dResult.result).toString(),
+        aValue: getResult(1),
+        dValue: getResult(2),
         tokenBalance: tokenBalanceStr,
         vUsdBalance: vUsdBalanceStr,
-        totalLpAmount: Web3.utils.toBigInt(totalSupplyResult.result).toString(),
-        accRewardPerShareP: Web3.utils.toBigInt(accRewardPerSharePResult.result).toString(),
+        totalLpAmount: getResult(5),
+        accRewardPerShareP: getResult(6),
         p: this.P,
         imbalance,
       };
     }
-    throw new Error("Batched failed");
+
+    throw new Error("Batched pool info call failed");
   }
 
   private async getPoolInfoPerProperty(token: TokenWithChainDetails): Promise<PoolInfo> {
@@ -253,5 +277,17 @@ export class TronPoolService extends ChainPoolService {
 
   private getContract(contractAddress: string): any {
     return this.tronWeb.contract(Pool.abi, contractAddress);
+  }
+
+  private getFunctionAbi(name: string, ...params: string[]): string {
+    const abiItem = (Pool.abi as ReadonlyArray<AbiItem>).find(
+      (item) => item.type === "function" && "name" in item && item.name === name
+    );
+
+    if (!abiItem) {
+      throw new Error(`${name} method not found in Pool ABI`);
+    }
+
+    return encodeFunctionCall(abiItem as AbiFunctionFragment, params);
   }
 }
