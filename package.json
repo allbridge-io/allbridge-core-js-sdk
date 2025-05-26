@@ -21,8 +21,8 @@
     "access": "public"
   },
   "scripts": {
-    "preins": "rm -rf node_modules && pnpm i",
-    "build": "pnpm run clean && pnpm run type:dts && tsc && pnpm run build:main",
+    "preins": "rm -rf node_modules && npm i",
+    "build": "npm run clean && npm run type:dts && tsc && npm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
     "type:dts": "tsc --emitDeclarationOnly",
@@ -39,8 +39,8 @@
     "webstorm-integration": "vitest --watch --reporter=dot --reporter=json --outputFile=.vitest-result.json",
     "tsdoc": "typedoc --excludeInternal src/index.ts --cleanOutputDir false",
     "semantic-release": "semantic-release",
-    "prepack": "pnpm run updateVersion",
-    "prepare": "pnpm run build",
+    "prepack": "npm run updateVersion",
+    "prepare": "npm run build",
     "updateVersion": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts"
   },
   "repository": {
@@ -125,8 +125,7 @@
     "testRegex": ".*\\.test\\.ts$",
     "preset": "ts-jest",
     "transformIgnorePatterns": [
-      "<rootDir>/node_modules/.pnpm/(?!(timed-cache))"
+      "<rootDir>/node_modules/.npm/(?!(timed-cache))"
     ]
-  },
-  "packageManager": "pnpm@9.15.4+sha256.9bee59c7313a216722c079c1e22160dea7f88df4e0c3450b1d7b01b882336c6a"
+  }
 }

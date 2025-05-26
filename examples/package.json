@@ -4,7 +4,7 @@
   "main": "index.js",
   "description": "",
   "scripts": {
-    "pnpmi": "cd ../ && pnpm i && pnpm build && cd examples && rm -rf node_modules && pnpm i",
+    "npmi": "cd ../ && npm i && npm run build && cd examples && rm -rf node_modules && npm i",
     "compile": "tsc",
     "prettier": "prettier \"src/**/*.ts\" --write",
     "lint": "eslint src --ext .ts",
@@ -16,7 +16,7 @@
     "run:bridge:evm:send": "tsx src/examples/bridge/evm/evm-build-send-tx.ts",
     "run:bridge:evm:sendWithStables": "tsx src/examples/bridge/evm/evm-build-send-tx-gas-fee-with-stables.ts",
     "run:bridge:evm:swap": "tsx src/examples/bridge/evm/evm-build-swap-tx.ts",
-    "run:bridge:solana:send": "pnpm pnpmi && tsx src/examples/bridge/solana/sol-build-send-tx.ts",
+    "run:bridge:solana:send": "tsx src/examples/bridge/solana/sol-build-send-tx.ts",
     "run:bridge:solana:swap": "tsx src/examples/bridge/solana/sol-build-swap-tx.ts",
     "run:bridge:sui:send": "tsx src/examples/bridge/sui/sui-build-send-tx.ts",
     "run:bridge:sui:swap": "tsx src/examples/bridge/sui/sui-build-swap-tx.ts",
