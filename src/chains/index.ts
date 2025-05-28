@@ -62,6 +62,12 @@ const defaultProperties: Record<string, BasicChainProperties> = {
     name: "OP Mainnet",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.SNC]: {
+    chainSymbol: ChainSymbol.SNC,
+    chainId: "0x92",
+    name: "Sonic",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",
