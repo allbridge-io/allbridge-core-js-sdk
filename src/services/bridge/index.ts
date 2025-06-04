@@ -4,14 +4,14 @@ import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
-import { CCTPDoesNotSupportedError } from "../../exceptions";
+import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError } from "../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3 } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { EvmBridgeService } from "./evm";
-import { ApproveParams, CheckAllowanceParams, GetAllowanceParams, SendParams, ChainBridgeService } from "./models";
+import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
@@ -127,21 +127,29 @@ export class DefaultBridgeService implements BridgeService {
   }
 }
 
-export function getSpender(token: TokenWithChainDetails, messenger?: Messenger): string {
-  if (messenger && messenger == Messenger.CCTP) {
-    if (token.cctpAddress) {
-      return token.cctpAddress;
-    } else {
-      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-    }
-  } else if (messenger && messenger == Messenger.CCTP_V2) {
-    if (token.cctpV2Address) {
-      return token.cctpV2Address;
-    } else {
-      throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
-    }
-  } else {
-    return token.bridgeAddress;
+export function getSpender(token: TokenWithChainDetails, messenger: Messenger = Messenger.ALLBRIDGE): string {
+  switch (messenger) {
+    case Messenger.CCTP:
+      if (token.cctpAddress) {
+        return token.cctpAddress;
+      } else {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+      }
+    case Messenger.CCTP_V2:
+      if (token.cctpV2Address) {
+        return token.cctpV2Address;
+      } else {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+      }
+    case Messenger.OFT:
+      if (token.oftBridgeAddress) {
+        return token.oftBridgeAddress;
+      } else {
+        throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+      }
+    case Messenger.ALLBRIDGE:
+    case Messenger.WORMHOLE:
+      return token.bridgeAddress;
   }
 }
 

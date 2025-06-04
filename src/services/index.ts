@@ -14,7 +14,13 @@ import { AllbridgeCoreClientImpl } from "../client/core-api/core-client-base";
 import { AllbridgeCoreClientFiltered, AllbridgeCoreClientFilteredImpl } from "../client/core-api/core-client-filtered";
 import { AllbridgeCoreClientPoolInfoCaching } from "../client/core-api/core-client-pool-info-caching";
 import { mainnet } from "../configs";
-import { AllbridgeCoreSdkOptions, BasicChainProperties, NodeRpcUrls, SdkError } from "../index";
+import {
+  AllbridgeCoreSdkOptions,
+  BasicChainProperties,
+  NodeRpcUrls,
+  OFTDoesNotSupportedError,
+  SdkError,
+} from "../index";
 import {
   AmountFormat,
   AmountFormatted,
@@ -300,17 +306,15 @@ export class AllbridgeCoreSdkService {
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger
+    messenger: Messenger
   ): Promise<string> {
-    const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
-    const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
-    return this.getAmountToBeReceivedFromPools(
+    return this.getAmountToBeReceivedCompute(
       amountToSendFloat,
       sourceChainToken,
       destinationChainToken,
-      sourcePool,
-      destPool,
-      messenger
+      messenger,
+      async () => await getPoolInfoByToken(this.api, sourceChainToken),
+      async () => await getPoolInfoByToken(this.api, destinationChainToken)
     );
   }
 
@@ -318,80 +322,153 @@ export class AllbridgeCoreSdkService {
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger,
+    messenger: Messenger,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
-    const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
-    const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
-    return this.getAmountToBeReceivedFromPools(
+    return this.getAmountToBeReceivedCompute(
       amountToSendFloat,
       sourceChainToken,
       destinationChainToken,
-      sourcePool,
-      destPool,
-      messenger
+      messenger,
+      async () => await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider),
+      async () => await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider)
     );
   }
 
-  getAmountToBeReceivedFromPools(
+  async getAmountToBeReceivedCompute(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger = Messenger.ALLBRIDGE,
+    sourcePool: () => Promise<PoolInfo>,
+    destPool: () => Promise<PoolInfo>
+  ): Promise<string> {
+    switch (messenger) {
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE: {
+        return this.getAmountToBeReceivedComputeWithPools(
+          amountToSendFloat,
+          sourceChainToken,
+          destinationChainToken,
+          await sourcePool(),
+          await destPool()
+        );
+      }
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2:
+        return this.getAmountToBeReceivedComputeCctp(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
+      case Messenger.OFT:
+        return this.getAmountToBeReceivedComputeOft(amountToSendFloat, sourceChainToken, destinationChainToken);
+    }
+  }
+
+  getAmountToBeReceivedComputeWithPools(
     amountToSendFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
-    destinationPool: PoolInfo,
-    messenger?: Messenger
+    destinationPool: PoolInfo
   ): string {
     validateAmountGtZero(amountToSendFloat);
     validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
     const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
 
-    if (messenger && messenger == Messenger.CCTP) {
-      if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-      }
-      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundUp);
-      const resultInDestPrecision = convertAmountPrecision(
-        result,
-        sourceChainToken.decimals,
-        destinationChainToken.decimals
-      ).round(0);
-      return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
-    }
-
-    if (messenger && messenger == Messenger.CCTP_V2) {
-      if (!sourceChainToken.cctpV2Address || !destinationChainToken.cctpV2Address || !sourceChainToken.cctpV2FeeShare) {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
-      }
-      const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundUp);
-      const resultInDestPrecision = convertAmountPrecision(
-        result,
-        sourceChainToken.decimals,
-        destinationChainToken.decimals
-      ).round(0);
-
-      return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
-    }
-
     const vUsd = swapToVUsd(amountToSend, sourceChainToken, sourcePool);
     return this.getAmountFromVUsdFormatted(vUsd, destinationChainToken, destinationPool).float;
+  }
+
+  getAmountToBeReceivedComputeCctp(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger.CCTP | Messenger.CCTP_V2
+  ): string {
+    validateAmountGtZero(amountToSendFloat);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
+    const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
+
+    switch (messenger) {
+      case Messenger.CCTP: {
+        if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
+          throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+        }
+        const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundUp);
+        const resultInDestPrecision = convertAmountPrecision(
+          result,
+          sourceChainToken.decimals,
+          destinationChainToken.decimals
+        ).round(0);
+        return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
+      }
+      case Messenger.CCTP_V2: {
+        if (
+          !sourceChainToken.cctpV2Address ||
+          !destinationChainToken.cctpV2Address ||
+          !sourceChainToken.cctpV2FeeShare
+        ) {
+          throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+        }
+        const result = amountToSend.mul(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundUp);
+        const resultInDestPrecision = convertAmountPrecision(
+          result,
+          sourceChainToken.decimals,
+          destinationChainToken.decimals
+        ).round(0);
+
+        return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
+      }
+    }
+  }
+
+  async getAmountToBeReceivedComputeOft(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<string> {
+    validateAmountGtZero(amountToSendFloat);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
+    const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
+
+    if (
+      !sourceChainToken.oftBridgeAddress ||
+      !destinationChainToken.oftBridgeAddress ||
+      sourceChainToken.oftId !== destinationChainToken.oftId
+    ) {
+      throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+    }
+    const { adminFeeShareWithExtras } = await this.api.getReceiveTransactionCost({
+      sourceChainId: sourceChainToken.allbridgeChainId,
+      destinationChainId: destinationChainToken.allbridgeChainId,
+      messenger: Messenger.OFT,
+      sourceToken: sourceChainToken.tokenAddress,
+    });
+    if (!adminFeeShareWithExtras) {
+      throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+    }
+    const result = amountToSend.mul(Big(1).minus(adminFeeShareWithExtras)).round(0, Big.roundUp);
+    const resultInDestPrecision = convertAmountPrecision(
+      result,
+      sourceChainToken.decimals,
+      destinationChainToken.decimals
+    ).round(0);
+
+    return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
   }
 
   async getAmountToSend(
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger
+    messenger: Messenger
   ): Promise<string> {
-    const sourcePool: PoolInfo = await getPoolInfoByToken(this.api, sourceChainToken);
-    const destPool: PoolInfo = await getPoolInfoByToken(this.api, destinationChainToken);
-    return this.getAmountToSendFromPools(
+    return this.getAmountToSendCompute(
       amountToBeReceivedFloat,
       sourceChainToken,
       destinationChainToken,
-      sourcePool,
-      destPool,
-      messenger
+      messenger,
+      () => getPoolInfoByToken(this.api, sourceChainToken),
+      () => getPoolInfoByToken(this.api, destinationChainToken)
     );
   }
 
@@ -399,59 +476,62 @@ export class AllbridgeCoreSdkService {
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger?: Messenger,
+    messenger: Messenger,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
-    const sourcePool: PoolInfo = await this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider);
-    const destPool: PoolInfo = await this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider);
-    return this.getAmountToSendFromPools(
+    return this.getAmountToSendCompute(
       amountToBeReceivedFloat,
       sourceChainToken,
       destinationChainToken,
-      sourcePool,
-      destPool,
-      messenger
+      messenger,
+      () => this.pool.getPoolInfoFromChain(sourceChainToken, sourceProvider),
+      () => this.pool.getPoolInfoFromChain(destinationChainToken, destinationProvider)
     );
   }
 
-  getAmountToSendFromPools(
+  async getAmountToSendCompute(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger = Messenger.ALLBRIDGE,
+    sourcePool: () => Promise<PoolInfo>,
+    destPool: () => Promise<PoolInfo>
+  ): Promise<string> {
+    switch (messenger) {
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE: {
+        return this.getAmountToSendComputeWithPools(
+          amountToBeReceivedFloat,
+          sourceChainToken,
+          destinationChainToken,
+          await sourcePool(),
+          await destPool()
+        );
+      }
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2:
+        return this.getAmountToSendComputeCctp(
+          amountToBeReceivedFloat,
+          sourceChainToken,
+          destinationChainToken,
+          messenger
+        );
+      case Messenger.OFT:
+        return this.getAmountToSendComputeOft(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
+    }
+  }
+
+  getAmountToSendComputeWithPools(
     amountToBeReceivedFloat: number | string | Big,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
-    destinationPool: PoolInfo,
-    messenger?: Messenger
+    destinationPool: PoolInfo
   ): string {
     validateAmountGtZero(amountToBeReceivedFloat);
     validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
     const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
-
-    if (messenger && messenger == Messenger.CCTP) {
-      if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-      }
-      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundDown);
-      const resultInSourcePrecision = convertAmountPrecision(
-        result,
-        destinationChainToken.decimals,
-        sourceChainToken.decimals
-      ).round(0);
-      return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
-    }
-
-    if (messenger && messenger == Messenger.CCTP_V2) {
-      if (!sourceChainToken.cctpV2Address || !destinationChainToken.cctpV2Address || !sourceChainToken.cctpV2FeeShare) {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
-      }
-      const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundDown);
-      const resultInSourcePrecision = convertAmountPrecision(
-        result,
-        destinationChainToken.decimals,
-        sourceChainToken.decimals
-      ).round(0);
-      return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
-    }
 
     const vUsd = swapFromVUsdReverse(amountToBeReceived, destinationChainToken, destinationPool);
     const resultInt = swapToVUsdReverse(vUsd, sourceChainToken, sourcePool);
@@ -461,19 +541,89 @@ export class AllbridgeCoreSdkService {
     return convertIntAmountToFloat(resultInt, sourceChainToken.decimals).toFixed();
   }
 
+  getAmountToSendComputeCctp(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger.CCTP | Messenger.CCTP_V2
+  ): string {
+    validateAmountGtZero(amountToBeReceivedFloat);
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
+    const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
+
+    switch (messenger) {
+      case Messenger.CCTP: {
+        if (!sourceChainToken.cctpAddress || !destinationChainToken.cctpAddress || !sourceChainToken.cctpFeeShare) {
+          throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+        }
+        const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpFeeShare)).round(0, Big.roundDown);
+        const resultInSourcePrecision = convertAmountPrecision(
+          result,
+          destinationChainToken.decimals,
+          sourceChainToken.decimals
+        ).round(0);
+        return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+      }
+      case Messenger.CCTP_V2: {
+        if (
+          !sourceChainToken.cctpV2Address ||
+          !destinationChainToken.cctpV2Address ||
+          !sourceChainToken.cctpV2FeeShare
+        ) {
+          throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+        }
+        const result = amountToBeReceived.div(Big(1).minus(sourceChainToken.cctpV2FeeShare)).round(0, Big.roundDown);
+        const resultInSourcePrecision = convertAmountPrecision(
+          result,
+          destinationChainToken.decimals,
+          sourceChainToken.decimals
+        ).round(0);
+        return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+      }
+    }
+  }
+
+  async getAmountToSendComputeOft(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<string> {
+    validateAmountGtZero(amountToBeReceivedFloat);
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
+    const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
+
+    if (
+      !sourceChainToken.oftId ||
+      !destinationChainToken.oftId ||
+      !sourceChainToken.oftBridgeAddress ||
+      sourceChainToken.oftId !== destinationChainToken.oftId
+    ) {
+      throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+    }
+    const { adminFeeShareWithExtras } = await this.api.getReceiveTransactionCost({
+      sourceChainId: sourceChainToken.allbridgeChainId,
+      destinationChainId: destinationChainToken.allbridgeChainId,
+      messenger: Messenger.OFT,
+      sourceToken: sourceChainToken.tokenAddress,
+    });
+    if (!adminFeeShareWithExtras) {
+      throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+    }
+    const result = amountToBeReceived.div(Big(1).minus(adminFeeShareWithExtras)).round(0, Big.roundDown);
+    const resultInSourcePrecision = convertAmountPrecision(
+      result,
+      destinationChainToken.decimals,
+      sourceChainToken.decimals
+    ).round(0);
+    return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+  }
+
   async getGasFeeOptions(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     messenger: Messenger
   ): Promise<GasFeeOptions> {
-    return getGasFeeOptions(
-      sourceChainToken.allbridgeChainId,
-      sourceChainToken.chainType,
-      destinationChainToken.allbridgeChainId,
-      sourceChainToken.decimals,
-      messenger,
-      this.api
-    );
+    return getGasFeeOptions(sourceChainToken, destinationChainToken.allbridgeChainId, messenger, this.api);
   }
 
   getAverageTransferTime(
@@ -505,9 +655,10 @@ export class AllbridgeCoreSdkService {
 
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger
   ): Promise<ExtraGasMaxLimitResponse> {
-    return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, this.api);
+    return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, messenger, this.api);
   }
 
   async getVUsdFromAmount(

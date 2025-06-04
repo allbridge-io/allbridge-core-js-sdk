@@ -20,10 +20,11 @@ import {
   CCTPDoesNotSupportedError,
   JupiterError,
   MethodNotSupportedError,
+  OFTDoesNotSupportedError,
   SdkError,
   SdkRootError,
 } from "../../../exceptions";
-import { ChainType, FeePaymentMethod, SwapParams, TxFeeParams } from "../../../models";
+import { ChainType, FeePaymentMethod, SwapParams, TokenWithChainDetails, TxFeeParams } from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
@@ -250,6 +251,8 @@ export class SolanaBridgeService extends ChainBridgeService {
         requiredMessageSigner = messageSentEventDataKeypair;
         break;
       }
+      case Messenger.OFT:
+        throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
     }
 
     if (isJupiterForStableCoin) {
@@ -281,7 +284,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     };
   }> {
     const { fee, extraGas, gasFeePaymentMethod } = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
-      params.sourceToken.decimals,
+      params.sourceToken,
       solTxSendParams
     );
 
@@ -336,7 +339,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   async convertStableCoinFeeAndExtraGasToNativeCurrency(
-    tokenDecimals: number,
+    sourceToken: TokenWithChainDetails,
     solTxSendParams: SolTxSendParams
   ): Promise<{ fee: string; extraGas?: string; gasFeePaymentMethod: FeePaymentMethod }> {
     if (solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
@@ -345,17 +348,18 @@ export class SolanaBridgeService extends ChainBridgeService {
           sourceChainId: solTxSendParams.fromChainId,
           destinationChainId: solTxSendParams.toChainId,
           messenger: solTxSendParams.messenger,
+          sourceToken: sourceToken.tokenAddress,
         })
       ).sourceNativeTokenPrice;
       const fee = Big(solTxSendParams.fee)
         .div(sourceNativeTokenPrice)
-        .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - tokenDecimals))
+        .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - sourceToken.decimals))
         .toFixed(0);
       let extraGas;
       if (solTxSendParams.extraGas) {
         extraGas = Big(solTxSendParams.extraGas)
           .div(sourceNativeTokenPrice)
-          .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - tokenDecimals))
+          .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - sourceToken.decimals))
           .toFixed(0);
       }
       return { fee, extraGas, gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY };

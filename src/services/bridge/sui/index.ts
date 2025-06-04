@@ -9,6 +9,7 @@ import {
   ChainType,
   FeePaymentMethod,
   Messenger,
+  OFTDoesNotSupportedError,
   RawSuiTransaction,
   SdkError,
   SwapParams,
@@ -108,6 +109,8 @@ export class SuiBridgeService extends ChainBridgeService {
       case Messenger.CCTP:
       case Messenger.CCTP_V2:
         return this.buildRawTransactionCctpSend(params, txSendParams, suiAddresses);
+      case Messenger.OFT:
+        throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
     }
   }
 

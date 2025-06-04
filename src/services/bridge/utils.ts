@@ -11,6 +11,7 @@ import {
   CCTPDoesNotSupportedError,
   ExtraGasMaxLimitExceededError,
   InvalidGasFeePaymentOptionError,
+  OFTDoesNotSupportedError,
   SdkError,
 } from "../../exceptions";
 import {
@@ -249,18 +250,34 @@ export async function prepareTxSendParams(
   }
   const sourceToken = params.sourceToken;
 
-  if (params.messenger === Messenger.CCTP) {
-    if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
-      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-    }
-    txSendParams.contractAddress = sourceToken.cctpAddress;
-  } else if (params.messenger === Messenger.CCTP_V2) {
-    if (!sourceToken.cctpV2Address || !params.destinationToken.cctpV2Address) {
-      throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
-    }
-    txSendParams.contractAddress = sourceToken.cctpV2Address;
-  } else {
-    txSendParams.contractAddress = sourceToken.bridgeAddress;
+  switch (params.messenger) {
+    case Messenger.CCTP:
+      if (!sourceToken.cctpAddress || !params.destinationToken.cctpAddress) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
+      }
+      txSendParams.contractAddress = sourceToken.cctpAddress;
+      break;
+    case Messenger.CCTP_V2:
+      if (!sourceToken.cctpV2Address || !params.destinationToken.cctpV2Address) {
+        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+      }
+      txSendParams.contractAddress = sourceToken.cctpV2Address;
+
+      break;
+    case Messenger.OFT:
+      if (
+        !sourceToken.oftBridgeAddress ||
+        !params.destinationToken.oftBridgeAddress ||
+        sourceToken.oftId !== params.destinationToken.oftId
+      ) {
+        throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
+      }
+      txSendParams.contractAddress = sourceToken.oftBridgeAddress;
+      break;
+    case Messenger.ALLBRIDGE:
+    case Messenger.WORMHOLE:
+      txSendParams.contractAddress = sourceToken.bridgeAddress;
+      break;
   }
 
   txSendParams.messenger = params.messenger;
@@ -271,10 +288,8 @@ export async function prepareTxSendParams(
   let { fee, feeFormat } = params;
   if (!fee) {
     const gasFeeOptions = await getGasFeeOptions(
-      txSendParams.fromChainId,
-      params.sourceToken.chainType,
+      params.sourceToken,
       txSendParams.toChainId,
-      sourceToken.decimals,
       txSendParams.messenger,
       api
     );
@@ -304,28 +319,54 @@ export async function prepareTxSendParams(
   //ExtraGas
   const { extraGas, extraGasFormat } = params;
   if (extraGas && +extraGas > 0) {
-    if (extraGasFormat == AmountFormat.FLOAT) {
-      switch (txSendParams.gasFeePaymentMethod) {
-        case FeePaymentMethod.WITH_NATIVE_CURRENCY:
-          txSendParams.extraGas = convertFloatAmountToInt(
-            extraGas,
-            Chains.getChainDecimalsByType(sourceToken.chainType)
-          ).toFixed(0);
-          break;
-        case FeePaymentMethod.WITH_STABLECOIN:
-          txSendParams.extraGas = convertFloatAmountToInt(extraGas, sourceToken.decimals).toFixed(0);
-          break;
-      }
-    } else {
-      txSendParams.extraGas = extraGas;
-    }
-    await validateExtraGasNotExceeded(
-      txSendParams.extraGas,
-      txSendParams.gasFeePaymentMethod,
+    const extraGasLimits = await getExtraGasMaxLimits(
       sourceToken,
       params.destinationToken,
+      txSendParams.messenger,
       api
     );
+
+    let extraGasDecimals: number;
+    let extraGasDestRate: Big;
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+        extraGasDecimals = Chains.getChainDecimalsByType(sourceToken.chainType);
+        extraGasDestRate = Big(extraGasLimits.exchangeRate);
+        break;
+      case FeePaymentMethod.WITH_STABLECOIN:
+        extraGasDecimals = sourceToken.decimals;
+        extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.sourceNativeTokenPrice);
+        break;
+    }
+
+    switch (extraGasFormat ?? AmountFormat.INT) {
+      case AmountFormat.FLOAT: {
+        txSendParams.extraGas = convertFloatAmountToInt(extraGas, extraGasDecimals).toFixed(0);
+
+        const extraGasDestFloat = extraGasDestRate.mul(extraGas);
+        txSendParams.extraGasDest = convertFloatAmountToInt(
+          extraGasDestFloat,
+          Chains.getChainDecimalsByType(params.destinationToken.chainType)
+        ).toFixed(0, Big.roundDown);
+        break;
+      }
+      case AmountFormat.INT: {
+        txSendParams.extraGas = extraGas;
+
+        const extraGasFloat = convertIntAmountToFloat(
+          txSendParams.extraGas,
+          Chains.getChainDecimalsByType(sourceToken.chainType)
+        );
+        const extraGasDestFloat = extraGasDestRate.mul(extraGasFloat);
+        txSendParams.extraGasDest = convertFloatAmountToInt(
+          extraGasDestFloat,
+          Chains.getChainDecimalsByType(params.destinationToken.chainType)
+        ).toFixed(0, Big.roundDown);
+        break;
+      }
+    }
+
+    validateExtraGasNotExceeded(txSendParams.extraGas, txSendParams.gasFeePaymentMethod, extraGasLimits);
   }
 
   if (bridgeChainType !== ChainType.SUI) {
@@ -359,17 +400,16 @@ function validateAmountEnough(
 }
 
 export async function getGasFeeOptions(
-  sourceAllbridgeChainId: number,
-  sourceChainType: ChainType,
+  sourceChainToken: TokenWithChainDetails,
   destinationAllbridgeChainId: number,
-  sourceChainTokenDecimals: number,
   messenger: Messenger,
   api: AllbridgeCoreClient
 ): Promise<GasFeeOptions> {
   const transactionCostResponse = await api.getReceiveTransactionCost({
-    sourceChainId: sourceAllbridgeChainId,
+    sourceChainId: sourceChainToken.allbridgeChainId,
     destinationChainId: destinationAllbridgeChainId,
     messenger,
+    sourceToken: sourceChainToken.tokenAddress,
   });
 
   const gasFeeOptions: GasFeeOptions = {
@@ -377,33 +417,31 @@ export async function getGasFeeOptions(
       [AmountFormat.INT]: transactionCostResponse.fee,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         transactionCostResponse.fee,
-        Chains.getChainDecimalsByType(sourceChainType)
+        Chains.getChainDecimalsByType(sourceChainToken.chainType)
       ).toFixed(),
     },
+    adminFeeShareWithExtras: transactionCostResponse.adminFeeShareWithExtras
   };
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
-      Chains.getChainDecimalsByType(sourceChainType),
-      sourceChainTokenDecimals
+      Chains.getChainDecimalsByType(sourceChainToken.chainType),
+      sourceChainToken.decimals
     ).toFixed(0, Big.roundUp);
     gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: gasFeeIntWithStables,
-      [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainTokenDecimals).toFixed(),
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainToken.decimals).toFixed(),
     };
   }
 
   return gasFeeOptions;
 }
 
-async function validateExtraGasNotExceeded(
+function validateExtraGasNotExceeded(
   extraGasInt: string,
   gasFeePaymentMethod: FeePaymentMethod,
-  sourceToken: TokenWithChainDetails,
-  destinationToken: TokenWithChainDetails,
-  api: AllbridgeCoreClient
+  extraGasLimits: ExtraGasMaxLimitResponse
 ) {
-  const extraGasLimits = await getExtraGasMaxLimits(sourceToken, destinationToken, api);
   const extraGasMaxLimit = extraGasLimits.extraGasMax[gasFeePaymentMethod];
   if (!extraGasMaxLimit) {
     throw new InvalidGasFeePaymentOptionError(`Impossible to pay extra gas by '${gasFeePaymentMethod}' payment method`);
@@ -419,13 +457,15 @@ async function validateExtraGasNotExceeded(
 export async function getExtraGasMaxLimits(
   sourceChainToken: TokenWithChainDetails,
   destinationChainToken: TokenWithChainDetails,
+  messenger: Messenger,
   api: AllbridgeCoreClient
 ): Promise<ExtraGasMaxLimitResponse> {
   const extraGasMaxLimits: ExtraGasMaxLimits = {};
   const transactionCostResponse = await api.getReceiveTransactionCost({
     sourceChainId: sourceChainToken.allbridgeChainId,
     destinationChainId: destinationChainToken.allbridgeChainId,
-    messenger: Messenger.ALLBRIDGE,
+    messenger,
+    sourceToken: sourceChainToken.tokenAddress,
   });
   const maxAmount = destinationChainToken.txCostAmount.maxAmount;
   const maxAmountFloat = convertIntAmountToFloat(

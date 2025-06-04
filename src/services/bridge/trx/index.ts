@@ -22,7 +22,7 @@ export class TronBridgeService extends ChainBridgeService {
 
   async send(params: SendParams): Promise<TransactionResponse> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
-    const rawTransaction = await this.buildRawTransactionSendFromParams(txSendParams);
+    const rawTransaction = await this.buildRawTransactionSendFromParams(params, txSendParams);
     return await sendRawTransaction(this.tronWeb, rawTransaction);
   }
 
@@ -55,10 +55,10 @@ export class TronBridgeService extends ChainBridgeService {
 
   async buildRawTransactionSend(params: SendParams): Promise<RawTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
-    return this.buildRawTransactionSendFromParams(txSendParams);
+    return this.buildRawTransactionSendFromParams(params, txSendParams);
   }
 
-  async buildRawTransactionSendFromParams(params: TxSendParamsTrx): Promise<RawTransaction> {
+  async buildRawTransactionSendFromParams(sendParams: SendParams, params: TxSendParamsTrx): Promise<RawTransaction> {
     const {
       amount,
       contractAddress,
@@ -71,6 +71,7 @@ export class TronBridgeService extends ChainBridgeService {
       fee,
       gasFeePaymentMethod,
       extraGas,
+      extraGasDest,
     } = params;
 
     let totalFee = fee;
@@ -82,52 +83,83 @@ export class TronBridgeService extends ChainBridgeService {
     let parameters;
     let value: string;
     let methodSignature: string;
-    if (messenger == Messenger.CCTP || messenger == Messenger.CCTP_V2) {
-      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        parameters = [
-          { type: "uint256", value: amount },
-          { type: "bytes32", value: toAccountAddress },
-          { type: "uint256", value: toChainId },
-          { type: "uint256", value: totalFee },
-        ];
-        value = "0";
-      } else {
-        parameters = [
-          { type: "uint256", value: amount },
-          { type: "bytes32", value: toAccountAddress },
-          { type: "uint256", value: toChainId },
-          { type: "uint256", value: 0 },
-        ];
-        value = totalFee;
-      }
-      methodSignature = "bridge(uint256,bytes32,uint256,uint256)";
-    } else {
-      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        parameters = [
-          { type: "bytes32", value: fromTokenAddress },
-          { type: "uint256", value: amount },
-          { type: "bytes32", value: toAccountAddress },
-          { type: "uint256", value: toChainId },
-          { type: "bytes32", value: toTokenAddress },
-          { type: "uint256", value: nonce },
-          { type: "uint8", value: messenger },
-          { type: "uint256", value: totalFee },
-        ];
-        value = "0";
-      } else {
-        parameters = [
-          { type: "bytes32", value: fromTokenAddress },
-          { type: "uint256", value: amount },
-          { type: "bytes32", value: toAccountAddress },
-          { type: "uint256", value: toChainId },
-          { type: "bytes32", value: toTokenAddress },
-          { type: "uint256", value: nonce },
-          { type: "uint8", value: messenger },
-          { type: "uint256", value: 0 },
-        ];
-        value = totalFee;
-      }
-      methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
+    switch (messenger) {
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2:
+        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+          parameters = [
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "uint256", value: totalFee },
+          ];
+          value = "0";
+        } else {
+          parameters = [
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "uint256", value: 0 },
+          ];
+          value = totalFee;
+        }
+        methodSignature = "bridge(uint256,bytes32,uint256,uint256)";
+        break;
+      case Messenger.OFT:
+        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+          parameters = [
+            { type: "address", value: sendParams.sourceToken.tokenAddress },
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "uint256", value: totalFee },
+            { type: "uint256", value: extraGasDest ?? "0" },
+            { type: "uint256", value: "10" },
+          ];
+          value = "0";
+        } else {
+          parameters = [
+            { type: "address", value: sendParams.sourceToken.tokenAddress },
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "uint256", value: 0 },
+            { type: "uint256", value: extraGasDest ?? "0" },
+            { type: "uint256", value: "10" },
+          ];
+          value = totalFee;
+        }
+        methodSignature = "bridge(address,uint256,bytes32,uint256,uint256,uint256,uint256)";
+        break;
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE:
+        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+          parameters = [
+            { type: "bytes32", value: fromTokenAddress },
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "bytes32", value: toTokenAddress },
+            { type: "uint256", value: nonce },
+            { type: "uint8", value: messenger },
+            { type: "uint256", value: totalFee },
+          ];
+          value = "0";
+        } else {
+          parameters = [
+            { type: "bytes32", value: fromTokenAddress },
+            { type: "uint256", value: amount },
+            { type: "bytes32", value: toAccountAddress },
+            { type: "uint256", value: toChainId },
+            { type: "bytes32", value: toTokenAddress },
+            { type: "uint256", value: nonce },
+            { type: "uint8", value: messenger },
+            { type: "uint256", value: 0 },
+          ];
+          value = totalFee;
+        }
+        methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
+        break;
     }
     return this.buildRawTransaction(contractAddress, methodSignature, parameters, value, fromAccountAddress);
   }

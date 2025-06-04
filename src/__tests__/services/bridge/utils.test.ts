@@ -9,7 +9,7 @@ import {
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
 } from "../../../client/core-api/core-api.model";
-import { AllbridgeCoreClientWithPoolInfo, AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
+import { AllbridgeCoreClientImpl, AllbridgeCoreClientWithPoolInfo } from "../../../client/core-api/core-client-base";
 import {
   AmountFormat,
   ChainSymbol,
@@ -47,10 +47,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for EVM->TRX blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {
         sourceChainId: 2,
         destinationChainId: 4,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -62,7 +65,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
         toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-        sourceToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -87,10 +90,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for EVM->SOL blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestEVMtoSOL: ReceiveTransactionCostRequest = {
         sourceChainId: 2,
         destinationChainId: 5,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -102,7 +108,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
         toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-        sourceToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -127,10 +133,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for TRX->EVM blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestTRXtoEVM: ReceiveTransactionCostRequest = {
         sourceChainId: 4,
         destinationChainId: 2,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -142,7 +151,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
         toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -167,10 +176,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for TRX->SOL blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestTRXtoSOL: ReceiveTransactionCostRequest = {
         sourceChainId: 4,
         destinationChainId: 5,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -182,7 +194,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
         toAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
-        sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -207,10 +219,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for SOL->EVM blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestSOLtoEVM: ReceiveTransactionCostRequest = {
         sourceChainId: 5,
         destinationChainId: 2,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -222,7 +237,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
         toAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
-        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -247,10 +262,13 @@ describe("ChainBridgeService Utils", () => {
     });
 
     it("should return prepared TxSendParams for SOL->TRX blockchain from SendParamsWithChainSymbols", async () => {
+      const sourceToken = tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails;
+
       const receiveFeeRequestSOLtoTRX: ReceiveTransactionCostRequest = {
         sourceChainId: 5,
         destinationChainId: 4,
         messenger: Messenger.ALLBRIDGE,
+        sourceToken: sourceToken.tokenAddress,
       };
 
       scope = scope
@@ -262,7 +280,7 @@ describe("ChainBridgeService Utils", () => {
         amount: "1.33",
         fromAccountAddress: "6wK6rSmbh65JqY9gputbRBhfZXWkGqvgoQ889y1Qqefr",
         toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
-        sourceToken: tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails,
+        sourceToken: sourceToken,
         destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
         messenger: Messenger.ALLBRIDGE,
       };
@@ -299,7 +317,7 @@ describe("ChainBridgeService Utils", () => {
       const sourceToken = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
       const destToken = tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails;
 
-      const extraGasMaxLimitResponse = await getExtraGasMaxLimits(sourceToken, destToken, api);
+      const extraGasMaxLimitResponse = await getExtraGasMaxLimits(sourceToken, destToken, Messenger.ALLBRIDGE, api);
 
       const expectedExtraGasMaxLimitResponse: ExtraGasMaxLimitResponse = {
         extraGasMax: {

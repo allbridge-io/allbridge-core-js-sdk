@@ -7,6 +7,7 @@ export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
   bridgeAddress: string;
+  oftBridgeAddress?: string;
   transferTime: TransferTimeDTO;
   txCostAmount: TxCostAmountDTO;
   confirmations: number;
@@ -29,6 +30,7 @@ export interface TokenDTO {
   poolAddress: string;
   tokenAddress: string;
   poolInfo: PoolInfoDTO;
+  oftId?: string;
   feeShare: string;
   apr: string;
   apr7d: string;
@@ -55,6 +57,7 @@ export enum MessengerKeyDTO {
   WORMHOLE = "wormhole",
   CCTP = "cctp",
   CCTP_V2 = "cctpV2",
+  OFT = "oft",
 }
 
 export type TransferTimeDTO = Record<string, MessengerTransferTimeDTO>;
@@ -74,18 +77,21 @@ export enum Messenger {
   WORMHOLE = 2,
   CCTP = 3,
   CCTP_V2 = 4,
+  OFT = 5,
 }
 
 export interface ReceiveTransactionCostRequest {
   sourceChainId: number;
   destinationChainId: number;
   messenger: Messenger;
+  sourceToken?: string;
 }
 
 export interface ReceiveTransactionCostResponse {
   exchangeRate: string;
   fee: string;
   sourceNativeTokenPrice: string;
+  adminFeeShareWithExtras?: string;
 }
 
 export interface GasBalanceResponse {

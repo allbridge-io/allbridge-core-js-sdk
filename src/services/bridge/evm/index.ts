@@ -6,9 +6,9 @@ import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import {
   ChainSymbol,
   ChainType,
+  EssentialWeb3,
   FeePaymentMethod,
   Messenger,
-  EssentialWeb3,
   SwapParams,
   TransactionResponse,
 } from "../../../models";
@@ -16,8 +16,9 @@ import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
+import OftBridge from "../../models/abi/OftBridge";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
-import { SendParams, ChainBridgeService, TxSwapParamsEvm, TxSendParamsEvm } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
@@ -83,6 +84,7 @@ export class EvmBridgeService extends ChainBridgeService {
       fee,
       gasFeePaymentMethod,
       extraGas,
+      extraGasDest,
     } = txSendParams;
 
     const nonce = "0x" + getNonce().toString("hex");
@@ -93,37 +95,52 @@ export class EvmBridgeService extends ChainBridgeService {
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
-    if (messenger === Messenger.CCTP || messenger === Messenger.CCTP_V2) {
-      const cctp = await this.buildRawTransactionCctpSend(params, txSendParams, totalFee);
-      sendMethod = cctp.sendMethod;
-      value = cctp.value;
-    } else {
-      const bridgeContract = this.getBridgeContract(contractAddress);
-      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        sendMethod = bridgeContract.methods.swapAndBridge(
-          fromTokenAddress,
-          amount,
-          toAccountAddress,
-          toChainId,
-          toTokenAddress,
-          nonce,
-          messenger,
-          totalFee
-        );
-        value = "0";
-      } else {
-        sendMethod = bridgeContract.methods.swapAndBridge(
-          fromTokenAddress,
-          amount,
-          toAccountAddress,
-          toChainId,
-          toTokenAddress,
-          nonce,
-          messenger,
-          0
-        );
-        value = totalFee;
+
+    switch (messenger) {
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2: {
+        const cctp = await this.buildRawTransactionCctpSend(params, txSendParams, totalFee);
+        sendMethod = cctp.sendMethod;
+        value = cctp.value;
+        break;
       }
+      case Messenger.OFT: {
+        const oft = this.buildRawTransactionOftSend(params, txSendParams, totalFee, extraGasDest);
+        sendMethod = oft.sendMethod;
+        value = oft.value;
+        break;
+      }
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE:
+        {
+          const bridgeContract = this.getBridgeContract(contractAddress);
+          if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+            sendMethod = bridgeContract.methods.swapAndBridge(
+              fromTokenAddress,
+              amount,
+              toAccountAddress,
+              toChainId,
+              toTokenAddress,
+              nonce,
+              messenger,
+              totalFee
+            );
+            value = "0";
+          } else {
+            sendMethod = bridgeContract.methods.swapAndBridge(
+              fromTokenAddress,
+              amount,
+              toAccountAddress,
+              toChainId,
+              toTokenAddress,
+              nonce,
+              messenger,
+              0
+            );
+            value = totalFee;
+          }
+        }
+        break;
     }
 
     return Promise.resolve({
@@ -187,6 +204,48 @@ export class EvmBridgeService extends ChainBridgeService {
     return { sendMethod, value };
   }
 
+  private buildRawTransactionOftSend(
+    params: SendParams,
+    txSendParams: TxSendParamsEvm,
+    totalFee: string,
+    extraGasDest?: string
+  ): {
+    sendMethod: PayableMethodObject;
+    value: string;
+  } {
+    const { amount, contractAddress, toChainId, toAccountAddress, gasFeePaymentMethod } = txSendParams;
+
+    const oftBridgeContract = this.getOftBridgeContract(contractAddress);
+    let sendMethod: PayableMethodObject;
+    let value: string;
+
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
+      sendMethod = oftBridgeContract.methods.bridge(
+        params.sourceToken.tokenAddress,
+        amount,
+        toAccountAddress,
+        toChainId,
+        totalFee,
+        extraGasDest ?? "0",
+        "10"
+      );
+      value = "0";
+    } else {
+      sendMethod = oftBridgeContract.methods.bridge(
+        params.sourceToken.tokenAddress,
+        amount,
+        toAccountAddress,
+        toChainId,
+        0,
+        extraGasDest ?? "0",
+        "10"
+      );
+      value = totalFee;
+    }
+
+    return { sendMethod, value };
+  }
+
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction as Web3Transaction);
 
@@ -207,5 +266,9 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private getCctpBridgeContract(contractAddress: string) {
     return new this.web3.eth.Contract(CctpBridge.abi, contractAddress) as Contract<typeof CctpBridge.abi>;
+  }
+
+  private getOftBridgeContract(contractAddress: string) {
+    return new this.web3.eth.Contract(OftBridge.abi, contractAddress) as Contract<typeof OftBridge.abi>;
   }
 }

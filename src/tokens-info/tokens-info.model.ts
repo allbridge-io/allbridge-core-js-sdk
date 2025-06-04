@@ -26,6 +26,11 @@ export interface ChainDetails extends BasicChainProperties {
    */
   bridgeAddress: string;
   /**
+   * OFT Bridge contract address
+   * Optional. Defined if the chain supports OFT
+   */
+  oftBridgeAddress?: string;
+  /**
    * Average transfer time to other blockchains
    */
   transferTime: TransferTime;
@@ -112,6 +117,15 @@ export interface Token {
    * Optional. Defined if CCTP supported by token
    */
   cctpV2FeeShare?: string;
+  /**
+   * Internal identifier for the same token across different chains.
+   *
+   * Used to link representations of a token deployed on multiple networks (e.g., Ethereum, BSC).
+   * Tokens with the same `oftId` are considered to be equivalent.
+   *
+   * Optional. Defined if OFT supported by token
+   */
+  oftId?: string;
   /**
    * Token fee share
    */
