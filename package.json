@@ -45,7 +45,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/allbridge-io/allbridge-core-js-sdk"
+    "url": "https://github.com/allbridge-public/allbridge-core-js-sdk"
   },
   "keywords": [],
   "devDependencies": {
