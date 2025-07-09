@@ -59,7 +59,7 @@ export class ApiClientCaching implements ApiClient {
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
-    const RECEIVE_TX_COST_KEY = `RECEIVE_TX_COST_${args.sourceChainId}_${args.destinationChainId}_${args.messenger}`;
+    const RECEIVE_TX_COST_KEY = `RECEIVE_TX_COST_${args.sourceChainId}_${args.destinationChainId}_${args.messenger}${args.sourceToken ? "_" + args.sourceToken : ""}`;
     const transactionCost = this.receivedTransactionCache.get(RECEIVE_TX_COST_KEY);
     if (transactionCost) {
       return transactionCost;

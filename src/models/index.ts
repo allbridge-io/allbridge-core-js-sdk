@@ -96,6 +96,7 @@ type GasFeeOptionsType = {
 export interface GasFeeOptions extends GasFeeOptionsType {
   [FeePaymentMethod.WITH_NATIVE_CURRENCY]: AmountFormatted;
   [FeePaymentMethod.WITH_STABLECOIN]?: AmountFormatted;
+  adminFeeShareWithExtras?: string;
 }
 
 /**
