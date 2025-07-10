@@ -294,3 +294,10 @@ const transferTimeMs = sdk.getAverageTransferTime(
   Messenger.ALLBRIDGE
 );
 ```
+
+### Known Audit Warning
+
+Due to a dependency on `@solana/web3.js`, the package `bigint-buffer@1.1.5` is present in the dependency tree and marked as vulnerable.
+This vulnerability is not exploitable in the context of this SDK, and no sensitive or user-facing code depends on `bigint-buffer` directly.
+
+We are monitoring upstream packages for an official resolution.
