@@ -326,7 +326,7 @@ export class AllbridgeCoreSdk {
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    */
   async getAmountToBeReceived(
     amountToSendFloat: BigSource,
@@ -334,10 +334,8 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     /**
      * The Messengers for different routes.
-     * Optional.
-     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger
+    messenger: Messenger = Messenger.ALLBRIDGE
   ): Promise<string> {
     return this.service.getAmountToBeReceived(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -347,7 +345,7 @@ export class AllbridgeCoreSdk {
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
    */
@@ -357,10 +355,8 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     /**
      * The Messengers for different routes.
-     * Optional.
-     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger,
+    messenger: Messenger = Messenger.ALLBRIDGE,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
@@ -381,7 +377,7 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param sourcePool source token pool state
    * @param destinationPool destination token pool state
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    */
   getAmountToBeReceivedFromPools(
     amountToSendFloat: BigSource,
@@ -389,16 +385,27 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger
+    messenger: Exclude<Messenger, Messenger.OFT> = Messenger.ALLBRIDGE
   ): string {
-    return this.service.getAmountToBeReceivedFromPools(
-      amountToSendFloat,
-      sourceChainToken,
-      destinationChainToken,
-      sourcePool,
-      destinationPool,
-      messenger
-    );
+    switch (messenger) {
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE:
+        return this.service.getAmountToBeReceivedComputeWithPools(
+          amountToSendFloat,
+          sourceChainToken,
+          destinationChainToken,
+          sourcePool,
+          destinationPool
+        );
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2:
+        return this.service.getAmountToBeReceivedComputeCctp(
+          amountToSendFloat,
+          sourceChainToken,
+          destinationChainToken,
+          messenger
+        );
+    }
   }
 
   /**
@@ -406,7 +413,7 @@ export class AllbridgeCoreSdk {
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    */
   async getAmountToSend(
     amountToBeReceivedFloat: BigSource,
@@ -414,10 +421,8 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     /**
      * The Messengers for different routes.
-     * Optional.
-     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger
+    messenger: Messenger = Messenger.ALLBRIDGE
   ): Promise<string> {
     return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -427,7 +432,7 @@ export class AllbridgeCoreSdk {
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
    */
@@ -437,10 +442,8 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     /**
      * The Messengers for different routes.
-     * Optional.
-     * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
      */
-    messenger?: Messenger,
+    messenger: Messenger = Messenger.ALLBRIDGE,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
@@ -461,7 +464,7 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param sourcePool source token pool state
    * @param destinationPool destination token pool state
-   * @param messenger Optional. selected messenger
+   * @param messenger selected messenger
    */
   getAmountToSendFromPools(
     amountToBeReceivedFloat: BigSource,
@@ -469,16 +472,27 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger?: Messenger
+    messenger: Exclude<Messenger, Messenger.OFT> = Messenger.ALLBRIDGE
   ): string {
-    return this.service.getAmountToSendFromPools(
-      amountToBeReceivedFloat,
-      sourceChainToken,
-      destinationChainToken,
-      sourcePool,
-      destinationPool,
-      messenger
-    );
+    switch (messenger) {
+      case Messenger.ALLBRIDGE:
+      case Messenger.WORMHOLE:
+        return this.service.getAmountToSendComputeWithPools(
+          amountToBeReceivedFloat,
+          sourceChainToken,
+          destinationChainToken,
+          sourcePool,
+          destinationPool
+        );
+      case Messenger.CCTP:
+      case Messenger.CCTP_V2:
+        return this.service.getAmountToSendComputeCctp(
+          amountToBeReceivedFloat,
+          sourceChainToken,
+          destinationChainToken,
+          messenger
+        );
+    }
   }
 
   /**
@@ -544,13 +558,15 @@ export class AllbridgeCoreSdk {
    * Get possible limit of extra gas amount.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
+   * @param messenger selected Messenger, Allbridge by default
    * @returns {@link ExtraGasMaxLimitResponse}
    */
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger = Messenger.ALLBRIDGE
   ): Promise<ExtraGasMaxLimitResponse> {
-    return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken);
+    return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken, messenger);
   }
 
   /**

@@ -1,4 +1,5 @@
 import axios, { Axios } from "axios";
+import { InvalidMessengerOptionError } from "../../exceptions";
 import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
 import {
@@ -9,6 +10,7 @@ import {
 import {
   ChainDetailsResponse,
   GasBalanceResponse,
+  Messenger,
   PendingInfoResponse,
   PoolInfoResponse,
   ReceiveTransactionCostRequest,
@@ -75,6 +77,9 @@ export class ApiClientImpl implements ApiClient {
   }
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
+    if (args.messenger === Messenger.OFT && !args.sourceToken) {
+      throw new InvalidMessengerOptionError("For OFT sourceToken required");
+    }
     const { data } = await this.api.post<ReceiveTransactionCostResponse>("/receive-fee", args, {
       headers: {
         "Content-Type": "application/json",
@@ -84,6 +89,7 @@ export class ApiClientImpl implements ApiClient {
       exchangeRate: data.exchangeRate,
       fee: data.fee,
       sourceNativeTokenPrice: data.sourceNativeTokenPrice,
+      adminFeeShareWithExtras: data.adminFeeShareWithExtras,
     };
   }
 

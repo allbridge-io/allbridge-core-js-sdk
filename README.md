@@ -45,10 +45,10 @@ $ npm install @allbridge/bridge-core-sdk
 
 ### Find out how to integrate Allbridge Core SDK and Browser Extension Wallet
 
-[***Evm***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/evm.md)
-[***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/solana.md)
-[***Stellar***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/stellar.md)
-[***Tron***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/tron.md)
+[***Evm***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/evm.md)
+[***Solana***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/solana.md)
+[***Stellar***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/stellar.md)
+[***Tron***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/tron.md)
 
 ### 1. Initialize SDK
 
@@ -131,7 +131,7 @@ import {
 import Web3 from "web3";
 import * as dotenv from "dotenv";
 // Utils method
-// For more details, see Examples (https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
+// For more details, see Examples (https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/examples)
 // import { getEnvVar } from "../../../utils/env";
 // import { sendEvmRawTransaction } from "../../../utils/web3";
 // import { ensure } from "../../../utils/utils";
@@ -183,7 +183,7 @@ runExample();
 ```
 
 ***TIP:***
-For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
+For more details, see [***Examples***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/examples)
 
 ## Other operations
 
@@ -191,7 +191,7 @@ For more details, see [***Examples***](https://github.com/allbridge-io/allbridge
 
 SDK supports operation with **Liquidity Pools**<br/>
 For more details, see [
-***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
+***Examples***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/examples/src/examples/liquidity-pool)
 
 ### Transaction builder
 
@@ -213,7 +213,7 @@ const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams);
 
 ***TIP:***
 For more details, see [***Example
-***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)
+***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx.js)
 
 ### Get information about sent transaction
 
@@ -294,3 +294,10 @@ const transferTimeMs = sdk.getAverageTransferTime(
   Messenger.ALLBRIDGE
 );
 ```
+
+### Known Audit Warning
+
+Due to a dependency on `@solana/web3.js`, the package `bigint-buffer@1.1.5` is present in the dependency tree and marked as vulnerable.
+This vulnerability is not exploitable in the context of this SDK, and no sensitive or user-facing code depends on `bigint-buffer` directly.
+
+We are monitoring upstream packages for an official resolution.

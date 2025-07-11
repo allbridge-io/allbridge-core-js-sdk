@@ -215,6 +215,10 @@ export interface TxSendParamsTyped<T> {
    * int format
    */
   extraGas?: string;
+  /**
+   * int format
+   */
+  extraGasDest?: string;
   gasFeePaymentMethod: FeePaymentMethod;
 }
 

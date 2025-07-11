@@ -675,10 +675,13 @@ describe("SDK", () => {
       };
 
       test("Should return txId after sending GRL to TRX", async () => {
+        const sourceToken = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
+
         const receiveFeeRequest: ReceiveTransactionCostRequest = {
           sourceChainId: grlChainToken.allbridgeChainId,
           destinationChainId: trxChainToken.allbridgeChainId,
           messenger: Messenger.ALLBRIDGE,
+          sourceToken: sourceToken.tokenAddress,
         };
         scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";
@@ -688,7 +691,7 @@ describe("SDK", () => {
           amount: tokensAmount,
           fromAccountAddress: fromAccountAddress,
           toAccountAddress: toAccountAddress,
-          sourceToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
+          sourceToken: sourceToken,
           destinationToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
           messenger: Messenger.ALLBRIDGE,
         };
@@ -742,10 +745,13 @@ describe("SDK", () => {
       });
 
       test("Should return txId after sending TRX to GRL", async () => {
+        const sourceToken = tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails;
+
         const receiveFeeRequest: ReceiveTransactionCostRequest = {
           sourceChainId: trxChainToken.allbridgeChainId,
           destinationChainId: grlChainToken.allbridgeChainId,
           messenger: Messenger.ALLBRIDGE,
+          sourceToken: sourceToken.tokenAddress,
         };
         scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         /* cSpell:disable */
@@ -756,7 +762,7 @@ describe("SDK", () => {
           amount: tokensAmount,
           fromAccountAddress: fromAccountAddress,
           toAccountAddress: toAccountAddress,
-          sourceToken: tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails,
+          sourceToken: sourceToken,
           destinationToken: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
           messenger: Messenger.ALLBRIDGE,
         };
@@ -852,6 +858,7 @@ describe("SDK", () => {
           sourceChainId: grlChainToken.allbridgeChainId,
           destinationChainId: trxChainToken.allbridgeChainId,
           messenger: Messenger.ALLBRIDGE,
+          sourceToken: grlChainToken.tokenAddress,
         };
         scope.post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest)).reply(201, receiveFeeResponse).persist();
         const fromAccountAddress = "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d";

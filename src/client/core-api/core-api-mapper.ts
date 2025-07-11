@@ -71,6 +71,8 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
       return Messenger.CCTP;
     case MessengerKeyDTO.CCTP_V2:
       return Messenger.CCTP_V2;
+    case MessengerKeyDTO.OFT:
+      return Messenger.OFT;
   }
 }
 
@@ -100,6 +102,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeAddress: dto.bridgeAddress,
+    oftBridgeAddress: dto.oftBridgeAddress,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
     txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,

@@ -63,6 +63,11 @@ export enum ChainSymbol {
    * The SUI network.
    */
   SUI = "SUI",
+
+  /**
+   * The Sonic network.
+   */
+  SNC = "SNC",
 }
 
 export enum ChainType {

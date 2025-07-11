@@ -100,6 +100,12 @@ export class CCTPDoesNotSupportedError extends SdkRootError {
   }
 }
 
+export class OFTDoesNotSupportedError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.OFT_DOES_NOT_SUPPORTED_ERROR, message);
+  }
+}
+
 export class TxTooLargeError extends SdkRootError {
   constructor() {
     super(
@@ -125,5 +131,6 @@ export enum ErrorCode {
   TIMEOUT_ERROR = "TimeoutError",
   NODE_RPC_URL_NOT_INITIALIZED_ERROR = "NodeRpcUrlNotInitializedError",
   CCTP_DOES_NOT_SUPPORTED_ERROR = "CCTPDoesNotSupportedError",
+  OFT_DOES_NOT_SUPPORTED_ERROR = "OFTDoesNotSupportedError",
   TX_TOO_LARGE = "TxTooLargeError",
 }
