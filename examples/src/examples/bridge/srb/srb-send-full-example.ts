@@ -12,7 +12,7 @@ import {
 import {
   Keypair,
   Keypair as StellarKeypair,
-  SorobanRpc,
+  rpc as SorobanRpc,
   TransactionBuilder as StellarTransactionBuilder,
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
