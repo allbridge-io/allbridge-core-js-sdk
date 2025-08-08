@@ -133,7 +133,7 @@ export class AllbridgeCoreSdk {
     this.service = new AllbridgeCoreSdkService(nodeRpcUrlsConfig, params);
     this.bridge = this.service.bridge;
     this.pool = this.service.pool;
-    this.utils = new DefaultUtils(nodeRpcUrlsConfig, params);
+    this.utils = new DefaultUtils(this.service);
     this.params = params;
   }
 

@@ -77,7 +77,7 @@ export class NodeRpcUrlsConfig {
 }
 
 export class AllbridgeCoreSdkService {
-  private readonly api: AllbridgeCoreClientFiltered;
+  readonly api: AllbridgeCoreClientFiltered;
 
   private readonly tokenService: TokenService;
 
@@ -86,7 +86,10 @@ export class AllbridgeCoreSdkService {
   bridge: BridgeService;
   pool: LiquidityPoolService;
 
-  constructor(nodeRpcUrlsConfig: NodeRpcUrlsConfig, params: AllbridgeCoreSdkOptions = mainnet) {
+  constructor(
+    public readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    params: AllbridgeCoreSdkOptions = mainnet
+  ) {
     Chains.addChainsProperties(params.additionalChainsProperties as Record<string, BasicChainProperties>);
     const apiClient = new ApiClientImpl(params);
     const apiClientCaching = new ApiClientCaching(apiClient);

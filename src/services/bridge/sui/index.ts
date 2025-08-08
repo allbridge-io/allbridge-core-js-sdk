@@ -59,7 +59,7 @@ export class SuiBridgeService extends ChainBridgeService {
     return await this.buildRawTransactionSwapFromParams(txSwapParams, suiAddresses);
   }
 
-  async buildRawTransactionSwapFromParams(
+  private async buildRawTransactionSwapFromParams(
     params: TxSwapParamsSui,
     suiAddresses: SuiAddresses
   ): Promise<RawSuiTransaction> {
@@ -90,7 +90,24 @@ export class SuiBridgeService extends ChainBridgeService {
     return await tx.toJSON({ client: this.client });
   }
 
+  async buildRawTransactionSendFromCustomTx(
+    baseTx: string | Uint8Array | Transaction,
+    inputCoin: TransactionResult,
+    params: SendParams
+  ): Promise<RawSuiTransaction> {
+    const transaction = Transaction.from(baseTx);
+    return this.buildRawTransactionSendFromTx(params, transaction, inputCoin);
+  }
+
   async buildRawTransactionSend(params: SendParams): Promise<RawSuiTransaction> {
+    return this.buildRawTransactionSendFromTx(params, new Transaction());
+  }
+
+  private async buildRawTransactionSendFromTx(
+    params: SendParams,
+    tx: Transaction,
+    inputCoin?: TransactionResult
+  ): Promise<RawSuiTransaction> {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     const { messenger } = txSendParams;
 
@@ -103,12 +120,12 @@ export class SuiBridgeService extends ChainBridgeService {
 
     switch (messenger) {
       case Messenger.ALLBRIDGE:
-        return this.buildRawTransactionAllbridgeSend(txSendParams, suiAddresses);
+        return this.buildRawTransactionAllbridgeSend(txSendParams, suiAddresses, tx, inputCoin);
       case Messenger.WORMHOLE:
-        return this.buildRawTransactionWormholeSend(txSendParams, suiAddresses);
+        return this.buildRawTransactionWormholeSend(txSendParams, suiAddresses, tx, inputCoin);
       case Messenger.CCTP:
       case Messenger.CCTP_V2:
-        return this.buildRawTransactionCctpSend(params, txSendParams, suiAddresses);
+        return this.buildRawTransactionCctpSend(params, txSendParams, suiAddresses, tx, inputCoin);
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
     }
@@ -116,7 +133,9 @@ export class SuiBridgeService extends ChainBridgeService {
 
   private async buildRawTransactionAllbridgeSend(
     txSendParams: TxSendParamsSui,
-    suiAddresses: SuiAddresses
+    suiAddresses: SuiAddresses,
+    tx: Transaction,
+    inputCoin?: TransactionResult
   ): Promise<RawSuiTransaction> {
     const {
       amount,
@@ -134,20 +153,30 @@ export class SuiBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    const tx = new Transaction();
     tx.setSender(fromAccountAddress);
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
+
+      let amountCoin, feeTokenCoin;
+      if (inputCoin) {
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        amountCoin = amountCoinS;
+        feeTokenCoin = feeTokenCoinS;
+      } else {
+        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+      }
+
       const args = {
         bridge: suiAddresses.bridgeObjectAddress,
         messenger: suiAddresses.allbridgeMessengerObjectAddress,
-        amount: coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress }),
+        amount: amountCoin,
         destinationChainId: toChainId,
         nonce: getNonceBigInt(),
         recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
         receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
         gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress }),
+        feeTokenCoin: feeTokenCoin,
         feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
       };
       swapAndBridge(tx, fromTokenAddress, args);
@@ -159,7 +188,7 @@ export class SuiBridgeService extends ChainBridgeService {
       const args = {
         bridge: suiAddresses.bridgeObjectAddress,
         messenger: suiAddresses.allbridgeMessengerObjectAddress,
-        amount: coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
         destinationChainId: toChainId,
         nonce: getNonceBigInt(),
         recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
@@ -175,7 +204,9 @@ export class SuiBridgeService extends ChainBridgeService {
 
   private async buildRawTransactionWormholeSend(
     txSendParams: TxSendParamsSui,
-    suiAddresses: SuiAddresses
+    suiAddresses: SuiAddresses,
+    tx: Transaction,
+    inputCoin?: TransactionResult
   ): Promise<RawSuiTransaction> {
     const {
       amount,
@@ -193,22 +224,32 @@ export class SuiBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    const tx = new Transaction();
     tx.setSender(fromAccountAddress);
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
+
+      let amountCoin, feeTokenCoin;
+      if (inputCoin) {
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        amountCoin = amountCoinS;
+        feeTokenCoin = feeTokenCoinS;
+      } else {
+        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+      }
+
       const args = {
         bridge: suiAddresses.bridgeObjectAddress,
         messenger: suiAddresses.wormholeMessengerObjectAddress,
         wormholeState: suiAddresses.wormholeStateObjectAddress,
         theClock: SUI_CLOCK_OBJECT_ID,
-        amount: coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress }),
+        amount: amountCoin,
         destinationChainId: toChainId,
         nonce: getNonceBigInt(),
         recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
         receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
         gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress }),
+        feeTokenCoin: feeTokenCoin,
         feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
       };
       swapAndBridgeWormhole(tx, fromTokenAddress, args);
@@ -222,7 +263,7 @@ export class SuiBridgeService extends ChainBridgeService {
         messenger: suiAddresses.wormholeMessengerObjectAddress,
         wormholeState: suiAddresses.wormholeStateObjectAddress,
         theClock: SUI_CLOCK_OBJECT_ID,
-        amount: coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
         destinationChainId: toChainId,
         nonce: getNonceBigInt(),
         recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
@@ -239,7 +280,9 @@ export class SuiBridgeService extends ChainBridgeService {
   private async buildRawTransactionCctpSend(
     params: SendParams,
     txSendParams: TxSendParamsSui,
-    suiAddresses: SuiAddresses
+    suiAddresses: SuiAddresses,
+    tx: Transaction,
+    inputCoin?: TransactionResult
   ): Promise<RawSuiTransaction> {
     const {
       amount,
@@ -259,7 +302,6 @@ export class SuiBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    const tx = new Transaction();
     tx.setSender(fromAccountAddress);
 
     const recipientWalletAddress = fromHex(tx, normalizeSuiHex(toAccountAddress));
@@ -278,18 +320,29 @@ export class SuiBridgeService extends ChainBridgeService {
 
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
       const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
+
+      let amountCoin, feeTokenCoin;
+      if (inputCoin) {
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        amountCoin = amountCoinS;
+        feeTokenCoin = feeTokenCoinS;
+      } else {
+        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+      }
+
       const args = {
         cctpBridge: suiAddresses.cctpObjectAddress,
         tokenMessengerMinterState: suiAddresses.cctpTokenMessengerMinterStateObjectAddress,
         messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
         treasury: suiAddresses.cctpTreasuryObjectAddress,
         denyList: suiAddresses.cctpDenyListObjectAddress,
-        amount: coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress }),
+        amount: amountCoin,
         destinationChainId: toChainId,
         recipient: recipient,
         recipientWalletAddress: recipientWalletAddress,
         gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress }),
+        feeTokenCoin: feeTokenCoin,
         feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
       };
       bridge(tx, fromTokenAddress, args);
@@ -304,7 +357,7 @@ export class SuiBridgeService extends ChainBridgeService {
         messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
         treasury: suiAddresses.cctpTreasuryObjectAddress,
         denyList: suiAddresses.cctpDenyListObjectAddress,
-        amount: coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
         destinationChainId: toChainId,
         recipient: recipient,
         recipientWalletAddress: recipientWalletAddress,
