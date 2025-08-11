@@ -159,7 +159,7 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
         amountCoin = amountCoinS;
         feeTokenCoin = feeTokenCoinS;
       } else {
@@ -230,7 +230,7 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
         amountCoin = amountCoinS;
         feeTokenCoin = feeTokenCoinS;
       } else {
@@ -323,7 +323,7 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amount, totalFee]);
+        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
         amountCoin = amountCoinS;
         feeTokenCoin = feeTokenCoinS;
       } else {
