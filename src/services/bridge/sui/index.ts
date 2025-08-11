@@ -159,8 +159,8 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
-        amountCoin = amountCoinS;
+        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+        amountCoin = inputCoin;
         feeTokenCoin = feeTokenCoinS;
       } else {
         amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
@@ -230,8 +230,8 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
-        amountCoin = amountCoinS;
+        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+        amountCoin = inputCoin;
         feeTokenCoin = feeTokenCoinS;
       } else {
         amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
@@ -323,8 +323,8 @@ export class SuiBridgeService extends ChainBridgeService {
 
       let amountCoin, feeTokenCoin;
       if (inputCoin) {
-        const [amountCoinS, feeTokenCoinS] = tx.splitCoins(inputCoin, [amountWithoutFee, totalFee]);
-        amountCoin = amountCoinS;
+        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+        amountCoin = inputCoin;
         feeTokenCoin = feeTokenCoinS;
       } else {
         amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
