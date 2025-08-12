@@ -1,5 +1,4 @@
-import { AllbridgeCoreSdkOptions } from "../index";
-import { NodeRpcUrlsConfig } from "../services";
+import { AllbridgeCoreSdkService } from "../services";
 import { DefaultEvmUtils, EvmUtils } from "./evm";
 import { DefaultSolUtils, SolUtils } from "./sol";
 import { DefaultSrbUtils, SrbUtils } from "./srb";
@@ -21,13 +20,10 @@ export class DefaultUtils implements Utils {
   sui: SuiUtils;
   evm: EvmUtils;
 
-  constructor(
-    readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
-    params: AllbridgeCoreSdkOptions
-  ) {
-    this.srb = new DefaultSrbUtils(nodeRpcUrlsConfig, params);
-    this.sol = new DefaultSolUtils(nodeRpcUrlsConfig, params);
-    this.sui = new DefaultSuiUtils(nodeRpcUrlsConfig, params);
-    this.evm = new DefaultEvmUtils(nodeRpcUrlsConfig, params);
+  constructor(readonly service: AllbridgeCoreSdkService) {
+    this.srb = new DefaultSrbUtils(service.nodeRpcUrlsConfig, service.params);
+    this.sol = new DefaultSolUtils(service.nodeRpcUrlsConfig, service.params);
+    this.sui = new DefaultSuiUtils(service.nodeRpcUrlsConfig, service.api);
+    this.evm = new DefaultEvmUtils(service.nodeRpcUrlsConfig, service.params);
   }
 }

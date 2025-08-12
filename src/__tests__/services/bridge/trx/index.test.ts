@@ -60,7 +60,7 @@ describe("TrxBridge", () => {
         gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
       };
 
-      // @ts-ignore
+      // @ts-expect-error for test purpose
       const actual = await trxBridge.buildRawTransactionSendFromParams({}, params);
 
       expect(actual).toEqual(triggerSmartContractSendResponse.transaction);
