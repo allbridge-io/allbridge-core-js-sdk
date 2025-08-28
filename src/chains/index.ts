@@ -68,6 +68,12 @@ const defaultProperties: Record<string, BasicChainProperties> = {
     name: "Sonic",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.UNI]: {
+    chainSymbol: ChainSymbol.UNI,
+    chainId: "0x82",
+    name: "Unichain",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",

@@ -68,6 +68,11 @@ export enum ChainSymbol {
    * The Sonic network.
    */
   SNC = "SNC",
+
+  /**
+   * The Unichain network.
+   */
+  UNI = "UNI",
 }
 
 export enum ChainType {
