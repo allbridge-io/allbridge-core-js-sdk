@@ -58,12 +58,14 @@
     "run:liquidity-pool:trx:withdraw": "tsx src/examples/liquidity-pool/trx/trx-build-withdraw-tx.ts",
     "run:liquidity-pool:trx:getAmountToBeWithdrawn": "tsx src/examples/liquidity-pool/trx/get-amount-to-be-withdrawn.ts",
     "run:liquidity-pool:trx:getBalance": "tsx src/examples/liquidity-pool/trx/get-liquidity-balance.ts",
-    "run:liquidity-pool:trx:getLPamountOnDeposit": "tsx src/examples/liquidity-pool/trx/get-lp-amount-on-deposit.ts"
+    "run:liquidity-pool:trx:getLPamountOnDeposit": "tsx src/examples/liquidity-pool/trx/get-lp-amount-on-deposit.ts",
+
+    "run:yield:evm:example": "tsx src/examples/yield/evm/example.ts.ts"
   },
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:..",
     "@solana/web3.js": "^1.78.5",
-    "@stellar/stellar-sdk": "^12.2.0",
+    "@stellar/stellar-sdk": "^14.0.0",
     "tronweb": "^4.4.0",
     "web3": "^1.9.0",
     "web3-core": "^1.9.0",

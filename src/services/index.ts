@@ -62,6 +62,7 @@ import { GetNativeTokenBalanceParams } from "./bridge/models";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./liquidity-pool";
 import { DefaultTokenService, TokenService } from "./token";
+import { DefaultYieldService, YieldService } from "./yield";
 
 export class NodeRpcUrlsConfig {
   constructor(private nodeRpcUrls: NodeRpcUrls) {}
@@ -85,6 +86,7 @@ export class AllbridgeCoreSdkService {
 
   bridge: BridgeService;
   pool: LiquidityPoolService;
+  yield: YieldService;
 
   constructor(
     public readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
@@ -99,6 +101,7 @@ export class AllbridgeCoreSdkService {
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
     this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
+    this.yield = new DefaultYieldService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
   }
 

@@ -1,4 +1,3 @@
-import { ChainSymbol } from "../chains/chain.enums";
 import { BasicChainProperties } from "../chains/models";
 import { Messenger } from "../client/core-api/core-api.model";
 
@@ -30,6 +29,10 @@ export interface ChainDetails extends BasicChainProperties {
    * Optional. Defined if the chain supports OFT
    */
   oftBridgeAddress?: string;
+  /**
+   * Yield contract address
+   */
+  yieldAddress?: string;
   /**
    * Average transfer time to other blockchains
    */
@@ -131,7 +134,7 @@ export interface Token {
    */
   feeShare: string;
   /**
-   * @deprecated use {@link apr7d}</br>
+   * @Deprecated use {@link apr7d}</br>
    * Token APR
    */
   apr: string;
@@ -147,6 +150,8 @@ export interface Token {
    * Token LP rate
    */
   lpRate: string;
+
+  yieldId?: number;
   /**
    * Sui addresses
    * Optional. Defined for SUI
@@ -240,12 +245,10 @@ export interface PoolInfo {
  * Type representing transfer times for various blockchain chains.
  *
  * @typedef {Record<string, MessengerTransferTime>} TransferTime
- * @property {chain} chainSymbol
+ * @property {string} chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
  * @property {MessengerTransferTime} transferTime - The average transfer time details for the specified chain.
  */
-export type TransferTime = {
-  [chain in ChainSymbol]?: MessengerTransferTime;
-};
+export type TransferTime = Record<string, MessengerTransferTime>;
 
 /**
  * Contains Avg transaction time withing different messenger protocols

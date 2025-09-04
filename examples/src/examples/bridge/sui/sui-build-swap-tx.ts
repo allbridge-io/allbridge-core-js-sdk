@@ -1,6 +1,5 @@
 import {
   AllbridgeCoreSdk,
-  ChainSymbol,
   nodeRpcUrlsDefault,
   RawSuiTransaction,
   SwapParams,
@@ -19,8 +18,6 @@ const main = async () => {
   const tokenAddress2 = getEnvVar("SUI_TOKEN2_ADDRESS");
 
   const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
-
-  const chains = await sdk.chainDetailsMap();
 
   const sourceToken = ensure((await sdk.tokens()).find((tokenInfo) => tokenInfo.originTokenAddress === tokenAddress));
 

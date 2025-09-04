@@ -1,7 +1,6 @@
 import { RawTronTransaction } from "@allbridge/bridge-core-sdk";
 import { getEnvVar } from "./env";
-// @ts-expect-error import tron
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 
 export async function sendTrxRawTransaction(rawTransaction: RawTronTransaction) {
   // configure TronWeb
