@@ -65,7 +65,7 @@
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:..",
     "@solana/web3.js": "^1.78.5",
-    "@stellar/stellar-sdk": "^12.2.0",
+    "@stellar/stellar-sdk": "^14.0.0",
     "tronweb": "^4.4.0",
     "web3": "^1.9.0",
     "web3-core": "^1.9.0",
