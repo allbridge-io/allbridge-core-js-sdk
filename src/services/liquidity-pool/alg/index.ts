@@ -1,4 +1,5 @@
 import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { bytesToBigInt } from "algosdk";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -106,7 +107,7 @@ export class AlgPoolService extends ChainPoolService {
     const tokenBalance = all.tokenBalance?.toString();
     const vUsdBalance = all.vUsdBalance?.toString();
     const totalLpAmount = all.totalSupply?.toString();
-    const accRewardPerShareP = all.accRewardPerShareP?.asString() || "0";
+    const accRewardPerShareP = bytesToBigInt(all.accRewardPerShareP?.asByteArray() ?? Uint8Array.from([])).toString();
     if (aValue && dValue && tokenBalance && vUsdBalance && totalLpAmount && accRewardPerShareP) {
       const imbalance = calculatePoolInfoImbalance({ tokenBalance, vUsdBalance });
       return {

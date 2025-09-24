@@ -24,8 +24,8 @@ export async function sendAlgRawTransaction(rawTransaction: RawAlgTransaction): 
   });
   const algod = algorand.client.algod;
 
-  const txns: Transaction[] = rawTransaction.map((b64) => {
-    const bytes = Buffer.from(b64, "hex");
+  const txns: Transaction[] = rawTransaction.map((hex) => {
+    const bytes = Buffer.from(hex, "hex");
     return algosdk.decodeUnsignedTransaction(bytes);
   });
 
