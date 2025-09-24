@@ -36,7 +36,15 @@ export class AlgTokenService extends ChainTokenService {
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     const { account, token } = params;
-    const info = await this.algorand.asset.getAccountInformation(account, BigInt(token.tokenAddress));
-    return info.balance.toString();
+    try {
+      const info = await this.algorand.asset.getAccountInformation(account, BigInt(token.tokenAddress));
+      return info.balance.toString();
+    } catch (e) {
+      if (e instanceof Error) {
+        e.message.includes("account asset info not found");
+        return "0";
+      }
+      throw e;
+    }
   }
 }
