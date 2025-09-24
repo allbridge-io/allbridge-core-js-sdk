@@ -78,6 +78,11 @@ export enum ChainSymbol {
    * The Linea network.
    */
   LIN = "LIN",
+
+  /**
+   * The Algorand network.
+   */
+  ALG = "ALG",
 }
 
 export enum ChainType {
@@ -86,4 +91,5 @@ export enum ChainType {
   TRX = "TRX",
   SRB = "SRB",
   SUI = "SUI",
+  ALG = "ALG",
 }

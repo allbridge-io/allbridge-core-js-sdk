@@ -23,6 +23,7 @@
   "scripts": {
     "preins": "rm -rf node_modules && pnpm i",
     "build": "pnpm run clean && pnpm run type:dts && tsc && pnpm run build:main",
+    "buildnpm": "npm run clean && npm run type:dts && tsc && npm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
     "type:dts": "tsc --emitDeclarationOnly",
@@ -99,11 +100,13 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
+    "@algorandfoundation/algokit-utils": "^9.1.2",
     "@mysten/sui": "1.18.0",
     "@project-serum/anchor": "^0.25.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.98.0",
     "@stellar/stellar-sdk": "^14.0.0",
+    "algosdk": "^3.5.0",
     "assert": "^2.1.0",
     "axios": "^1.7.9",
     "big.js": "^6.2.2",
@@ -113,8 +116,8 @@
     "timed-cache": "^2.0.0",
     "tronweb": "^6.0.0",
     "web3": "^4.16.0",
-    "web3-eth-contract": "^4.7.2",
     "web3-eth-abi": "^4.4.1",
+    "web3-eth-contract": "^4.7.2",
     "web3-types": "^1.10.0"
   },
   "jest": {

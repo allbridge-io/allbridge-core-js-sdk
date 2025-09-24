@@ -6,6 +6,7 @@ export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
 export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
+  bridgeId?: string;
   bridgeAddress: string;
   oftBridgeAddress?: string;
   swapAddress: string;

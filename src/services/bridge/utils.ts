@@ -1,5 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { Address } from "@stellar/stellar-sdk";
+import algosdk, { Address as AlgoAddress } from "algosdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 import { utils as TronWebUtils } from "tronweb";
@@ -28,6 +29,7 @@ import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloa
 import {
   SendParams,
   TxSendParams,
+  TxSendParamsAlg,
   TxSendParamsEvm,
   TxSendParamsSol,
   TxSendParamsSrb,
@@ -71,6 +73,10 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = evmAddressToBuffer32(address);
       break;
     }
+    case ChainType.ALG: {
+      buffer = algAddressToBuffer32(address);
+      break;
+    }
   }
 
   switch (to) {
@@ -89,6 +95,9 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     case ChainType.SUI: {
       return "0x" + buffer.toString("hex");
     }
+    case ChainType.ALG: {
+      return buffer;
+    }
   }
 }
 
@@ -104,6 +113,19 @@ export function evmAddressToBuffer32(address: string): Buffer {
   const length = 32;
   const buff = hexToBuffer(address);
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
+}
+
+export function algAddressToBuffer32(address: string): Buffer {
+  if (algosdk.isValidAddress(address)) {
+    return Buffer.from(AlgoAddress.fromString(address).publicKey);
+  }
+
+  if (/^\d+$/.test(address)) {
+    let hex = BigInt(address).toString(16);
+    hex = hex.padStart(64, "0");
+    return Buffer.from(hex, "hex");
+  }
+  throw new SdkError(`Unexpected Alg address: ${address}`);
 }
 
 export function tronAddressToBuffer32(address: string): Buffer {
@@ -174,22 +196,42 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
   txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
   txSwapParams.contractAddress = sourceToken.bridgeAddress;
   txSwapParams.fromAccountAddress = params.fromAccountAddress;
-  if (bridgeChainType === ChainType.SUI) {
-    if (!sourceToken.originTokenAddress) {
-      throw new SdkError("SUI sourceToken must contain 'originTokenAddress'");
+  switch (bridgeChainType) {
+    case ChainType.SUI: {
+      if (!sourceToken.originTokenAddress) {
+        throw new SdkError("SUI sourceToken must contain 'originTokenAddress'");
+      }
+      txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
+      break;
     }
-    txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
-  } else {
-    txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+    case ChainType.ALG: {
+      txSwapParams.fromTokenAddress = sourceToken.tokenAddress;
+      break;
+    }
+    default: {
+      txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+    }
   }
   txSwapParams.toAccountAddress = params.toAccountAddress;
-  if (bridgeChainType === ChainType.SUI) {
-    if (!params.destinationToken.originTokenAddress) {
-      throw new SdkError("SUI destinationToken must contain 'originTokenAddress'");
+  switch (bridgeChainType) {
+    case ChainType.SUI: {
+      if (!params.destinationToken.originTokenAddress) {
+        throw new SdkError("SUI destinationToken must contain 'originTokenAddress'");
+      }
+      txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
+      break;
     }
-    txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
-  } else {
-    txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+    case ChainType.ALG: {
+      txSwapParams.toTokenAddress = params.destinationToken.tokenAddress;
+      break;
+    }
+    default: {
+      txSwapParams.toTokenAddress = formatAddress(
+        params.destinationToken.tokenAddress,
+        bridgeChainType,
+        bridgeChainType
+      );
+    }
   }
   txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
     ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
@@ -208,6 +250,11 @@ export function prepareTxSendParams(
   params: SendParams,
   api: AllbridgeCoreClient
 ): Promise<TxSendParamsTrx>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.ALG,
+  params: SendParams,
+  api: AllbridgeCoreClient
+): Promise<TxSendParamsAlg>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SendParams,
@@ -369,7 +416,7 @@ export async function prepareTxSendParams(
     validateExtraGasNotExceeded(txSendParams.extraGas, txSendParams.gasFeePaymentMethod, extraGasLimits);
   }
 
-  if (bridgeChainType !== ChainType.SUI) {
+  if (![ChainType.SUI, ChainType.ALG].includes(bridgeChainType)) {
     txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
   }
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);

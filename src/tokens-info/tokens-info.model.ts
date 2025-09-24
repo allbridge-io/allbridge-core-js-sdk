@@ -21,6 +21,10 @@ export interface ChainDetails extends BasicChainProperties {
    */
   allbridgeChainId: number;
   /**
+   * Algo Bridge appId
+   */
+  bridgeId?: string;
+  /**
    * Bridge contract address
    */
   bridgeAddress: string;

@@ -193,6 +193,7 @@ export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol |
 export type TxSendParamsEvm = TxSendParamsTyped<string>;
 export type TxSendParamsSui = TxSendParamsTyped<string>;
 export type TxSendParamsTrx = TxSendParamsTyped<Buffer>;
+export type TxSendParamsAlg = TxSendParamsTyped<Buffer>;
 export type TxSendParamsSol = TxSendParamsTyped<number[]>;
 export type TxSendParamsSrb = TxSendParamsTyped<number[]>;
 

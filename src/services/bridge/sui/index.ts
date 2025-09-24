@@ -1,5 +1,4 @@
-import { SuiClient } from "@mysten/sui/client";
-import { CoinStruct } from "@mysten/sui/src/client/types/generated";
+import { CoinStruct, SuiClient } from "@mysten/sui/client";
 import { coinWithBalance, Transaction, TransactionResult } from "@mysten/sui/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
 import { Big } from "big.js";
