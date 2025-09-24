@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
 import { Transaction as SolanaWeb3Transaction, VersionedTransaction } from "@solana/web3.js";
-import { TronWeb } from "tronweb";
-import { Transaction as TronWebTransaction } from "tronweb/src/types/Transaction";
+import { Algodv2 } from "algosdk";
+import { TronWeb, Types } from "tronweb";
 import { SolanaTxFee } from "./sol";
 
 export { SolanaTxFee, PricePerUnitInMicroLamports, ExtraFeeInLamports, SolanaAutoTxFee } from "./sol";
@@ -32,7 +33,7 @@ export interface EssentialWeb3 {
  * The provider is type that combines connection implementations for different chains.<br/>
  * TIP: None provider in the Solana blockchain case.
  */
-export type Provider = EssentialWeb3 | TronWeb;
+export type Provider = EssentialWeb3 | TronWeb | Algodv2;
 
 /**
  * The `EssentialWeb3Transaction` interface provides the minimum set of Web3 Transaction
@@ -51,14 +52,17 @@ export type RawTransaction =
   | RawTronTransaction
   | RawEvmTransaction
   | RawSorobanTransaction
+  | RawAlgTransaction
+  | RawSuiTransaction
   | RawBridgeSolanaTransaction
   | RawPoolSolanaTransaction;
 export type RawEvmTransaction = EssentialWeb3Transaction;
-export type RawTronTransaction = TronWebTransaction;
+export type RawTronTransaction = Types.Transaction;
 export type RawSorobanTransaction = string;
 export type RawPoolSolanaTransaction = SolanaWeb3Transaction;
 export type RawBridgeSolanaTransaction = VersionedTransaction;
 export type RawSuiTransaction = string;
+export type RawAlgTransaction = string[];
 
 export interface SmartContractMethodParameter {
   type: string;

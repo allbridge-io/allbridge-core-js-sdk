@@ -73,6 +73,11 @@ export enum ChainSymbol {
    * The Unichain network.
    */
   UNI = "UNI",
+
+  /**
+   * The Algorand network.
+   */
+  ALG = "ALG",
 }
 
 export enum ChainType {
@@ -81,4 +86,5 @@ export enum ChainType {
   TRX = "TRX",
   SRB = "SRB",
   SUI = "SUI",
+  ALG = "ALG",
 }

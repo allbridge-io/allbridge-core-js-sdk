@@ -1,3 +1,5 @@
+import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { Algodv2 } from "algosdk";
 import { Big } from "big.js";
 import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
@@ -10,15 +12,16 @@ import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils"
 import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { NodeRpcUrlsConfig } from "../index";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
+import { AlgTokenService } from "./alg";
 import { EvmTokenService } from "./evm";
 import {
   ApproveParams,
   ApproveParamsDto,
+  ChainTokenService,
   CheckAllowanceParams,
   CheckAllowanceParamsDto,
   GetAllowanceParams,
   GetTokenBalanceParams,
-  ChainTokenService,
 } from "./models";
 import { SolanaTokenService } from "./sol";
 import { SrbTokenService } from "./srb";
@@ -139,6 +142,19 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.SUI: {
         return new SuiTokenService(this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), this.api);
+      }
+      case ChainType.ALG: {
+        if (provider) {
+          const algod = provider as Algodv2;
+          const algorand = AlgorandClient.fromClients({ algod });
+          return new AlgTokenService(algorand, this.api);
+        } else {
+          const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+          const algorand = AlgorandClient.fromConfig({
+            algodConfig: { server: nodeRpcUrl },
+          });
+          return new AlgTokenService(algorand, this.api);
+        }
       }
     }
   }

@@ -1,3 +1,5 @@
+import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { Algodv2 } from "algosdk";
 import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
@@ -10,6 +12,7 @@ import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
+import { AlgBridgeService } from "./alg";
 import { EvmBridgeService } from "./evm";
 import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
@@ -205,6 +208,19 @@ export function getChainBridgeService(
     }
     case ChainType.SUI: {
       return new SuiBridgeService(nodeRpcUrlsConfig, api);
+    }
+    case ChainType.ALG: {
+      if (provider) {
+        const algod = provider as Algodv2;
+        const algorand = AlgorandClient.fromClients({ algod });
+        return new AlgBridgeService(algorand, api);
+      } else {
+        const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        const algorand = AlgorandClient.fromConfig({
+          algodConfig: { server: nodeRpcUrl },
+        });
+        return new AlgBridgeService(algorand, api);
+      }
     }
   }
 }

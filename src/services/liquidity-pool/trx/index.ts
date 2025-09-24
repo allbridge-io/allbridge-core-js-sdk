@@ -276,7 +276,7 @@ export class TronPoolService extends ChainPoolService {
   }
 
   private getContract(contractAddress: string): any {
-    return this.tronWeb.contract(Pool.abi, contractAddress);
+    return (this.tronWeb as any).contract(Pool.abi, contractAddress);
   }
 
   private getFunctionAbi(name: string, ...params: string[]): string {

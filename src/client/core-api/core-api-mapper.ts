@@ -101,6 +101,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
   const chainDetails: ChainDetails = {
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
+    bridgeId: dto.bridgeId,
     bridgeAddress: dto.bridgeAddress,
     oftBridgeAddress: dto.oftBridgeAddress,
     yieldAddress: dto.yieldAddress,
