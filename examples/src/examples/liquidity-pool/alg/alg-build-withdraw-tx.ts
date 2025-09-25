@@ -25,7 +25,7 @@ const main = async () => {
   })) as RawAlgTransaction;
 
   const txId = await sendAlgRawTransaction(rawTransactionWithdraw);
-  console.log("Token deposit:", txId);
+  console.log("Token withdraw:", txId);
 };
 
 main()

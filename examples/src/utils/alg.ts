@@ -1,13 +1,8 @@
 import { RawAlgTransaction } from "@allbridge/bridge-core-sdk";
 import { getEnvVar } from "./env";
-import algosdk, {
-  Account,
-  Algodv2,
-  AtomicTransactionComposer,
-  makeBasicAccountTransactionSigner,
-  Transaction,
-} from "algosdk";
+import algosdk, { Account, Algodv2, AtomicTransactionComposer, Transaction } from "algosdk";
 import { AlgorandClient, populateAppCallResources } from "@algorandfoundation/algokit-utils";
+
 // import { packResources } from "./alg-pack-resources";
 
 export async function sendAlgRawTransaction(rawTransaction: RawAlgTransaction): Promise<string> {
@@ -29,13 +24,13 @@ export async function sendAlgRawTransaction(rawTransaction: RawAlgTransaction): 
     return algosdk.decodeUnsignedTransaction(bytes);
   });
 
-  // return simpleSend(txns, signer, algod);
+  return simpleSend(txns, signer, algod);
 
-  const atc = new AtomicTransactionComposer();
-  const txnSigner = makeBasicAccountTransactionSigner(signer); // signs only the indices it’s asked to
-  txns.forEach((txn) => {
-    atc.addTransaction({ txn, signer: txnSigner });
-  });
+  // const atc = new AtomicTransactionComposer();
+  // const txnSigner = makeBasicAccountTransactionSigner(signer); // signs only the indices it’s asked to
+  // txns.forEach((txn) => {
+  //   atc.addTransaction({ txn, signer: txnSigner });
+  // });
 
   // console.log("@ before sim");
   // const simReq = new algosdk.modelsv2.SimulateRequest({
@@ -55,7 +50,7 @@ export async function sendAlgRawTransaction(rawTransaction: RawAlgTransaction): 
   // );
   // console.log("@ after sim", result.simulateResponse.txnGroups[0].txnResults[2].txnResult.txn.txn);
 
-  return populateAndSend(atc, algod);
+  // return populateAndSend(atc, algod);
   // return customPackAndSend(atc, algod);
 }
 
@@ -68,7 +63,7 @@ async function simpleSend(txns: Transaction[], signer: Account, algod: Algodv2):
 
   const { txid } = await algod.sendRawTransaction(stxns).do();
 
-  await algosdk.waitForConfirmation(algod, txid, 1);
+  // await algosdk.waitForConfirmation(algod, txid, 1);
   return txid;
 }
 

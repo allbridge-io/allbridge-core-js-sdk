@@ -24,15 +24,7 @@ const main = async () => {
     token: tokenInfo,
   })) as RawAlgTransaction;
 
-  const isOptedIn = await sdk.utils.alg.checkAppOptIn(tokenInfo.poolAddress, accountAddress);
-  let optInRawTx: RawAlgTransaction | undefined;
-  if (!isOptedIn) {
-    console.log("One-time optIn to poolApp required");
-    optInRawTx = await sdk.utils.alg.buildRawTransactionAppOptIn(tokenInfo.poolAddress, accountAddress);
-  }
-
-  const txs = optInRawTx ? [...optInRawTx, ...rawTransactionDeposit] : rawTransactionDeposit;
-  const txId = await sendAlgRawTransaction(txs);
+  const txId = await sendAlgRawTransaction(rawTransactionDeposit);
   console.log("Token deposit:", txId);
 };
 

@@ -2,7 +2,7 @@ import { AlgorandClient } from "@algorandfoundation/algokit-utils";
 import { ABIMethod, Algodv2, OnApplicationComplete } from "algosdk";
 import { ChainSymbol, RawAlgTransaction } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
-import { encodeTxs } from "../../services/utils/alg";
+import { checkAppOptIn, encodeTxs } from "../../services/utils/alg";
 
 /**
  * Contains usefully Alg methods
@@ -31,20 +31,6 @@ export class DefaultAlgUtils implements AlgUtils {
     return false;
   }
 
-  async checkAppOptIn(appId: string | bigint, sender: string, client?: Algodv2): Promise<boolean> {
-    const algorand = this.getAlgorand(client);
-    if (typeof appId === "string") {
-      appId = BigInt(appId);
-    }
-    const info = await algorand.account.getInformation(sender);
-    const localStates = info.appsLocalState;
-    if (localStates) {
-      const isOptedIn = localStates.find(({ id }) => id === appId);
-      return isOptedIn !== undefined;
-    }
-    return false;
-  }
-
   async buildRawTransactionAssetOptIn(
     assetId: string | bigint,
     sender: string,
@@ -56,6 +42,11 @@ export class DefaultAlgUtils implements AlgUtils {
     }
     const tx = await algorand.createTransaction.assetOptIn({ assetId: assetId, sender: sender });
     return encodeTxs(tx);
+  }
+
+  async checkAppOptIn(appId: string | bigint, sender: string, client?: Algodv2): Promise<boolean> {
+    const algorand = this.getAlgorand(client);
+    return checkAppOptIn(appId, sender, algorand);
   }
 
   async buildRawTransactionAppOptIn(

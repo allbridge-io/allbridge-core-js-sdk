@@ -1,4 +1,4 @@
-import { AllbridgeCoreSdk, ChainSymbol, Messenger, RawAlgTransaction, FeePaymentMethod } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, RawAlgTransaction } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
@@ -19,10 +19,8 @@ const main = async () => {
   const sourceChain = chains[ChainSymbol.ALG];
   const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.tokenAddress === tokenAddress));
 
-  const destinationChain = chains['SPL'];
-  const destinationToken = ensure(
-    destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === 'YARO')
-  );
+  const destinationChain = chains["SPL"];
+  const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "YARO"));
 
   const amount = "1.01";
 

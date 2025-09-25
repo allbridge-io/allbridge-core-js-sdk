@@ -7,7 +7,7 @@ import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import { PoolClient } from "../../models/alg/PoolClient";
-import { addBudgetNoops, encodeTxs, feeForInner } from "../../utils/alg";
+import { addBudgetNoops, checkAppOptIn, encodeTxs, feeForInner } from "../../utils/alg";
 import {
   ChainPoolService,
   LiquidityPoolsParams,
@@ -53,7 +53,14 @@ export class AlgPoolService extends ChainPoolService {
     const poolId = BigInt(params.token.poolAddress);
     const pool = this.getPool(poolId);
 
+    const isOptedIn = await checkAppOptIn(poolId, userAccount, this.algorand);
+
     const composer = this.algorand.newGroup();
+
+    if (!isOptedIn) {
+      composer.addAppCallMethodCall(await pool.params.optIn.optInToApplication({ args: [], sender: userAccount }));
+    }
+
     composer.addAssetTransfer({
       assetId: assetId,
       amount: amount,

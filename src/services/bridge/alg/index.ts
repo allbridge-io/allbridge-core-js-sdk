@@ -7,7 +7,7 @@ import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeClient } from "../../models/alg/BridgeClient";
-import { addBudgetNoops, encodeTxs, feeForInner } from "../../utils/alg";
+import { addBudgetNoops, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
 import { ChainBridgeService, SendParams, SwapParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
@@ -95,10 +95,10 @@ export class AlgBridgeService extends ChainBridgeService {
       composer,
       appId: bridgeId,
       sender,
-      count: isPayWithStable ? 2 : 1,
+      count: isPayWithStable ? 3 : 2,
     });
     const { transactions } = await composer.buildTransactions();
-    return encodeTxs(...transactions);
+    return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
 
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
@@ -138,7 +138,7 @@ export class AlgBridgeService extends ChainBridgeService {
       count: 1,
     });
     const { transactions } = await composer.buildTransactions();
-    return encodeTxs(...transactions);
+    return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
 
   private getBridge(appId: bigint): BridgeClient {
