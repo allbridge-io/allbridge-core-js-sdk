@@ -1,5 +1,5 @@
 import { AlgorandClient } from "@algorandfoundation/algokit-utils";
-import { bytesToBigInt } from "algosdk";
+import { assignGroupID, bytesToBigInt } from "algosdk";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -42,7 +42,8 @@ export class AlgPoolService extends ChainPoolService {
         assetReferences: [assetId],
       })
     );
-    const { transactions } = await composer.buildTransactions();
+    let { transactions } = await composer.buildTransactions();
+    transactions = assignGroupID(transactions);
     return encodeTxs(...transactions);
   }
 
@@ -76,7 +77,8 @@ export class AlgPoolService extends ChainPoolService {
       sender: userAccount,
       count: 4,
     });
-    const { transactions } = await composer.buildTransactions();
+    let { transactions } = await composer.buildTransactions();
+    transactions = assignGroupID(transactions);
     return encodeTxs(...transactions);
   }
 
@@ -102,7 +104,8 @@ export class AlgPoolService extends ChainPoolService {
       sender: userAccount,
       count: 4,
     });
-    const { transactions } = await composer.buildTransactions();
+    let { transactions } = await composer.buildTransactions();
+    transactions = assignGroupID(transactions);
     return encodeTxs(...transactions);
   }
 
