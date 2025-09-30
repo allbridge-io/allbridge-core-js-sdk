@@ -94,7 +94,7 @@ export class AlgPoolService extends ChainPoolService {
       await pool.params.withdraw({
         args: { amountLp: amount },
         sender: userAccount,
-        extraFee: feeForInner(1),
+        extraFee: feeForInner(2),
         assetReferences: [assetId],
       })
     );
