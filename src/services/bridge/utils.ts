@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { Address } from "@stellar/stellar-sdk";
-import { Address as AlgoAddress } from "algosdk";
+import algosdk, { Address as AlgoAddress } from "algosdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 import { utils as TronWebUtils } from "tronweb";
@@ -116,7 +116,16 @@ export function evmAddressToBuffer32(address: string): Buffer {
 }
 
 export function algAddressToBuffer32(address: string): Buffer {
-  return Buffer.from(AlgoAddress.fromString(address).publicKey);
+  if (algosdk.isValidAddress(address)) {
+    return Buffer.from(AlgoAddress.fromString(address).publicKey);
+  }
+
+  if (/^\d+$/.test(address)) {
+    let hex = BigInt(address).toString(16);
+    hex = hex.padStart(64, "0");
+    return Buffer.from(hex, "hex");
+  }
+  throw new SdkError(`Unexpected Alg address: ${address}`);
 }
 
 export function tronAddressToBuffer32(address: string): Buffer {
