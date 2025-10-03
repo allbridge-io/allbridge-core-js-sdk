@@ -109,7 +109,7 @@ export class AlgBridgeService extends ChainBridgeService {
     const tokenId = BigInt(params.sourceToken.tokenAddress);
     const receiveTokenId = BigInt(params.destinationToken.tokenAddress);
     const receiveAmountMin = BigInt(txSwapParams.minimumReceiveAmount);
-    const amount = BigInt(params.amount);
+    const amount = BigInt(txSwapParams.amount);
 
     if (!params.sourceToken.bridgeId) {
       throw new SdkError("ALG sourceToken must contain 'bridgeId'");
