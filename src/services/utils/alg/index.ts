@@ -61,6 +61,23 @@ export function encodeTxs(...txs: Transaction[]): RawAlgTransaction {
   return blobs.map((b) => Buffer.from(b).toString("hex"));
 }
 
+export async function checkAssetOptIn(
+  assetId: string | bigint,
+  sender: string,
+  algorand: AlgorandClient
+): Promise<boolean> {
+  if (typeof assetId === "string") {
+    assetId = BigInt(assetId);
+  }
+  const info = await algorand.account.getInformation(sender);
+  const assets = info.assets;
+  if (assets) {
+    const isOptedIn = assets.find(({ assetId: id }) => id === assetId);
+    return isOptedIn !== undefined;
+  }
+  return false;
+}
+
 export async function checkAppOptIn(
   appId: string | bigint,
   sender: string,

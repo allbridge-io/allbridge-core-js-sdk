@@ -7,7 +7,7 @@ import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeClient } from "../../models/alg/BridgeClient";
-import { addBudgetNoops, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
+import { addBudgetNoops, checkAssetOptIn, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
 import { ChainBridgeService, SendParams, SwapParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
@@ -118,6 +118,14 @@ export class AlgBridgeService extends ChainBridgeService {
     const bridge = this.getBridge(bridgeId);
 
     const composer = this.algorand.newGroup();
+
+    if (params.fromAccountAddress === recipient) {
+      const optIn = await checkAssetOptIn(receiveTokenId, recipient, this.algorand);
+      if (!optIn) {
+        composer.addAssetOptIn({ sender: sender, assetId: receiveTokenId });
+      }
+    }
+
     composer.addAssetTransfer({
       assetId: tokenId,
       amount: amount,

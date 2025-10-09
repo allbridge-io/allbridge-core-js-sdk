@@ -2,7 +2,7 @@ import { AlgorandClient } from "@algorandfoundation/algokit-utils";
 import { ABIMethod, Algodv2, OnApplicationComplete } from "algosdk";
 import { ChainSymbol, RawAlgTransaction } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
-import { checkAppOptIn, encodeTxs } from "../../services/utils/alg";
+import { checkAppOptIn, checkAssetOptIn, encodeTxs } from "../../services/utils/alg";
 
 /**
  * Contains usefully Alg methods
@@ -19,16 +19,7 @@ export class DefaultAlgUtils implements AlgUtils {
 
   async checkAssetOptIn(assetId: string | bigint, sender: string, client?: Algodv2): Promise<boolean> {
     const algorand = this.getAlgorand(client);
-    if (typeof assetId === "string") {
-      assetId = BigInt(assetId);
-    }
-    const info = await algorand.account.getInformation(sender);
-    const assets = info.assets;
-    if (assets) {
-      const isOptedIn = assets.find(({ assetId: id }) => id === assetId);
-      return isOptedIn !== undefined;
-    }
-    return false;
+    return checkAssetOptIn(assetId, sender, algorand);
   }
 
   async buildRawTransactionAssetOptIn(
