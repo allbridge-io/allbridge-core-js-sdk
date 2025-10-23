@@ -73,6 +73,11 @@ export enum ChainSymbol {
    * The Unichain network.
    */
   UNI = "UNI",
+
+  /**
+   * The Linea network.
+   */
+  LIN = "LIN",
 }
 
 export enum ChainType {
