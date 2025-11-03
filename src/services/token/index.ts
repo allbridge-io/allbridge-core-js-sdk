@@ -25,6 +25,7 @@ import {
 } from "./models";
 import { SolanaTokenService } from "./sol";
 import { SrbTokenService } from "./srb";
+import { StxTokenService } from "./stx";
 import { SuiTokenService } from "./sui";
 import { TronTokenService } from "./trx";
 
@@ -155,6 +156,10 @@ export class DefaultTokenService implements TokenService {
           });
           return new AlgTokenService(algorand, this.api);
         }
+      }
+      case ChainType.STX: {
+        const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        return new StxTokenService(nodeRpcUrl, this.api);
       }
     }
   }

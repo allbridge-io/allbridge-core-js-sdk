@@ -12,6 +12,7 @@ const chainDecimalsByType: Record<ChainType, number> = {
   SRB: 7,
   SUI: 9,
   ALG: 6,
+  STX: 6,
 };
 
 const defaultProperties: Record<string, BasicChainProperties> = {
@@ -110,6 +111,11 @@ const defaultProperties: Record<string, BasicChainProperties> = {
     chainSymbol: ChainSymbol.ALG,
     name: "Algorand",
     chainType: ChainType.ALG,
+  },
+  [ChainSymbol.STX]: {
+    chainSymbol: ChainSymbol.STX,
+    name: "Stacks",
+    chainType: ChainType.STX,
   },
 };
 

@@ -1,9 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
+import { ContractIdString, createAddress, parseContractId } from "@stacks/transactions";
 import { Address } from "@stellar/stellar-sdk";
 import algosdk, { Address as AlgoAddress } from "algosdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 import { utils as TronWebUtils } from "tronweb";
+import { Web3 } from "web3";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
@@ -33,6 +35,7 @@ import {
   TxSendParamsEvm,
   TxSendParamsSol,
   TxSendParamsSrb,
+  TxSendParamsStx,
   TxSendParamsSui,
   TxSendParamsTrx,
   TxSwapParams,
@@ -41,7 +44,7 @@ import {
   TxSwapParamsSrb,
   TxSwapParamsSui,
   TxSwapParamsTrx,
-} from "./models"; // 1. OVERLOADS
+} from "./models";
 
 // 1. OVERLOADS
 export function formatAddress(address: string, from: ChainType, to: ChainType.EVM | ChainType.SUI): string;
@@ -77,6 +80,10 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = algAddressToBuffer32(address);
       break;
     }
+    case ChainType.STX: {
+      buffer = stxAddressToBuffer32(address);
+      break;
+    }
   }
 
   switch (to) {
@@ -96,6 +103,9 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       return "0x" + buffer.toString("hex");
     }
     case ChainType.ALG: {
+      return buffer;
+    }
+    case ChainType.STX: {
       return buffer;
     }
   }
@@ -126,6 +136,21 @@ export function algAddressToBuffer32(address: string): Buffer {
     return Buffer.from(hex, "hex");
   }
   throw new SdkError(`Unexpected Alg address: ${address}`);
+}
+
+export function stxAddressToBuffer32(address: string): Buffer {
+  if (address.includes(".")) {
+    const [addr, name] = parseContractId(address as ContractIdString);
+    if (!addr || !name) {
+      throw new SdkError(`Unexpected Alg address: ${address}`);
+    }
+    const hashBytes = Buffer.from(createAddress(addr).hash160, "hex");
+    const hash = Web3.utils.keccak256(Buffer.concat([hashBytes, Buffer.from(name)]));
+    return hexToBuffer(hash);
+  }
+
+  const hashBytes = Buffer.from(createAddress(address).hash160, "hex");
+  return bufferToSize(hashBytes, 32);
 }
 
 export function tronAddressToBuffer32(address: string): Buffer {
@@ -255,6 +280,11 @@ export function prepareTxSendParams(
   params: SendParams,
   api: AllbridgeCoreClient
 ): Promise<TxSendParamsAlg>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.STX,
+  params: SendParams,
+  api: AllbridgeCoreClient
+): Promise<TxSendParamsStx>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SendParams,

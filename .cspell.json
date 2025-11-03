@@ -9,6 +9,7 @@
     "Blockhash",
     "CCTP",
     "Celo",
+    "Clarigen",
     "Gwei",
     "Holešky",
     "Keypair",
@@ -38,6 +39,7 @@
     "blockhash",
     "cctp",
     "certusone",
+    "clarigen",
     "crossrate",
     "decompile",
     "degit",
@@ -47,6 +49,7 @@
     "lamports",
     "mysten",
     "octocat",
+    "postcondition",
     "rebalancer",
     "retval",
     "rmrf",
@@ -71,6 +74,7 @@
     "src/services/models/abi/",
     "src/services/models/alg/",
     "src/services/models/srb/",
+    "src/services/models/stx/",
     "src/services/models/sui/",
     "src/services/utils/srb/assembled-tx.ts"
   ]

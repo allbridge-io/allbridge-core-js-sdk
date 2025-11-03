@@ -1,0 +1,46 @@
+import { AllbridgeCoreSdk, ChainSymbol, Messenger, RawStxTransaction } from "@allbridge/bridge-core-sdk";
+import * as dotenv from "dotenv";
+import { getEnvVar } from "../../../utils/env";
+import { ensure } from "../../../utils/utils";
+import { sendStxRawTransaction } from "../../../utils/stx";
+import { testnet, testnetNodeRpcUrlsDefault } from "../../testnet";
+
+dotenv.config({ path: ".env" });
+
+const main = async () => {
+  // sender address on STX
+  const accountAddress = getEnvVar("STX_ACCOUNT_ADDRESS");
+  const tokenAddress = getEnvVar("STX_TOKEN_ADDRESS");
+  const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS"); // recipient address on destination chain
+  const toToken = getEnvVar("SPL_TOKEN_ADDRESS");
+
+  // const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, STX: getEnvVar("STX_PROVIDER_URL") });//TODO
+  const sdk = new AllbridgeCoreSdk({ ...testnetNodeRpcUrlsDefault }, testnet);
+  const chains = await sdk.chainDetailsMap();
+
+  const sourceChain = chains[ChainSymbol.STX];
+  const sourceToken = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
+
+  const destinationChain = chains["SPL"];
+  const destinationToken = ensure(destinationChain.tokens.find((t) => t.tokenAddress === toToken));
+
+  const amount = "10";
+
+  // Build raw transaction for sending tokens
+  const rawTx = (await sdk.bridge.rawTxBuilder.send({
+    amount,
+    fromAccountAddress: accountAddress,
+    toAccountAddress: toAddress,
+    sourceToken,
+    destinationToken,
+    messenger: Messenger.ALLBRIDGE,
+  })) as RawStxTransaction;
+
+  console.log(`Sending ${amount} ${sourceToken.symbol}`);
+  const txId = await sendStxRawTransaction(rawTx);
+  console.log("txId:", txId);
+};
+
+main()
+  .then(() => console.log("Done"))
+  .catch((e) => console.error(e));

@@ -231,5 +231,8 @@ export function getChainYieldService(
     case ChainType.ALG: {
       throw new MethodNotSupportedError();
     }
+    case ChainType.STX: {
+      throw new MethodNotSupportedError();
+    }
   }
 }

@@ -22,6 +22,7 @@ import { ApproveParams, ChainPoolService, CheckAllowanceParams, GetAllowancePara
 import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService } from "./sol";
 import { SrbPoolService } from "./srb";
+import { StxPoolService } from "./stx";
 import { SuiPoolService } from "./sui";
 import { TronPoolService } from "./trx";
 
@@ -266,6 +267,10 @@ export function getChainPoolService(
         });
         return new AlgPoolService(algorand, api);
       }
+    }
+    case ChainType.STX: {
+      const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+      return new StxPoolService(nodeRpcUrl, api);
     }
   }
 }

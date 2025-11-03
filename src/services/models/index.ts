@@ -53,6 +53,7 @@ export type RawTransaction =
   | RawEvmTransaction
   | RawSorobanTransaction
   | RawAlgTransaction
+  | RawStxTransaction
   | RawSuiTransaction
   | RawBridgeSolanaTransaction
   | RawPoolSolanaTransaction;
@@ -63,6 +64,7 @@ export type RawPoolSolanaTransaction = SolanaWeb3Transaction;
 export type RawBridgeSolanaTransaction = VersionedTransaction;
 export type RawSuiTransaction = string;
 export type RawAlgTransaction = string[];
+export type RawStxTransaction = string;
 
 export interface SmartContractMethodParameter {
   type: string;

@@ -1,0 +1,158 @@
+import { ClarigenClient, contractFactory } from "@clarigen/core";
+import {
+  ContractIdString,
+  makeRandomPrivKey,
+  makeUnsignedContractCall,
+  parseContractId,
+  PostCondition,
+  PostConditionMode,
+  privateKeyToPublic,
+} from "@stacks/transactions";
+import { ChainType } from "../../../chains/chain.enums";
+import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
+import { MethodNotSupportedError } from "../../../exceptions";
+import { FeePaymentMethod } from "../../../models";
+import { RawStxTransaction, TransactionResponse } from "../../models";
+import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
+import { getStxNetwork } from "../../utils/stx/get-network";
+import { getFungiblePostCondition, getStxPostCondition } from "../../utils/stx/post-conditions";
+import { ChainBridgeService } from "../models/bridge";
+import { SendParams, SwapParams } from "../models/bridge.model";
+import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+
+export class StxBridgeService extends ChainBridgeService {
+  chainType: ChainType.STX = ChainType.STX;
+
+  private client: ClarigenClient;
+
+  constructor(
+    public nodeRpcUrl: string,
+    public api: AllbridgeCoreClient
+  ) {
+    super();
+    const network = getStxNetwork(this.nodeRpcUrl);
+    this.client = new ClarigenClient(network);
+  }
+
+  send(_params: SendParams): Promise<TransactionResponse> {
+    throw new MethodNotSupportedError();
+  }
+
+  async buildRawTransactionSend(params: SendParams): Promise<RawStxTransaction> {
+    const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
+    const { contractAddress: bridgeAddress, messenger, toChainId, toAccountAddress, toTokenAddress } = txSendParams;
+    const amount = BigInt(txSendParams.amount);
+
+    const postFungiblePostCondition = getFungiblePostCondition(
+      amount,
+      "lte",
+      params.fromAccountAddress,
+      params.sourceToken.tokenAddress,
+      "example-token"
+    );
+    const postStxPostCondition = getStxPostCondition(0, "gte", params.sourceToken.bridgeAddress);
+    const postConditions: PostCondition[] = [postFungiblePostCondition, postStxPostCondition];
+
+    let totalFee = BigInt(txSendParams.fee);
+    if (txSendParams.extraGas) {
+      totalFee = totalFee + BigInt(txSendParams.extraGas);
+    }
+
+    const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
+
+    let feeTokenAmount: bigint;
+    if (isPayWithStable) {
+      feeTokenAmount = totalFee;
+    } else {
+      feeTokenAmount = 0n;
+      const postUserStxPostCondition = getStxPostCondition(totalFee, "lte", params.fromAccountAddress);
+      postConditions.push(postUserStxPostCondition);
+    }
+
+    const [contractPrincipal] = parseContractId(bridgeAddress as ContractIdString);
+
+    const bridge = contractFactory(contracts.bridge, bridgeAddress);
+    const { contractAddress, contractName, functionName, functionArgs } = bridge.swapAndBridge({
+      ftRef: params.sourceToken.tokenAddress,
+      poolRef: params.sourceToken.poolAddress,
+      messengerRef: `${contractPrincipal}.messenger`,
+      gasOracleRef: `${contractPrincipal}.gas-oracle`,
+      amount,
+      recipient: Uint8Array.from(toAccountAddress),
+      destinationChainId: toChainId,
+      receiveToken: Uint8Array.from(toTokenAddress),
+      nonce: Uint8Array.from(getNonce()),
+      messengerId: messenger,
+      feeNativeAmount: totalFee,
+      feeTokenAmount: feeTokenAmount,
+    });
+
+    const privateKey = makeRandomPrivKey();
+    const publicKey = privateKeyToPublic(privateKey);
+
+    const txOptions = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      publicKey,
+      validateWithAbi: true,
+      network: this.client.network,
+      postConditions,
+      postConditionMode: PostConditionMode.Deny,
+    };
+    const transaction = await makeUnsignedContractCall(txOptions);
+    return transaction.serialize();
+  }
+
+  async buildRawTransactionSwap(params: SwapParams): Promise<RawStxTransaction> {
+    const txSwapParams = prepareTxSwapParams(this.chainType, params);
+    const amount = BigInt(txSwapParams.amount);
+    const minimumReceiveAmount = BigInt(txSwapParams.minimumReceiveAmount);
+
+    const bridgeAddress = params.sourceToken.bridgeAddress;
+    const bridge = contractFactory(contracts.bridge, bridgeAddress);
+    const { contractAddress, contractName, functionName, functionArgs } = bridge.swap({
+      amount,
+      sendPoolRef: params.sourceToken.poolAddress,
+      sendFtRef: params.sourceToken.tokenAddress,
+      receivePoolRef: params.destinationToken.poolAddress,
+      receiveFtRef: params.destinationToken.tokenAddress,
+      recipient: params.toAccountAddress,
+      receiveAmountMin: minimumReceiveAmount,
+    });
+
+    const privateKey = makeRandomPrivKey();
+    const publicKey = privateKeyToPublic(privateKey);
+
+    const postFungibleCondition = getFungiblePostCondition(
+      amount,
+      "lte",
+      params.fromAccountAddress,
+      params.sourceToken.tokenAddress,
+      "example-token"
+    );
+
+    const postFungibleMinReceiveCondition = getFungiblePostCondition(
+      minimumReceiveAmount,
+      "gte",
+      params.destinationToken.poolAddress,
+      params.destinationToken.tokenAddress,
+      "example-token"
+    );
+
+    const txOptions = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      publicKey,
+      validateWithAbi: true,
+      network: this.client.network,
+      postConditions: [postFungibleCondition, postFungibleMinReceiveCondition],
+      postConditionMode: PostConditionMode.Deny,
+    };
+    const transaction = await makeUnsignedContractCall(txOptions);
+    return transaction.serialize();
+  }
+}

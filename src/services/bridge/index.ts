@@ -18,6 +18,7 @@ import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowancePa
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { SrbBridgeService } from "./srb";
+import { StxBridgeService } from "./stx";
 import { SuiBridgeService } from "./sui";
 import { TronBridgeService } from "./trx";
 
@@ -221,6 +222,10 @@ export function getChainBridgeService(
         });
         return new AlgBridgeService(algorand, api);
       }
+    }
+    case ChainType.STX: {
+      const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+      return new StxBridgeService(nodeRpcUrl, api);
     }
   }
 }
