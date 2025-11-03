@@ -57,10 +57,8 @@ export class AlgBridgeService extends ChainBridgeService {
     const composer = this.algorand.newGroup();
 
     let feeTokenAmount: bigint;
-    let totalAmount: bigint;
     if (isPayWithStable) {
       feeTokenAmount = totalFee;
-      totalAmount = amount + feeTokenAmount;
     } else {
       composer.addPayment({
         sender,
@@ -68,12 +66,11 @@ export class AlgBridgeService extends ChainBridgeService {
         amount: AlgoAmount.MicroAlgo(totalFee),
       });
       feeTokenAmount = 0n;
-      totalAmount = amount;
     }
     composer
       .addAssetTransfer({
         assetId: tokenId,
-        amount: totalAmount,
+        amount,
         sender,
         receiver: bridge.appAddress,
       })
