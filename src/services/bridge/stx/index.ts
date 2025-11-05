@@ -15,6 +15,7 @@ import { FeePaymentMethod } from "../../../models";
 import { RawStxTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
 import { getStxNetwork } from "../../utils/stx/get-network";
+import { getTokenName } from "../../utils/stx/get-token-name";
 import { getFungiblePostCondition, getStxPostCondition } from "../../utils/stx/post-conditions";
 import { ChainBridgeService } from "../models/bridge";
 import { SendParams, SwapParams } from "../models/bridge.model";
@@ -48,7 +49,7 @@ export class StxBridgeService extends ChainBridgeService {
       "lte",
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
-      "example-token"
+      getTokenName(params.sourceToken)
     );
     const postStxPostCondition = getStxPostCondition(0, "gte", params.sourceToken.bridgeAddress);
     const postConditions: PostCondition[] = [postFungiblePostCondition, postStxPostCondition];
@@ -130,7 +131,7 @@ export class StxBridgeService extends ChainBridgeService {
       "lte",
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
-      "example-token"
+      getTokenName(params.sourceToken)
     );
 
     const postFungibleMinReceiveCondition = getFungiblePostCondition(
@@ -138,7 +139,7 @@ export class StxBridgeService extends ChainBridgeService {
       "gte",
       params.destinationToken.poolAddress,
       params.destinationToken.tokenAddress,
-      "example-token"
+      getTokenName(params.destinationToken)
     );
 
     const txOptions = {

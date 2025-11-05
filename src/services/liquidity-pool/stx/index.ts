@@ -14,6 +14,7 @@ import { calculatePoolInfoImbalance, fromSystemPrecision } from "../../../utils/
 import { RawStxTransaction } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
 import { getStxNetwork } from "../../utils/stx/get-network";
+import { getTokenName } from "../../utils/stx/get-token-name";
 import { getFungiblePostCondition } from "../../utils/stx/post-conditions";
 import {
   ChainPoolService,
@@ -96,7 +97,7 @@ export class StxPoolService extends ChainPoolService {
       "lte",
       params.accountAddress,
       params.token.tokenAddress,
-      "example-token"
+      getTokenName(params.token)
     );
 
     const claimRewardsPostFungibleCondition = getFungiblePostCondition(
@@ -104,7 +105,7 @@ export class StxPoolService extends ChainPoolService {
       "gte",
       params.token.poolAddress,
       params.token.tokenAddress,
-      "example-token"
+      getTokenName(params.token)
     );
 
     const txOptions = {
@@ -138,7 +139,7 @@ export class StxPoolService extends ChainPoolService {
       "gte",
       params.token.poolAddress,
       params.token.tokenAddress,
-      "example-token"
+      getTokenName(params.token)
     );
     const txOptions = {
       contractAddress,
@@ -170,7 +171,7 @@ export class StxPoolService extends ChainPoolService {
       "gte",
       params.token.poolAddress,
       params.token.tokenAddress,
-      "example-token"
+      getTokenName(params.token)
     );
     const txOptions = {
       contractAddress,
