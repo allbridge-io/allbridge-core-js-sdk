@@ -1,4 +1,5 @@
 import { ClarigenClient, contractFactory } from "@clarigen/core";
+import { createNetwork } from "@stacks/network";
 import {
   makeRandomPrivKey,
   makeUnsignedContractCall,
@@ -9,11 +10,11 @@ import { Big } from "big.js";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
+import { AllbridgeCoreSdkOptions } from "../../../index";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance, fromSystemPrecision } from "../../../utils/calculation";
 import { RawStxTransaction } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
-import { getStxNetwork } from "../../utils/stx/get-network";
 import { getTokenName } from "../../utils/stx/get-token-name";
 import { getFungiblePostCondition } from "../../utils/stx/post-conditions";
 import {
@@ -33,10 +34,14 @@ export class StxPoolService extends ChainPoolService {
 
   constructor(
     public nodeRpcUrl: string,
+    public params: AllbridgeCoreSdkOptions,
     public api: AllbridgeCoreClient
   ) {
     super();
-    const network = getStxNetwork(this.nodeRpcUrl);
+    const network = createNetwork({
+      network: this.params.stxIsTestnet ? "testnet" : "mainnet",
+      client: { baseUrl: this.nodeRpcUrl },
+    });
     this.client = new ClarigenClient(network);
   }
 

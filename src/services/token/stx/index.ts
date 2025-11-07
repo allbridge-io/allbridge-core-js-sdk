@@ -1,11 +1,12 @@
 import { ClarigenClient, contractFactory } from "@clarigen/core";
+import { createNetwork } from "@stacks/network";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError } from "../../../exceptions";
+import { AllbridgeCoreSdkOptions } from "../../../index";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
-import { getStxNetwork } from "../../utils/stx/get-network";
 import {
   ApproveParamsDto,
   ChainTokenService,
@@ -16,21 +17,26 @@ import {
 
 export class StxTokenService extends ChainTokenService {
   chainType: ChainType.STX = ChainType.STX;
+
+  private client: ClarigenClient;
+
   constructor(
     public nodeRpcUrl: string,
+    public params: AllbridgeCoreSdkOptions,
     public api: AllbridgeCoreClient
   ) {
     super();
+    const network = createNetwork({
+      network: this.params.stxIsTestnet ? "testnet" : "mainnet",
+      client: { baseUrl: this.nodeRpcUrl },
+    });
+    this.client = new ClarigenClient(network);
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
-    const network = getStxNetwork(this.nodeRpcUrl);
-
-    const client = new ClarigenClient(network);
-
     const token = contractFactory(contracts.ftToken, params.token.tokenAddress);
 
-    const response = await client.roOk(token.getBalance({ owner: params.account }));
+    const response = await this.client.roOk(token.getBalance({ owner: params.account }));
     return response.toString();
   }
 

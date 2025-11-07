@@ -270,7 +270,7 @@ export function getChainPoolService(
     }
     case ChainType.STX: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-      return new StxPoolService(nodeRpcUrl, api);
+      return new StxPoolService(nodeRpcUrl, params, api);
     }
   }
 }

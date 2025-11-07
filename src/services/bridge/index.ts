@@ -225,7 +225,7 @@ export function getChainBridgeService(
     }
     case ChainType.STX: {
       const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-      return new StxBridgeService(nodeRpcUrl, api);
+      return new StxBridgeService(nodeRpcUrl, params, api);
     }
   }
 }

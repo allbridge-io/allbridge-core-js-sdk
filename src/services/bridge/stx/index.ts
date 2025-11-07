@@ -1,4 +1,5 @@
 import { ClarigenClient, contractFactory } from "@clarigen/core";
+import { createNetwork } from "@stacks/network";
 import {
   ContractIdString,
   makeRandomPrivKey,
@@ -11,14 +12,13 @@ import {
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError } from "../../../exceptions";
+import { AllbridgeCoreSdkOptions } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
 import { RawStxTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
-import { getStxNetwork } from "../../utils/stx/get-network";
 import { getTokenName } from "../../utils/stx/get-token-name";
 import { getFungiblePostCondition, getStxPostCondition } from "../../utils/stx/post-conditions";
-import { ChainBridgeService } from "../models/bridge";
-import { SendParams, SwapParams } from "../models/bridge.model";
+import { ChainBridgeService, SendParams, SwapParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class StxBridgeService extends ChainBridgeService {
@@ -28,10 +28,14 @@ export class StxBridgeService extends ChainBridgeService {
 
   constructor(
     public nodeRpcUrl: string,
+    public params: AllbridgeCoreSdkOptions,
     public api: AllbridgeCoreClient
   ) {
     super();
-    const network = getStxNetwork(this.nodeRpcUrl);
+    const network = createNetwork({
+      network: this.params.stxIsTestnet ? "testnet" : "mainnet",
+      client: { baseUrl: this.nodeRpcUrl },
+    });
     this.client = new ClarigenClient(network);
   }
 

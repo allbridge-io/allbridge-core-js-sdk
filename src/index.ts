@@ -80,6 +80,8 @@ export interface AllbridgeCoreSdkOptions {
    * Optional additional properties to merge with the default properties.
    */
   additionalChainsProperties?: Record<string, AdditionalBasicChainProperties>;
+
+  stxIsTestnet?: boolean;
 }
 
 /**
@@ -195,17 +197,14 @@ export class AllbridgeCoreSdk {
   /**
    * Check address and show gas balance
    * @deprecated
-   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
-   * @param recipientAddress
-   * @param tokenAddress
+   * @param _chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param _recipientAddress
+   * @param _tokenAddress
    */
   async checkAddress(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    chainSymbol: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    recipientAddress: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    tokenAddress?: string
+    _chainSymbol: string,
+    _recipientAddress: string,
+    _tokenAddress?: string
   ): Promise<CheckAddressResponse> {
     return await this.service.checkAddress();
   }

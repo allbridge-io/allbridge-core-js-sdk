@@ -159,7 +159,7 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.STX: {
         const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
-        return new StxTokenService(nodeRpcUrl, this.api);
+        return new StxTokenService(nodeRpcUrl, this.params, this.api);
       }
     }
   }
