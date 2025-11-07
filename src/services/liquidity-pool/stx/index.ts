@@ -41,8 +41,9 @@ export class StxPoolService extends ChainPoolService {
     const network = createNetwork({
       network: this.params.stxIsTestnet ? "testnet" : "mainnet",
       client: { baseUrl: this.nodeRpcUrl },
+      apiKey: this.params.stxHeroApiKey,
     });
-    this.client = new ClarigenClient(network);
+    this.client = new ClarigenClient(network, this.params.stxHeroApiKey);
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {

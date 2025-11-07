@@ -35,8 +35,9 @@ export class StxBridgeService extends ChainBridgeService {
     const network = createNetwork({
       network: this.params.stxIsTestnet ? "testnet" : "mainnet",
       client: { baseUrl: this.nodeRpcUrl },
+      apiKey: this.params.stxHeroApiKey,
     });
-    this.client = new ClarigenClient(network);
+    this.client = new ClarigenClient(network, this.params.stxHeroApiKey);
   }
 
   send(_params: SendParams): Promise<TransactionResponse> {

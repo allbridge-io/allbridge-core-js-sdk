@@ -29,8 +29,9 @@ export class StxTokenService extends ChainTokenService {
     const network = createNetwork({
       network: this.params.stxIsTestnet ? "testnet" : "mainnet",
       client: { baseUrl: this.nodeRpcUrl },
+      apiKey: this.params.stxHeroApiKey,
     });
-    this.client = new ClarigenClient(network);
+    this.client = new ClarigenClient(network, this.params.stxHeroApiKey);
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
@@ -43,7 +44,9 @@ export class StxTokenService extends ChainTokenService {
   async getNativeTokenBalance(params: GetNativeTokenBalanceParams): Promise<string> {
     const url = `${this.nodeRpcUrl}/extended/v1/address/${params.account}/stx`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: this.params.stxHeroApiKey ? { "x-api-key": this.params.stxHeroApiKey } : undefined,
+    });
     if (!res.ok) {
       throw new Error(`Failed to fetch account: ${res.status}`);
     }
