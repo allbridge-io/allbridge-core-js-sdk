@@ -67,10 +67,13 @@ export class StxBridgeService extends ChainBridgeService {
     const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
 
     let feeTokenAmount: bigint;
+    let feeNativeAmount: bigint;
     if (isPayWithStable) {
       feeTokenAmount = totalFee;
+      feeNativeAmount = 0n;
     } else {
       feeTokenAmount = 0n;
+      feeNativeAmount = totalFee;
       const postUserStxPostCondition = getStxPostCondition(totalFee, "lte", params.fromAccountAddress);
       postConditions.push(postUserStxPostCondition);
     }
@@ -89,7 +92,7 @@ export class StxBridgeService extends ChainBridgeService {
       receiveToken: Uint8Array.from(toTokenAddress),
       nonce: Uint8Array.from(getNonce()),
       messengerId: messenger,
-      feeNativeAmount: totalFee,
+      feeNativeAmount: feeNativeAmount,
       feeTokenAmount: feeTokenAmount,
     });
 
