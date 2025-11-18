@@ -1,0 +1,120 @@
+stages:
+  - validate
+  - release
+  - docs
+
+variables:
+  NODE_VERSION: "22"
+  NODE_OPTIONS: "--max_old_space_size=4096"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+  PNPM_HOME: "$CI_PROJECT_DIR/.pnpm-store"
+
+default:
+  image: node:$NODE_VERSION
+  interruptible: true
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .npm/
+      - .pnpm-store/
+    policy: pull
+    when: on_success
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "beta"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "alpha"'
+      when: always
+    - when: never
+
+# STAGE: validate
+validate:
+  stage: validate
+  cache:
+    - key:
+        files:
+          - pnpm-lock.yaml
+      paths:
+        - .npm/
+        - .pnpm-store/
+      policy: pull-push
+    - key: eslint-cache-$CI_COMMIT_REF_SLUG
+      paths:
+        - .eslintcache
+      policy: pull-push
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@10.11.0 --activate
+    - pnpm config set store-dir $PNPM_HOME
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm audit --audit-level=moderate || true
+    - pnpm run build
+    - pnpm run format:check
+    - pnpm run lint:check
+    - pnpm run spell:check
+    - pnpm run test
+  artifacts:
+    name: build-$CI_COMMIT_SHORT_SHA
+    expire_in: 1 week
+    when: on_success
+    paths:
+      - dist/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|beta|alpha)$/'
+
+# STAGE: release
+release:
+  stage: release
+  dependencies: [validate]
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .npm/
+      - .pnpm-store/
+    policy: pull
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@10.11.0 --activate
+    - pnpm config set store-dir $PNPM_HOME
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm run semantic-release
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|beta|alpha)$/'
+      when: on_success
+  environment:
+    name: npm-registry
+    deployment_tier: production
+
+# STAGE: docs
+docs:deploy:
+  stage: docs
+  dependencies: [validate]
+  variables:
+    GOOGLE_CREDENTIALS_FILE: "/dev/shm/firebase-key.json"
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm run tsdoc
+    - echo -n "$FIREBASE_SERVICE_ACCOUNT_BASE64" | base64 -d > $GOOGLE_CREDENTIALS_FILE
+    - export GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_CREDENTIALS_FILE"
+    - npx firebase-tools deploy --only hosting --project bridge-core-sdk
+  after_script:
+    - rm -f $GOOGLE_CREDENTIALS_FILE
+  environment:
+    name: documentation
+    deployment_tier: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: on_success
+  allow_failure: true
