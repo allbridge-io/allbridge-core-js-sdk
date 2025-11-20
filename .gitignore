@@ -11,3 +11,6 @@ docs/*
 !docs/404.html
 /out/
 .firebase
+
+# Temporarily ignore GitLab CI config during migration prep
+.gitlab-ci.yml
