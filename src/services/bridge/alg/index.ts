@@ -61,12 +61,14 @@ export class AlgBridgeService extends ChainBridgeService {
     const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
 
     const composer = this.algorand.newGroup();
+
     const assetTransferTx = await this.algorand.createTransaction.assetTransfer({
       amount,
       assetId: tokenId,
       receiver: bridge.appAddress,
       sender,
     });
+
     if (isPayWithStable) {
       composer.addAppCallMethodCall(
         await bridge.params.swapAndBridgeWithStable({
@@ -79,9 +81,15 @@ export class AlgBridgeService extends ChainBridgeService {
             feeTokenAmount: totalFee,
           },
           sender,
-          extraFee: feeForInner(7),
+          extraFee: feeForInner(9),
         })
       );
+      const paddingTx = await this.algorand.createTransaction.appCall({
+        appId: paddingUtil.appId,
+        sender,
+        note: "padding_1",
+      });
+      composer.addTransaction(paddingTx);
     } else {
       const paymentTx = await this.algorand.createTransaction.payment({
         amount: AlgoAmount.MicroAlgo(totalFee),
@@ -99,15 +107,18 @@ export class AlgBridgeService extends ChainBridgeService {
             nonce,
           },
           sender,
-          extraFee: feeForInner(6),
+          extraFee: feeForInner(8),
         })
       );
     }
+
     const paddingTx = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
+      note: "padding",
     });
     composer.addTransaction(paddingTx);
+
     const { transactions } = await composer.buildTransactions();
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
