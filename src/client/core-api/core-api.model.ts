@@ -7,6 +7,7 @@ export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
   bridgeId?: string;
+  paddingUtilId?: string;
   bridgeAddress: string;
   oftBridgeAddress?: string;
   swapAddress: string;

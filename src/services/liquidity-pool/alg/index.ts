@@ -1,5 +1,5 @@
 import { AlgorandClient } from "@algorandfoundation/algokit-utils";
-import { assignGroupID, bytesToBigInt } from "algosdk";
+import { assignGroupID, bytesToBigInt, OnApplicationComplete } from "algosdk";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
@@ -7,7 +7,7 @@ import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import { PoolClient } from "../../models/alg/PoolClient";
-import { addBudgetNoops, checkAppOptIn, encodeTxs, feeForInner } from "../../utils/alg";
+import { checkAppOptIn, encodeTxs, feeForInner } from "../../utils/alg";
 import {
   ChainPoolService,
   LiquidityPoolsParams,
@@ -56,27 +56,27 @@ export class AlgPoolService extends ChainPoolService {
 
     const isOptedIn = await checkAppOptIn(poolId, userAccount, this.algorand);
 
+    const onComplete: OnApplicationComplete.OptInOC | OnApplicationComplete.NoOpOC = isOptedIn
+      ? OnApplicationComplete.NoOpOC
+      : OnApplicationComplete.OptInOC;
+
     const composer = this.algorand.newGroup();
 
-    if (!isOptedIn) {
-      composer.addAppCallMethodCall(await pool.params.optIn.optInToApplication({ args: [], sender: userAccount }));
-    }
-
-    composer.addAssetTransfer({
+    const assetTransfer = await this.algorand.createTransaction.assetTransfer({
       assetId: assetId,
       amount: amount,
       sender: userAccount,
       receiver: pool.appAddress,
     });
     composer.addAppCallMethodCall(
-      await pool.params.deposit({ args: [], sender: userAccount, extraFee: feeForInner(1) })
+      await pool.params.deposit({
+        args: { assetTransferRef: assetTransfer },
+        sender: userAccount,
+        onComplete: onComplete,
+        extraFee: feeForInner(5),
+      })
     );
-    addBudgetNoops({
-      composer,
-      appId: poolId,
-      sender: userAccount,
-      count: 4,
-    });
+
     let { transactions } = await composer.buildTransactions();
     transactions = assignGroupID(transactions);
     return encodeTxs(...transactions);
@@ -94,16 +94,11 @@ export class AlgPoolService extends ChainPoolService {
       await pool.params.withdraw({
         args: { amountLp: amount },
         sender: userAccount,
-        extraFee: feeForInner(2),
         assetReferences: [assetId],
+        extraFee: feeForInner(7),
       })
     );
-    addBudgetNoops({
-      composer,
-      appId: poolId,
-      sender: userAccount,
-      count: 4,
-    });
+
     let { transactions } = await composer.buildTransactions();
     transactions = assignGroupID(transactions);
     return encodeTxs(...transactions);

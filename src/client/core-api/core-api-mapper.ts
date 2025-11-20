@@ -102,6 +102,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeId: dto.bridgeId,
+    paddingUtilId: dto.paddingUtilId,
     bridgeAddress: dto.bridgeAddress,
     oftBridgeAddress: dto.oftBridgeAddress,
     yieldAddress: dto.yieldAddress,

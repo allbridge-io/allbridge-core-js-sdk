@@ -25,6 +25,10 @@ export interface ChainDetails extends BasicChainProperties {
    */
   bridgeId?: string;
   /**
+   * Algo Padding appId
+   */
+  paddingUtilId?: string;
+  /**
    * Bridge contract address
    */
   bridgeAddress: string;

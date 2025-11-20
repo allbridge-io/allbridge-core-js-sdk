@@ -106,6 +106,7 @@ export class DefaultYieldService implements YieldService {
             apr30d: "",
             apr7d: "",
             bridgeId: chainData.bridgeId,
+            paddingUtilId: chainData.paddingUtilId,
             bridgeAddress: chainData.bridgeAddress,
             chainId: chainData.chainId,
             chainName: chainData.name,

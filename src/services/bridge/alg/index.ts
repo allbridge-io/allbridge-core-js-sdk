@@ -7,7 +7,8 @@ import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeClient } from "../../models/alg/BridgeClient";
-import { addBudgetNoops, checkAssetOptIn, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
+import { PaddingUtilClient } from "../../models/alg/PaddingUtilClient";
+import { checkAssetOptIn, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
 import { ChainBridgeService, SendParams, SwapParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
@@ -38,8 +39,13 @@ export class AlgBridgeService extends ChainBridgeService {
     if (!params.sourceToken.bridgeId) {
       throw new SdkError("ALG sourceToken must contain 'bridgeId'");
     }
+    if (!params.sourceToken.paddingUtilId) {
+      throw new SdkError("ALG sourceToken must contain 'paddingUtilId'");
+    }
     const bridgeId = BigInt(params.sourceToken.bridgeId);
     const bridge = this.getBridge(bridgeId);
+    const paddingUtilId = BigInt(params.sourceToken.paddingUtilId);
+    const paddingUtil = this.getPaddingUtil(paddingUtilId);
     const sender = Address.fromString(params.fromAccountAddress);
     const tokenId = BigInt(params.sourceToken.tokenAddress);
     const destinationChainId = txSendParams.toChainId;
@@ -55,45 +61,53 @@ export class AlgBridgeService extends ChainBridgeService {
     const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
 
     const composer = this.algorand.newGroup();
-
-    let feeTokenAmount: bigint;
+    const assetTransferTx = await this.algorand.createTransaction.assetTransfer({
+      amount,
+      assetId: tokenId,
+      receiver: bridge.appAddress,
+      sender,
+    });
     if (isPayWithStable) {
-      feeTokenAmount = totalFee;
-    } else {
-      composer.addPayment({
-        sender,
-        receiver: bridge.appAddress,
-        amount: AlgoAmount.MicroAlgo(totalFee),
-      });
-      feeTokenAmount = 0n;
-    }
-    composer
-      .addAssetTransfer({
-        assetId: tokenId,
-        amount,
-        sender,
-        receiver: bridge.appAddress,
-      })
-      .addAppCallMethodCall(
-        await bridge.params.swapAndBridge({
+      composer.addAppCallMethodCall(
+        await bridge.params.swapAndBridgeWithStable({
           args: {
-            tokenId,
+            assetTransferRef: assetTransferTx,
             recipient,
             destinationChainId,
             receiveToken,
             nonce,
-            feeTokenAmount,
+            feeTokenAmount: totalFee,
           },
           sender,
-          extraFee: feeForInner(isPayWithStable ? 9 : 8),
+          extraFee: feeForInner(7),
         })
       );
-    addBudgetNoops({
-      composer,
-      appId: bridgeId,
+    } else {
+      const paymentTx = await this.algorand.createTransaction.payment({
+        amount: AlgoAmount.MicroAlgo(totalFee),
+        receiver: bridge.appAddress,
+        sender,
+      });
+      composer.addAppCallMethodCall(
+        await bridge.params.swapAndBridge({
+          args: {
+            paymentRef: paymentTx,
+            assetTransferRef: assetTransferTx,
+            recipient,
+            destinationChainId,
+            receiveToken,
+            nonce,
+          },
+          sender,
+          extraFee: feeForInner(6),
+        })
+      );
+    }
+    const paddingTx = await this.algorand.createTransaction.appCall({
+      appId: paddingUtil.appId,
       sender,
-      count: isPayWithStable ? 3 : 2,
     });
+    composer.addTransaction(paddingTx);
     const { transactions } = await composer.buildTransactions();
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
@@ -111,8 +125,13 @@ export class AlgBridgeService extends ChainBridgeService {
     if (!params.sourceToken.bridgeId) {
       throw new SdkError("ALG sourceToken must contain 'bridgeId'");
     }
+    if (!params.sourceToken.paddingUtilId) {
+      throw new SdkError("ALG sourceToken must contain 'paddingUtilId'");
+    }
     const bridgeId = BigInt(params.sourceToken.bridgeId);
     const bridge = this.getBridge(bridgeId);
+    const paddingUtilId = BigInt(params.sourceToken.paddingUtilId);
+    const paddingUtil = this.getPaddingUtil(paddingUtilId);
 
     const composer = this.algorand.newGroup();
 
@@ -123,7 +142,7 @@ export class AlgBridgeService extends ChainBridgeService {
       }
     }
 
-    composer.addAssetTransfer({
+    const assetTransfer = this.algorand.createTransaction.assetTransfer({
       assetId: tokenId,
       amount: amount,
       sender,
@@ -131,22 +150,25 @@ export class AlgBridgeService extends ChainBridgeService {
     });
     composer.addAppCallMethodCall(
       await bridge.params.swap({
-        args: { tokenId, recipient, receiveTokenId, receiveAmountMin },
+        args: { assetTransferRef: assetTransfer, recipient, receiveAsset: receiveTokenId, receiveAmountMin },
         sender,
         extraFee: feeForInner(4),
       })
     );
-    addBudgetNoops({
-      composer,
-      appId: bridgeId,
+    const paddingTx = await this.algorand.createTransaction.appCall({
+      appId: paddingUtil.appId,
       sender,
-      count: 1,
     });
+    composer.addTransaction(paddingTx);
     const { transactions } = await composer.buildTransactions();
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
 
   private getBridge(appId: bigint): BridgeClient {
     return this.algorand.client.getTypedAppClientById(BridgeClient, { appId });
+  }
+
+  private getPaddingUtil(appId: bigint): PaddingUtilClient {
+    return this.algorand.client.getTypedAppClientById(PaddingUtilClient, { appId });
   }
 }
