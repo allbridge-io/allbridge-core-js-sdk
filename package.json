@@ -57,6 +57,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/github": "^11.0.3",
+    "@semantic-release/gitlab": "^13.2.9",
     "@semantic-release/npm": "^12.0.2",
     "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/big.js": "^6.2.2",
@@ -113,8 +114,8 @@
     "timed-cache": "^2.0.0",
     "tronweb": "^6.0.0",
     "web3": "^4.16.0",
-    "web3-eth-contract": "^4.7.2",
     "web3-eth-abi": "^4.4.1",
+    "web3-eth-contract": "^4.7.2",
     "web3-types": "^1.10.0"
   },
   "jest": {
