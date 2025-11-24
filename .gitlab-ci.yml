@@ -87,7 +87,6 @@ release:
     - corepack enable
     - corepack prepare pnpm@10.11.0 --activate
     - pnpm config set store-dir $PNPM_HOME
-    - git fetch --tags
     - pnpm install --frozen-lockfile
   script:
     - pnpm run semantic-release
