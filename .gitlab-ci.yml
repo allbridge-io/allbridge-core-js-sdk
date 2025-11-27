@@ -89,7 +89,7 @@ release:
     - pnpm config set store-dir $PNPM_HOME
     - pnpm install --frozen-lockfile
   script:
-    - pnpm run semantic-release
+    - pnpm run semantic-release --repository-url $CI_REPOSITORY_URL
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|beta|alpha)$/'
       when: on_success
