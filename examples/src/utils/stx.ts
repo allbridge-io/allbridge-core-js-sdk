@@ -4,15 +4,10 @@ import {
   createSingleSigSpendingCondition,
   deserializeTransaction,
   fetchNonce,
-  getAddressFromPrivateKey,
   privateKeyToPublic,
-  publicKeyToHex,
   TransactionSigner,
 } from "@stacks/transactions";
 import { getEnvVar } from "./env";
-// import { HDKey } from "@scure/bip32";
-// import { mnemonicToSeedSync } from "@scure/bip39";
-// import { deriveStxPrivateKey } from "@stacks/wallet-sdk";
 import { getAddressFromPublicKey } from "@stacks/transactions/src/keys";
 import { STACKS_MAINNET, STACKS_TESTNET } from "@stacks/network";
 import { StacksNetwork } from "@stacks/network/src/network";
@@ -20,14 +15,14 @@ import axios from "axios";
 import { SingleSigHashMode } from "@stacks/transactions/src/constants";
 
 export async function sendStxRawTransaction(serializedTx: string): Promise<string> {
-  const network = getStxNetwork("https://api.testnet.hiro.so");
+  const network = getStxNetwork(getEnvVar("STX_PROVIDER_URL"));
   const secretKey = getEnvVar("STX_PRIVATE_KEY");
 
   const reader = new BytesReader(Buffer.from(serializedTx, "hex"));
   const tx = deserializeTransaction(reader);
 
   const realPublicKey = privateKeyToPublic(secretKey);
-  const address = getAddressFromPublicKey(realPublicKey, "testnet");
+  const address = getAddressFromPublicKey(realPublicKey, network);
 
   const origin = tx.auth.spendingCondition;
 

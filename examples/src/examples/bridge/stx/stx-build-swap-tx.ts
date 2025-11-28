@@ -1,9 +1,8 @@
-import { AllbridgeCoreSdk, RawStxTransaction, SwapParams } from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawStxTransaction, SwapParams } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";
 import { sendStxRawTransaction } from "../../../utils/stx";
-import { testnet, testnetNodeRpcUrlsDefault } from "../../testnet";
 
 dotenv.config({ path: ".env" });
 
@@ -13,8 +12,7 @@ const main = async () => {
   const tokenAddress = getEnvVar("STX_TOKEN_ADDRESS");
   const tokenAddress2 = getEnvVar("STX_TOKEN2_ADDRESS", tokenAddress);
 
-  // const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, STX: getEnvVar("STX_PROVIDER_URL") });//TODO
-  const sdk = new AllbridgeCoreSdk({ ...testnetNodeRpcUrlsDefault }, testnet);
+  const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, STX: getEnvVar("STX_PROVIDER_URL") });
 
   const sourceToken = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress));
   const destinationToken = ensure((await sdk.tokens()).find((t) => t.tokenAddress === tokenAddress2));
