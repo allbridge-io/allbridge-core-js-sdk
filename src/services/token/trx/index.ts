@@ -4,11 +4,9 @@ import { SdkError } from "../../../exceptions";
 import { ChainType, GetTokenBalanceParams, TransactionResponse } from "../../../models";
 import { GetNativeTokenBalanceParams } from "../../bridge/models";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import ERC20 from "../../models/abi/ERC20";
 import { amountToHex } from "../../utils";
 import { sendRawTransaction } from "../../utils/trx";
-import { ApproveParamsDto, GetAllowanceParamsDto } from "../models";
-import { ChainTokenService } from "../models/token";
+import { ApproveParamsDto, ChainTokenService, GetAllowanceParamsDto } from "../models";
 
 export const MAX_AMOUNT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
@@ -61,7 +59,7 @@ export class TronTokenService extends ChainTokenService {
   }
 
   private getContract(contractAddress: string): any {
-    return this.tronWeb.contract(ERC20.abi, contractAddress);
+    return this.tronWeb.contract().at(contractAddress);
   }
 
   private async buildRawTransaction(
