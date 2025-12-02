@@ -2,9 +2,10 @@ import { Address, contract } from "@stellar/stellar-sdk";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
-import { MethodNotSupportedError } from "../../../exceptions";
+import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainType } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
+import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge-contract";
@@ -48,31 +49,40 @@ export class SrbBridgeService extends ChainBridgeService {
     }
     const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
     let tx;
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      tx = await contract.swap_and_bridge({
-        sender: fromAccountAddress,
-        token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
-        amount: BigInt(amount),
-        recipient: Buffer.from(toAccountAddress),
-        destination_chain_id: +toChainId,
-        receive_token: Buffer.from(toTokenAddress),
-        nonce: getNonceBigInt(),
-        gas_amount: BigInt(0),
-        fee_token_amount: BigInt(totalFee),
-      });
-    } else {
-      tx = await contract.swap_and_bridge({
-        sender: fromAccountAddress,
-        token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
-        amount: BigInt(amount),
-        recipient: Buffer.from(toAccountAddress),
-        destination_chain_id: +toChainId,
-        receive_token: Buffer.from(toTokenAddress),
-        nonce: getNonceBigInt(),
-        gas_amount: BigInt(totalFee),
-        fee_token_amount: BigInt(0),
-      });
+    switch (gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+        tx = await contract.swap_and_bridge({
+          sender: fromAccountAddress,
+          token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
+          amount: BigInt(amount),
+          recipient: Buffer.from(toAccountAddress),
+          destination_chain_id: +toChainId,
+          receive_token: Buffer.from(toTokenAddress),
+          nonce: getNonceBigInt(),
+          gas_amount: BigInt(totalFee),
+          fee_token_amount: BigInt(0),
+        });
+        break;
+      case FeePaymentMethod.WITH_STABLECOIN:
+        tx = await contract.swap_and_bridge({
+          sender: fromAccountAddress,
+          token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
+          amount: BigInt(amount),
+          recipient: Buffer.from(toAccountAddress),
+          destination_chain_id: +toChainId,
+          receive_token: Buffer.from(toTokenAddress),
+          nonce: getNonceBigInt(),
+          gas_amount: BigInt(0),
+          fee_token_amount: BigInt(totalFee),
+        });
+        break;
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("SRB bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
+
     return tx.toXDR();
   }
 

@@ -78,7 +78,7 @@ describe("AllbridgeCoreClient", () => {
 
     it("☀️ getReceiveTransactionCost returns fee", async () => {
       const actual = await api.getReceiveTransactionCost(receiveFeeRequest);
-      expect(actual).toEqual({
+      expect(actual).toMatchObject({
         exchangeRate: "0.12550590438537169016",
         fee: "20000000000000000",
         sourceNativeTokenPrice: "1501",

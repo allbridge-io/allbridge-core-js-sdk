@@ -6,8 +6,8 @@ import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
-import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError } from "../../exceptions";
-import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3 } from "../../index";
+import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError, SdkError } from "../../exceptions";
+import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3, FeePaymentMethod } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
@@ -96,7 +96,7 @@ export class DefaultBridgeService implements BridgeService {
     } else {
       params = a as GetAllowanceParams;
     }
-    const spender = getSpender(params.token, params.messenger);
+    const spender = getSpender(params.token, params.messenger, params.gasFeePaymentMethod);
     return await this.tokenService.getAllowance({ ...params, spender }, provider);
   }
 
@@ -109,12 +109,12 @@ export class DefaultBridgeService implements BridgeService {
     } else {
       params = a as CheckAllowanceParams;
     }
-    const spender = getSpender(params.token, params.messenger);
+    const spender = getSpender(params.token, params.messenger, params.gasFeePaymentMethod);
     return this.tokenService.checkAllowance({ ...params, spender }, provider);
   }
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    const spender = getSpender(approveData.token, approveData.messenger);
+    const spender = getSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
     return this.tokenService.approve(provider, { ...approveData, spender });
   }
 
@@ -131,7 +131,17 @@ export class DefaultBridgeService implements BridgeService {
   }
 }
 
-export function getSpender(token: TokenWithChainDetails, messenger: Messenger = Messenger.ALLBRIDGE): string {
+export function getSpender(
+  token: TokenWithChainDetails,
+  messenger: Messenger = Messenger.ALLBRIDGE,
+  gasFeePaymentMethod: FeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY
+): string {
+  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+    if (token.abrPayer) {
+      return token.abrPayer.payerAddress;
+    }
+    throw new SdkError("Token must contain 'abrPayer' for ARB0 payment method");
+  }
   switch (messenger) {
     case Messenger.CCTP:
       if (token.cctpAddress) {

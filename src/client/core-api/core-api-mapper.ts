@@ -1,6 +1,7 @@
 import { Chains } from "../../chains";
 import { ChainSymbol } from "../../chains/chain.enums";
 import {
+  AbrPayerAvailability,
   ChainDetails,
   ChainDetailsMap,
   ChainDetailsMapWithFlags,
@@ -13,6 +14,7 @@ import {
 } from "../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../utils/calculation";
 import {
+  AbrPayerAvailabilityTypeDTO,
   ChainDetailsDTO,
   ChainDetailsResponse,
   Messenger,
@@ -106,6 +108,17 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     bridgeAddress: dto.bridgeAddress,
     oftBridgeAddress: dto.oftBridgeAddress,
     yieldAddress: dto.yieldAddress,
+    abrPayer: dto.abrPayer
+      ? {
+          payerAddress: dto.abrPayer.payerAddress,
+          abrToken: {
+            chainSymbol,
+            tokenAddress: dto.abrPayer.tokenAddress,
+            decimals: dto.abrPayer.tokenDecimals,
+          },
+          payerAvailability: mapAbrPayerAvailabilityFromDto(dto.abrPayer.payerAvailability),
+        }
+      : undefined,
     transferTime: mapTransferTimeFromDto(dto.transferTime),
     txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,
@@ -116,6 +129,32 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     tokens: dto.tokens.map((tokenDto) => mapTokenWithChainDetailsFromDto(chainDetails, tokenDto)),
   };
 }
+
+function mapAbrPayerAvailabilityFromDto(dto: AbrPayerAvailabilityTypeDTO): AbrPayerAvailability {
+  if (!dto) return {};
+  const out: AbrPayerAvailability = {};
+
+  for (const [humanReadableKey, isAvailable] of Object.entries(dto)) {
+    if (!isAvailable) continue;
+
+    const messengerKey =
+      dtoKeyToMessengerKey[humanReadableKey as (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO]];
+
+    if (messengerKey) {
+      out[messengerKey] = true;
+    }
+  }
+
+  return out;
+}
+
+// Build mapping from human-readable DTO key ("Allbridge") to Messenger key ("ALLBRIDGE")
+const dtoKeyToMessengerKey: Record<(typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO], keyof typeof Messenger> =
+  Object.fromEntries(
+    Object.entries(MessengerKeyDTO).map(([enumKey, humanReadable]) => {
+      return [humanReadable, enumKey as keyof typeof Messenger];
+    })
+  ) as any;
 
 export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   const dividerPosition = poolKey.indexOf("_");

@@ -3,6 +3,11 @@ import { AllbridgeCoreClientPoolsExt } from "../client/core-api/core-client-pool
 import { ArgumentInvalidDecimalsError, InvalidAmountError, TimeoutError } from "../exceptions";
 import { PoolInfo, TokenWithChainDetails } from "../tokens-info";
 
+export function assertNever(x: never, message?: string): never {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  throw new Error(message ?? `Unexpected value: ${x}`);
+}
+
 export async function getPoolInfoByToken(
   api: AllbridgeCoreClientPoolsExt,
   sourceChainToken: TokenWithChainDetails

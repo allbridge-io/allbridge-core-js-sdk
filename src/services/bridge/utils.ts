@@ -28,6 +28,7 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { assertNever } from "../../utils/utils";
 import {
   SendParams,
   TxSendParams,
@@ -319,12 +320,13 @@ export async function prepareTxSendParams(
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
 
-  if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
-  } else {
-    // default FeePaymentMethod.WITH_NATIVE_CURRENCY
-    txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
+  txSendParams.gasFeePaymentMethod = params.gasFeePaymentMethod ?? FeePaymentMethod.WITH_NATIVE_CURRENCY;
+  if (txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+    if (!params.sourceToken.abrPayer) {
+      throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+    }
   }
+
   const sourceToken = params.sourceToken;
 
   switch (params.messenger) {
@@ -388,6 +390,15 @@ export async function prepareTxSendParams(
       case FeePaymentMethod.WITH_STABLECOIN:
         txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.decimals).toFixed(0);
         break;
+      case FeePaymentMethod.WITH_ARB:
+        if (!sourceToken.abrPayer) {
+          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        }
+        txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.abrPayer.abrToken.decimals).toFixed(0);
+        break;
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
   } else {
     txSendParams.fee = fee;
@@ -414,6 +425,19 @@ export async function prepareTxSendParams(
         extraGasDecimals = sourceToken.decimals;
         extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.sourceNativeTokenPrice);
         break;
+      case FeePaymentMethod.WITH_ARB:
+        if (!sourceToken.abrPayer) {
+          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        }
+        if (!extraGasLimits.abrExchangeRate) {
+          throw new SdkError("Cannot transfer WITH_ARB option");
+        }
+        extraGasDecimals = sourceToken.abrPayer.abrToken.decimals;
+        extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.abrExchangeRate);
+        break;
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
 
     switch (extraGasFormat ?? AmountFormat.INT) {
@@ -442,7 +466,6 @@ export async function prepareTxSendParams(
         break;
       }
     }
-
     validateExtraGasNotExceeded(txSendParams.extraGas, txSendParams.gasFeePaymentMethod, extraGasLimits);
   }
 
@@ -451,8 +474,25 @@ export async function prepareTxSendParams(
   }
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
   txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
-  if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
-    validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+
+  switch (txSendParams.gasFeePaymentMethod) {
+    case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+      break;
+    case FeePaymentMethod.WITH_STABLECOIN:
+      validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+      break;
+    case FeePaymentMethod.WITH_ARB: {
+      const { abrExchangeRate } = await api.getReceiveTransactionCost({
+        sourceChainId: txSendParams.fromChainId,
+        destinationChainId: txSendParams.toChainId,
+        messenger: txSendParams.messenger,
+        sourceToken: params.sourceToken.tokenAddress,
+      });
+      txSendParams.abrExchangeRate = abrExchangeRate;
+      break;
+    }
+    default:
+      return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
   }
   return txSendParams;
 }
@@ -508,6 +548,20 @@ export async function getGasFeeOptions(
     gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: gasFeeIntWithStables,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainToken.decimals).toFixed(),
+    };
+  }
+  if (transactionCostResponse.abrExchangeRate && sourceChainToken.abrPayer) {
+    const gasFeeIntWithStables = convertAmountPrecision(
+      new Big(transactionCostResponse.fee).mul(transactionCostResponse.abrExchangeRate),
+      Chains.getChainDecimalsByType(sourceChainToken.chainType),
+      sourceChainToken.abrPayer.abrToken.decimals
+    ).toFixed(0, Big.roundUp);
+    gasFeeOptions[FeePaymentMethod.WITH_ARB] = {
+      [AmountFormat.INT]: gasFeeIntWithStables,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        gasFeeIntWithStables,
+        sourceChainToken.abrPayer.abrToken.decimals
+      ).toFixed(),
     };
   }
 
@@ -569,6 +623,18 @@ export async function getExtraGasMaxLimits(
       [AmountFormat.FLOAT]: maxAmountFloatInStable,
     };
   }
+  if (transactionCostResponse.abrExchangeRate && sourceChainToken.abrPayer) {
+    const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
+      .mul(transactionCostResponse.abrExchangeRate)
+      .toFixed(sourceChainToken.abrPayer.abrToken.decimals, Big.roundDown);
+    extraGasMaxLimits[FeePaymentMethod.WITH_ARB] = {
+      [AmountFormat.INT]: convertFloatAmountToInt(
+        maxAmountFloatInStable,
+        sourceChainToken.abrPayer.abrToken.decimals
+      ).toFixed(0),
+      [AmountFormat.FLOAT]: maxAmountFloatInStable,
+    };
+  }
   return {
     extraGasMax: extraGasMaxLimits,
     destinationChain: {
@@ -592,6 +658,7 @@ export async function getExtraGasMaxLimits(
       },
     },
     exchangeRate: transactionCostResponse.exchangeRate,
+    abrExchangeRate: transactionCostResponse.abrExchangeRate,
     sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
   };
 }

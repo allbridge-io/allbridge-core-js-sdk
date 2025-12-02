@@ -45,7 +45,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     } else {
       approveData = a as ApproveParams;
     }
-    const spender = getSpender(approveData.token, approveData.messenger);
+    const spender = getSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
     return this.tokenService.buildRawTransactionApprove(
       {
         ...approveData,

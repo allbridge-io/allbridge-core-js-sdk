@@ -5,6 +5,7 @@ import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
+import { assertNever } from "../../../utils/utils";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeClient } from "../../models/alg/BridgeClient";
 import { PaddingUtilClient } from "../../models/alg/PaddingUtilClient";
@@ -58,7 +59,6 @@ export class AlgBridgeService extends ChainBridgeService {
     if (txSendParams.extraGas) {
       totalFee = totalFee + BigInt(txSendParams.extraGas);
     }
-    const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
 
     const composer = this.algorand.newGroup();
 
@@ -69,47 +69,57 @@ export class AlgBridgeService extends ChainBridgeService {
       sender,
     });
 
-    if (isPayWithStable) {
-      composer.addAppCallMethodCall(
-        await bridge.params.swapAndBridgeWithStable({
-          args: {
-            assetTransferRef: assetTransferTx,
-            recipient,
-            destinationChainId,
-            receiveToken,
-            nonce,
-            feeTokenAmount: totalFee,
-          },
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        const paymentTx = await this.algorand.createTransaction.payment({
+          amount: AlgoAmount.MicroAlgo(totalFee),
+          receiver: bridge.appAddress,
           sender,
-          extraFee: feeForInner(9),
-        })
-      );
-      const paddingTx = await this.algorand.createTransaction.appCall({
-        appId: paddingUtil.appId,
-        sender,
-        note: "padding_1",
-      });
-      composer.addTransaction(paddingTx);
-    } else {
-      const paymentTx = await this.algorand.createTransaction.payment({
-        amount: AlgoAmount.MicroAlgo(totalFee),
-        receiver: bridge.appAddress,
-        sender,
-      });
-      composer.addAppCallMethodCall(
-        await bridge.params.swapAndBridge({
-          args: {
-            paymentRef: paymentTx,
-            assetTransferRef: assetTransferTx,
-            recipient,
-            destinationChainId,
-            receiveToken,
-            nonce,
-          },
+        });
+        composer.addAppCallMethodCall(
+          await bridge.params.swapAndBridge({
+            args: {
+              paymentRef: paymentTx,
+              assetTransferRef: assetTransferTx,
+              recipient,
+              destinationChainId,
+              receiveToken,
+              nonce,
+            },
+            sender,
+            extraFee: feeForInner(8),
+          })
+        );
+        break;
+      }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        composer.addAppCallMethodCall(
+          await bridge.params.swapAndBridgeWithStable({
+            args: {
+              assetTransferRef: assetTransferTx,
+              recipient,
+              destinationChainId,
+              receiveToken,
+              nonce,
+              feeTokenAmount: totalFee,
+            },
+            sender,
+            extraFee: feeForInner(9),
+          })
+        );
+        const paddingTx = await this.algorand.createTransaction.appCall({
+          appId: paddingUtil.appId,
           sender,
-          extraFee: feeForInner(8),
-        })
-      );
+          note: "padding_1",
+        });
+        composer.addTransaction(paddingTx);
+        break;
+      }
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("ALG bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
 
     const paddingTx = await this.algorand.createTransaction.appCall({

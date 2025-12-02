@@ -15,6 +15,7 @@ import {
   TransactionResponse,
 } from "../../../models";
 import { SuiAddresses } from "../../../tokens-info";
+import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
 import { setAddress } from "../../models/sui/bridge";
 import { swap, swapAndBridge, swapAndBridgeWormhole } from "../../models/sui/bridge/bridge-interface/functions";
@@ -153,51 +154,63 @@ export class SuiBridgeService extends ChainBridgeService {
     }
 
     tx.setSender(fromAccountAddress);
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
 
-      let amountCoin, feeTokenCoin;
-      if (inputCoin) {
-        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
-        amountCoin = inputCoin;
-        feeTokenCoin = feeTokenCoinS;
-      } else {
-        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
-        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+    switch (gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        const totalFeeCoin =
+          totalFee === "0"
+            ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
+            : coinWithBalance({ balance: BigInt(totalFee) });
+        const args = {
+          bridge: suiAddresses.bridgeObjectAddress,
+          messenger: suiAddresses.allbridgeMessengerObjectAddress,
+          amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+          destinationChainId: toChainId,
+          nonce: getNonceBigInt(),
+          recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
+          receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
+          feeSuiCoin: totalFeeCoin,
+        };
+        swapAndBridge(tx, fromTokenAddress, args);
+        break;
       }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
 
-      const args = {
-        bridge: suiAddresses.bridgeObjectAddress,
-        messenger: suiAddresses.allbridgeMessengerObjectAddress,
-        amount: amountCoin,
-        destinationChainId: toChainId,
-        nonce: getNonceBigInt(),
-        recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
-        receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: feeTokenCoin,
-        feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
-      };
-      swapAndBridge(tx, fromTokenAddress, args);
-    } else {
-      const totalFeeCoin =
-        totalFee === "0"
-          ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
-          : coinWithBalance({ balance: BigInt(totalFee) });
-      const args = {
-        bridge: suiAddresses.bridgeObjectAddress,
-        messenger: suiAddresses.allbridgeMessengerObjectAddress,
-        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
-        destinationChainId: toChainId,
-        nonce: getNonceBigInt(),
-        recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
-        receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
-        feeSuiCoin: totalFeeCoin,
-      };
-      swapAndBridge(tx, fromTokenAddress, args);
+        let amountCoin, feeTokenCoin;
+        if (inputCoin) {
+          const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+          amountCoin = inputCoin;
+          feeTokenCoin = feeTokenCoinS;
+        } else {
+          amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+          feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+        }
+
+        const args = {
+          bridge: suiAddresses.bridgeObjectAddress,
+          messenger: suiAddresses.allbridgeMessengerObjectAddress,
+          amount: amountCoin,
+          destinationChainId: toChainId,
+          nonce: getNonceBigInt(),
+          recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
+          receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: feeTokenCoin,
+          feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
+        };
+        swapAndBridge(tx, fromTokenAddress, args);
+        break;
+      }
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("SUI bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
+
     return await tx.toJSON({ client: this.client });
   }
 
@@ -224,54 +237,65 @@ export class SuiBridgeService extends ChainBridgeService {
     }
 
     tx.setSender(fromAccountAddress);
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
 
-      let amountCoin, feeTokenCoin;
-      if (inputCoin) {
-        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
-        amountCoin = inputCoin;
-        feeTokenCoin = feeTokenCoinS;
-      } else {
-        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
-        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+    switch (gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        const totalFeeCoin =
+          totalFee === "0"
+            ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
+            : coinWithBalance({ balance: BigInt(totalFee) });
+        const args = {
+          bridge: suiAddresses.bridgeObjectAddress,
+          messenger: suiAddresses.wormholeMessengerObjectAddress,
+          wormholeState: suiAddresses.wormholeStateObjectAddress,
+          theClock: SUI_CLOCK_OBJECT_ID,
+          amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+          destinationChainId: toChainId,
+          nonce: getNonceBigInt(),
+          recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
+          receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
+          feeSuiCoin: totalFeeCoin,
+        };
+        swapAndBridgeWormhole(tx, fromTokenAddress, args);
+        break;
       }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
 
-      const args = {
-        bridge: suiAddresses.bridgeObjectAddress,
-        messenger: suiAddresses.wormholeMessengerObjectAddress,
-        wormholeState: suiAddresses.wormholeStateObjectAddress,
-        theClock: SUI_CLOCK_OBJECT_ID,
-        amount: amountCoin,
-        destinationChainId: toChainId,
-        nonce: getNonceBigInt(),
-        recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
-        receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: feeTokenCoin,
-        feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
-      };
-      swapAndBridgeWormhole(tx, fromTokenAddress, args);
-    } else {
-      const totalFeeCoin =
-        totalFee === "0"
-          ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
-          : coinWithBalance({ balance: BigInt(totalFee) });
-      const args = {
-        bridge: suiAddresses.bridgeObjectAddress,
-        messenger: suiAddresses.wormholeMessengerObjectAddress,
-        wormholeState: suiAddresses.wormholeStateObjectAddress,
-        theClock: SUI_CLOCK_OBJECT_ID,
-        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
-        destinationChainId: toChainId,
-        nonce: getNonceBigInt(),
-        recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
-        receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
-        feeSuiCoin: totalFeeCoin,
-      };
-      swapAndBridgeWormhole(tx, fromTokenAddress, args);
+        let amountCoin, feeTokenCoin;
+        if (inputCoin) {
+          const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+          amountCoin = inputCoin;
+          feeTokenCoin = feeTokenCoinS;
+        } else {
+          amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+          feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+        }
+
+        const args = {
+          bridge: suiAddresses.bridgeObjectAddress,
+          messenger: suiAddresses.wormholeMessengerObjectAddress,
+          wormholeState: suiAddresses.wormholeStateObjectAddress,
+          theClock: SUI_CLOCK_OBJECT_ID,
+          amount: amountCoin,
+          destinationChainId: toChainId,
+          nonce: getNonceBigInt(),
+          recipient: fromHex(tx, normalizeSuiHex(toAccountAddress)),
+          receiveToken: fromHex(tx, normalizeSuiHex(toTokenAddress)),
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: feeTokenCoin,
+          feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
+        };
+        swapAndBridgeWormhole(tx, fromTokenAddress, args);
+        break;
+      }
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("SUI bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
     return await tx.toJSON({ client: this.client });
   }
@@ -317,55 +341,66 @@ export class SuiBridgeService extends ChainBridgeService {
       recipient = recipientWalletAddress;
     }
 
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
-
-      let amountCoin, feeTokenCoin;
-      if (inputCoin) {
-        const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
-        amountCoin = inputCoin;
-        feeTokenCoin = feeTokenCoinS;
-      } else {
-        amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
-        feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+    switch (gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        const totalFeeCoin =
+          totalFee === "0"
+            ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
+            : coinWithBalance({ balance: BigInt(totalFee) });
+        const args = {
+          cctpBridge: suiAddresses.cctpObjectAddress,
+          tokenMessengerMinterState: suiAddresses.cctpTokenMessengerMinterStateObjectAddress,
+          messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
+          treasury: suiAddresses.cctpTreasuryObjectAddress,
+          denyList: suiAddresses.cctpDenyListObjectAddress,
+          amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
+          destinationChainId: toChainId,
+          recipient: recipient,
+          recipientWalletAddress: recipientWalletAddress,
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
+          feeSuiCoin: totalFeeCoin,
+        };
+        bridge(tx, fromTokenAddress, args);
+        break;
       }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        const amountWithoutFee = BigInt(amount) - BigInt(totalFee);
 
-      const args = {
-        cctpBridge: suiAddresses.cctpObjectAddress,
-        tokenMessengerMinterState: suiAddresses.cctpTokenMessengerMinterStateObjectAddress,
-        messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
-        treasury: suiAddresses.cctpTreasuryObjectAddress,
-        denyList: suiAddresses.cctpDenyListObjectAddress,
-        amount: amountCoin,
-        destinationChainId: toChainId,
-        recipient: recipient,
-        recipientWalletAddress: recipientWalletAddress,
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: feeTokenCoin,
-        feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
-      };
-      bridge(tx, fromTokenAddress, args);
-    } else {
-      const totalFeeCoin =
-        totalFee === "0"
-          ? coinWithBalance({ balance: BigInt(totalFee), useGasCoin: false })
-          : coinWithBalance({ balance: BigInt(totalFee) });
-      const args = {
-        cctpBridge: suiAddresses.cctpObjectAddress,
-        tokenMessengerMinterState: suiAddresses.cctpTokenMessengerMinterStateObjectAddress,
-        messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
-        treasury: suiAddresses.cctpTreasuryObjectAddress,
-        denyList: suiAddresses.cctpDenyListObjectAddress,
-        amount: inputCoin ?? coinWithBalance({ balance: BigInt(amount), type: fromTokenAddress }),
-        destinationChainId: toChainId,
-        recipient: recipient,
-        recipientWalletAddress: recipientWalletAddress,
-        gasOracle: suiAddresses.gasOracleObjectAddress,
-        feeTokenCoin: coinWithBalance({ balance: BigInt(0), type: fromTokenAddress }),
-        feeSuiCoin: totalFeeCoin,
-      };
-      bridge(tx, fromTokenAddress, args);
+        let amountCoin, feeTokenCoin;
+        if (inputCoin) {
+          const [feeTokenCoinS] = tx.splitCoins(inputCoin, [totalFee]);
+          amountCoin = inputCoin;
+          feeTokenCoin = feeTokenCoinS;
+        } else {
+          amountCoin = coinWithBalance({ balance: amountWithoutFee, type: fromTokenAddress });
+          feeTokenCoin = coinWithBalance({ balance: BigInt(totalFee), type: fromTokenAddress });
+        }
+
+        const args = {
+          cctpBridge: suiAddresses.cctpObjectAddress,
+          tokenMessengerMinterState: suiAddresses.cctpTokenMessengerMinterStateObjectAddress,
+          messageTransmitterState: suiAddresses.cctpMessageTransmitterStateObjectAddress,
+          treasury: suiAddresses.cctpTreasuryObjectAddress,
+          denyList: suiAddresses.cctpDenyListObjectAddress,
+          amount: amountCoin,
+          destinationChainId: toChainId,
+          recipient: recipient,
+          recipientWalletAddress: recipientWalletAddress,
+          gasOracle: suiAddresses.gasOracleObjectAddress,
+          feeTokenCoin: feeTokenCoin,
+          feeSuiCoin: coinWithBalance({ balance: BigInt(0), useGasCoin: false }),
+        };
+        bridge(tx, fromTokenAddress, args);
+        break;
+      }
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("SUI bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
+
     return await tx.toJSON({ client: this.client });
   }
 }

@@ -338,7 +338,7 @@ describe("ChainBridgeService Utils", () => {
         exchangeRate: "0.12550590438537169016",
         sourceNativeTokenPrice: "241.26",
       };
-      expect(extraGasMaxLimitResponse).toEqual(expectedExtraGasMaxLimitResponse);
+      expect(extraGasMaxLimitResponse).toMatchObject(expectedExtraGasMaxLimitResponse);
     });
   });
 });

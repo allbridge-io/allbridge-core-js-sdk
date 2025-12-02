@@ -4,6 +4,7 @@ import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
+import { assertNever } from "../../../utils/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { sendRawTransaction } from "../../utils/trx";
 import { SendParams, TxSendParamsTrx, TxSwapParamsTrx } from "../models";
@@ -86,77 +87,107 @@ export class TronBridgeService extends ChainBridgeService {
     switch (messenger) {
       case Messenger.CCTP:
       case Messenger.CCTP_V2:
-        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-          parameters = [
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "uint256", value: totalFee },
-          ];
-          value = "0";
-        } else {
-          parameters = [
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "uint256", value: 0 },
-          ];
-          value = totalFee;
+        switch (gasFeePaymentMethod) {
+          case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+            parameters = [
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "uint256", value: 0 },
+            ];
+            value = totalFee;
+            break;
+          }
+          case FeePaymentMethod.WITH_STABLECOIN: {
+            parameters = [
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "uint256", value: totalFee },
+            ];
+            value = "0";
+            break;
+          }
+          case FeePaymentMethod.WITH_ARB:
+            throw new SdkError("TRX bridge does not support ARB0 payment method");
+          default: {
+            return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+          }
         }
         methodSignature = "bridge(uint256,bytes32,uint256,uint256)";
         break;
       case Messenger.OFT:
-        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-          parameters = [
-            { type: "address", value: sendParams.sourceToken.tokenAddress },
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "uint256", value: totalFee },
-            { type: "uint256", value: extraGasDest ?? "0" },
-            { type: "uint256", value: "10" },
-          ];
-          value = "0";
-        } else {
-          parameters = [
-            { type: "address", value: sendParams.sourceToken.tokenAddress },
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "uint256", value: 0 },
-            { type: "uint256", value: extraGasDest ?? "0" },
-            { type: "uint256", value: "10" },
-          ];
-          value = totalFee;
+        switch (gasFeePaymentMethod) {
+          case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+            parameters = [
+              { type: "address", value: sendParams.sourceToken.tokenAddress },
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "uint256", value: 0 },
+              { type: "uint256", value: extraGasDest ?? "0" },
+              { type: "uint256", value: "10" },
+            ];
+            value = totalFee;
+            break;
+          }
+          case FeePaymentMethod.WITH_STABLECOIN: {
+            parameters = [
+              { type: "address", value: sendParams.sourceToken.tokenAddress },
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "uint256", value: totalFee },
+              { type: "uint256", value: extraGasDest ?? "0" },
+              { type: "uint256", value: "10" },
+            ];
+            value = "0";
+            break;
+          }
+          case FeePaymentMethod.WITH_ARB:
+            throw new SdkError("TRX bridge does not support ARB0 payment method");
+          default: {
+            return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+          }
         }
         methodSignature = "bridge(address,uint256,bytes32,uint256,uint256,uint256,uint256)";
         break;
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
-        if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-          parameters = [
-            { type: "bytes32", value: fromTokenAddress },
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "bytes32", value: toTokenAddress },
-            { type: "uint256", value: nonce },
-            { type: "uint8", value: messenger },
-            { type: "uint256", value: totalFee },
-          ];
-          value = "0";
-        } else {
-          parameters = [
-            { type: "bytes32", value: fromTokenAddress },
-            { type: "uint256", value: amount },
-            { type: "bytes32", value: toAccountAddress },
-            { type: "uint256", value: toChainId },
-            { type: "bytes32", value: toTokenAddress },
-            { type: "uint256", value: nonce },
-            { type: "uint8", value: messenger },
-            { type: "uint256", value: 0 },
-          ];
-          value = totalFee;
+        switch (gasFeePaymentMethod) {
+          case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+            parameters = [
+              { type: "bytes32", value: fromTokenAddress },
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "bytes32", value: toTokenAddress },
+              { type: "uint256", value: nonce },
+              { type: "uint8", value: messenger },
+              { type: "uint256", value: 0 },
+            ];
+            value = totalFee;
+            break;
+          }
+          case FeePaymentMethod.WITH_STABLECOIN: {
+            parameters = [
+              { type: "bytes32", value: fromTokenAddress },
+              { type: "uint256", value: amount },
+              { type: "bytes32", value: toAccountAddress },
+              { type: "uint256", value: toChainId },
+              { type: "bytes32", value: toTokenAddress },
+              { type: "uint256", value: nonce },
+              { type: "uint8", value: messenger },
+              { type: "uint256", value: totalFee },
+            ];
+            value = "0";
+            break;
+          }
+          case FeePaymentMethod.WITH_ARB:
+            throw new SdkError("TRX bridge does not support ARB0 payment method");
+          default: {
+            return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+          }
         }
         methodSignature = "swapAndBridge(bytes32,uint256,bytes32,uint256,bytes32,uint256,uint8,uint256)";
         break;
