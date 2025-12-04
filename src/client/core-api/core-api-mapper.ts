@@ -112,7 +112,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
       ? {
           payerAddress: dto.abrPayer.payerAddress,
           abrToken: {
-            chainSymbol,
+            chainSymbol: chainSymbol as ChainSymbol,
             tokenAddress: dto.abrPayer.tokenAddress,
             decimals: dto.abrPayer.tokenDecimals,
           },
