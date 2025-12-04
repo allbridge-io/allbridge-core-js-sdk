@@ -8,7 +8,7 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
+import { validateAmountDecimals, validateAmountGteZero, validateAmountGtZero } from "../../utils/utils";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { NodeRpcUrlsConfig } from "../index";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
@@ -67,7 +67,7 @@ export class DefaultTokenService implements TokenService {
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
     if (approveData.amount) {
-      validateAmountGtZero(approveData.amount);
+      validateAmountGteZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
@@ -77,7 +77,7 @@ export class DefaultTokenService implements TokenService {
 
   async buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction> {
     if (approveData.amount) {
-      validateAmountGtZero(approveData.amount);
+      validateAmountGteZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(

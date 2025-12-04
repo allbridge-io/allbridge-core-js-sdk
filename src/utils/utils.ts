@@ -19,6 +19,12 @@ export function validateAmountGtZero(amount: BigSource) {
   }
 }
 
+export function validateAmountGteZero(amount: BigSource) {
+  if (Big(amount).lt(0)) {
+    throw new InvalidAmountError("Amount must be greater or equal than zero");
+  }
+}
+
 export function validateAmountDecimals(argName: string, amountFloat: number | string | Big, decimalRequired: number) {
   const amount = Big(amountFloat).toFixed();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
