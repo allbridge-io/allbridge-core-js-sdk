@@ -1,10 +1,10 @@
 import { Web3 } from "web3";
+import { ApproveParams } from "../../../services/liquidity-pool/models";
 import {
   DefaultRawPoolTransactionBuilder,
   RawPoolTransactionBuilder,
 } from "../../../services/liquidity-pool/raw-pool-transaction-builder";
 import { DefaultTokenService } from "../../../services/token";
-import { ApproveParams } from "../../../services/token/models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 import tokenInfoWithChainDetailsGrl from "../../data/tokens-info/TokenInfoWithChainDetails-GRL.json";
 import { initChainsWithTestnet } from "../../mock/utils";
@@ -33,7 +33,6 @@ describe("RawTransactionBuilder", () => {
     const approveData: ApproveParams = {
       token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
       owner: "owner",
-      spender: "spender",
     };
     const web3 = new Web3("http://localhost/");
     const actual = await rawTransactionBuilder.approve(web3, approveData);

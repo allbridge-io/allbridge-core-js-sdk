@@ -23,7 +23,7 @@ describe("RawTransactionBuilder", () => {
     rawTransactionBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrls, solParams, tokenService);
   });
 
-  test.skip("approve should call buildRawTransactionApprove", async () => {
+  test("approve should call buildRawTransactionApprove", async () => {
     const expectedApproveTransaction = {
       data: "0x095ea7b3000000000000000000000000ba285a8f52601eabcc769706fcbde2645aa0af18ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       from: "owner",
