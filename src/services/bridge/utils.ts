@@ -539,6 +539,7 @@ export async function getGasFeeOptions(
     },
     adminFeeShareWithExtras: transactionCostResponse.adminFeeShareWithExtras,
   };
+
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
@@ -550,7 +551,13 @@ export async function getGasFeeOptions(
       [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainToken.decimals).toFixed(),
     };
   }
-  if (transactionCostResponse.abrExchangeRate && sourceChainToken.abrPayer) {
+
+  const messengerKey = Messenger[messenger] as keyof typeof Messenger;
+  if (
+    transactionCostResponse.abrExchangeRate &&
+    sourceChainToken.abrPayer &&
+    sourceChainToken.abrPayer.payerAvailability[messengerKey]
+  ) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.abrExchangeRate),
       Chains.getChainDecimalsByType(sourceChainToken.chainType),
@@ -614,6 +621,7 @@ export async function getExtraGasMaxLimits(
     [AmountFormat.INT]: maxAmountInSourceNative,
     [AmountFormat.FLOAT]: maxAmountFloatInSourceNative,
   };
+
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.sourceNativeTokenPrice)
@@ -623,7 +631,15 @@ export async function getExtraGasMaxLimits(
       [AmountFormat.FLOAT]: maxAmountFloatInStable,
     };
   }
-  if (transactionCostResponse.abrExchangeRate && sourceChainToken.abrPayer) {
+
+  let abrAvailable;
+  const messengerKey = Messenger[messenger] as keyof typeof Messenger;
+  if (
+    transactionCostResponse.abrExchangeRate &&
+    sourceChainToken.abrPayer &&
+    sourceChainToken.abrPayer.payerAvailability[messengerKey]
+  ) {
+    abrAvailable = true;
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.abrExchangeRate)
       .toFixed(sourceChainToken.abrPayer.abrToken.decimals, Big.roundDown);
@@ -635,6 +651,7 @@ export async function getExtraGasMaxLimits(
       [AmountFormat.FLOAT]: maxAmountFloatInStable,
     };
   }
+
   return {
     extraGasMax: extraGasMaxLimits,
     destinationChain: {
@@ -658,7 +675,7 @@ export async function getExtraGasMaxLimits(
       },
     },
     exchangeRate: transactionCostResponse.exchangeRate,
-    abrExchangeRate: transactionCostResponse.abrExchangeRate,
+    abrExchangeRate: abrAvailable ? transactionCostResponse.abrExchangeRate : undefined,
     sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
   };
 }
