@@ -552,11 +552,10 @@ export async function getGasFeeOptions(
     };
   }
 
-  const messengerKey = Messenger[messenger] as keyof typeof Messenger;
   if (
     transactionCostResponse.abrExchangeRate &&
     sourceChainToken.abrPayer &&
-    sourceChainToken.abrPayer.payerAvailability[messengerKey]
+    sourceChainToken.abrPayer.payerAvailability[messenger]
   ) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.abrExchangeRate),
@@ -633,11 +632,10 @@ export async function getExtraGasMaxLimits(
   }
 
   let abrAvailable;
-  const messengerKey = Messenger[messenger] as keyof typeof Messenger;
   if (
     transactionCostResponse.abrExchangeRate &&
     sourceChainToken.abrPayer &&
-    sourceChainToken.abrPayer.payerAvailability[messengerKey]
+    sourceChainToken.abrPayer.payerAvailability[messenger]
   ) {
     abrAvailable = true;
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)

@@ -75,7 +75,7 @@ export enum MessengerKeyDTO {
   OFT = "oft",
 }
 
-type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
+export type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
 
 export type AbrPayerAvailabilityTypeDTO = Partial<Record<AbrPayerAvailabilityKeyDTO, boolean>>;
 

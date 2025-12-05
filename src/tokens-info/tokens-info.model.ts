@@ -270,7 +270,7 @@ export interface PoolInfo {
   imbalance: string;
 }
 
-export type AbrPayerAvailability = Partial<Record<keyof typeof Messenger, boolean>>;
+export type AbrPayerAvailability = Partial<Record<Messenger, boolean>>;
 
 /**
  * Type representing transfer times for various blockchain chains.
