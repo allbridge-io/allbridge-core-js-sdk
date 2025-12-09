@@ -102,10 +102,6 @@ export class EvmBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
 
-    console.log("@@ raw fee", fee);
-    console.log("@@ raw extraGas", extraGas);
-    console.log("@@ raw totalFee", totalFee);
-
     let totalFeeInAbr: string | undefined;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
       if (!abrExchangeRate) {
@@ -121,8 +117,6 @@ export class EvmBridgeService extends ChainBridgeService {
         params.sourceToken.abrPayer.abrToken.decimals,
         Chains.getChainDecimalsByType(params.sourceToken.chainType)
       ).toFixed();
-      console.log("@@ WITH_ARB totalAbr", totalFeeInAbr);
-      console.log("@@ WITH_ARB totalFee", totalFee);
     }
 
     switch (messenger) {
