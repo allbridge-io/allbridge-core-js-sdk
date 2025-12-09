@@ -1,6 +1,6 @@
 import { Big } from "big.js";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { AmountFormat, FeePaymentMethod, TxFeeParams } from "../../../models";
+import { AmountFormat, FeePaymentMethod, TokenCoreFields, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
 export interface ApproveParams {
@@ -36,7 +36,7 @@ export interface GetTokenBalanceParams {
    *  The address for which we will find out the token balance
    */
   account: string;
-  token: TokenWithChainDetails;
+  token: TokenCoreFields;
 }
 
 export interface GetNativeTokenBalanceParams {
