@@ -3,6 +3,13 @@ import { PoolInfo, SuiAddresses } from "../../tokens-info";
 
 export type ChainDetailsResponse = Record<string, ChainDetailsDTO>;
 
+export interface AbrPayerChainInfoDTO {
+  payerAddress: string;
+  tokenAddress: string;
+  tokenDecimals: number;
+  payerAvailability: AbrPayerAvailabilityTypeDTO;
+}
+
 export interface ChainDetailsDTO {
   tokens: TokenDTO[];
   chainId: number;
@@ -10,6 +17,7 @@ export interface ChainDetailsDTO {
   paddingUtilId?: string;
   bridgeAddress: string;
   oftBridgeAddress?: string;
+  abrPayer?: AbrPayerChainInfoDTO;
   swapAddress: string;
   yieldAddress?: string;
   transferTime: TransferTimeDTO;
@@ -67,6 +75,10 @@ export enum MessengerKeyDTO {
   OFT = "oft",
 }
 
+export type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
+
+export type AbrPayerAvailabilityTypeDTO = Partial<Record<AbrPayerAvailabilityKeyDTO, boolean>>;
+
 export type TransferTimeDTO = Record<string, MessengerTransferTimeDTO>;
 
 export interface TxCostAmountDTO {
@@ -98,6 +110,7 @@ export interface ReceiveTransactionCostResponse {
   exchangeRate: string;
   fee: string;
   sourceNativeTokenPrice: string;
+  abrExchangeRate?: string;
   adminFeeShareWithExtras?: string;
 }
 
@@ -180,8 +193,8 @@ export interface BridgeTransaction {
   isClaimable?: boolean;
 }
 
-export type PoolInfoResponse = Record<ChainSymbol, PoolInfo>;
-export type PendingInfoResponse = Partial<Record<ChainSymbol, TokenPendingInfoDTO>>;
+export type PoolInfoResponse = Record<string, PoolInfo>;
+export type PendingInfoResponse = Partial<Record<string, TokenPendingInfoDTO>>;
 export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
 
 export interface PendingInfoDTO {

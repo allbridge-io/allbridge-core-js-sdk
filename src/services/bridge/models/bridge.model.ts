@@ -1,6 +1,6 @@
 import { Big } from "big.js";
 import { Messenger } from "../../../client/core-api/core-api.model";
-import { AmountFormat, FeePaymentMethod, TxFeeParams } from "../../../models";
+import { AmountFormat, FeePaymentMethod, TokenCoreFields, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
 export interface ApproveParams {
@@ -27,6 +27,8 @@ export interface ApproveParams {
    * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
    */
   messenger?: Messenger;
+
+  gasFeePaymentMethod?: FeePaymentMethod;
 }
 
 export interface GetTokenBalanceParams {
@@ -34,7 +36,7 @@ export interface GetTokenBalanceParams {
    *  The address for which we will find out the token balance
    */
   account: string;
-  token: TokenWithChainDetails;
+  token: TokenCoreFields;
 }
 
 export interface GetNativeTokenBalanceParams {
@@ -103,6 +105,8 @@ export interface SendParams extends BaseSendParams {
    * it is amount of the source chain currency.<p/>
    * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ARB} then
+   * it is amount of the ABR token.
    *
    * Optional.
    * If not defined, the default fee amount will be applied according to gasFeePaymentMethod.
@@ -123,6 +127,8 @@ export interface SendParams extends BaseSendParams {
    * it is amount of the source chain currency.<p/>
    * if gasFeePaymentMethod is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ARB} then
+   * it is amount of the ABR token.
    *
    * Optional.
    */
@@ -136,8 +142,9 @@ export interface SendParams extends BaseSendParams {
   /**
    * Payment method for the gas fee and extra gas payment.
    *
-   * WITH_NATIVE_CURRENCY - gas fee and extra gas will be added to transaction as native tokens value
-   * WITH_STABLECOIN - gas fee and extra gas will be deducted from the transaction amount
+   * WITH_NATIVE_CURRENCY - gas fee and extra gas will be added to transaction as native tokens value</br>
+   * WITH_STABLECOIN - gas fee and extra gas will be deducted from the transaction amount</br>
+   * WITH_ABR - gas fee and extra gas will be added to transaction as ABR tokens value</br>
    *
    * Optional.
    * WITH_NATIVE_CURRENCY by default.
@@ -222,6 +229,7 @@ export interface TxSendParamsTyped<T> {
    */
   extraGasDest?: string;
   gasFeePaymentMethod: FeePaymentMethod;
+  abrExchangeRate?: string;
 }
 
 export type TxSendParams = TxSendParamsEvm | TxSendParamsTrx | TxSendParamsSol | TxSendParamsSrb | TxSendParamsSui;

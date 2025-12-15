@@ -11,9 +11,10 @@ import {
 } from "@stacks/transactions";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
-import { MethodNotSupportedError } from "../../../exceptions";
+import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
+import { assertNever } from "../../../utils/utils";
 import { RawStxTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
 import { getTokenName } from "../../utils/stx/get-token-name";
@@ -64,18 +65,26 @@ export class StxBridgeService extends ChainBridgeService {
       totalFee = totalFee + BigInt(txSendParams.extraGas);
     }
 
-    const isPayWithStable = txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN;
-
     let feeTokenAmount: bigint;
     let feeNativeAmount: bigint;
-    if (isPayWithStable) {
-      feeTokenAmount = totalFee;
-      feeNativeAmount = 0n;
-    } else {
-      feeTokenAmount = 0n;
-      feeNativeAmount = totalFee;
-      const postUserStxPostCondition = getStxPostCondition(totalFee, "lte", params.fromAccountAddress);
-      postConditions.push(postUserStxPostCondition);
+    switch (txSendParams.gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        feeTokenAmount = 0n;
+        feeNativeAmount = totalFee;
+        const postUserStxPostCondition = getStxPostCondition(totalFee, "lte", params.fromAccountAddress);
+        postConditions.push(postUserStxPostCondition);
+        break;
+      }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        feeTokenAmount = totalFee;
+        feeNativeAmount = 0n;
+        break;
+      }
+      case FeePaymentMethod.WITH_ARB:
+        throw new SdkError("STX bridge does not support ARB0 payment method");
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
 
     const [contractPrincipal] = parseContractId(bridgeAddress as ContractIdString);

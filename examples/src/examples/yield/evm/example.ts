@@ -2,10 +2,10 @@ import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import {
   AllbridgeCoreSdk,
-  ChainSymbol,
-  RawEvmTransaction,
   assertYieldIsSupported,
+  ChainSymbol,
   nodeRpcUrlsDefault,
+  RawEvmTransaction,
 } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import { sendEvmRawTransaction } from "../../../utils/web3";
@@ -60,6 +60,7 @@ const main = async () => {
     amount,
     owner: accountAddress,
     token: token,
+    minVirtualAmount: "0.95",
   })) as RawEvmTransaction;
 
   const txReceiptDeposit = await sendEvmRawTransaction(rawTransactionDeposit);

@@ -25,6 +25,8 @@
     "noUncheckedIndexedAccess": true,
     "allowSyntheticDefaultImports": true,
     "inlineSources": true,
-    "strictFunctionTypes": true
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   }
 }

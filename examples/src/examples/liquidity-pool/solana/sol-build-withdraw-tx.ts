@@ -4,6 +4,7 @@ import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawPoolSolanaTransaction } from "
 import { ensure } from "../../../utils/utils";
 import solanaWeb3, { sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
+
 dotenv.config({ path: ".env" });
 
 const main = async () => {
