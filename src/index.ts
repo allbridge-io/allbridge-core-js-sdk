@@ -287,6 +287,9 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
+   *
+   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
+   * {@link getAmountToBeReceived}, {@link getAmountToBeReceivedFromChain}, or {@link getAmountToBeReceivedFromPools}.
    */
   async getAmountToBeReceivedAndGasFeeOptions(
     amountToSendFloat: BigSource,
@@ -309,6 +312,9 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
+   *
+   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
+   * {@link getAmountToSend}, {@link getAmountToSendFromChain}, or {@link getAmountToSendFromPools}.
    */
   async getAmountToSendAndGasFeeOptions(
     amountToBeReceivedFloat: BigSource,
