@@ -187,3 +187,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRIDGE_CORE_SDK }}
           projectId: bridge-core-sdk
           channelId: live
+
