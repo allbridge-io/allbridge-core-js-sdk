@@ -13,9 +13,11 @@
       "prerelease": true
     }
   ],
+  "repositoryUrl": "https://github.com/allbridge-io/allbridge-core-js-sdk.git",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
     "@semantic-release/npm",
     "@semantic-release/github"
   ]
