@@ -30,7 +30,7 @@ import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
 import { CctpBridge as CctpBridgeType, IDL as cctpBridgeIdl } from "../../models/sol/types/cctp_bridge";
-import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
+import { getFeePayer, getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
   getAuthorityAccount,
@@ -156,6 +156,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       }),
     ];
 
+    const feePayer = getFeePayer(userAccount, txFeeParams);
+
     try {
       await getTokenAccountData(receiveUserToken, provider);
     } catch (e) {
@@ -173,7 +175,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const transaction = await bridge.methods
       .swap(new BN(amount), new BN(minimumReceiveAmount || 0))
       .accounts({
-        payer: userAccount,
+        payer: feePayer,
         config: configAccount,
         bridgeAuthority,
         user: userAccount,
@@ -191,7 +193,7 @@ export class SolanaBridgeService extends ChainBridgeService {
 
     const connection = provider.connection;
     transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    transaction.feePayer = userAccount;
+    transaction.feePayer = feePayer;
     await addUnitLimitAndUnitPriceToTx(transaction, txFeeParams, this.solanaRpcUrl);
     return await this.convertToVersionedTransaction(transaction, connection);
   }
@@ -230,12 +232,15 @@ export class SolanaBridgeService extends ChainBridgeService {
     switch (txSendParams.messenger) {
       case Messenger.ALLBRIDGE: {
         const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
-        swapAndBridgeTx = await this.buildSwapAndBridgeAllbridgeTransaction(swapAndBridgeSolData);
+        swapAndBridgeTx = await this.buildSwapAndBridgeAllbridgeTransaction(swapAndBridgeSolData, params.txFeeParams);
         break;
       }
       case Messenger.WORMHOLE: {
         const swapAndBridgeSolData = await this.prepareSwapAndBridgeData(solTxSendParams);
-        const { transaction, messageAccount } = await this.buildSwapAndBridgeWormholeTransaction(swapAndBridgeSolData);
+        const { transaction, messageAccount } = await this.buildSwapAndBridgeWormholeTransaction(
+          swapAndBridgeSolData,
+          params.txFeeParams
+        );
         swapAndBridgeTx = transaction;
         requiredMessageSigner = messageAccount;
         break;
@@ -245,7 +250,8 @@ export class SolanaBridgeService extends ChainBridgeService {
         const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpData(solTxSendParams);
         const { transaction, messageSentEventDataKeypair } = await this.buildSwapAndBridgeCctpTransaction(
           params.destinationToken.chainSymbol,
-          swapAndBridgeSolData
+          swapAndBridgeSolData,
+          params.txFeeParams
         );
         swapAndBridgeTx = transaction;
         requiredMessageSigner = messageSentEventDataKeypair;
@@ -295,12 +301,14 @@ export class SolanaBridgeService extends ChainBridgeService {
     if (!exactOut) {
       amountToProcess = amountToProcess.mul(JUP_ADD_INDEX);
     }
+    const feePayer = getFeePayer(new PublicKey(params.fromAccountAddress), params.txFeeParams);
 
     const { tx, amountIn } = await this.jupiterService.getJupiterSwapTx(
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
       amountToProcess.toFixed(0),
-      exactOut
+      exactOut,
+      feePayer.toString()
     );
 
     let newAmount: string;
@@ -472,7 +480,8 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private async buildSwapAndBridgeAllbridgeTransaction(
-    swapAndBridgeData: SwapAndBridgeSolData
+    swapAndBridgeData: SwapAndBridgeSolData,
+    txFeeParams?: TxFeeParams
   ): Promise<VersionedTransaction> {
     const {
       bridge,
@@ -508,6 +517,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       instructions.push(extraGasInstruction);
     }
 
+    const feePayer = getFeePayer(userAccount, txFeeParams);
+
     const transaction = await bridge.methods
       .swapAndBridge({
         vusdAmount,
@@ -517,6 +528,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         receiveToken,
       })
       .accounts({
+        payer: feePayer,
         mint,
         user: userAccount,
         config,
@@ -543,7 +555,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .transaction();
     const connection = buildAnchorProvider(this.solanaRpcUrl, userAccount.toString()).connection;
     transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    transaction.feePayer = userAccount;
+    transaction.feePayer = feePayer;
     return await this.convertToVersionedTransaction(transaction, connection);
   }
 
@@ -563,7 +575,8 @@ export class SolanaBridgeService extends ChainBridgeService {
   }
 
   private async buildSwapAndBridgeWormholeTransaction(
-    swapAndBridgeData: SwapAndBridgeSolData
+    swapAndBridgeData: SwapAndBridgeSolData,
+    txFeeParams?: TxFeeParams
   ): Promise<{ transaction: VersionedTransaction; messageAccount: Keypair }> {
     const {
       bridge,
@@ -629,7 +642,10 @@ export class SolanaBridgeService extends ChainBridgeService {
       instructions.push(extraGasInstruction);
     }
 
+    const feePayer = getFeePayer(userAccount, txFeeParams);
+
     const accounts = {
+      payer: feePayer,
       mint,
       user: userAccount,
       config,
@@ -672,7 +688,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .signers([messageAccount])
       .transaction();
     transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
-    transaction.feePayer = userAccount;
+    transaction.feePayer = feePayer;
     return { transaction: await this.convertToVersionedTransaction(transaction, provider.connection), messageAccount };
   }
 
@@ -736,7 +752,8 @@ export class SolanaBridgeService extends ChainBridgeService {
 
   async buildSwapAndBridgeCctpTransaction(
     destinationChainSymbol: string,
-    swapAndBridgeData: SwapAndBridgeSolDataCctpData
+    swapAndBridgeData: SwapAndBridgeSolDataCctpData,
+    txFeeParams?: TxFeeParams
   ): Promise<{ transaction: VersionedTransaction; messageSentEventDataKeypair: Keypair }> {
     const {
       cctpBridge,
@@ -782,6 +799,8 @@ export class SolanaBridgeService extends ChainBridgeService {
     const messageSentEventDataKeypair = Keypair.generate();
     const lockAccount = getCctpLockAccount(cctpBridge.programId, messageSentEventDataKeypair.publicKey);
 
+    const feePayer = getFeePayer(userAccount, txFeeParams);
+
     const tx = await cctpBridge.methods
       .bridge({
         amount,
@@ -793,6 +812,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         mint: mint,
         user: userAccount,
         cctpBridge: cctpBridgeAccount,
+        payer: feePayer,
 
         messageSentEventData: messageSentEventDataKeypair.publicKey,
         lock: lockAccount,
@@ -823,7 +843,7 @@ export class SolanaBridgeService extends ChainBridgeService {
       .transaction();
     const connection = provider.connection;
     tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    tx.feePayer = userAccount;
+    tx.feePayer = feePayer;
     return { transaction: await this.convertToVersionedTransaction(tx, connection), messageSentEventDataKeypair };
   }
 

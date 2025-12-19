@@ -22,7 +22,8 @@ export class JupiterService {
     userAddress: string,
     stableTokenAddress: string,
     amount: string,
-    exactOut: boolean
+    exactOut: boolean,
+    payer?: string
   ): Promise<{ tx: VersionedTransaction; amountIn?: string }> {
     let quoteResponse: any;
     try {
@@ -57,6 +58,7 @@ export class JupiterService {
           quoteResponse: quoteResponse.data,
           userPublicKey: userAddress,
           wrapAndUnwrapSol: true,
+          payer: payer,
         },
         {
           headers: this.apiKeyHeader ? { "x-api-key": this.apiKeyHeader } : undefined,

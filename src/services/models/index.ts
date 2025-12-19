@@ -6,11 +6,25 @@ import { SolanaTxFee } from "./sol";
 
 export { SolanaTxFee, PricePerUnitInMicroLamports, ExtraFeeInLamports, SolanaAutoTxFee } from "./sol";
 
+export interface SolanaTxFeeParams {
+  /**
+   * Transaction fee configuration.
+   * If omitted, automatic fee calculation is used.
+   */
+  fee?: SolanaTxFee;
+
+  /**
+   * Custom fee payer account.
+   * Defaults to transaction signer.
+   */
+  feePayer?: string; // Solana public key (base58)
+}
+
 /**
- * Blockchain fee added to tx
+ * Blockchain fee params for tx
  */
 export interface TxFeeParams {
-  solana?: SolanaTxFee;
+  solana?: SolanaTxFee | SolanaTxFeeParams;
 }
 
 /**
