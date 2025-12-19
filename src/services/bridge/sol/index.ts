@@ -175,7 +175,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const transaction = await bridge.methods
       .swap(new BN(amount), new BN(minimumReceiveAmount || 0))
       .accounts({
-        payer: feePayer,
+        payer: userAccount,
         config: configAccount,
         bridgeAuthority,
         user: userAccount,
@@ -528,7 +528,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         receiveToken,
       })
       .accounts({
-        payer: feePayer,
+        payer: userAccount,
         mint,
         user: userAccount,
         config,
@@ -645,7 +645,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     const feePayer = getFeePayer(userAccount, txFeeParams);
 
     const accounts = {
-      payer: feePayer,
+      payer: userAccount,
       mint,
       user: userAccount,
       config,
@@ -812,7 +812,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         mint: mint,
         user: userAccount,
         cctpBridge: cctpBridgeAccount,
-        payer: feePayer,
+        payer: userAccount,
 
         messageSentEventData: messageSentEventDataKeypair.publicKey,
         lock: lockAccount,
