@@ -73,12 +73,16 @@ export class DefaultAlgUtils implements AlgUtils {
 
   private getAlgorand(client?: Algodv2): AlgorandClient {
     if (client) {
-      return AlgorandClient.fromClients({ algod: client });
+      const algorandClient = AlgorandClient.fromClients({ algod: client });
+      algorandClient.setDefaultValidityWindow(100);
+      return algorandClient;
     } else {
       const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.ALG);
-      return AlgorandClient.fromConfig({
+      const algorandClient = AlgorandClient.fromConfig({
         algodConfig: { server: nodeRpcUrl },
       });
+      algorandClient.setDefaultValidityWindow(100);
+      return algorandClient;
     }
   }
 }

@@ -25,6 +25,7 @@ export class AlgPoolService extends ChainPoolService {
     public api: AllbridgeCoreClient
   ) {
     super();
+    algorand.setDefaultValidityWindow(100);
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {

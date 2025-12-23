@@ -28,6 +28,7 @@ export class AlgBridgeService extends ChainBridgeService {
         )
       )
     );
+    algorand.setDefaultValidityWindow(100);
   }
 
   send(_params: SendParams): Promise<TransactionResponse> {
