@@ -31,6 +31,7 @@ env:
 jobs:
   validate:
     name: Validate
+    if: github.repository == 'allbridge-io/allbridge-core-js-sdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -97,6 +98,9 @@ jobs:
     if: github.event_name == 'push' && contains('["main", "beta", "alpha"]', github.ref_name)
     runs-on: ubuntu-latest
     environment: npm-registry
+    outputs:
+      new-release-published: ${{ steps.check-release.outputs.released }}
+      new-release-version: ${{ steps.check-release.outputs.version }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -137,6 +141,73 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm run semantic-release
+
+      - name: Check if new release was created
+        id: check-release
+        run: |
+          # Fetch tags created by semantic-release
+          git fetch --tags
+
+          # Get latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          CURRENT_SHA=$(git rev-parse HEAD)
+
+          if [ -n "$LATEST_TAG" ]; then
+            TAG_SHA=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
+            if [ "$TAG_SHA" = "$CURRENT_SHA" ]; then
+              VERSION="${LATEST_TAG#v}"
+              echo "released=true" >> $GITHUB_OUTPUT
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "New release detected: $LATEST_TAG"
+            else
+              echo "released=false" >> $GITHUB_OUTPUT
+              echo "No new release (tag SHA doesn't match current commit)"
+            fi
+          else
+            echo "released=false" >> $GITHUB_OUTPUT
+            echo "No tags found"
+          fi
+
+  mirror-to-public:
+    name: Mirror to Public Repo
+    needs: release
+    if: |
+      github.repository == 'allbridge-io/allbridge-core-js-sdk' &&
+      needs.release.outputs.new-release-published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get release notes
+        id: release-info
+        run: |
+          VERSION="${{ needs.release.outputs.new-release-version }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Get release notes from GitHub Release and adjust links
+          NOTES=$(gh release view "v$VERSION" --json body -q .body 2>/dev/null || echo "Release v$VERSION")
+          echo "$NOTES" | sed 's|allbridge-io/allbridge-core-js-sdk|allbridge-public/allbridge-core-js-sdk|g' > /tmp/release-notes.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to public repo
+        run: |
+          git remote add public https://x-access-token:${{ secrets.PUBLIC_REPO_PAT }}@github.com/allbridge-public/allbridge-core-js-sdk.git
+          git push public HEAD:${{ github.ref_name }} --force
+          git push public --tags --force
+
+      - name: Create GitHub Release in public repo
+        run: |
+          VERSION="${{ needs.release.outputs.new-release-version }}"
+          gh release create "v$VERSION" \
+            --repo allbridge-public/allbridge-core-js-sdk \
+            --title "v$VERSION" \
+            --notes-file /tmp/release-notes.md
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_PAT }}
 
   docs:
     name: Deploy Docs
