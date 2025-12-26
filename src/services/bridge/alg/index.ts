@@ -119,13 +119,13 @@ export class AlgBridgeService extends ChainBridgeService {
     const paddingTx1 = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
-      note: "padding_1",
+      note: "padding1",
     });
     composer.addTransaction(paddingTx1);
     const paddingTx2 = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
-      note: "padding_2",
+      note: "padding2",
     });
     composer.addTransaction(paddingTx2);
 
