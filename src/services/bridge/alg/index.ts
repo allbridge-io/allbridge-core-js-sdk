@@ -108,12 +108,6 @@ export class AlgBridgeService extends ChainBridgeService {
             extraFee: feeForInner(9),
           })
         );
-        const paddingTx = await this.algorand.createTransaction.appCall({
-          appId: paddingUtil.appId,
-          sender,
-          note: "padding_1",
-        });
-        composer.addTransaction(paddingTx);
         break;
       }
       case FeePaymentMethod.WITH_ARB:
@@ -122,17 +116,16 @@ export class AlgBridgeService extends ChainBridgeService {
         return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
       }
     }
-
-    const paddingTx = await this.algorand.createTransaction.appCall({
+    const paddingTx1 = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
-      note: "padding",
+      note: "padding_1",
     });
-    composer.addTransaction(paddingTx);
+    composer.addTransaction(paddingTx1);
     const paddingTx2 = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
-      note: "padding2",
+      note: "padding_2",
     });
     composer.addTransaction(paddingTx2);
 
