@@ -173,7 +173,8 @@ jobs:
     needs: release
     if: |
       github.repository == 'allbridge-io/allbridge-core-js-sdk' &&
-      needs.release.outputs.new-release-published == 'true'
+      needs.release.outputs.new-release-published == 'true' &&
+      secrets.PUBLIC_REPO_PAT != ''
     runs-on: ubuntu-latest
     steps:
       - name: Checkout with full history
