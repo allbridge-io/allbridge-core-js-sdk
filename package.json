@@ -101,7 +101,7 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
-    "@algorandfoundation/algokit-utils": "^9.1.2",
+    "@algorandfoundation/algokit-utils": "^9.2.0",
     "@clarigen/core": "^3.1.0",
     "@mysten/sui": "1.18.0",
     "@project-serum/anchor": "^0.25.0",
