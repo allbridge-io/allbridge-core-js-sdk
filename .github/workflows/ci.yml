@@ -101,6 +101,7 @@ jobs:
     outputs:
       new-release-published: ${{ steps.check-release.outputs.released }}
       new-release-version: ${{ steps.check-release.outputs.version }}
+      mirror-enabled: ${{ steps.check-mirror.outputs.enabled }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -168,13 +169,24 @@ jobs:
             echo "No tags found"
           fi
 
+      - name: Check if mirror is enabled
+        id: check-mirror
+        run: |
+          if [ -n "$PUBLIC_REPO_PAT" ]; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          PUBLIC_REPO_PAT: ${{ secrets.PUBLIC_REPO_PAT }}
+
   mirror-to-public:
     name: Mirror to Public Repo
     needs: release
     if: |
       github.repository == 'allbridge-io/allbridge-core-js-sdk' &&
       needs.release.outputs.new-release-published == 'true' &&
-      secrets.PUBLIC_REPO_PAT != ''
+      needs.release.outputs.mirror-enabled == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout with full history
