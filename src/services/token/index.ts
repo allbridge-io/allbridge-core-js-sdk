@@ -1,3 +1,5 @@
+import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { Algodv2 } from "algosdk";
 import { Big } from "big.js";
 import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
@@ -6,22 +8,24 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainType, EssentialWeb3 } from "../../index";
 import { AmountFormat, AmountFormatted } from "../../models";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
-import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
+import { validateAmountDecimals, validateAmountGteZero, validateAmountGtZero } from "../../utils/utils";
 import { GetNativeTokenBalanceParams } from "../bridge/models";
 import { NodeRpcUrlsConfig } from "../index";
 import { Provider, RawTransaction, TransactionResponse } from "../models";
+import { AlgTokenService } from "./alg";
 import { EvmTokenService } from "./evm";
 import {
   ApproveParams,
   ApproveParamsDto,
+  ChainTokenService,
   CheckAllowanceParams,
   CheckAllowanceParamsDto,
   GetAllowanceParams,
   GetTokenBalanceParams,
-  ChainTokenService,
 } from "./models";
 import { SolanaTokenService } from "./sol";
 import { SrbTokenService } from "./srb";
+import { StxTokenService } from "./stx";
 import { SuiTokenService } from "./sui";
 import { TronTokenService } from "./trx";
 
@@ -63,7 +67,7 @@ export class DefaultTokenService implements TokenService {
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
     if (approveData.amount) {
-      validateAmountGtZero(approveData.amount);
+      validateAmountGteZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(approveData.token.chainSymbol, approveData.owner, provider).approve(
@@ -73,7 +77,7 @@ export class DefaultTokenService implements TokenService {
 
   async buildRawTransactionApprove(approveData: ApproveParams, provider?: Provider): Promise<RawTransaction> {
     if (approveData.amount) {
-      validateAmountGtZero(approveData.amount);
+      validateAmountGteZero(approveData.amount);
       validateAmountDecimals("amount", approveData.amount, approveData.token.decimals);
     }
     return this.getChainTokenService(
@@ -139,6 +143,23 @@ export class DefaultTokenService implements TokenService {
       }
       case ChainType.SUI: {
         return new SuiTokenService(this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), this.api);
+      }
+      case ChainType.ALG: {
+        if (provider) {
+          const algod = provider as Algodv2;
+          const algorand = AlgorandClient.fromClients({ algod });
+          return new AlgTokenService(algorand, this.api);
+        } else {
+          const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+          const algorand = AlgorandClient.fromConfig({
+            algodConfig: { server: nodeRpcUrl },
+          });
+          return new AlgTokenService(algorand, this.api);
+        }
+      }
+      case ChainType.STX: {
+        const nodeRpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        return new StxTokenService(nodeRpcUrl, this.params, this.api);
       }
     }
   }

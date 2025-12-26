@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { AllbridgeCoreSdk, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
+
 dotenv.config({ path: ".env" });
 
 const main = async () => {

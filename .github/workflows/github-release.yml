@@ -1,0 +1,48 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get tag name
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Get release notes from source
+        id: notes
+        env:
+          SOURCE_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          SOURCE_API_URL: ${{ secrets.GITLAB_API_URL }}
+          SOURCE_PROJECT: ${{ secrets.GITLAB_PROJECT_PATH }}
+        run: |
+          RESPONSE=$(curl -sf -H "PRIVATE-TOKEN: $SOURCE_TOKEN" \
+            "$SOURCE_API_URL/projects/$SOURCE_PROJECT/releases/${{ steps.tag.outputs.TAG_NAME }}" || echo "{}")
+
+          NOTES=$(echo "$RESPONSE" | jq -r '.description // empty')
+
+          if [ -z "$NOTES" ]; then
+            echo "No release notes found, will use auto-generated"
+            echo "found=false" >> $GITHUB_OUTPUT
+          else
+            echo "found=true" >> $GITHUB_OUTPUT
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "content<<$EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "$EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.notes.outputs.found == 'true' && steps.notes.outputs.content || '' }}
+          generate_release_notes: ${{ steps.notes.outputs.found != 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

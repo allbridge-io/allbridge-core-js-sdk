@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SuiClient } from "@mysten/sui/client";
-import { CoinStruct } from "@mysten/sui/src/client/types/generated";
+import { CoinStruct, SuiClient } from "@mysten/sui/client";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError, SdkError } from "../../../exceptions";

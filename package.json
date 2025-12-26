@@ -23,6 +23,7 @@
   "scripts": {
     "preins": "rm -rf node_modules && pnpm i",
     "build": "pnpm run clean && pnpm run type:dts && tsc && pnpm run build:main",
+    "buildnpm": "npm run clean && npm run type:dts && tsc && npm run build:main",
     "build:main": "node -r ./esbuild-hook ./scripts/build",
     "clean": "node -r ./esbuild-hook ./scripts/clean",
     "type:dts": "tsc --emitDeclarationOnly",
@@ -57,6 +58,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/github": "^11.0.3",
+    "@semantic-release/gitlab": "^13.2.9",
     "@semantic-release/npm": "^12.0.2",
     "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/big.js": "^6.2.2",
@@ -99,11 +101,16 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
+    "@algorandfoundation/algokit-utils": "^9.1.2",
+    "@clarigen/core": "^3.1.0",
     "@mysten/sui": "1.18.0",
     "@project-serum/anchor": "^0.25.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.98.0",
+    "@stacks/network": "^7.2.0",
+    "@stacks/transactions": "^7.2.0",
     "@stellar/stellar-sdk": "^14.0.0",
+    "algosdk": "^3.5.2",
     "assert": "^2.1.0",
     "axios": "^1.7.9",
     "big.js": "^6.2.2",
@@ -113,8 +120,8 @@
     "timed-cache": "^2.0.0",
     "tronweb": "^6.0.0",
     "web3": "^4.16.0",
-    "web3-eth-contract": "^4.7.2",
     "web3-eth-abi": "^4.4.1",
+    "web3-eth-contract": "^4.7.2",
     "web3-types": "^1.10.0"
   },
   "jest": {

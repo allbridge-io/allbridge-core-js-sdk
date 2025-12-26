@@ -1,5 +1,4 @@
-import { SuiClient } from "@mysten/sui/client";
-import { CoinStruct, SuiObjectResponse } from "@mysten/sui/src/client/types/generated";
+import { CoinStruct, SuiObjectResponse, SuiClient } from "@mysten/sui/client";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";

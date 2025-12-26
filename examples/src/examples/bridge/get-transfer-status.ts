@@ -1,6 +1,7 @@
 import { AllbridgeCoreSdk, ChainSymbol, nodeRpcUrlsDefault } from "@allbridge/bridge-core-sdk";
 import { getEnvVar } from "../../utils/env";
 import * as dotenv from "dotenv";
+
 dotenv.config({ path: ".env" });
 
 const main = async () => {

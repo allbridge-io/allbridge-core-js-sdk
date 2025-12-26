@@ -1,6 +1,9 @@
-name: allbridge-core-sdk
+name: allbridge-core-sdk (legacy - disabled)
 
-on: [push]
+# Disabled: CI moved to GitLab, this workflow is no longer needed
+# Use github-release.yml for creating GitHub releases from GitLab tags
+on:
+  workflow_dispatch:  # Manual trigger only, if ever needed
 
 env:
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

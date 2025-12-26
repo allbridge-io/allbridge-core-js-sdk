@@ -105,6 +105,8 @@ export class DefaultYieldService implements YieldService {
             apr: "",
             apr30d: "",
             apr7d: "",
+            bridgeId: chainData.bridgeId,
+            paddingUtilId: chainData.paddingUtilId,
             bridgeAddress: chainData.bridgeAddress,
             chainId: chainData.chainId,
             chainName: chainData.name,
@@ -225,6 +227,12 @@ export function getChainYieldService(
       throw new MethodNotSupportedError();
     }
     case ChainType.SUI: {
+      throw new MethodNotSupportedError();
+    }
+    case ChainType.ALG: {
+      throw new MethodNotSupportedError();
+    }
+    case ChainType.STX: {
       throw new MethodNotSupportedError();
     }
   }
