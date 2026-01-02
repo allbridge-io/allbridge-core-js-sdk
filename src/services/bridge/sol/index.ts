@@ -297,10 +297,8 @@ export class SolanaBridgeService extends ChainBridgeService {
       gasFeePaymentMethod: FeePaymentMethod;
     };
   }> {
-    const { fee, extraGas, gasFeePaymentMethod } = await this.convertStableCoinFeeAndExtraGasToNativeCurrency(
-      params.sourceToken,
-      solTxSendParams
-    );
+    const { fee, extraGas, gasFeePaymentMethod, sourceNativeTokenPrice } =
+      await this.convertStableCoinFeeAndExtraGasToNativeCurrency(params.sourceToken, solTxSendParams);
 
     let amountToProcess = exactOut ? Big(fee) : Big(solTxSendParams.fee);
     if (extraGas) {
@@ -310,7 +308,20 @@ export class SolanaBridgeService extends ChainBridgeService {
     if (txFeeParams?.payTxFeeWithStablecoinSwap) {
       const feeTx = 5000;
       const txAccountCreation = 2296800 + 1224960;
-      amountToProcess = amountToProcess.plus(feeTx).plus(txAccountCreation);
+      const totalFee = feeTx + txAccountCreation;
+
+      if (exactOut) {
+        amountToProcess = amountToProcess.plus(totalFee);
+      } else {
+        if (!sourceNativeTokenPrice) {
+          throw new SdkError("sourceNativeTokenPrice is undefined.");
+        }
+        const totalFeeInStable = Big(totalFee)
+          .mul(sourceNativeTokenPrice)
+          .div(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - params.sourceToken.decimals))
+          .toFixed(0);
+        amountToProcess = amountToProcess.plus(totalFeeInStable);
+      }
     }
 
     if (!exactOut) {
@@ -362,7 +373,12 @@ export class SolanaBridgeService extends ChainBridgeService {
   async convertStableCoinFeeAndExtraGasToNativeCurrency(
     sourceToken: TokenWithChainDetails,
     solTxSendParams: SolTxSendParams
-  ): Promise<{ fee: string; extraGas?: string; gasFeePaymentMethod: FeePaymentMethod }> {
+  ): Promise<{
+    fee: string;
+    extraGas?: string;
+    gasFeePaymentMethod: FeePaymentMethod;
+    sourceNativeTokenPrice?: string;
+  }> {
     if (solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
       const sourceNativeTokenPrice = (
         await this.api.getReceiveTransactionCost({
@@ -383,7 +399,7 @@ export class SolanaBridgeService extends ChainBridgeService {
           .mul(Big(10).pow(Chains.getChainDecimalsByType(ChainType.SOLANA) - sourceToken.decimals))
           .toFixed(0);
       }
-      return { fee, extraGas, gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY };
+      return { fee, extraGas, gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY, sourceNativeTokenPrice };
     }
     return {
       fee: solTxSendParams.fee,

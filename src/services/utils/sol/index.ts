@@ -3,9 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 /* eslint-disable-next-line  import/no-named-as-default */
 import Big from "big.js";
 import { Web3 } from "web3";
-import { InvalidTxError, SdkError } from "../../../exceptions";
+import { AmountNotEnoughError, InvalidTxError, SdkError } from "../../../exceptions";
 import { PoolInfo } from "../../../tokens-info";
-import { swapToVUsd } from "../../../utils/calculation";
+import { convertIntAmountToFloat, swapToVUsd, toSystemPrecision } from "../../../utils/calculation";
 import { TokenAccountData } from "../../models/sol";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 
@@ -29,6 +29,11 @@ export async function getVUsdAmount(
     vUsdBalance: poolAccountInfo.vUsdBalance.toString(),
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
+  if (toSystemPrecision(amount, decimals).lte(0)) {
+    throw new AmountNotEnoughError(
+      `Swap amount ${convertIntAmountToFloat(amount, decimals).toFixed()} is too small for the liquidity pool. Minimum required amount is 0.001.`
+    );
+  }
   return swapToVUsd(amount, { decimals, feeShare }, poolInfo);
 }
 
