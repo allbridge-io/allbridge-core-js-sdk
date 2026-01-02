@@ -6,7 +6,7 @@ import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
-import { getFeePayer, getTokenAccountData } from "../../utils/sol";
+import { getTokenAccountData } from "../../utils/sol";
 import {
   getAssociatedAccount,
   getAuthorityAccount,
@@ -87,8 +87,6 @@ export class SolanaPoolService extends ChainPoolService {
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    const feePayer = getFeePayer(new PublicKey(params.accountAddress), params.txFeeParams);
-
     const tx = await bridge.methods
       .deposit(new BN(params.amount))
       .accounts(accounts)
@@ -97,15 +95,13 @@ export class SolanaPoolService extends ChainPoolService {
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
-    tx.feePayer = feePayer;
+    tx.feePayer = new PublicKey(params.accountAddress);
     await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
-
-    const feePayer = getFeePayer(new PublicKey(params.accountAddress), params.txFeeParams);
 
     const tx = await bridge.methods
       .withdraw(new BN(params.amount))
@@ -115,7 +111,7 @@ export class SolanaPoolService extends ChainPoolService {
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
-    tx.feePayer = feePayer;
+    tx.feePayer = new PublicKey(params.accountAddress);
     await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }
@@ -123,13 +119,11 @@ export class SolanaPoolService extends ChainPoolService {
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const { bridge, accounts, preInstructions } = await this.prepareDataForTransaction(params);
 
-    const feePayer = getFeePayer(new PublicKey(params.accountAddress), params.txFeeParams);
-
     const tx = await bridge.methods.claimRewards().accounts(accounts).preInstructions(preInstructions).transaction();
     tx.recentBlockhash = (
       await this.buildAnchorProvider(params.accountAddress).connection.getLatestBlockhash()
     ).blockhash;
-    tx.feePayer = feePayer;
+    tx.feePayer = new PublicKey(params.accountAddress);
     await addUnitLimitAndUnitPriceToTx(tx, params.txFeeParams, this.solanaRpcUrl);
     return tx;
   }

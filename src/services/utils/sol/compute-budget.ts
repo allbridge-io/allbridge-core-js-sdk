@@ -8,10 +8,10 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { Big } from "big.js";
-import { SdkError, TxTooLargeError } from "../../../exceptions";
+import { TxTooLargeError } from "../../../exceptions";
 import { toPowBase10 } from "../../../utils/calculation";
 import { fetchAddressLookupTableAccountsFromTx } from "../../../utils/sol/utils";
-import { SolanaAutoTxFee, SolanaTxFee, SolanaTxFeeParams, TxFeeParams } from "../../models";
+import { SolanaAutoTxFee, TxFeeParams } from "../../models";
 
 export async function addUnitLimitAndUnitPriceToTx(
   transaction: Transaction,
@@ -54,51 +54,23 @@ async function addUnitLimitAndUnitPriceToInstructions(
   txFeeParams: TxFeeParams | undefined,
   connection: Connection
 ) {
-  if (simUnitsConsumed <= 0) return;
-
-  const units = updateUnitLimit(simUnitsConsumed, instructions);
-
-  const solanaFeeParams = normalizeSolanaTxFee(txFeeParams?.solana);
-  const solanaFee = solanaFeeParams?.fee;
-
-  // If fee is not provided, treat it as auto fee calculation.
-  if (!solanaFee || solanaFee === SolanaAutoTxFee) {
-    await updateUnitPrice(instructions, connection);
-    return;
+  if (simUnitsConsumed > 0) {
+    const units = updateUnitLimit(simUnitsConsumed, instructions);
+    if (txFeeParams?.solana) {
+      const solanaTxFee = txFeeParams.solana;
+      if (solanaTxFee === SolanaAutoTxFee) {
+        await updateUnitPrice(instructions, connection);
+      } else if ("pricePerUnitInMicroLamports" in solanaTxFee) {
+        await updateUnitPrice(instructions, connection, solanaTxFee.pricePerUnitInMicroLamports);
+      } else {
+        const pricePerUnitInMicroLamports = Big(solanaTxFee.extraFeeInLamports)
+          .div(units)
+          .mul(toPowBase10(6))
+          .toFixed(0);
+        await updateUnitPrice(instructions, connection, pricePerUnitInMicroLamports);
+      }
+    }
   }
-
-  if ("pricePerUnitInMicroLamports" in solanaFee) {
-    await updateUnitPrice(instructions, connection, solanaFee.pricePerUnitInMicroLamports);
-    return;
-  }
-
-  // Extra fee in lamports -> convert to microLamports per compute unit
-  const pricePerUnitInMicroLamports = Big(solanaFee.extraFeeInLamports).div(units).mul(toPowBase10(6)).toFixed(0);
-
-  await updateUnitPrice(instructions, connection, pricePerUnitInMicroLamports);
-}
-
-export function normalizeSolanaTxFee(solana?: SolanaTxFee | SolanaTxFeeParams): SolanaTxFeeParams | undefined {
-  if (!solana) return undefined;
-
-  // Legacy format (non-object)
-  if (typeof solana !== "object") {
-    return { fee: solana };
-  }
-
-  // Legacy format (object)
-  if ("pricePerUnitInMicroLamports" in solana || "extraFeeInLamports" in solana) {
-    return { fee: solana };
-  }
-
-  // New format
-  if ("fee" in solana || "feePayer" in solana) {
-    return solana;
-  }
-
-  // This should never happen with current typings.
-  // If it does — someone passed an invalid object at runtime.
-  throw new SdkError(`Invalid Solana tx fee params: ${JSON.stringify(solana)}`);
 }
 
 function updateUnitLimit(simUnitsConsumed: number, instructions: TransactionInstruction[]): string {

@@ -6,20 +6,8 @@ import { Web3 } from "web3";
 import { InvalidTxError, SdkError } from "../../../exceptions";
 import { PoolInfo } from "../../../tokens-info";
 import { swapToVUsd } from "../../../utils/calculation";
-import { TxFeeParams } from "../../models";
 import { TokenAccountData } from "../../models/sol";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
-import { normalizeSolanaTxFee } from "./compute-budget";
-
-export function getFeePayer(userAccount: PublicKey, txFeeParams?: TxFeeParams): PublicKey {
-  if (txFeeParams?.solana) {
-    const solanaFeeParams = normalizeSolanaTxFee(txFeeParams.solana);
-    if (solanaFeeParams?.feePayer) {
-      return new PublicKey(solanaFeeParams.feePayer);
-    }
-  }
-  return userAccount;
-}
 
 export async function getTokenAccountData(account: PublicKey, provider: Provider): Promise<TokenAccountData> {
   return await Spl.token(provider).account.token.fetch(account);
