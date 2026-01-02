@@ -24,7 +24,14 @@ import {
   SdkError,
   SdkRootError,
 } from "../../../exceptions";
-import { ChainType, FeePaymentMethod, SwapParams, TokenWithChainDetails, TxFeeParams } from "../../../models";
+import {
+  ChainType,
+  FeePaymentMethod,
+  SolanaTxFeeParams,
+  SwapParams,
+  TokenWithChainDetails,
+  TxFeeParams,
+} from "../../../models";
 import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SwapAndBridgeSolData, SwapAndBridgeSolDataCctpData } from "../../models/sol";
@@ -49,7 +56,11 @@ import {
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
-import { addUnitLimitAndUnitPriceToTx, addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
+import {
+  addUnitLimitAndUnitPriceToTx,
+  addUnitLimitAndUnitPriceToVersionedTx,
+  normalizeSolanaTxFeeParams,
+} from "../../utils/sol/compute-budget";
 import { SendParams, TxSendParamsSol, TxSwapParamsSol } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
@@ -200,17 +211,19 @@ export class SolanaBridgeService extends ChainBridgeService {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     let solTxSendParams = this.addPoolAddress(params, txSendParams);
 
+    const txFeeParams = normalizeSolanaTxFeeParams(params.txFeeParams?.solana);
+
     const isJupiterForStableCoin = solTxSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN;
 
     let jupTx;
     if (isJupiterForStableCoin) {
       try {
-        const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, true);
+        const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, txFeeParams, true);
         jupTx = tx;
         solTxSendParams = { ...solTxSendParams, ...solTxSendUpdatedParams };
       } catch (e) {
         try {
-          const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, false);
+          const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, txFeeParams, false);
           jupTx = tx;
           solTxSendParams = { ...solTxSendParams, ...solTxSendUpdatedParams };
         } catch (e) {
@@ -273,6 +286,7 @@ export class SolanaBridgeService extends ChainBridgeService {
   private async processJup(
     solTxSendParams: SolTxSendParams,
     params: SendParams,
+    txFeeParams: SolanaTxFeeParams,
     exactOut: boolean
   ): Promise<{
     tx: VersionedTransaction;
@@ -292,6 +306,13 @@ export class SolanaBridgeService extends ChainBridgeService {
     if (extraGas) {
       amountToProcess = amountToProcess.plus(extraGas);
     }
+
+    if (txFeeParams?.payTxFeeWithStablecoinSwap) {
+      const feeTx = 5000;
+      const txAccountCreation = 2296800 + 1224960;
+      amountToProcess = amountToProcess.plus(feeTx).plus(txAccountCreation);
+    }
+
     if (!exactOut) {
       amountToProcess = amountToProcess.mul(JUP_ADD_INDEX);
     }
