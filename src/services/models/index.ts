@@ -6,11 +6,25 @@ import { SolanaTxFee } from "./sol";
 
 export { SolanaTxFee, PricePerUnitInMicroLamports, ExtraFeeInLamports, SolanaAutoTxFee } from "./sol";
 
+export interface SolanaTxFeeParams {
+  /**
+   * Transaction fee configuration.
+   * If omitted, automatic fee calculation is used.
+   */
+  fee?: SolanaTxFee;
+
+  /**
+   * Covers transaction fees (including Accounts creation) by swapping stablecoin into the required native token.
+   * Applicable only for {@link Messenger.ALLBRIDGE}.
+   */
+  payTxFeeWithStablecoinSwap?: boolean;
+}
+
 /**
- * Blockchain fee added to tx
+ * Blockchain fee params for tx
  */
 export interface TxFeeParams {
-  solana?: SolanaTxFee;
+  solana?: SolanaTxFee | SolanaTxFeeParams;
 }
 
 /**
