@@ -89,6 +89,7 @@ export class ApiClientImpl implements ApiClient {
       exchangeRate: data.exchangeRate,
       fee: data.fee,
       sourceNativeTokenPrice: data.sourceNativeTokenPrice,
+      abrExchangeRate: data.abrExchangeRate,
       adminFeeShareWithExtras: data.adminFeeShareWithExtras,
     };
   }

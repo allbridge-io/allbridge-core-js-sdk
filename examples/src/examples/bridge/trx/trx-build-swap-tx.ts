@@ -1,9 +1,9 @@
 import {
   AllbridgeCoreSdk,
   ChainSymbol,
-  SwapParams,
   nodeRpcUrlsDefault,
   RawTronTransaction,
+  SwapParams,
 } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";

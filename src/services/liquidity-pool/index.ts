@@ -1,3 +1,5 @@
+import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { Algodv2 } from "algosdk";
 import { Big } from "big.js";
 import Cache from "timed-cache";
 import { TronWeb } from "tronweb";
@@ -14,11 +16,13 @@ import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils"
 import { Provider, TransactionResponse } from "../models";
 import { TokenService } from "../token";
 import { depositAmountToVUsd, vUsdToWithdrawalAmount } from "../utils/calculation";
+import { AlgPoolService } from "./alg";
 import { EvmPoolService } from "./evm";
 import { ApproveParams, ChainPoolService, CheckAllowanceParams, GetAllowanceParams, UserBalanceInfo } from "./models";
 import { DefaultRawPoolTransactionBuilder, RawPoolTransactionBuilder } from "./raw-pool-transaction-builder";
 import { SolanaPoolService } from "./sol";
 import { SrbPoolService } from "./srb";
+import { StxPoolService } from "./stx";
 import { SuiPoolService } from "./sui";
 import { TronPoolService } from "./trx";
 
@@ -250,6 +254,23 @@ export function getChainPoolService(
     }
     case ChainType.SUI: {
       return new SuiPoolService(nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol), api);
+    }
+    case ChainType.ALG: {
+      if (provider) {
+        const algod = provider as Algodv2;
+        const algorand = AlgorandClient.fromClients({ algod });
+        return new AlgPoolService(algorand, api);
+      } else {
+        const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+        const algorand = AlgorandClient.fromConfig({
+          algodConfig: { server: nodeRpcUrl },
+        });
+        return new AlgPoolService(algorand, api);
+      }
+    }
+    case ChainType.STX: {
+      const nodeRpcUrl = nodeRpcUrlsConfig.getNodeRpcUrl(chainSymbol);
+      return new StxPoolService(nodeRpcUrl, params, api);
     }
   }
 }

@@ -35,4 +35,5 @@ export const nodeRpcUrlsDefault: NodeRpcUrls = {
   SRB: "https://rpc.stellar.org:443",
   STLR: "https://horizon.stellar.org",
   SUI: "https://fullnode.mainnet.sui.io",
+  STX: "https://api.hiro.so",
 };

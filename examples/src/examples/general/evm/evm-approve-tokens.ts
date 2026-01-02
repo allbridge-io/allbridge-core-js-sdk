@@ -3,6 +3,7 @@ import { getEnvVar } from "../../../utils/env";
 import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawEvmTransaction } from "@allbridge/bridge-core-sdk";
 import { ensure } from "../../../utils/utils";
 import { sendEvmRawTransaction } from "../../../utils/web3";
+
 dotenv.config({ path: ".env" });
 
 const main = async () => {

@@ -1,8 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
+import { ContractIdString, createAddress, parseContractId } from "@stacks/transactions";
 import { Address } from "@stellar/stellar-sdk";
+import algosdk, { Address as AlgoAddress } from "algosdk";
 import { Big, BigSource } from "big.js";
 import randomBytes from "randombytes";
 import { utils as TronWebUtils } from "tronweb";
+import { Web3 } from "web3";
 import { Chains } from "../../chains";
 import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
@@ -25,12 +28,15 @@ import {
 } from "../../models";
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
+import { assertNever } from "../../utils/utils";
 import {
   SendParams,
   TxSendParams,
+  TxSendParamsAlg,
   TxSendParamsEvm,
   TxSendParamsSol,
   TxSendParamsSrb,
+  TxSendParamsStx,
   TxSendParamsSui,
   TxSendParamsTrx,
   TxSwapParams,
@@ -39,7 +45,7 @@ import {
   TxSwapParamsSrb,
   TxSwapParamsSui,
   TxSwapParamsTrx,
-} from "./models"; // 1. OVERLOADS
+} from "./models";
 
 // 1. OVERLOADS
 export function formatAddress(address: string, from: ChainType, to: ChainType.EVM | ChainType.SUI): string;
@@ -71,6 +77,14 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       buffer = evmAddressToBuffer32(address);
       break;
     }
+    case ChainType.ALG: {
+      buffer = algAddressToBuffer32(address);
+      break;
+    }
+    case ChainType.STX: {
+      buffer = stxAddressToBuffer32(address);
+      break;
+    }
   }
 
   switch (to) {
@@ -89,6 +103,12 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
     case ChainType.SUI: {
       return "0x" + buffer.toString("hex");
     }
+    case ChainType.ALG: {
+      return buffer;
+    }
+    case ChainType.STX: {
+      return buffer;
+    }
   }
 }
 
@@ -104,6 +124,34 @@ export function evmAddressToBuffer32(address: string): Buffer {
   const length = 32;
   const buff = hexToBuffer(address);
   return Buffer.concat([Buffer.alloc(length - buff.length, 0), buff], length);
+}
+
+export function algAddressToBuffer32(address: string): Buffer {
+  if (algosdk.isValidAddress(address)) {
+    return Buffer.from(AlgoAddress.fromString(address).publicKey);
+  }
+
+  if (/^\d+$/.test(address)) {
+    let hex = BigInt(address).toString(16);
+    hex = hex.padStart(64, "0");
+    return Buffer.from(hex, "hex");
+  }
+  throw new SdkError(`Unexpected Alg address: ${address}`);
+}
+
+export function stxAddressToBuffer32(address: string): Buffer {
+  if (address.includes(".")) {
+    const [addr, name] = parseContractId(address as ContractIdString);
+    if (!addr || !name) {
+      throw new SdkError(`Unexpected Alg address: ${address}`);
+    }
+    const hashBytes = Buffer.from(createAddress(addr).hash160, "hex");
+    const hash = Web3.utils.keccak256(Buffer.concat([hashBytes, Buffer.from(name)]));
+    return hexToBuffer(hash);
+  }
+
+  const hashBytes = Buffer.from(createAddress(address).hash160, "hex");
+  return bufferToSize(hashBytes, 32);
 }
 
 export function tronAddressToBuffer32(address: string): Buffer {
@@ -174,22 +222,42 @@ export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapPara
   txSwapParams.amount = convertFloatAmountToInt(params.amount, sourceToken.decimals).toFixed();
   txSwapParams.contractAddress = sourceToken.bridgeAddress;
   txSwapParams.fromAccountAddress = params.fromAccountAddress;
-  if (bridgeChainType === ChainType.SUI) {
-    if (!sourceToken.originTokenAddress) {
-      throw new SdkError("SUI sourceToken must contain 'originTokenAddress'");
+  switch (bridgeChainType) {
+    case ChainType.SUI: {
+      if (!sourceToken.originTokenAddress) {
+        throw new SdkError("SUI sourceToken must contain 'originTokenAddress'");
+      }
+      txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
+      break;
     }
-    txSwapParams.fromTokenAddress = sourceToken.originTokenAddress;
-  } else {
-    txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+    case ChainType.ALG: {
+      txSwapParams.fromTokenAddress = sourceToken.tokenAddress;
+      break;
+    }
+    default: {
+      txSwapParams.fromTokenAddress = formatAddress(sourceToken.tokenAddress, bridgeChainType, bridgeChainType);
+    }
   }
   txSwapParams.toAccountAddress = params.toAccountAddress;
-  if (bridgeChainType === ChainType.SUI) {
-    if (!params.destinationToken.originTokenAddress) {
-      throw new SdkError("SUI destinationToken must contain 'originTokenAddress'");
+  switch (bridgeChainType) {
+    case ChainType.SUI: {
+      if (!params.destinationToken.originTokenAddress) {
+        throw new SdkError("SUI destinationToken must contain 'originTokenAddress'");
+      }
+      txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
+      break;
     }
-    txSwapParams.toTokenAddress = params.destinationToken.originTokenAddress;
-  } else {
-    txSwapParams.toTokenAddress = formatAddress(params.destinationToken.tokenAddress, bridgeChainType, bridgeChainType);
+    case ChainType.ALG: {
+      txSwapParams.toTokenAddress = params.destinationToken.tokenAddress;
+      break;
+    }
+    default: {
+      txSwapParams.toTokenAddress = formatAddress(
+        params.destinationToken.tokenAddress,
+        bridgeChainType,
+        bridgeChainType
+      );
+    }
   }
   txSwapParams.minimumReceiveAmount = params.minimumReceiveAmount
     ? convertFloatAmountToInt(params.minimumReceiveAmount, params.destinationToken.decimals).toFixed()
@@ -208,6 +276,16 @@ export function prepareTxSendParams(
   params: SendParams,
   api: AllbridgeCoreClient
 ): Promise<TxSendParamsTrx>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.ALG,
+  params: SendParams,
+  api: AllbridgeCoreClient
+): Promise<TxSendParamsAlg>;
+export function prepareTxSendParams(
+  bridgeChainType: ChainType.STX,
+  params: SendParams,
+  api: AllbridgeCoreClient
+): Promise<TxSendParamsStx>;
 export function prepareTxSendParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SendParams,
@@ -242,12 +320,13 @@ export async function prepareTxSendParams(
   txSendParams.toChainId = params.destinationToken.allbridgeChainId;
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
 
-  if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-    txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_STABLECOIN;
-  } else {
-    // default FeePaymentMethod.WITH_NATIVE_CURRENCY
-    txSendParams.gasFeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY;
+  txSendParams.gasFeePaymentMethod = params.gasFeePaymentMethod ?? FeePaymentMethod.WITH_NATIVE_CURRENCY;
+  if (txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+    if (!params.sourceToken.abrPayer) {
+      throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+    }
   }
+
   const sourceToken = params.sourceToken;
 
   switch (params.messenger) {
@@ -311,6 +390,15 @@ export async function prepareTxSendParams(
       case FeePaymentMethod.WITH_STABLECOIN:
         txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.decimals).toFixed(0);
         break;
+      case FeePaymentMethod.WITH_ARB:
+        if (!sourceToken.abrPayer) {
+          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        }
+        txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.abrPayer.abrToken.decimals).toFixed(0);
+        break;
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
   } else {
     txSendParams.fee = fee;
@@ -337,6 +425,19 @@ export async function prepareTxSendParams(
         extraGasDecimals = sourceToken.decimals;
         extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.sourceNativeTokenPrice);
         break;
+      case FeePaymentMethod.WITH_ARB:
+        if (!sourceToken.abrPayer) {
+          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        }
+        if (!extraGasLimits.abrExchangeRate) {
+          throw new SdkError("Cannot transfer WITH_ARB option");
+        }
+        extraGasDecimals = sourceToken.abrPayer.abrToken.decimals;
+        extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.abrExchangeRate);
+        break;
+      default: {
+        return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
 
     switch (extraGasFormat ?? AmountFormat.INT) {
@@ -365,17 +466,33 @@ export async function prepareTxSendParams(
         break;
       }
     }
-
     validateExtraGasNotExceeded(txSendParams.extraGas, txSendParams.gasFeePaymentMethod, extraGasLimits);
   }
 
-  if (bridgeChainType !== ChainType.SUI) {
+  if (![ChainType.SUI, ChainType.ALG].includes(bridgeChainType)) {
     txSendParams.fromTokenAddress = formatAddress(txSendParams.fromTokenAddress, bridgeChainType, bridgeChainType);
   }
   txSendParams.toAccountAddress = formatAddress(params.toAccountAddress, toChainType, bridgeChainType);
   txSendParams.toTokenAddress = formatAddress(txSendParams.toTokenAddress, toChainType, bridgeChainType);
-  if (txSendParams.gasFeePaymentMethod == FeePaymentMethod.WITH_STABLECOIN) {
-    validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+
+  switch (txSendParams.gasFeePaymentMethod) {
+    case FeePaymentMethod.WITH_NATIVE_CURRENCY:
+      break;
+    case FeePaymentMethod.WITH_STABLECOIN:
+      validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+      break;
+    case FeePaymentMethod.WITH_ARB: {
+      const { abrExchangeRate } = await api.getReceiveTransactionCost({
+        sourceChainId: txSendParams.fromChainId,
+        destinationChainId: txSendParams.toChainId,
+        messenger: txSendParams.messenger,
+        sourceToken: params.sourceToken.tokenAddress,
+      });
+      txSendParams.abrExchangeRate = abrExchangeRate;
+      break;
+    }
+    default:
+      return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
   }
   return txSendParams;
 }
@@ -422,6 +539,7 @@ export async function getGasFeeOptions(
     },
     adminFeeShareWithExtras: transactionCostResponse.adminFeeShareWithExtras,
   };
+
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const gasFeeIntWithStables = convertAmountPrecision(
       new Big(transactionCostResponse.fee).mul(transactionCostResponse.sourceNativeTokenPrice),
@@ -431,6 +549,25 @@ export async function getGasFeeOptions(
     gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN] = {
       [AmountFormat.INT]: gasFeeIntWithStables,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(gasFeeIntWithStables, sourceChainToken.decimals).toFixed(),
+    };
+  }
+
+  if (
+    transactionCostResponse.abrExchangeRate &&
+    sourceChainToken.abrPayer &&
+    sourceChainToken.abrPayer.payerAvailability[messenger]
+  ) {
+    const gasFeeIntWithStables = convertAmountPrecision(
+      new Big(transactionCostResponse.fee).mul(transactionCostResponse.abrExchangeRate),
+      Chains.getChainDecimalsByType(sourceChainToken.chainType),
+      sourceChainToken.abrPayer.abrToken.decimals
+    ).toFixed(0, Big.roundUp);
+    gasFeeOptions[FeePaymentMethod.WITH_ARB] = {
+      [AmountFormat.INT]: gasFeeIntWithStables,
+      [AmountFormat.FLOAT]: convertIntAmountToFloat(
+        gasFeeIntWithStables,
+        sourceChainToken.abrPayer.abrToken.decimals
+      ).toFixed(),
     };
   }
 
@@ -483,6 +620,7 @@ export async function getExtraGasMaxLimits(
     [AmountFormat.INT]: maxAmountInSourceNative,
     [AmountFormat.FLOAT]: maxAmountFloatInSourceNative,
   };
+
   if (transactionCostResponse.sourceNativeTokenPrice) {
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.sourceNativeTokenPrice)
@@ -492,6 +630,26 @@ export async function getExtraGasMaxLimits(
       [AmountFormat.FLOAT]: maxAmountFloatInStable,
     };
   }
+
+  let abrAvailable;
+  if (
+    transactionCostResponse.abrExchangeRate &&
+    sourceChainToken.abrPayer &&
+    sourceChainToken.abrPayer.payerAvailability[messenger]
+  ) {
+    abrAvailable = true;
+    const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
+      .mul(transactionCostResponse.abrExchangeRate)
+      .toFixed(sourceChainToken.abrPayer.abrToken.decimals, Big.roundDown);
+    extraGasMaxLimits[FeePaymentMethod.WITH_ARB] = {
+      [AmountFormat.INT]: convertFloatAmountToInt(
+        maxAmountFloatInStable,
+        sourceChainToken.abrPayer.abrToken.decimals
+      ).toFixed(0),
+      [AmountFormat.FLOAT]: maxAmountFloatInStable,
+    };
+  }
+
   return {
     extraGasMax: extraGasMaxLimits,
     destinationChain: {
@@ -515,6 +673,7 @@ export async function getExtraGasMaxLimits(
       },
     },
     exchangeRate: transactionCostResponse.exchangeRate,
+    abrExchangeRate: abrAvailable ? transactionCostResponse.abrExchangeRate : undefined,
     sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
   };
 }
