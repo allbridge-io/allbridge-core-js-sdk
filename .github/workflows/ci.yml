@@ -10,15 +10,6 @@ on:
       - '.gitlab-ci.yml'
       - '.vscode/**'
       - '.idea/**'
-  pull_request:
-    branches: [main, beta, alpha]
-    paths-ignore:
-      - '**/*.md'
-      - '.editorconfig'
-      - '.gitignore'
-      - '.gitlab-ci.yml'
-      - '.vscode/**'
-      - '.idea/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}

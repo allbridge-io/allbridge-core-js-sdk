@@ -1,4 +1,5 @@
 import { AllbridgeCoreSdkService } from "../services";
+import { AlgUtils, DefaultAlgUtils } from "./alg";
 import { DefaultEvmUtils, EvmUtils } from "./evm";
 import { DefaultSolUtils, SolUtils } from "./sol";
 import { DefaultSrbUtils, SrbUtils } from "./srb";
@@ -12,6 +13,7 @@ export interface Utils {
   sol: SolUtils;
   sui: SuiUtils;
   evm: EvmUtils;
+  alg: AlgUtils;
 }
 
 export class DefaultUtils implements Utils {
@@ -19,11 +21,13 @@ export class DefaultUtils implements Utils {
   sol: SolUtils;
   sui: SuiUtils;
   evm: EvmUtils;
+  alg: AlgUtils;
 
   constructor(readonly service: AllbridgeCoreSdkService) {
     this.srb = new DefaultSrbUtils(service.nodeRpcUrlsConfig, service.params);
     this.sol = new DefaultSolUtils(service.nodeRpcUrlsConfig, service.params);
     this.sui = new DefaultSuiUtils(service.nodeRpcUrlsConfig, service.api);
     this.evm = new DefaultEvmUtils(service.nodeRpcUrlsConfig, service.params);
+    this.alg = new DefaultAlgUtils(service.nodeRpcUrlsConfig);
   }
 }

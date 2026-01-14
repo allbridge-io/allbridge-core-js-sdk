@@ -1,12 +1,12 @@
 import { Big } from "big.js";
 import { FeePaymentMethod } from "../../../models";
-import { TokenWithChainDetails } from "../../../tokens-info";
+import { TokenCoreFields } from "../../../tokens-info";
 
 export interface ApproveParams {
   /**
    * The token info
    */
-  token: TokenWithChainDetails;
+  token: TokenCoreFields;
 
   /**
    *  The address of the token owner who is granting permission to use tokens
@@ -32,7 +32,7 @@ export interface GetTokenBalanceParams {
    *  The address for which we will find out the token balance
    */
   account: string;
-  token: TokenWithChainDetails;
+  token: TokenCoreFields;
 }
 
 export interface CheckAllowanceParams extends GetAllowanceParams {
@@ -43,7 +43,7 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
 }
 
 export interface GetAllowanceParams {
-  token: TokenWithChainDetails;
+  token: TokenCoreFields;
   spender: string;
   owner: string;
   gasFeePaymentMethod?: FeePaymentMethod;

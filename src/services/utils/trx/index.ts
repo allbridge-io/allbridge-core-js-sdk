@@ -1,5 +1,4 @@
 import { TronWeb } from "tronweb";
-import { SignedTransaction } from "tronweb/src/types/Transaction";
 import { InvalidTxError, VerifyTxError } from "../../../exceptions";
 import { RawTransaction } from "../../models";
 import { sleep } from "../index";
@@ -7,7 +6,7 @@ import { sleep } from "../index";
 export async function sendRawTransaction(tronWeb: TronWeb, rawTransaction: RawTransaction): Promise<{ txId: string }> {
   const signedTx = await tronWeb.trx.sign(rawTransaction as any);
 
-  if (!(signedTx as SignedTransaction).signature) {
+  if (!signedTx.signature) {
     throw new InvalidTxError("Transaction was not signed properly");
   }
 

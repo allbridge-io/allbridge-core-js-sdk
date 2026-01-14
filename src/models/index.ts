@@ -22,14 +22,6 @@ export {
 export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {
-  PoolInfo,
-  TokenWithChainDetails,
-  TransferTime,
-  TxCostAmount,
-  SuiAddresses,
-  MessengerTransferTime,
-} from "../tokens-info/tokens-info.model";
-export {
   UserBalanceInfo,
   UserBalanceInfoDTO,
   LiquidityPoolsParams,
@@ -53,7 +45,7 @@ export {
   YieldApproveParams,
   YieldDepositParams,
   YieldWithdrawParams,
-} from "../services/yield//models/yield.model";
+} from "../services/yield/models/yield.model";
 export { RawYieldTransactionBuilder } from "../services/yield/raw-yield-transaction-builder";
 export {
   SwapAndBridgeCalculationData,
@@ -61,7 +53,17 @@ export {
   SwapToVUsdCalcResult,
 } from "../utils/calculation/swap-and-bridge-fee-calc";
 export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
-export { ChainDetailsMap, ChainDetailsWithTokens } from "../tokens-info";
+export {
+  PoolInfo,
+  TokenCoreFields,
+  TokenWithChainDetails,
+  TransferTime,
+  TxCostAmount,
+  SuiAddresses,
+  MessengerTransferTime,
+  ChainDetailsMap,
+  ChainDetailsWithTokens,
+} from "../tokens-info";
 export { Utils } from "../utils";
 export { SrbUtils, TrustLineParams } from "../utils/srb";
 export { SolUtils } from "../utils/sol";
@@ -79,6 +81,11 @@ export enum FeePaymentMethod {
    * The fee is paid with the stablecoin token.
    */
   WITH_STABLECOIN = "stablecoin",
+
+  /**
+   * The fee is paid with the ABR token.
+   */
+  WITH_ARB = "abr",
 }
 
 export interface AmountsAndGasFeeOptions {
@@ -112,6 +119,7 @@ type GasFeeOptionsType = {
 export interface GasFeeOptions extends GasFeeOptionsType {
   [FeePaymentMethod.WITH_NATIVE_CURRENCY]: AmountFormatted;
   [FeePaymentMethod.WITH_STABLECOIN]?: AmountFormatted;
+  [FeePaymentMethod.WITH_ARB]?: AmountFormatted;
   adminFeeShareWithExtras?: string;
 }
 
@@ -187,6 +195,10 @@ export interface ExtraGasMaxLimitResponse {
    * Exchange rate
    */
   exchangeRate: string;
+  /**
+   * Exchange rate
+   */
+  abrExchangeRate?: string;
   /**
    * Source native token price
    */

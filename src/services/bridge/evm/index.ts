@@ -2,6 +2,7 @@ import { Big } from "big.js";
 import BN from "bn.js";
 import { Contract, Transaction as Web3Transaction } from "web3";
 import { PayableMethodObject } from "web3-eth-contract";
+import { Chains } from "../../../chains";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import {
   ChainSymbol,
@@ -9,14 +10,18 @@ import {
   EssentialWeb3,
   FeePaymentMethod,
   Messenger,
+  SdkError,
   SwapParams,
   TransactionResponse,
 } from "../../../models";
+import { convertAmountPrecision } from "../../../utils/calculation";
+import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
 import OftBridge from "../../models/abi/OftBridge";
+import PayerWithAbr from "../../models/abi/PayerWithAbr";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
@@ -85,6 +90,7 @@ export class EvmBridgeService extends ChainBridgeService {
       gasFeePaymentMethod,
       extraGas,
       extraGasDest,
+      abrExchangeRate,
     } = txSendParams;
 
     const nonce = "0x" + getNonce().toString("hex");
@@ -94,6 +100,23 @@ export class EvmBridgeService extends ChainBridgeService {
     let totalFee = fee;
     if (extraGas) {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
+    }
+
+    let totalFeeInAbr: string | undefined;
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+      if (!abrExchangeRate) {
+        throw new SdkError("Cannot find 'abrExchangeRate' for ARB0 payment method");
+      }
+      if (!params.sourceToken.abrPayer) {
+        throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+      }
+      totalFeeInAbr = totalFee;
+      const totalFeeInNativeRaw = Big(totalFee).div(abrExchangeRate);
+      totalFee = convertAmountPrecision(
+        totalFeeInNativeRaw,
+        params.sourceToken.abrPayer.abrToken.decimals,
+        Chains.getChainDecimalsByType(params.sourceToken.chainType)
+      ).toFixed();
     }
 
     switch (messenger) {
@@ -114,33 +137,72 @@ export class EvmBridgeService extends ChainBridgeService {
       case Messenger.WORMHOLE:
         {
           const bridgeContract = this.getBridgeContract(contractAddress);
-          if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-            sendMethod = bridgeContract.methods.swapAndBridge(
-              fromTokenAddress,
-              amount,
-              toAccountAddress,
-              toChainId,
-              toTokenAddress,
-              nonce,
-              messenger,
-              totalFee
-            );
-            value = "0";
-          } else {
-            sendMethod = bridgeContract.methods.swapAndBridge(
-              fromTokenAddress,
-              amount,
-              toAccountAddress,
-              toChainId,
-              toTokenAddress,
-              nonce,
-              messenger,
-              0
-            );
-            value = totalFee;
+          switch (gasFeePaymentMethod) {
+            case FeePaymentMethod.WITH_ARB:
+            case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+              sendMethod = bridgeContract.methods.swapAndBridge(
+                fromTokenAddress,
+                amount,
+                toAccountAddress,
+                toChainId,
+                toTokenAddress,
+                nonce,
+                messenger,
+                0
+              );
+              value = totalFee;
+              break;
+            }
+            case FeePaymentMethod.WITH_STABLECOIN: {
+              sendMethod = bridgeContract.methods.swapAndBridge(
+                fromTokenAddress,
+                amount,
+                toAccountAddress,
+                toChainId,
+                toTokenAddress,
+                nonce,
+                messenger,
+                totalFee
+              );
+              value = "0";
+              break;
+            }
+            default: {
+              return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+            }
           }
         }
         break;
+    }
+
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+      if (!params.sourceToken.abrPayer) {
+        throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+      }
+
+      const abrPayerAddress = params.sourceToken.abrPayer.payerAddress;
+
+      if (!totalFeeInAbr) {
+        throw new SdkError("Failed to calculate totalFeeInAbr");
+      }
+      const abrPayerContract = this.getAbrPayerContract(abrPayerAddress);
+
+      const abi = sendMethod.encodeABI();
+      const withoutSelector = "0x" + abi.slice(10);
+      sendMethod = abrPayerContract.methods.transferTokensAndCallTarget(
+        params.sourceToken.tokenAddress,
+        amount,
+        totalFeeInAbr,
+        messenger,
+        withoutSelector
+      );
+
+      return Promise.resolve({
+        from: fromAccountAddress,
+        to: abrPayerAddress,
+        value: "0",
+        data: sendMethod.encodeABI(),
+      });
     }
 
     return Promise.resolve({
@@ -173,32 +235,50 @@ export class EvmBridgeService extends ChainBridgeService {
         this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL)
       );
 
-      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
-          amount,
-          recipient,
-          toAccountAddress,
-          toChainId,
-          totalFee
-        );
-        value = "0";
-      } else {
-        sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
-          amount,
-          recipient,
-          toAccountAddress,
-          toChainId,
-          0
-        );
-        value = totalFee;
+      switch (gasFeePaymentMethod) {
+        case FeePaymentMethod.WITH_ARB:
+        case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+          sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
+            amount,
+            recipient,
+            toAccountAddress,
+            toChainId,
+            0
+          );
+          value = totalFee;
+          break;
+        }
+        case FeePaymentMethod.WITH_STABLECOIN: {
+          sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
+            amount,
+            recipient,
+            toAccountAddress,
+            toChainId,
+            totalFee
+          );
+          value = "0";
+          break;
+        }
+        default: {
+          return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+        }
       }
     } else {
-      if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, totalFee);
-        value = "0";
-      } else {
-        sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, 0);
-        value = totalFee;
+      switch (gasFeePaymentMethod) {
+        case FeePaymentMethod.WITH_ARB:
+        case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+          sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, 0);
+          value = totalFee;
+          break;
+        }
+        case FeePaymentMethod.WITH_STABLECOIN: {
+          sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, totalFee);
+          value = "0";
+          break;
+        }
+        default: {
+          return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+        }
       }
     }
     return { sendMethod, value };
@@ -219,28 +299,37 @@ export class EvmBridgeService extends ChainBridgeService {
     let sendMethod: PayableMethodObject;
     let value: string;
 
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_STABLECOIN) {
-      sendMethod = oftBridgeContract.methods.bridge(
-        params.sourceToken.tokenAddress,
-        amount,
-        toAccountAddress,
-        toChainId,
-        totalFee,
-        extraGasDest ?? "0",
-        "10"
-      );
-      value = "0";
-    } else {
-      sendMethod = oftBridgeContract.methods.bridge(
-        params.sourceToken.tokenAddress,
-        amount,
-        toAccountAddress,
-        toChainId,
-        0,
-        extraGasDest ?? "0",
-        "10"
-      );
-      value = totalFee;
+    switch (gasFeePaymentMethod) {
+      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+        sendMethod = oftBridgeContract.methods.bridge(
+          params.sourceToken.tokenAddress,
+          amount,
+          toAccountAddress,
+          toChainId,
+          0,
+          extraGasDest ?? "0",
+          "10"
+        );
+        value = totalFee;
+        break;
+      }
+      case FeePaymentMethod.WITH_STABLECOIN: {
+        sendMethod = oftBridgeContract.methods.bridge(
+          params.sourceToken.tokenAddress,
+          amount,
+          toAccountAddress,
+          toChainId,
+          totalFee,
+          extraGasDest ?? "0",
+          "10"
+        );
+        value = "0";
+        break;
+      }
+      default: {
+        return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      }
     }
 
     return { sendMethod, value };
@@ -270,5 +359,9 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private getOftBridgeContract(contractAddress: string) {
     return new this.web3.eth.Contract(OftBridge.abi, contractAddress) as Contract<typeof OftBridge.abi>;
+  }
+
+  private getAbrPayerContract(contractAddress: string) {
+    return new this.web3.eth.Contract(PayerWithAbr.abi, contractAddress) as Contract<typeof PayerWithAbr.abi>;
   }
 }

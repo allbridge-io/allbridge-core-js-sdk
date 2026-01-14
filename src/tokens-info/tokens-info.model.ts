@@ -12,6 +12,18 @@ export type ChainDetailsMap = Record<string, ChainDetailsWithTokens>;
 
 export type ChainDetailsMapWithFlags = Record<string, ChainDetailsWithTokensWithFlags>;
 
+export interface AbrPayerChainInfo {
+  /**
+   * ABR proxy for paying fees with ABR
+   */
+  payerAddress: string;
+  abrToken: TokenCoreFields;
+  /**
+   * Availability to pay by abr
+   */
+  payerAvailability: AbrPayerAvailability;
+}
+
 /**
  * Contains some blockchain details
  */
@@ -20,6 +32,14 @@ export interface ChainDetails extends BasicChainProperties {
    * Allbridge's Id
    */
   allbridgeChainId: number;
+  /**
+   * Algo Bridge appId
+   */
+  bridgeId?: string;
+  /**
+   * Algo Padding appId
+   */
+  paddingUtilId?: string;
   /**
    * Bridge contract address
    */
@@ -33,6 +53,10 @@ export interface ChainDetails extends BasicChainProperties {
    * Yield contract address
    */
   yieldAddress?: string;
+  /**
+   * ABR payer chain info
+   */
+  abrPayer?: AbrPayerChainInfo;
   /**
    * Average transfer time to other blockchains
    */
@@ -199,6 +223,11 @@ export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name">
   chainName: string;
 }
 
+export type TokenCoreFields = Pick<
+  TokenWithChainDetails,
+  "tokenAddress" | "chainSymbol" | "decimals" | "originTokenAddress"
+>;
+
 export interface TokenWithChainDetailsWithFlags extends TokenWithChainDetails {
   flags: { swap: boolean; pool: boolean };
 }
@@ -240,6 +269,8 @@ export interface PoolInfo {
    */
   imbalance: string;
 }
+
+export type AbrPayerAvailability = Partial<Record<Messenger, boolean>>;
 
 /**
  * Type representing transfer times for various blockchain chains.

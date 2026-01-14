@@ -1,9 +1,4 @@
-import {
-  AllbridgeCoreSdk,
-  nodeRpcUrlsDefault,
-  RawSuiTransaction,
-  SwapParams,
-} from "@allbridge/bridge-core-sdk";
+import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawSuiTransaction, SwapParams } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";

@@ -80,6 +80,9 @@ export interface AllbridgeCoreSdkOptions {
    * Optional additional properties to merge with the default properties.
    */
   additionalChainsProperties?: Record<string, AdditionalBasicChainProperties>;
+
+  stxIsTestnet?: boolean;
+  stxHeroApiKey?: string;
 }
 
 /**
@@ -195,17 +198,14 @@ export class AllbridgeCoreSdk {
   /**
    * Check address and show gas balance
    * @deprecated
-   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
-   * @param recipientAddress
-   * @param tokenAddress
+   * @param _chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param _recipientAddress
+   * @param _tokenAddress
    */
   async checkAddress(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    chainSymbol: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    recipientAddress: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    tokenAddress?: string
+    _chainSymbol: string,
+    _recipientAddress: string,
+    _tokenAddress?: string
   ): Promise<CheckAddressResponse> {
     return await this.service.checkAddress();
   }
@@ -287,6 +287,9 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
+   *
+   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
+   * {@link getAmountToBeReceived}, {@link getAmountToBeReceivedFromChain}, or {@link getAmountToBeReceivedFromPools}.
    */
   async getAmountToBeReceivedAndGasFeeOptions(
     amountToSendFloat: BigSource,
@@ -309,6 +312,9 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
+   *
+   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
+   * {@link getAmountToSend}, {@link getAmountToSendFromChain}, or {@link getAmountToSendFromPools}.
    */
   async getAmountToSendAndGasFeeOptions(
     amountToBeReceivedFloat: BigSource,
