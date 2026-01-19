@@ -100,7 +100,7 @@
     "semver-regex": "3.1.4"
   },
   "dependencies": {
-    "@algorandfoundation/algokit-utils": "^9.1.2",
+    "@algorandfoundation/algokit-utils": "^9.2.0",
     "@clarigen/core": "^3.1.0",
     "@coral-xyz/anchor": "0.31.1",
     "@coral-xyz/spl-token": "0.31.1",

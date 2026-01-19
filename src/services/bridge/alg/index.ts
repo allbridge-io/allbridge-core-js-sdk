@@ -28,6 +28,7 @@ export class AlgBridgeService extends ChainBridgeService {
         )
       )
     );
+    algorand.setDefaultValidityWindow(100);
   }
 
   send(_params: SendParams): Promise<TransactionResponse> {
@@ -107,12 +108,6 @@ export class AlgBridgeService extends ChainBridgeService {
             extraFee: feeForInner(9),
           })
         );
-        const paddingTx = await this.algorand.createTransaction.appCall({
-          appId: paddingUtil.appId,
-          sender,
-          note: "padding_1",
-        });
-        composer.addTransaction(paddingTx);
         break;
       }
       case FeePaymentMethod.WITH_ARB:
@@ -121,13 +116,18 @@ export class AlgBridgeService extends ChainBridgeService {
         return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
       }
     }
-
-    const paddingTx = await this.algorand.createTransaction.appCall({
+    const paddingTx1 = await this.algorand.createTransaction.appCall({
       appId: paddingUtil.appId,
       sender,
-      note: "padding",
+      note: "padding1",
     });
-    composer.addTransaction(paddingTx);
+    composer.addTransaction(paddingTx1);
+    const paddingTx2 = await this.algorand.createTransaction.appCall({
+      appId: paddingUtil.appId,
+      sender,
+      note: "padding2",
+    });
+    composer.addTransaction(paddingTx2);
 
     const { transactions } = await composer.buildTransactions();
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);

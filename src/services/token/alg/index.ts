@@ -7,13 +7,14 @@ import { RawTransaction, TransactionResponse } from "../../models";
 import { ApproveParamsDto, ChainTokenService, GetAllowanceParamsDto, GetTokenBalanceParams } from "../models";
 
 export class AlgTokenService extends ChainTokenService {
-  chainType: ChainType.SUI = ChainType.SUI;
+  chainType: ChainType.ALG = ChainType.ALG;
 
   constructor(
     public algorand: AlgorandClient,
     public api: AllbridgeCoreClient
   ) {
     super();
+    algorand.setDefaultValidityWindow(100);
   }
 
   approve(_params: ApproveParamsDto): Promise<TransactionResponse> {

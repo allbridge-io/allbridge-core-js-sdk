@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@algorandfoundation/algokit-utils':
-        specifier: ^9.1.2
-        version: 9.1.2(algosdk@3.5.2)
+        specifier: ^9.2.0
+        version: 9.2.0(algosdk@3.5.2)
       '@clarigen/core':
         specifier: ^3.1.0
         version: 3.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -236,11 +236,11 @@ packages:
   '@adraffy/ens-normalize@1.11.0':
     resolution: {integrity: sha512-/3DDPKHqqIqxUULp8yP4zODUY1i+2xvVWsv8A79xGWdCAG+8sb0hRh0Rk2QyOJUnnbyPUAZYcpBuRe3nS2OIUg==}
 
-  '@algorandfoundation/algokit-utils@9.1.2':
-    resolution: {integrity: sha512-gZTg9H5FAce+QcT79y8Eun8by+MtlgocYjIUvP2ahh2O0U0HCcTSjVux5lQZj5+EsSaL3sR0p+BmjXnPAMplbA==}
+  '@algorandfoundation/algokit-utils@9.2.0':
+    resolution: {integrity: sha512-jILpK3PlSJ55crS8+Dl7iIiADEj/VowokTGSVEEneDG41XM3jMmogGVpCNipBil/YAGC2eh2yc4l9iHnfQdT/g==}
     engines: {node: '>=20.0'}
     peerDependencies:
-      algosdk: ^3.0.0
+      algosdk: ^3.5.2
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -5099,7 +5099,7 @@ snapshots:
 
   '@adraffy/ens-normalize@1.11.0': {}
 
-  '@algorandfoundation/algokit-utils@9.1.2(algosdk@3.5.2)':
+  '@algorandfoundation/algokit-utils@9.2.0(algosdk@3.5.2)':
     dependencies:
       algosdk: 3.5.2
       buffer: 6.0.3

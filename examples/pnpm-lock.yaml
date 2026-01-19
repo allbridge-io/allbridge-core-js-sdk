@@ -113,6 +113,12 @@ packages:
     peerDependencies:
       algosdk: ^3.0.0
 
+  '@algorandfoundation/algokit-utils@9.2.0':
+    resolution: {integrity: sha512-jILpK3PlSJ55crS8+Dl7iIiADEj/VowokTGSVEEneDG41XM3jMmogGVpCNipBil/YAGC2eh2yc4l9iHnfQdT/g==}
+    engines: {node: '>=20.0'}
+    peerDependencies:
+      algosdk: ^3.5.2
+
   '@allbridge/bridge-core-sdk@file:..':
     resolution: {directory: .., type: directory}
     engines: {node: ^22.4.0 || >= 20, npm: ^10.8.1 || >= 10}
@@ -3018,9 +3024,14 @@ snapshots:
       algosdk: 3.5.2
       buffer: 6.0.3
 
+  '@algorandfoundation/algokit-utils@9.2.0(algosdk@3.5.2)':
+    dependencies:
+      algosdk: 3.5.2
+      buffer: 6.0.3
+
   '@allbridge/bridge-core-sdk@file:..(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@algorandfoundation/algokit-utils': 9.1.2(algosdk@3.5.2)
+      '@algorandfoundation/algokit-utils': 9.2.0(algosdk@3.5.2)
       '@clarigen/core': 3.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@coral-xyz/anchor': 0.31.1(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@coral-xyz/spl-token': 0.31.1(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
