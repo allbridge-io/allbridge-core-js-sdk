@@ -1,0 +1,1087 @@
+{
+  "address": "XHXBA5WK4PTaLjjVfhPLttXwjeiq18yLdPsBL42YKaY",
+  "metadata": {
+    "name": "cctp_bridge",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "bridge",
+      "discriminator": [
+        174,
+        41,
+        120,
+        146,
+        98,
+        218,
+        169,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "message_sent_event_data",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lock",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  111,
+                  99,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "message_sent_event_data"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cctp_messenger"
+        },
+        {
+          "name": "message_transmitter_program"
+        },
+        {
+          "name": "message_transmitter_account",
+          "writable": true
+        },
+        {
+          "name": "token_messenger"
+        },
+        {
+          "name": "token_minter"
+        },
+        {
+          "name": "local_token",
+          "writable": true
+        },
+        {
+          "name": "remote_token_messenger_key"
+        },
+        {
+          "name": "authority_pda"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "bridge_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "gas_price"
+        },
+        {
+          "name": "this_gas_price"
+        },
+        {
+          "name": "chain_bridge"
+        },
+        {
+          "name": "user_token",
+          "writable": true
+        },
+        {
+          "name": "bridge_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "cctp_bridge"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "BridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bridge_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "cctp_bridge"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bridge_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "InitializeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_chain_bridge",
+      "discriminator": [
+        239,
+        66,
+        180,
+        165,
+        175,
+        10,
+        49,
+        233
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cctp_bridge",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "chain_bridge",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "RegisterChainBridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_admin",
+      "discriminator": [
+        251,
+        163,
+        0,
+        52,
+        91,
+        194,
+        187,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "new_admin"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_admin_fee_share",
+      "discriminator": [
+        34,
+        2,
+        1,
+        74,
+        101,
+        120,
+        39,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "fee_share_bp",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_cctp_token_messenger_minter",
+      "discriminator": [
+        7,
+        23,
+        157,
+        231,
+        197,
+        83,
+        45,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_program_id",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_gas_oracle_program_id",
+      "discriminator": [
+        172,
+        152,
+        29,
+        206,
+        112,
+        239,
+        205,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_program_id",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_chain_bridge",
+      "discriminator": [
+        227,
+        4,
+        133,
+        105,
+        230,
+        88,
+        226,
+        173
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "cctp_bridge",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "chain_bridge",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "UpdateChainBridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw_admin_fee",
+      "discriminator": [
+        176,
+        135,
+        230,
+        197,
+        163,
+        130,
+        60,
+        252
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bridge_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_token",
+          "writable": true
+        },
+        {
+          "name": "bridge_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "cctp_bridge"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_gas_token",
+      "discriminator": [
+        109,
+        117,
+        140,
+        223,
+        117,
+        175,
+        2,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "cctp_bridge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  99,
+                  116,
+                  112,
+                  95,
+                  98,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "CctpBridge",
+      "discriminator": [
+        164,
+        2,
+        216,
+        77,
+        99,
+        83,
+        161,
+        159
+      ]
+    },
+    {
+      "name": "ChainBridge",
+      "discriminator": [
+        25,
+        216,
+        147,
+        218,
+        140,
+        42,
+        98,
+        49
+      ]
+    },
+    {
+      "name": "Lock",
+      "discriminator": [
+        8,
+        255,
+        36,
+        202,
+        210,
+        22,
+        57,
+        137
+      ]
+    },
+    {
+      "name": "Price",
+      "discriminator": [
+        50,
+        107,
+        127,
+        61,
+        83,
+        36,
+        39,
+        75
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ValueTooHigh",
+      "msg": "Value is too high"
+    }
+  ],
+  "types": [
+    {
+      "name": "BridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destination_chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "receive_token",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CctpBridge",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctp_token_messenger_minter",
+            "type": "pubkey"
+          },
+          {
+            "name": "gas_oracle_program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority_bump_seed",
+            "type": "u8"
+          },
+          {
+            "name": "admin_fee_share_bp",
+            "type": "u64"
+          },
+          {
+            "name": "admin_fee_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChainBridge",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "gas_usage",
+            "type": "u64"
+          },
+          {
+            "name": "domain",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "gas_oracle_program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctp_token_messenger_minter",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin_fee_share_bp",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lock",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "admin_fee",
+            "type": "u64"
+          },
+          {
+            "name": "relayer_fee",
+            "type": "u64"
+          },
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destination_chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Price",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "gas_price",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegisterChainBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "gas_usage",
+            "type": "u64"
+          },
+          {
+            "name": "domain",
+            "type": "u32"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateChainBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "gas_usage",
+            "type": "u64"
+          },
+          {
+            "name": "domain",
+            "type": "u32"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    }
+  ]
+}

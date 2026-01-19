@@ -1,11 +1,13 @@
-import { AnchorProvider, BN, Program, Provider, Spl, web3 } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program, Provider, web3 } from "@coral-xyz/anchor";
+import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { PoolInfo, TokenWithChainDetails } from "../../../tokens-info";
 import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { RawTransaction } from "../../models";
-import { Bridge as BridgeType, IDL as bridgeIdl } from "../../models/sol/types/bridge";
+import { Bridge as BridgeType } from "../../models/sol/types/bridge";
+import * as bridgeIdl from "../../models/sol/types/bridge.json";
 import { getTokenAccountData } from "../../utils/sol";
 import {
   getAssociatedAccount,
@@ -142,7 +144,7 @@ export class SolanaPoolService extends ChainPoolService {
   }
 
   private getBridge(bridgeAddress: string, provider: Provider): Program<BridgeType> {
-    return new Program<BridgeType>(bridgeIdl, bridgeAddress, provider);
+    return new Program<BridgeType>({ ...bridgeIdl, address: bridgeAddress }, provider);
   }
 
   private buildAnchorProvider(accountAddress: string): Provider {
@@ -173,7 +175,7 @@ export class SolanaPoolService extends ChainPoolService {
     const poolAccount = new PublicKey(poolAddress);
     const poolAccountInfo = await bridge.account.pool.fetch(poolAccount);
     const tokenMintAccount = poolAccountInfo.mint;
-    const userToken = await getAssociatedAccount(user, tokenMintAccount);
+    const userToken = getAssociatedAccount(user, tokenMintAccount);
     const bridgeTokenAccount = await getBridgeTokenAccount(tokenMintAccount, bridge.programId);
     const userDepositAccount = await getUserDepositAccount(user, tokenMintAccount, bridge.programId);
 
@@ -186,15 +188,12 @@ export class SolanaPoolService extends ChainPoolService {
     try {
       await getTokenAccountData(userToken, provider);
     } catch (ignoreError) {
-      const associatedProgram = Spl.associatedToken(provider);
-      const createUserTokenInstruction: TransactionInstruction = await associatedProgram.methods
-        .create()
-        .accounts({
-          mint: tokenMintAccount,
-          owner: user,
-          associatedAccount: userToken,
-        })
-        .instruction();
+      const createUserTokenInstruction = createAssociatedTokenAccountInstruction(
+        user,
+        userToken,
+        user,
+        tokenMintAccount
+      );
       preInstructions.push(createUserTokenInstruction);
     }
 
@@ -203,7 +202,7 @@ export class SolanaPoolService extends ChainPoolService {
     } catch (ignoreError) {
       const instruction: TransactionInstruction = await bridge.methods
         .initDepositAccount()
-        .accounts({
+        .accountsPartial({
           mint: tokenMintAccount,
           user,
           userDeposit: userDepositAccount,

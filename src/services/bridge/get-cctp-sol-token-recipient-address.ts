@@ -1,4 +1,5 @@
-import * as anchor from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { ChainType } from "../../chains/chain.enums";
 import { SdkError } from "../../exceptions";
@@ -42,11 +43,11 @@ export async function getCctpSolTokenRecipientAddress(
   let recipientWalletAddress: string | number[] | Buffer;
   const receiverAccount = new PublicKey(toAccountAddress);
   const receiveMint = new PublicKey(destinationTokenAddress);
-  const receiveUserToken = await getAssociatedAccount(receiverAccount, receiveMint);
+  const receiveUserToken = getAssociatedAccount(receiverAccount, receiveMint);
   const provider = buildAnchorProvider(solRpcUrl, toAccountAddress);
   anchor.setProvider(provider);
-  const accountData = await anchor.Spl.token(provider).account.token.fetchNullable(receiveUserToken);
-  if (accountData?.authority.equals(receiverAccount)) {
+  const accountData = await getAccount(provider.connection, receiveUserToken);
+  if (accountData?.owner.equals(receiverAccount)) {
     recipientWalletAddress = formatAddress(receiveUserToken.toBase58(), ChainType.SOLANA, chainType);
   } else {
     const tokenAccounts = await provider.connection.getTokenAccountsByOwner(receiverAccount, {
