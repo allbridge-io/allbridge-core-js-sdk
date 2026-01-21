@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/payer_with_token.json`.
  */
 export type PayerWithToken = {
-  address: "6yEPb644Z6mXUGf4h9zDZgaHXHZFGdbhjBGWRqyM8u23";
+  address: "DfB5pJSykRUuUT2ViG8V382R6RB5CQ3GTMVFajoyxXn1";
   metadata: {
     name: "payerWithToken";
     version: "0.1.0";
@@ -514,35 +514,6 @@ export type PayerWithToken = {
       ];
     },
     {
-      name: "setGasOracleProgramId";
-      discriminator: [172, 152, 29, 206, 112, 239, 205, 83];
-      accounts: [
-        {
-          name: "admin";
-          writable: true;
-          signer: true;
-        },
-        {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
-      ];
-      args: [
-        {
-          name: "newProgramId";
-          type: "pubkey";
-        },
-      ];
-    },
-    {
       name: "setPriceAuthority";
       discriminator: [51, 241, 68, 137, 206, 207, 244, 107];
       accounts: [
@@ -1027,10 +998,6 @@ export type PayerWithToken = {
       name: "feeTokenConfig";
       discriminator: [226, 113, 31, 124, 53, 31, 222, 222];
     },
-    {
-      name: "price";
-      discriminator: [50, 107, 127, 61, 83, 36, 39, 75];
-    },
   ];
   events: [
     {
@@ -1102,10 +1069,6 @@ export type PayerWithToken = {
             type: "pubkey";
           },
           {
-            name: "gasOracleProgramId";
-            type: "pubkey";
-          },
-          {
             name: "priceAuthority";
             type: "pubkey";
           },
@@ -1171,10 +1134,6 @@ export type PayerWithToken = {
           },
           {
             name: "cctpBridgeProgramId";
-            type: "pubkey";
-          },
-          {
-            name: "gasOracleProgramId";
             type: "pubkey";
           },
         ];
@@ -1254,26 +1213,6 @@ export type PayerWithToken = {
             type: {
               array: ["u8", 32];
             };
-          },
-        ];
-      };
-    },
-    {
-      name: "price";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "chainId";
-            type: "u8";
-          },
-          {
-            name: "price";
-            type: "u64";
-          },
-          {
-            name: "gasPrice";
-            type: "u64";
           },
         ];
       };

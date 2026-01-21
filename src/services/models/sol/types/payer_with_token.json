@@ -1,5 +1,5 @@
 {
-  "address": "6yEPb644Z6mXUGf4h9zDZgaHXHZFGdbhjBGWRqyM8u23",
+  "address": "DfB5pJSykRUuUT2ViG8V382R6RB5CQ3GTMVFajoyxXn1",
   "metadata": {
     "name": "payer_with_token",
     "version": "0.1.0",
@@ -694,51 +694,6 @@
       ]
     },
     {
-      "name": "set_gas_oracle_program_id",
-      "discriminator": [
-        172,
-        152,
-        29,
-        206,
-        112,
-        239,
-        205,
-        83
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "new_program_id",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
       "name": "set_price_authority",
       "discriminator": [
         51,
@@ -1377,19 +1332,6 @@
         222,
         222
       ]
-    },
-    {
-      "name": "Price",
-      "discriminator": [
-        50,
-        107,
-        127,
-        61,
-        83,
-        36,
-        39,
-        75
-      ]
     }
   ],
   "events": [
@@ -1474,10 +1416,6 @@
             "type": "pubkey"
           },
           {
-            "name": "gas_oracle_program_id",
-            "type": "pubkey"
-          },
-          {
             "name": "price_authority",
             "type": "pubkey"
           }
@@ -1543,10 +1481,6 @@
           },
           {
             "name": "cctp_bridge_program_id",
-            "type": "pubkey"
-          },
-          {
-            "name": "gas_oracle_program_id",
             "type": "pubkey"
           }
         ]
@@ -1641,26 +1575,6 @@
                 32
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Price",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "chain_id",
-            "type": "u8"
-          },
-          {
-            "name": "price",
-            "type": "u64"
-          },
-          {
-            "name": "gas_price",
-            "type": "u64"
           }
         ]
       }
