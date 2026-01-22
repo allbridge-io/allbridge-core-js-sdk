@@ -105,10 +105,10 @@ export class EvmBridgeService extends ChainBridgeService {
     let totalFeeInAbr: string | undefined;
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
       if (!abrExchangeRate) {
-        throw new SdkError("Cannot find 'abrExchangeRate' for ARB0 payment method");
+        throw new SdkError("Cannot find 'abrExchangeRate' for ABR0 payment method");
       }
       if (!params.sourceToken.abrPayer) {
-        throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        throw new SdkError("Source token must contain 'abrPayer' for ABR0 payment method");
       }
       totalFeeInAbr = totalFee;
       const totalFeeInNativeRaw = Big(totalFee).div(abrExchangeRate);
@@ -177,7 +177,7 @@ export class EvmBridgeService extends ChainBridgeService {
 
     if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
       if (!params.sourceToken.abrPayer) {
-        throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+        throw new SdkError("Source token must contain 'abrPayer' for ABR0 payment method");
       }
 
       const abrPayerAddress = params.sourceToken.abrPayer.payerAddress;

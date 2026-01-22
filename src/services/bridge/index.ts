@@ -140,7 +140,7 @@ export function getSpender(
     if (token.abrPayer) {
       return token.abrPayer.payerAddress;
     }
-    throw new SdkError("Token must contain 'abrPayer' for ARB0 payment method");
+    throw new SdkError("Token must contain 'abrPayer' for ABR0 payment method");
   }
   switch (messenger) {
     case Messenger.CCTP:
