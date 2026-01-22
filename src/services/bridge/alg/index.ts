@@ -110,7 +110,7 @@ export class AlgBridgeService extends ChainBridgeService {
         );
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         throw new SdkError("ALG bridge does not support ARB0 payment method");
       default: {
         return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");

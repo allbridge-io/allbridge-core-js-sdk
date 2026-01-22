@@ -103,7 +103,7 @@ export class EvmBridgeService extends ChainBridgeService {
     }
 
     let totalFeeInAbr: string | undefined;
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
       if (!abrExchangeRate) {
         throw new SdkError("Cannot find 'abrExchangeRate' for ARB0 payment method");
       }
@@ -138,7 +138,7 @@ export class EvmBridgeService extends ChainBridgeService {
         {
           const bridgeContract = this.getBridgeContract(contractAddress);
           switch (gasFeePaymentMethod) {
-            case FeePaymentMethod.WITH_ARB:
+            case FeePaymentMethod.WITH_ABR:
             case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
               sendMethod = bridgeContract.methods.swapAndBridge(
                 fromTokenAddress,
@@ -175,7 +175,7 @@ export class EvmBridgeService extends ChainBridgeService {
         break;
     }
 
-    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
       if (!params.sourceToken.abrPayer) {
         throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
       }
@@ -236,7 +236,7 @@ export class EvmBridgeService extends ChainBridgeService {
       );
 
       switch (gasFeePaymentMethod) {
-        case FeePaymentMethod.WITH_ARB:
+        case FeePaymentMethod.WITH_ABR:
         case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
           sendMethod = cctpBridgeContract.methods.bridgeWithWalletAddress(
             amount,
@@ -265,7 +265,7 @@ export class EvmBridgeService extends ChainBridgeService {
       }
     } else {
       switch (gasFeePaymentMethod) {
-        case FeePaymentMethod.WITH_ARB:
+        case FeePaymentMethod.WITH_ABR:
         case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
           sendMethod = cctpBridgeContract.methods.bridge(amount, toAccountAddress, toChainId, 0);
           value = totalFee;
@@ -300,7 +300,7 @@ export class EvmBridgeService extends ChainBridgeService {
     let value: string;
 
     switch (gasFeePaymentMethod) {
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
       case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
         sendMethod = oftBridgeContract.methods.bridge(
           params.sourceToken.tokenAddress,

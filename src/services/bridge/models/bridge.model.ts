@@ -105,7 +105,7 @@ export interface SendParams extends BaseSendParams {
    * it is amount of the source chain currency.<p/>
    * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
-   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ARB} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ABR} then
    * it is amount of the ABR token.
    *
    * Optional.
@@ -127,7 +127,7 @@ export interface SendParams extends BaseSendParams {
    * it is amount of the source chain currency.<p/>
    * if gasFeePaymentMethod is {@link FeePaymentMethod#WITH_STABLECOIN} then
    * it is amount of the source token.
-   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ARB} then
+   * If {@link gasFeePaymentMethod} is {@link FeePaymentMethod#WITH_ABR} then
    * it is amount of the ABR token.
    *
    * Optional.

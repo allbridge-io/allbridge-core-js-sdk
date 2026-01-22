@@ -136,7 +136,7 @@ export function getSpender(
   messenger: Messenger = Messenger.ALLBRIDGE,
   gasFeePaymentMethod: FeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY
 ): string {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (token.abrPayer) {
       return token.abrPayer.payerAddress;
     }

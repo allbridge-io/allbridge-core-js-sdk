@@ -80,7 +80,7 @@ export class SolanaBridgeService extends ChainBridgeService {
         requiredMessageSigner = builtTxResult.requiredMessageSigner;
         break;
       }
-      case FeePaymentMethod.WITH_ARB: {
+      case FeePaymentMethod.WITH_ABR: {
         const builtTxResult = await this.buildTxWithAbrPayment(params, solTxSendParams);
         tx = builtTxResult.tx;
         requiredMessageSigner = builtTxResult.requiredMessageSigner;

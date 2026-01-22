@@ -204,7 +204,7 @@ export class SuiBridgeService extends ChainBridgeService {
         swapAndBridge(tx, fromTokenAddress, args);
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         throw new SdkError("SUI bridge does not support ARB0 payment method");
       default: {
         return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
@@ -291,7 +291,7 @@ export class SuiBridgeService extends ChainBridgeService {
         swapAndBridgeWormhole(tx, fromTokenAddress, args);
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         throw new SdkError("SUI bridge does not support ARB0 payment method");
       default: {
         return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
@@ -394,7 +394,7 @@ export class SuiBridgeService extends ChainBridgeService {
         bridge(tx, fromTokenAddress, args);
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         throw new SdkError("SUI bridge does not support ARB0 payment method");
       default: {
         return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
