@@ -323,7 +323,7 @@ export async function prepareTxSendParams(
   txSendParams.gasFeePaymentMethod = params.gasFeePaymentMethod ?? FeePaymentMethod.WITH_NATIVE_CURRENCY;
   if (txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (!params.sourceToken.abrPayer) {
-      throw new SdkError("Source token must contain 'abrPayer' for ABR0 payment method");
+      throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
     }
   }
 
@@ -392,7 +392,7 @@ export async function prepareTxSendParams(
         break;
       case FeePaymentMethod.WITH_ABR:
         if (!sourceToken.abrPayer) {
-          throw new SdkError("Source token must contain 'abrPayer' for ABR0 payment method");
+          throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
         }
         txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.abrPayer.abrToken.decimals).toFixed(0);
         break;
@@ -427,7 +427,7 @@ export async function prepareTxSendParams(
         break;
       case FeePaymentMethod.WITH_ABR:
         if (!sourceToken.abrPayer) {
-          throw new SdkError("Source token must contain 'abrPayer' for ABR0 payment method");
+          throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
         }
         if (!extraGasLimits.abrExchangeRate) {
           throw new SdkError("Cannot transfer WITH_ABR option");
