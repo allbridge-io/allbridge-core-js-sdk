@@ -76,8 +76,8 @@ export class SrbBridgeService extends ChainBridgeService {
           fee_token_amount: BigInt(totalFee),
         });
         break;
-      case FeePaymentMethod.WITH_ARB:
-        throw new SdkError("SRB bridge does not support ARB0 payment method");
+      case FeePaymentMethod.WITH_ABR:
+        throw new SdkError("SRB bridge does not support ABR payment method");
       default: {
         return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
       }

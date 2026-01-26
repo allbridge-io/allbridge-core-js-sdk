@@ -80,8 +80,8 @@ export class StxBridgeService extends ChainBridgeService {
         feeNativeAmount = 0n;
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
-        throw new SdkError("STX bridge does not support ARB0 payment method");
+      case FeePaymentMethod.WITH_ABR:
+        throw new SdkError("STX bridge does not support ABR payment method");
       default: {
         return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
       }

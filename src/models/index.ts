@@ -85,7 +85,7 @@ export enum FeePaymentMethod {
   /**
    * The fee is paid with the ABR token.
    */
-  WITH_ARB = "abr",
+  WITH_ABR = "abr",
 }
 
 export interface AmountsAndGasFeeOptions {
@@ -119,7 +119,7 @@ type GasFeeOptionsType = {
 export interface GasFeeOptions extends GasFeeOptionsType {
   [FeePaymentMethod.WITH_NATIVE_CURRENCY]: AmountFormatted;
   [FeePaymentMethod.WITH_STABLECOIN]?: AmountFormatted;
-  [FeePaymentMethod.WITH_ARB]?: AmountFormatted;
+  [FeePaymentMethod.WITH_ABR]?: AmountFormatted;
   adminFeeShareWithExtras?: string;
 }
 

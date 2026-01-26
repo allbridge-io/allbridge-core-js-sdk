@@ -1,181 +1,358 @@
-export interface Bridge {
-  version: "0.1.0";
-  name: "bridge";
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/bridge.json`.
+ */
+export type Bridge = {
+  address: "EmLt85sXNvqjzZo3C6BCq55ZzSuvSNFomVnf6b1PgY8R";
+  metadata: {
+    name: "bridge";
+    version: "0.1.0";
+    spec: "0.1.0";
+    description: "Created with Anchor";
+  };
   instructions: [
     {
-      name: "initialize";
+      name: "addOtherBridgeToken";
+      discriminator: [103, 180, 1, 186, 219, 156, 185, 114];
       accounts: [
         {
           name: "admin";
-          isMut: true;
-          isSigner: true;
+          signer: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
         },
         {
           name: "config";
-          isMut: true;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "otherBridgeToken";
+          writable: true;
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [
         {
-          name: "args";
+          name: "chainId";
+          type: "u8";
+        },
+        {
+          name: "tokenAddress";
           type: {
-            defined: "InitializeArgs";
+            array: ["u8", 32];
           };
         },
       ];
     },
     {
-      name: "initializePool";
+      name: "adjustTotalLpAmount";
+      discriminator: [8, 190, 6, 31, 121, 124, 62, 241];
       accounts: [
         {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          name: "admin";
+          signer: true;
         },
         {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
+          name: "mint";
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "token";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "rent";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "args";
-          type: {
-            defined: "InitializePoolArgs";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
           };
         },
-      ];
-    },
-    {
-      name: "initDepositAccount";
-      accounts: [
         {
-          name: "user";
-          isMut: true;
-          isSigner: true;
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
+          name: "userToken";
+          writable: true;
         },
         {
           name: "userDeposit";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 115, 101, 114, 95, 100, 101, 112, 111, 115, 105, 116];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+              {
+                kind: "account";
+                path: "admin";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+      ];
+      args: [];
+    },
+    {
+      name: "claimRewards";
+      discriminator: [4, 144, 132, 71, 116, 23, 151, 80];
+      accounts: [
+        {
+          name: "user";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "mint";
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "userToken";
+          writable: true;
+        },
+        {
+          name: "userDeposit";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 115, 101, 114, 95, 100, 101, 112, 111, 115, 105, 116];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+              {
+                kind: "account";
+                path: "user";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [];
     },
     {
       name: "deposit";
+      discriminator: [242, 35, 198, 137, 82, 225, 242, 182];
       accounts: [
         {
           name: "user";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
           name: "mint";
-          isMut: false;
-          isSigner: false;
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "pool";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "userToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
         },
         {
           name: "userDeposit";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 115, 101, 114, 95, 100, 101, 112, 111, 115, 105, 116];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+              {
+                kind: "account";
+                path: "user";
+              },
+            ];
+          };
         },
         {
           name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
         },
         {
           name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [
@@ -186,379 +363,946 @@ export interface Bridge {
       ];
     },
     {
-      name: "withdraw";
+      name: "initDepositAccount";
+      discriminator: [136, 79, 202, 206, 211, 146, 182, 158];
       accounts: [
         {
           name: "user";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userDeposit";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "amountLp";
-          type: "u64";
-        },
-      ];
-    },
-    {
-      name: "swapAndBridge";
-      accounts: [
-        {
-          name: "user";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
           name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "lock";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          signer: true;
         },
         {
           name: "mint";
-          isMut: false;
-          isSigner: false;
         },
         {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "otherBridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "messenger";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "messengerConfig";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "sentMessageAccount";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "messengerGasUsage";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "gasPrice";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "thisGasPrice";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "chainBridge";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          name: "userDeposit";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 115, 101, 114, 95, 100, 101, 112, 111, 115, 105, 116];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+              {
+                kind: "account";
+                path: "user";
+              },
+            ];
+          };
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [];
+    },
+    {
+      name: "initialize";
+      discriminator: [175, 175, 109, 31, 13, 152, 155, 237];
+      accounts: [
+        {
+          name: "admin";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [
         {
           name: "args";
           type: {
-            defined: "BridgeArgs";
+            defined: {
+              name: "initializeArgs";
+            };
           };
         },
       ];
     },
     {
-      name: "swapAndBridgeWormhole";
+      name: "initializePool";
+      discriminator: [95, 180, 10, 172, 84, 174, 232, 40];
       accounts: [
         {
-          name: "user";
-          isMut: false;
-          isSigner: true;
-        },
-        {
           name: "payer";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
-          name: "lock";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
+          name: "admin";
+          signer: true;
         },
         {
           name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "otherBridgeToken";
-          isMut: true;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "gasPrice";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "thisGasPrice";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "chainBridge";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
         },
         {
-          name: "wormholeMessenger";
-          isMut: false;
-          isSigner: false;
+          name: "mint";
         },
         {
-          name: "wormholeMessengerConfig";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "wormholeProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "bridge";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "message";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "sequence";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "feeCollector";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "messengerGasUsage";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "clock";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "rent";
-          isMut: false;
-          isSigner: false;
+          name: "token";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
+        },
+        {
+          name: "rent";
+          address: "SysvarRent111111111111111111111111111111111";
         },
       ];
       args: [
         {
           name: "args";
           type: {
-            defined: "BridgeArgs";
+            defined: {
+              name: "initializePoolArgs";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "receiveAndSwap";
+      discriminator: [49, 243, 231, 17, 38, 214, 140, 225];
+      accounts: [
+        {
+          name: "user";
+          writable: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "mint";
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "receivedMessageAccount";
+        },
+        {
+          name: "unlock";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 110, 108, 111, 99, 107];
+              },
+              {
+                kind: "arg";
+                path: "args.hash";
+              },
+            ];
+          };
+        },
+        {
+          name: "chainBridge";
+        },
+        {
+          name: "userToken";
+          writable: true;
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+        {
+          name: "messengerProgram";
+        },
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: {
+              name: "unlockArgs";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "receiveAndSwapWormhole";
+      discriminator: [53, 141, 209, 156, 114, 7, 54, 229];
+      accounts: [
+        {
+          name: "user";
+          writable: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "mint";
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "receivedMessageAccount";
+        },
+        {
+          name: "unlock";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 110, 108, 111, 99, 107];
+              },
+              {
+                kind: "arg";
+                path: "args.hash";
+              },
+            ];
+          };
+        },
+        {
+          name: "chainBridge";
+        },
+        {
+          name: "userToken";
+          writable: true;
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+        {
+          name: "messengerProgram";
+        },
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: {
+              name: "unlockArgs";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "registerChainBridge";
+      discriminator: [239, 66, 180, 165, 175, 10, 49, 233];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "chainBridge";
+          writable: true;
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: {
+              name: "registerChainBridgeArgs";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "removeOtherBridgeToken";
+      discriminator: [149, 232, 199, 145, 241, 219, 24, 154];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "otherBridgeToken";
+          writable: true;
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [
+        {
+          name: "chainId";
+          type: "u8";
+        },
+        {
+          name: "tokenAddress";
+          type: {
+            array: ["u8", 32];
+          };
+        },
+      ];
+    },
+    {
+      name: "setAdmin";
+      discriminator: [251, 163, 0, 52, 91, 194, 187, 92];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "newAdmin";
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [];
+    },
+    {
+      name: "setAllbridgeMessengerProgramId";
+      discriminator: [168, 21, 145, 139, 97, 252, 84, 77];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [
+        {
+          name: "newProgramId";
+          type: "pubkey";
+        },
+      ];
+    },
+    {
+      name: "setBalanceRatioMin";
+      discriminator: [210, 171, 132, 168, 93, 237, 9, 201];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+        },
+      ];
+      args: [
+        {
+          name: "balanceRatioMinBp";
+          type: "u16";
+        },
+      ];
+    },
+    {
+      name: "setGasOracleProgramId";
+      discriminator: [172, 152, 29, 206, 112, 239, 205, 83];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [
+        {
+          name: "newProgramId";
+          type: "pubkey";
+        },
+      ];
+    },
+    {
+      name: "setPoolAdminFeeShare";
+      discriminator: [235, 219, 45, 195, 124, 82, 164, 230];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+        },
+      ];
+      args: [
+        {
+          name: "feeShareBp";
+          type: "u64";
+        },
+      ];
+    },
+    {
+      name: "setPoolFeeShare";
+      discriminator: [151, 35, 220, 215, 38, 227, 226, 9];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "pool";
+          writable: true;
+        },
+      ];
+      args: [
+        {
+          name: "feeShareBp";
+          type: "u64";
+        },
+      ];
+    },
+    {
+      name: "setRebalancer";
+      discriminator: [28, 161, 168, 250, 215, 4, 144, 154];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "rebalancer";
+        },
+      ];
+      args: [];
+    },
+    {
+      name: "setStopAuthority";
+      discriminator: [238, 229, 235, 32, 221, 191, 227, 43];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "newAuthority";
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [];
+    },
+    {
+      name: "setWormholeMessengerProgramId";
+      discriminator: [215, 127, 198, 117, 43, 17, 36, 24];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [
+        {
+          name: "newProgramId";
+          type: "pubkey";
+        },
+      ];
+    },
+    {
+      name: "startBridge";
+      discriminator: [213, 146, 40, 152, 47, 121, 85, 18];
+      accounts: [
+        {
+          name: "admin";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [
+        {
+          name: "actionType";
+          type: {
+            defined: {
+              name: "actionType";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "stopBridge";
+      discriminator: [187, 52, 235, 53, 245, 59, 218, 1];
+      accounts: [
+        {
+          name: "stopAuthority";
+          signer: true;
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+      ];
+      args: [
+        {
+          name: "actionType";
+          type: {
+            defined: {
+              name: "actionType";
+            };
           };
         },
       ];
     },
     {
       name: "swap";
+      discriminator: [248, 198, 158, 145, 225, 117, 135, 200];
       accounts: [
         {
           name: "user";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
           name: "payer";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
           name: "sendMint";
-          isMut: false;
-          isSigner: false;
         },
         {
           name: "receiveMint";
-          isMut: false;
-          isSigner: false;
         },
         {
           name: "config";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "sendPool";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "sendMint";
+              },
+            ];
+          };
         },
         {
           name: "receivePool";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "receiveMint";
+              },
+            ];
+          };
         },
         {
           name: "sendBridgeToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "sendMint";
+              },
+            ];
+          };
         },
         {
           name: "receiveBridgeToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "receiveMint";
+              },
+            ];
+          };
         },
         {
           name: "sendUserToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
         },
         {
           name: "receiveUserToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
         },
         {
           name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
         },
         {
           name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
       ];
       args: [
@@ -573,254 +1317,550 @@ export interface Bridge {
       ];
     },
     {
-      name: "registerChainBridge";
+      name: "swapAndBridge";
+      discriminator: [204, 63, 169, 171, 186, 125, 86, 159];
       accounts: [
         {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
+          name: "user";
+          writable: true;
+          signer: true;
         },
         {
           name: "payer";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "lock";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [108, 111, 99, 107];
+              },
+              {
+                kind: "arg";
+                path: "args.nonce";
+              },
+            ];
+          };
+        },
+        {
+          name: "mint";
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "otherBridgeToken";
+          writable: true;
+        },
+        {
+          name: "messenger";
+        },
+        {
+          name: "messengerConfig";
+          writable: true;
+        },
+        {
+          name: "sentMessageAccount";
+          writable: true;
+        },
+        {
+          name: "messengerGasUsage";
+        },
+        {
+          name: "pool";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "gasPrice";
+        },
+        {
+          name: "thisGasPrice";
         },
         {
           name: "chainBridge";
-          isMut: true;
-          isSigner: false;
+        },
+        {
+          name: "userToken";
+          writable: true;
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [
         {
           name: "args";
           type: {
-            defined: "RegisterChainBridgeArgs";
+            defined: {
+              name: "bridgeArgs";
+            };
+          };
+        },
+      ];
+    },
+    {
+      name: "swapAndBridgeWormhole";
+      discriminator: [41, 91, 201, 180, 150, 117, 154, 65];
+      accounts: [
+        {
+          name: "user";
+          signer: true;
+        },
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "lock";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [108, 111, 99, 107];
+              },
+              {
+                kind: "arg";
+                path: "args.nonce";
+              },
+            ];
+          };
+        },
+        {
+          name: "mint";
+        },
+        {
+          name: "config";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
+          name: "otherBridgeToken";
+          writable: true;
+        },
+        {
+          name: "pool";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "bridgeToken";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
+        },
+        {
+          name: "gasPrice";
+        },
+        {
+          name: "thisGasPrice";
+        },
+        {
+          name: "chainBridge";
+        },
+        {
+          name: "userToken";
+          writable: true;
+        },
+        {
+          name: "bridgeAuthority";
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
+        },
+        {
+          name: "wormholeMessenger";
+        },
+        {
+          name: "wormholeMessengerConfig";
+          writable: true;
+        },
+        {
+          name: "wormholeProgram";
+        },
+        {
+          name: "bridge";
+          writable: true;
+        },
+        {
+          name: "message";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "sequence";
+          writable: true;
+        },
+        {
+          name: "feeCollector";
+          writable: true;
+        },
+        {
+          name: "messengerGasUsage";
+        },
+        {
+          name: "clock";
+          address: "SysvarC1ock11111111111111111111111111111111";
+        },
+        {
+          name: "rent";
+          address: "SysvarRent111111111111111111111111111111111";
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [
+        {
+          name: "args";
+          type: {
+            defined: {
+              name: "bridgeArgs";
+            };
           };
         },
       ];
     },
     {
       name: "updateChainBridge";
+      discriminator: [227, 4, 133, 105, 230, 88, 226, 173];
       accounts: [
         {
           name: "admin";
-          isMut: false;
-          isSigner: true;
+          signer: true;
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "chainBridge";
-          isMut: true;
-          isSigner: false;
+          writable: true;
         },
       ];
       args: [
         {
           name: "args";
           type: {
-            defined: "UpdateChainBridgeArgs";
+            defined: {
+              name: "updateChainBridgeArgs";
+            };
           };
         },
       ];
     },
     {
-      name: "receiveAndSwap";
+      name: "withdraw";
+      discriminator: [183, 18, 70, 156, 148, 109, 161, 34];
       accounts: [
         {
           name: "user";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          writable: true;
+          signer: true;
         },
         {
           name: "mint";
-          isMut: false;
-          isSigner: false;
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "pool";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "receivedMessageAccount";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "unlock";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "chainBridge";
-          isMut: false;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "userToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+        },
+        {
+          name: "userDeposit";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [117, 115, 101, 114, 95, 100, 101, 112, 111, 115, 105, 116];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+              {
+                kind: "account";
+                path: "user";
+              },
+            ];
+          };
         },
         {
           name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
         },
         {
           name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "messengerProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
       args: [
         {
-          name: "args";
-          type: {
-            defined: "UnlockArgs";
-          };
+          name: "amountLp";
+          type: "u64";
         },
       ];
     },
     {
-      name: "receiveAndSwapWormhole";
+      name: "withdrawAdminFee";
+      discriminator: [176, 135, 230, 197, 163, 130, 60, 252];
       accounts: [
         {
-          name: "user";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          name: "admin";
+          signer: true;
         },
         {
           name: "mint";
-          isMut: false;
-          isSigner: false;
         },
         {
           name: "config";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
         {
           name: "pool";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [112, 111, 111, 108];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
           name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [116, 111, 107, 101, 110];
+              },
+              {
+                kind: "account";
+                path: "mint";
+              },
+            ];
+          };
         },
         {
-          name: "receivedMessageAccount";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "unlock";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "chainBridge";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
+          name: "adminToken";
+          writable: true;
         },
         {
           name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "config";
+              },
+            ];
+          };
         },
         {
           name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
           name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "messengerProgram";
-          isMut: false;
-          isSigner: false;
+          address: "11111111111111111111111111111111";
         },
       ];
-      args: [
-        {
-          name: "args";
-          type: {
-            defined: "UnlockArgs";
-          };
-        },
-      ];
+      args: [];
     },
     {
       name: "withdrawGasToken";
+      discriminator: [109, 117, 140, 223, 117, 175, 2, 139];
       accounts: [
         {
           name: "admin";
-          isMut: false;
-          isSigner: true;
+          signer: true;
         },
         {
           name: "recipient";
-          isMut: true;
-          isSigner: false;
+          writable: true;
         },
         {
           name: "config";
-          isMut: true;
-          isSigner: false;
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
         },
       ];
       args: [
@@ -830,500 +1870,165 @@ export interface Bridge {
         },
       ];
     },
-    {
-      name: "claimRewards";
-      accounts: [
-        {
-          name: "user";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userDeposit";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-    {
-      name: "setAdmin";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "newAdmin";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-    {
-      name: "startBridge";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "actionType";
-          type: {
-            defined: "ActionType";
-          };
-        },
-      ];
-    },
-    {
-      name: "stopBridge";
-      accounts: [
-        {
-          name: "stopAuthority";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "actionType";
-          type: {
-            defined: "ActionType";
-          };
-        },
-      ];
-    },
-    {
-      name: "setRebalancer";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "rebalancer";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-    {
-      name: "setStopAuthority";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "newAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-    {
-      name: "setAllbridgeMessengerProgramId";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "newProgramId";
-          type: "publicKey";
-        },
-      ];
-    },
-    {
-      name: "setWormholeMessengerProgramId";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "newProgramId";
-          type: "publicKey";
-        },
-      ];
-    },
-    {
-      name: "setGasOracleProgramId";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "newProgramId";
-          type: "publicKey";
-        },
-      ];
-    },
-    {
-      name: "setPoolFeeShare";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "feeShareBp";
-          type: "u64";
-        },
-      ];
-    },
-    {
-      name: "setBalanceRatioMin";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "balanceRatioMinBp";
-          type: "u16";
-        },
-      ];
-    },
-    {
-      name: "setPoolAdminFeeShare";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "feeShareBp";
-          type: "u64";
-        },
-      ];
-    },
-    {
-      name: "addOtherBridgeToken";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "otherBridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "chainId";
-          type: "u8";
-        },
-        {
-          name: "tokenAddress";
-          type: {
-            array: ["u8", 32];
-          };
-        },
-      ];
-    },
-    {
-      name: "removeOtherBridgeToken";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "config";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "otherBridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
-        {
-          name: "chainId";
-          type: "u8";
-        },
-        {
-          name: "tokenAddress";
-          type: {
-            array: ["u8", 32];
-          };
-        },
-      ];
-    },
-    {
-      name: "withdrawAdminFee";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "adminToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-    {
-      name: "adjustTotalLpAmount";
-      accounts: [
-        {
-          name: "admin";
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "config";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "pool";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userToken";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "userDeposit";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "bridgeAuthority";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
   ];
   accounts: [
+    {
+      name: "chainBridge";
+      discriminator: [25, 216, 147, 218, 140, 42, 98, 49];
+    },
+    {
+      name: "config";
+      discriminator: [155, 12, 170, 224, 30, 250, 204, 130];
+    },
+    {
+      name: "lock";
+      discriminator: [8, 255, 36, 202, 210, 22, 57, 137];
+    },
+    {
+      name: "otherBridgeToken";
+      discriminator: [27, 112, 167, 155, 2, 141, 52, 167];
+    },
+    {
+      name: "pool";
+      discriminator: [241, 154, 109, 4, 17, 177, 109, 188];
+    },
+    {
+      name: "price";
+      discriminator: [50, 107, 127, 61, 83, 36, 39, 75];
+    },
+    {
+      name: "unlock";
+      discriminator: [187, 122, 21, 254, 7, 157, 241, 10];
+    },
+    {
+      name: "userDeposit";
+      discriminator: [69, 238, 23, 217, 255, 137, 185, 35];
+    },
+  ];
+  errors: [
+    {
+      code: 6000;
+      name: "accountAlreadyInitialized";
+      msg: "This account has already been initialized";
+    },
+    {
+      code: 6001;
+      name: "adminAuthorityInvalid";
+      msg: "This instruction requires admin authority";
+    },
+    {
+      code: 6002;
+      name: "invalidSignature";
+      msg: "Provided signature has wrong signer or message";
+    },
+    {
+      code: 6003;
+      name: "invalidHash";
+      msg: "Wrong unlock message hash";
+    },
+    {
+      code: 6004;
+      name: "poolOverflow";
+      msg: "Pool overflow";
+    },
+    {
+      code: 6005;
+      name: "reservesExhausted";
+      msg: "Reserves exhausted";
+    },
+    {
+      code: 6006;
+      name: "zeroAmount";
+      msg: "Zero amount";
+    },
+    {
+      code: 6007;
+      name: "zeroChanges";
+      msg: "Zero changes";
+    },
+    {
+      code: 6008;
+      name: "highVusdAmount";
+      msg: "vUSD amount is too high";
+    },
+    {
+      code: 6009;
+      name: "balanceRatioExceeded";
+      msg: "Balance ratio exceeded";
+    },
+    {
+      code: 6010;
+      name: "insufficientReceivedAmount";
+      msg: "Received insufficient amount";
+    },
+    {
+      code: 6011;
+      name: "forbiddenAction";
+      msg: "forbiddenAction";
+    },
+    {
+      code: 6012;
+      name: "valueTooHigh";
+      msg: "Value is too high";
+    },
+    {
+      code: 6013;
+      name: "emptyRecipient";
+      msg: "Empty recipient";
+    },
+  ];
+  types: [
+    {
+      name: "actionType";
+      type: {
+        kind: "enum";
+        variants: [
+          {
+            name: "deposit";
+          },
+          {
+            name: "withdraw";
+          },
+          {
+            name: "swap";
+          },
+        ];
+      };
+    },
+    {
+      name: "bridgeArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "nonce";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "recipient";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "destinationChainId";
+            type: "u8";
+          },
+          {
+            name: "receiveToken";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "vusdAmount";
+            type: "u64";
+          },
+        ];
+      };
+    },
     {
       name: "chainBridge";
       type: {
@@ -1353,27 +2058,27 @@ export interface Bridge {
         fields: [
           {
             name: "admin";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "allbridgeMessengerProgramId";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "wormholeMessengerProgramId";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "gasOracleProgramId";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "rebalancer";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "stopAuthority";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "authorityBumpSeed";
@@ -1395,17 +2100,61 @@ export interface Bridge {
       };
     },
     {
+      name: "initializeArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "allbridgeMessengerProgramId";
+            type: "pubkey";
+          },
+          {
+            name: "wormholeMessengerProgramId";
+            type: "pubkey";
+          },
+          {
+            name: "gasOracleProgramId";
+            type: "pubkey";
+          },
+        ];
+      };
+    },
+    {
+      name: "initializePoolArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "a";
+            type: "u64";
+          },
+          {
+            name: "feeShareBp";
+            type: "u64";
+          },
+          {
+            name: "adminFeeShareBp";
+            type: "u64";
+          },
+          {
+            name: "balanceRatioMinBp";
+            type: "u16";
+          },
+        ];
+      };
+    },
+    {
       name: "lock";
       type: {
         kind: "struct";
         fields: [
           {
             name: "sender";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "sentTokenAddress";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "amount";
@@ -1440,7 +2189,9 @@ export interface Bridge {
           {
             name: "messenger";
             type: {
-              defined: "Messenger";
+              defined: {
+                name: "messenger";
+              };
             };
           },
           {
@@ -1450,6 +2201,23 @@ export interface Bridge {
           {
             name: "fee";
             type: "u64";
+          },
+        ];
+      };
+    },
+    {
+      name: "messenger";
+      type: {
+        kind: "enum";
+        variants: [
+          {
+            name: "none";
+          },
+          {
+            name: "allbridge";
+          },
+          {
+            name: "wormhole";
           },
         ];
       };
@@ -1468,7 +2236,7 @@ export interface Bridge {
         fields: [
           {
             name: "mint";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "a";
@@ -1522,6 +2290,48 @@ export interface Bridge {
       };
     },
     {
+      name: "price";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "chainId";
+            type: "u8";
+          },
+          {
+            name: "price";
+            type: "u64";
+          },
+          {
+            name: "gasPrice";
+            type: "u64";
+          },
+        ];
+      };
+    },
+    {
+      name: "registerChainBridgeArgs";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "chainBridgeAddress";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "chainId";
+            type: "u8";
+          },
+          {
+            name: "gasUsage";
+            type: "u64";
+          },
+        ];
+      };
+    },
+    {
       name: "unlock";
       type: {
         kind: "struct";
@@ -1552,155 +2362,7 @@ export interface Bridge {
       };
     },
     {
-      name: "userDeposit";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "userAddress";
-            type: "publicKey";
-          },
-          {
-            name: "mint";
-            type: "publicKey";
-          },
-          {
-            name: "lpAmount";
-            type: "u64";
-          },
-          {
-            name: "rewardDebt";
-            type: "u64";
-          },
-        ];
-      };
-    },
-  ];
-  types: [
-    {
-      name: "RegisterChainBridgeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "chainBridgeAddress";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "chainId";
-            type: "u8";
-          },
-          {
-            name: "gasUsage";
-            type: "u64";
-          },
-        ];
-      };
-    },
-    {
-      name: "UpdateChainBridgeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "chainBridgeAddress";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "chainId";
-            type: "u8";
-          },
-          {
-            name: "gasUsage";
-            type: "u64";
-          },
-        ];
-      };
-    },
-    {
-      name: "InitializeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "allbridgeMessengerProgramId";
-            type: "publicKey";
-          },
-          {
-            name: "wormholeMessengerProgramId";
-            type: "publicKey";
-          },
-          {
-            name: "gasOracleProgramId";
-            type: "publicKey";
-          },
-        ];
-      };
-    },
-    {
-      name: "InitializePoolArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "a";
-            type: "u64";
-          },
-          {
-            name: "feeShareBp";
-            type: "u64";
-          },
-          {
-            name: "adminFeeShareBp";
-            type: "u64";
-          },
-          {
-            name: "balanceRatioMinBp";
-            type: "u16";
-          },
-        ];
-      };
-    },
-    {
-      name: "BridgeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "nonce";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "recipient";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "destinationChainId";
-            type: "u8";
-          },
-          {
-            name: "receiveToken";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "vusdAmount";
-            type: "u64";
-          },
-        ];
-      };
-    },
-    {
-      name: "UnlockArgs";
+      name: "unlockArgs";
       type: {
         kind: "struct";
         fields: [
@@ -1716,7 +2378,7 @@ export interface Bridge {
           },
           {
             name: "recipient";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "sourceChainId";
@@ -1724,12 +2386,14 @@ export interface Bridge {
           },
           {
             name: "receiveToken";
-            type: "publicKey";
+            type: "pubkey";
           },
           {
             name: "messenger";
             type: {
-              defined: "Messenger";
+              defined: {
+                name: "messenger";
+              };
             };
           },
           {
@@ -1746,1978 +2410,50 @@ export interface Bridge {
       };
     },
     {
-      name: "RewardError";
+      name: "updateChainBridgeArgs";
       type: {
-        kind: "enum";
-        variants: [
+        kind: "struct";
+        fields: [
           {
-            name: "FeeTooHigh";
+            name: "chainBridgeAddress";
+            type: {
+              array: ["u8", 32];
+            };
+          },
+          {
+            name: "chainId";
+            type: "u8";
+          },
+          {
+            name: "gasUsage";
+            type: "u64";
           },
         ];
       };
     },
     {
-      name: "Messenger";
+      name: "userDeposit";
       type: {
-        kind: "enum";
-        variants: [
+        kind: "struct";
+        fields: [
           {
-            name: "None";
+            name: "userAddress";
+            type: "pubkey";
           },
           {
-            name: "Allbridge";
+            name: "mint";
+            type: "pubkey";
           },
           {
-            name: "Wormhole";
-          },
-        ];
-      };
-    },
-    {
-      name: "ActionType";
-      type: {
-        kind: "enum";
-        variants: [
-          {
-            name: "Deposit";
+            name: "lpAmount";
+            type: "u64";
           },
           {
-            name: "Withdraw";
-          },
-          {
-            name: "Swap";
+            name: "rewardDebt";
+            type: "u64";
           },
         ];
       };
     },
   ];
-  errors: [
-    {
-      code: 6000;
-      name: "AccountAlreadyInitialized";
-      msg: "This account has already been initialized";
-    },
-    {
-      code: 6001;
-      name: "AdminAuthorityInvalid";
-      msg: "This instruction requires admin authority";
-    },
-    {
-      code: 6002;
-      name: "InvalidSignature";
-      msg: "Provided signature has wrong signer or message";
-    },
-    {
-      code: 6003;
-      name: "InvalidHash";
-      msg: "Wrong unlock message hash";
-    },
-    {
-      code: 6004;
-      name: "PoolOverflow";
-      msg: "PoolInfo overflow";
-    },
-    {
-      code: 6005;
-      name: "ReservesExhausted";
-      msg: "Reserves exhausted";
-    },
-    {
-      code: 6006;
-      name: "ZeroAmount";
-      msg: "Zero amount";
-    },
-    {
-      code: 6007;
-      name: "ZeroChanges";
-      msg: "Zero changes";
-    },
-    {
-      code: 6008;
-      name: "HighVusdAmount";
-      msg: "vUSD amount is too high";
-    },
-    {
-      code: 6009;
-      name: "BalanceRatioExceeded";
-      msg: "Balance ratio exceeded";
-    },
-    {
-      code: 6010;
-      name: "InsufficientReceivedAmount";
-      msg: "Received insufficient amount";
-    },
-    {
-      code: 6011;
-      name: "ForbiddenAction";
-      msg: "ForbiddenAction";
-    },
-    {
-      code: 6012;
-      name: "ValueTooHigh";
-      msg: "Value is too high";
-    },
-  ];
-}
-
-export const IDL: Bridge = {
-  version: "0.1.0",
-  name: "bridge",
-  instructions: [
-    {
-      name: "initialize",
-      accounts: [
-        {
-          name: "admin",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "InitializeArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "initializePool",
-      accounts: [
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "token",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "rent",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "InitializePoolArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "initDepositAccount",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "userDeposit",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "deposit",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userDeposit",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "amount",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "withdraw",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userDeposit",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "amountLp",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "swapAndBridge",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "lock",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "otherBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "messenger",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "messengerConfig",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "sentMessageAccount",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "messengerGasUsage",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "gasPrice",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "thisGasPrice",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "BridgeArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "swapAndBridgeWormhole",
-      accounts: [
-        {
-          name: "user",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "lock",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "otherBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "gasPrice",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "thisGasPrice",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "wormholeMessenger",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "wormholeMessengerConfig",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "wormholeProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "bridge",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "message",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "sequence",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "feeCollector",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "messengerGasUsage",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "clock",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "rent",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "BridgeArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "swap",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "sendMint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "receiveMint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "sendPool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "receivePool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "sendBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "receiveBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "sendUserToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "receiveUserToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "amount",
-          type: "u64",
-        },
-        {
-          name: "receiveAmountMin",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "registerChainBridge",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "RegisterChainBridgeArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "updateChainBridge",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "UpdateChainBridgeArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "receiveAndSwap",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "receivedMessageAccount",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "unlock",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "messengerProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "UnlockArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "receiveAndSwapWormhole",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "receivedMessageAccount",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "unlock",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "chainBridge",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "messengerProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "args",
-          type: {
-            defined: "UnlockArgs",
-          },
-        },
-      ],
-    },
-    {
-      name: "withdrawGasToken",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "recipient",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "amount",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "claimRewards",
-      accounts: [
-        {
-          name: "user",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userDeposit",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "setAdmin",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "newAdmin",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "startBridge",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "actionType",
-          type: {
-            defined: "ActionType",
-          },
-        },
-      ],
-    },
-    {
-      name: "stopBridge",
-      accounts: [
-        {
-          name: "stopAuthority",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "actionType",
-          type: {
-            defined: "ActionType",
-          },
-        },
-      ],
-    },
-    {
-      name: "setRebalancer",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "rebalancer",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "setStopAuthority",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "newAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "setAllbridgeMessengerProgramId",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "newProgramId",
-          type: "publicKey",
-        },
-      ],
-    },
-    {
-      name: "setWormholeMessengerProgramId",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "newProgramId",
-          type: "publicKey",
-        },
-      ],
-    },
-    {
-      name: "setGasOracleProgramId",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "newProgramId",
-          type: "publicKey",
-        },
-      ],
-    },
-    {
-      name: "setPoolFeeShare",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "feeShareBp",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "setBalanceRatioMin",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "balanceRatioMinBp",
-          type: "u16",
-        },
-      ],
-    },
-    {
-      name: "setPoolAdminFeeShare",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "feeShareBp",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "addOtherBridgeToken",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "otherBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "chainId",
-          type: "u8",
-        },
-        {
-          name: "tokenAddress",
-          type: {
-            array: ["u8", 32],
-          },
-        },
-      ],
-    },
-    {
-      name: "removeOtherBridgeToken",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: "config",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "otherBridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: "chainId",
-          type: "u8",
-        },
-        {
-          name: "tokenAddress",
-          type: {
-            array: ["u8", 32],
-          },
-        },
-      ],
-    },
-    {
-      name: "withdrawAdminFee",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "adminToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: "adjustTotalLpAmount",
-      accounts: [
-        {
-          name: "admin",
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "config",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "pool",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userToken",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "userDeposit",
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: "bridgeAuthority",
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-  ],
-  accounts: [
-    {
-      name: "chainBridge",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "address",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "chainId",
-            type: "u8",
-          },
-          {
-            name: "gasUsage",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "config",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "admin",
-            type: "publicKey",
-          },
-          {
-            name: "allbridgeMessengerProgramId",
-            type: "publicKey",
-          },
-          {
-            name: "wormholeMessengerProgramId",
-            type: "publicKey",
-          },
-          {
-            name: "gasOracleProgramId",
-            type: "publicKey",
-          },
-          {
-            name: "rebalancer",
-            type: "publicKey",
-          },
-          {
-            name: "stopAuthority",
-            type: "publicKey",
-          },
-          {
-            name: "authorityBumpSeed",
-            type: "u8",
-          },
-          {
-            name: "canSwap",
-            type: "bool",
-          },
-          {
-            name: "canDeposit",
-            type: "bool",
-          },
-          {
-            name: "canWithdraw",
-            type: "bool",
-          },
-        ],
-      },
-    },
-    {
-      name: "lock",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "sender",
-            type: "publicKey",
-          },
-          {
-            name: "sentTokenAddress",
-            type: "publicKey",
-          },
-          {
-            name: "amount",
-            type: "u64",
-          },
-          {
-            name: "vusdAmount",
-            type: "u64",
-          },
-          {
-            name: "recipient",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "destinationChainId",
-            type: "u8",
-          },
-          {
-            name: "receiveToken",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "nonce",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "messenger",
-            type: {
-              defined: "Messenger",
-            },
-          },
-          {
-            name: "slot",
-            type: "u64",
-          },
-          {
-            name: "fee",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "otherBridgeToken",
-      type: {
-        kind: "struct",
-        fields: [],
-      },
-    },
-    {
-      name: "pool",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "mint",
-            type: "publicKey",
-          },
-          {
-            name: "a",
-            type: "u64",
-          },
-          {
-            name: "d",
-            type: "u64",
-          },
-          {
-            name: "tokenBalance",
-            type: "u64",
-          },
-          {
-            name: "vUsdBalance",
-            type: "u64",
-          },
-          {
-            name: "reserves",
-            type: "u64",
-          },
-          {
-            name: "decimals",
-            type: "u8",
-          },
-          {
-            name: "totalLpAmount",
-            type: "u64",
-          },
-          {
-            name: "feeShareBp",
-            type: "u64",
-          },
-          {
-            name: "adminFeeShareBp",
-            type: "u64",
-          },
-          {
-            name: "accRewardPerShareP",
-            type: "u128",
-          },
-          {
-            name: "adminFeeAmount",
-            type: "u64",
-          },
-          {
-            name: "balanceRatioMinBp",
-            type: "u16",
-          },
-        ],
-      },
-    },
-    {
-      name: "unlock",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "hash",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "amount",
-            type: "u64",
-          },
-          {
-            name: "fee",
-            type: "u64",
-          },
-          {
-            name: "vUsdAmount",
-            type: "u64",
-          },
-          {
-            name: "slot",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "userDeposit",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "userAddress",
-            type: "publicKey",
-          },
-          {
-            name: "mint",
-            type: "publicKey",
-          },
-          {
-            name: "lpAmount",
-            type: "u64",
-          },
-          {
-            name: "rewardDebt",
-            type: "u64",
-          },
-        ],
-      },
-    },
-  ],
-  types: [
-    {
-      name: "RegisterChainBridgeArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "chainBridgeAddress",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "chainId",
-            type: "u8",
-          },
-          {
-            name: "gasUsage",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "UpdateChainBridgeArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "chainBridgeAddress",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "chainId",
-            type: "u8",
-          },
-          {
-            name: "gasUsage",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "InitializeArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "allbridgeMessengerProgramId",
-            type: "publicKey",
-          },
-          {
-            name: "wormholeMessengerProgramId",
-            type: "publicKey",
-          },
-          {
-            name: "gasOracleProgramId",
-            type: "publicKey",
-          },
-        ],
-      },
-    },
-    {
-      name: "InitializePoolArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "a",
-            type: "u64",
-          },
-          {
-            name: "feeShareBp",
-            type: "u64",
-          },
-          {
-            name: "adminFeeShareBp",
-            type: "u64",
-          },
-          {
-            name: "balanceRatioMinBp",
-            type: "u16",
-          },
-        ],
-      },
-    },
-    {
-      name: "BridgeArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "nonce",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "recipient",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "destinationChainId",
-            type: "u8",
-          },
-          {
-            name: "receiveToken",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "vusdAmount",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "UnlockArgs",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "nonce",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "amount",
-            type: "u64",
-          },
-          {
-            name: "recipient",
-            type: "publicKey",
-          },
-          {
-            name: "sourceChainId",
-            type: "u8",
-          },
-          {
-            name: "receiveToken",
-            type: "publicKey",
-          },
-          {
-            name: "messenger",
-            type: {
-              defined: "Messenger",
-            },
-          },
-          {
-            name: "hash",
-            type: {
-              array: ["u8", 32],
-            },
-          },
-          {
-            name: "receiveAmountMin",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
-      name: "RewardError",
-      type: {
-        kind: "enum",
-        variants: [
-          {
-            name: "FeeTooHigh",
-          },
-        ],
-      },
-    },
-    {
-      name: "Messenger",
-      type: {
-        kind: "enum",
-        variants: [
-          {
-            name: "None",
-          },
-          {
-            name: "Allbridge",
-          },
-          {
-            name: "Wormhole",
-          },
-        ],
-      },
-    },
-    {
-      name: "ActionType",
-      type: {
-        kind: "enum",
-        variants: [
-          {
-            name: "Deposit",
-          },
-          {
-            name: "Withdraw",
-          },
-          {
-            name: "Swap",
-          },
-        ],
-      },
-    },
-  ],
-  errors: [
-    {
-      code: 6000,
-      name: "AccountAlreadyInitialized",
-      msg: "This account has already been initialized",
-    },
-    {
-      code: 6001,
-      name: "AdminAuthorityInvalid",
-      msg: "This instruction requires admin authority",
-    },
-    {
-      code: 6002,
-      name: "InvalidSignature",
-      msg: "Provided signature has wrong signer or message",
-    },
-    {
-      code: 6003,
-      name: "InvalidHash",
-      msg: "Wrong unlock message hash",
-    },
-    {
-      code: 6004,
-      name: "PoolOverflow",
-      msg: "PoolInfo overflow",
-    },
-    {
-      code: 6005,
-      name: "ReservesExhausted",
-      msg: "Reserves exhausted",
-    },
-    {
-      code: 6006,
-      name: "ZeroAmount",
-      msg: "Zero amount",
-    },
-    {
-      code: 6007,
-      name: "ZeroChanges",
-      msg: "Zero changes",
-    },
-    {
-      code: 6008,
-      name: "HighVusdAmount",
-      msg: "vUSD amount is too high",
-    },
-    {
-      code: 6009,
-      name: "BalanceRatioExceeded",
-      msg: "Balance ratio exceeded",
-    },
-    {
-      code: 6010,
-      name: "InsufficientReceivedAmount",
-      msg: "Received insufficient amount",
-    },
-    {
-      code: 6011,
-      name: "ForbiddenAction",
-      msg: "ForbiddenAction",
-    },
-    {
-      code: 6012,
-      name: "ValueTooHigh",
-      msg: "Value is too high",
-    },
-  ],
 };

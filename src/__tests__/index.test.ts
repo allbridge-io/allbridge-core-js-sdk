@@ -43,7 +43,7 @@ const basicTokenInfoWithChainDetails = tokenInfoList[1] as unknown as TokenWithC
 const basicTokenInfoWithChainDetails2 = tokenInfoList[2] as unknown as TokenWithChainDetails;
 const trxBasicTokenInfoWithChainDetails = tokenInfoList[5] as unknown as TokenWithChainDetails;
 
-jest.mock("../services/bridge/sol/jupiter");
+jest.mock("../services/bridge/sol/jupiter-service");
 
 describe("SDK", () => {
   let sdk: AllbridgeCoreSdk;

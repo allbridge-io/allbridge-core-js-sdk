@@ -136,11 +136,11 @@ export function getSpender(
   messenger: Messenger = Messenger.ALLBRIDGE,
   gasFeePaymentMethod: FeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY
 ): string {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (token.abrPayer) {
       return token.abrPayer.payerAddress;
     }
-    throw new SdkError("Token must contain 'abrPayer' for ARB0 payment method");
+    throw new SdkError("Token must contain 'abrPayer' for ABR payment method");
   }
   switch (messenger) {
     case Messenger.CCTP:

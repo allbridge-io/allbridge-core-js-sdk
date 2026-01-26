@@ -321,9 +321,9 @@ export async function prepareTxSendParams(
   txSendParams.toTokenAddress = params.destinationToken.tokenAddress;
 
   txSendParams.gasFeePaymentMethod = params.gasFeePaymentMethod ?? FeePaymentMethod.WITH_NATIVE_CURRENCY;
-  if (txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_ARB) {
+  if (txSendParams.gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (!params.sourceToken.abrPayer) {
-      throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+      throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
     }
   }
 
@@ -390,9 +390,9 @@ export async function prepareTxSendParams(
       case FeePaymentMethod.WITH_STABLECOIN:
         txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.decimals).toFixed(0);
         break;
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         if (!sourceToken.abrPayer) {
-          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+          throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
         }
         txSendParams.fee = convertFloatAmountToInt(fee, sourceToken.abrPayer.abrToken.decimals).toFixed(0);
         break;
@@ -425,12 +425,12 @@ export async function prepareTxSendParams(
         extraGasDecimals = sourceToken.decimals;
         extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.sourceNativeTokenPrice);
         break;
-      case FeePaymentMethod.WITH_ARB:
+      case FeePaymentMethod.WITH_ABR:
         if (!sourceToken.abrPayer) {
-          throw new SdkError("Source token must contain 'abrPayer' for ARB0 payment method");
+          throw new SdkError("Source token must contain 'abrPayer' for ABR payment method");
         }
         if (!extraGasLimits.abrExchangeRate) {
-          throw new SdkError("Cannot transfer WITH_ARB option");
+          throw new SdkError("Cannot transfer WITH_ABR option");
         }
         extraGasDecimals = sourceToken.abrPayer.abrToken.decimals;
         extraGasDestRate = Big(extraGasLimits.exchangeRate).div(extraGasLimits.abrExchangeRate);
@@ -481,7 +481,7 @@ export async function prepareTxSendParams(
     case FeePaymentMethod.WITH_STABLECOIN:
       validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
       break;
-    case FeePaymentMethod.WITH_ARB: {
+    case FeePaymentMethod.WITH_ABR: {
       const { abrExchangeRate } = await api.getReceiveTransactionCost({
         sourceChainId: txSendParams.fromChainId,
         destinationChainId: txSendParams.toChainId,
@@ -562,7 +562,7 @@ export async function getGasFeeOptions(
       Chains.getChainDecimalsByType(sourceChainToken.chainType),
       sourceChainToken.abrPayer.abrToken.decimals
     ).toFixed(0, Big.roundUp);
-    gasFeeOptions[FeePaymentMethod.WITH_ARB] = {
+    gasFeeOptions[FeePaymentMethod.WITH_ABR] = {
       [AmountFormat.INT]: gasFeeIntWithStables,
       [AmountFormat.FLOAT]: convertIntAmountToFloat(
         gasFeeIntWithStables,
@@ -641,7 +641,7 @@ export async function getExtraGasMaxLimits(
     const maxAmountFloatInStable = Big(maxAmountFloatInSourceNative)
       .mul(transactionCostResponse.abrExchangeRate)
       .toFixed(sourceChainToken.abrPayer.abrToken.decimals, Big.roundDown);
-    extraGasMaxLimits[FeePaymentMethod.WITH_ARB] = {
+    extraGasMaxLimits[FeePaymentMethod.WITH_ABR] = {
       [AmountFormat.INT]: convertFloatAmountToInt(
         maxAmountFloatInStable,
         sourceChainToken.abrPayer.abrToken.decimals

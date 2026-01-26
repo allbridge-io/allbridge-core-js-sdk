@@ -102,8 +102,9 @@
   "dependencies": {
     "@algorandfoundation/algokit-utils": "^9.2.0",
     "@clarigen/core": "^3.1.0",
+    "@coral-xyz/anchor": "0.31.1",
+    "@coral-xyz/spl-token": "0.31.1",
     "@mysten/sui": "1.18.0",
-    "@project-serum/anchor": "^0.25.0",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.98.0",
     "@stacks/network": "^7.2.0",

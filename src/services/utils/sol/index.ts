@@ -1,16 +1,16 @@
-import { Program, Provider, Spl } from "@project-serum/anchor";
+import { Program, Provider } from "@coral-xyz/anchor";
+import { Account, getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-/* eslint-disable-next-line  import/no-named-as-default */
+/* eslint-disable-next-line import/no-named-as-default */
 import Big from "big.js";
 import { Web3 } from "web3";
-import { InvalidTxError, SdkError } from "../../../exceptions";
+import { AmountNotEnoughError, InvalidTxError, SdkError } from "../../../exceptions";
 import { PoolInfo } from "../../../tokens-info";
-import { swapToVUsd } from "../../../utils/calculation";
-import { TokenAccountData } from "../../models/sol";
+import { convertIntAmountToFloat, swapToVUsd, toSystemPrecision } from "../../../utils/calculation";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 
-export async function getTokenAccountData(account: PublicKey, provider: Provider): Promise<TokenAccountData> {
-  return await Spl.token(provider).account.token.fetch(account);
+export async function getTokenAccountData(account: PublicKey, provider: Provider): Promise<Account> {
+  return await getAccount(provider.connection, account);
 }
 
 export async function getVUsdAmount(
@@ -29,6 +29,11 @@ export async function getVUsdAmount(
     vUsdBalance: poolAccountInfo.vUsdBalance.toString(),
     accRewardPerShareP: poolAccountInfo.accRewardPerShareP.toString(),
   };
+  if (toSystemPrecision(amount, decimals).lte(0)) {
+    throw new AmountNotEnoughError(
+      `Swap amount ${convertIntAmountToFloat(amount, decimals).toFixed()} is too small for the liquidity pool. Minimum required amount is 0.001.`
+    );
+  }
   return swapToVUsd(amount, { decimals, feeShare }, poolInfo);
 }
 

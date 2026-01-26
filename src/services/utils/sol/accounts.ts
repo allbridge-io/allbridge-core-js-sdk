@@ -1,7 +1,7 @@
-import * as anchor from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 
-export async function getAssociatedAccount(publicKey: PublicKey, mintAccount: PublicKey): Promise<PublicKey> {
+export function getAssociatedAccount(publicKey: PublicKey, mintAccount: PublicKey): PublicKey {
   return anchor.utils.token.associatedAddress({
     mint: mintAccount,
     owner: publicKey,

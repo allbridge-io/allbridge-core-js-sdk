@@ -1,4 +1,5 @@
 import { AlgorandClient } from "@algorandfoundation/algokit-utils";
+import { SigningAccount } from "@algorandfoundation/algokit-utils/types/account";
 import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount";
 import algosdk, { Address } from "algosdk";
 import { ChainType } from "../../../chains/chain.enums";
@@ -21,13 +22,9 @@ export class AlgBridgeService extends ChainBridgeService {
     public api: AllbridgeCoreClient
   ) {
     super();
-    algorand.setDefaultSigner(
-      algosdk.makeBasicAccountTransactionSigner(
-        algosdk.mnemonicToSecretKey(
-          "tunnel gym elevator pulse motor evolve release orange culture make sister approve winter chair armor grocery distance festival tiger holiday dish wisdom region absorb secret"
-        )
-      )
-    );
+    const randomAccount = algosdk.generateAccount();
+    const signer = new SigningAccount(randomAccount, randomAccount.addr);
+    algorand.setDefaultSigner(signer);
     algorand.setDefaultValidityWindow(100);
   }
 
@@ -110,8 +107,8 @@ export class AlgBridgeService extends ChainBridgeService {
         );
         break;
       }
-      case FeePaymentMethod.WITH_ARB:
-        throw new SdkError("ALG bridge does not support ARB0 payment method");
+      case FeePaymentMethod.WITH_ABR:
+        throw new SdkError("ALG bridge does not support ABR payment method");
       default: {
         return assertNever(txSendParams.gasFeePaymentMethod, "Unhandled FeePaymentMethod");
       }

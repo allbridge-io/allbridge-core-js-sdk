@@ -1,4 +1,4 @@
-import { AnchorProvider, Provider } from "@project-serum/anchor";
+import { AnchorProvider, Provider } from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 
 export function buildAnchorProvider(solanaRpcUrl: string, accountAddress: string): Provider {

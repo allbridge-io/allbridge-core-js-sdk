@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AnchorProvider, Provider } from "@project-serum/anchor";
+import { AnchorProvider, Provider } from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
@@ -52,7 +52,7 @@ export class SolanaTokenService extends ChainTokenService {
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     const { account, token } = params;
     try {
-      const associatedAccount = await getAssociatedAccount(new PublicKey(account), new PublicKey(token.tokenAddress));
+      const associatedAccount = getAssociatedAccount(new PublicKey(account), new PublicKey(token.tokenAddress));
       const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));
       return accountData.amount.toString();
     } catch (e) {
