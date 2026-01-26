@@ -189,11 +189,21 @@ export class EvmBridgeService extends ChainBridgeService {
 
       const abi = sendMethod.encodeABI();
       const withoutSelector = "0x" + abi.slice(10);
+
+      let target: number = messenger;
+      if (params.destinationToken.chainType === ChainType.SOLANA) {
+        if (messenger === Messenger.CCTP) {
+          target = 6;
+        }
+        if (messenger === Messenger.CCTP_V2) {
+          target = 7;
+        }
+      }
       sendMethod = abrPayerContract.methods.transferTokensAndCallTarget(
         params.sourceToken.tokenAddress,
         amount,
         totalFeeInAbr,
-        messenger,
+        target,
         withoutSelector
       );
 
