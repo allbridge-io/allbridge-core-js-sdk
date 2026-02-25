@@ -479,7 +479,13 @@ export async function prepareTxSendParams(
     case FeePaymentMethod.WITH_NATIVE_CURRENCY:
       break;
     case FeePaymentMethod.WITH_STABLECOIN:
-      validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+      validateAmountEnough(
+        txSendParams.amount,
+        sourceToken.decimals,
+        sourceToken.symbol,
+        txSendParams.fee,
+        txSendParams.extraGas
+      );
       break;
     case FeePaymentMethod.WITH_ABR: {
       const { abrExchangeRate } = await api.getReceiveTransactionCost({
@@ -500,6 +506,7 @@ export async function prepareTxSendParams(
 function validateAmountEnough(
   amountInt: BigSource,
   decimals: number,
+  symbol: string,
   feeInt: BigSource,
   extraGasInt: BigSource | undefined
 ) {
@@ -511,7 +518,7 @@ function validateAmountEnough(
       `Amount not enough to pay fee, ${convertIntAmountToFloat(
         Big(amountTotal).minus(1).neg(),
         decimals
-      ).toFixed()} stables is missing`
+      ).toFixed()} ${symbol} is missing`
     );
   }
 }

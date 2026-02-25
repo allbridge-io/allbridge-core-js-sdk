@@ -135,7 +135,7 @@ export class JupiterService {
         `Amount not enough to pay fee, ${convertIntAmountToFloat(
           Big(newAmount).minus(1).neg(),
           params.sourceToken.decimals
-        ).toFixed()} stables is missing`
+        ).toFixed()} ${params.sourceToken.symbol} is missing`
       );
     }
     return {
