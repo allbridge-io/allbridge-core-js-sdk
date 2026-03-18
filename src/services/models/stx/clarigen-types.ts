@@ -2589,4 +2589,248 @@ export const stacksContracts = {
     clarity_version: "Clarity3",
     contractName: "utils",
   },
+  xReserveBridge: {
+    functions: {
+      assertBurn: {
+        name: "assert-burn",
+        access: "private",
+        args: [{ name: "burn-ref", type: "trait_reference" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[burnRef: TypedAbiArg<string, "burnRef">], Response<boolean, bigint>>,
+      assertToken: {
+        name: "assert-token",
+        access: "private",
+        args: [{ name: "token-ref", type: "trait_reference" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[tokenRef: TypedAbiArg<string, "tokenRef">], Response<boolean, bigint>>,
+      onlyOwner: {
+        name: "only-owner",
+        access: "private",
+        args: [],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[], Response<boolean, bigint>>,
+      bridge: {
+        name: "bridge",
+        access: "public",
+        args: [
+          { name: "token-ref", type: "trait_reference" },
+          { name: "burn-ref", type: "trait_reference" },
+          { name: "amount", type: "uint128" },
+          { name: "recipient", type: { buffer: { length: 32 } } },
+          { name: "destination-chain-id", type: "uint128" },
+        ],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<
+        [
+          tokenRef: TypedAbiArg<string, "tokenRef">,
+          burnRef: TypedAbiArg<string, "burnRef">,
+          amount: TypedAbiArg<number | bigint, "amount">,
+          recipient: TypedAbiArg<Uint8Array, "recipient">,
+          destinationChainId: TypedAbiArg<number | bigint, "destinationChainId">,
+        ],
+        Response<boolean, bigint>
+      >,
+      removeChainDomain: {
+        name: "remove-chain-domain",
+        access: "public",
+        args: [{ name: "chain-id-in", type: "uint128" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[chainIdIn: TypedAbiArg<number | bigint, "chainIdIn">], Response<boolean, bigint>>,
+      setAdminFee: {
+        name: "set-admin-fee",
+        access: "public",
+        args: [{ name: "new-fee-bp", type: "uint128" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[newFeeBp: TypedAbiArg<number | bigint, "newFeeBp">], Response<boolean, bigint>>,
+      setBurnPrincipal: {
+        name: "set-burn-principal",
+        access: "public",
+        args: [{ name: "new-burn-principal", type: "principal" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[newBurnPrincipal: TypedAbiArg<string, "newBurnPrincipal">], Response<boolean, bigint>>,
+      setChainDomain: {
+        name: "set-chain-domain",
+        access: "public",
+        args: [
+          { name: "new-chain-id", type: "uint128" },
+          { name: "domain", type: "uint128" },
+        ],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<
+        [newChainId: TypedAbiArg<number | bigint, "newChainId">, domain: TypedAbiArg<number | bigint, "domain">],
+        Response<boolean, bigint>
+      >,
+      setOwner: {
+        name: "set-owner",
+        access: "public",
+        args: [{ name: "new-owner", type: "principal" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[newOwner: TypedAbiArg<string, "newOwner">], Response<boolean, bigint>>,
+      setTokenPrincipal: {
+        name: "set-token-principal",
+        access: "public",
+        args: [{ name: "new-token-principal", type: "principal" }],
+        outputs: { type: { response: { ok: "bool", error: "uint128" } } },
+      } as TypedAbiFunction<[newTokenPrincipal: TypedAbiArg<string, "newTokenPrincipal">], Response<boolean, bigint>>,
+      withdrawFees: {
+        name: "withdraw-fees",
+        access: "public",
+        args: [
+          { name: "token-ref", type: "trait_reference" },
+          { name: "recipient", type: "principal" },
+        ],
+        outputs: { type: { response: { ok: "uint128", error: "uint128" } } },
+      } as TypedAbiFunction<
+        [tokenRef: TypedAbiArg<string, "tokenRef">, recipient: TypedAbiArg<string, "recipient">],
+        Response<bigint, bigint>
+      >,
+    },
+    maps: {
+      chainIdToDomain: { name: "chain-id-to-domain", key: "uint128", value: "uint128" } as TypedAbiMap<
+        number | bigint,
+        bigint
+      >,
+    },
+    variables: {
+      BP: {
+        name: "BP",
+        type: "uint128",
+        access: "constant",
+      } as TypedAbiVariable<bigint>,
+      errInsufficientAmount: {
+        name: "err-insufficient-amount",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errInvalidAmount: {
+        name: "err-invalid-amount",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errNotFound: {
+        name: "err-not-found",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errNotInitialized: {
+        name: "err-not-initialized",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errUnauthorized: {
+        name: "err-unauthorized",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errWrongBurn: {
+        name: "err-wrong-burn",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      errWrongToken: {
+        name: "err-wrong-token",
+        type: {
+          response: {
+            ok: "none",
+            error: "uint128",
+          },
+        },
+        access: "constant",
+      } as TypedAbiVariable<Response<null, bigint>>,
+      adminFeeBp: {
+        name: "admin-fee-bp",
+        type: "uint128",
+        access: "variable",
+      } as TypedAbiVariable<bigint>,
+      burnPrincipal: {
+        name: "burn-principal",
+        type: {
+          optional: "principal",
+        },
+        access: "variable",
+      } as TypedAbiVariable<string | null>,
+      owner: {
+        name: "owner",
+        type: "principal",
+        access: "variable",
+      } as TypedAbiVariable<string>,
+      tokenPrincipal: {
+        name: "token-principal",
+        type: {
+          optional: "principal",
+        },
+        access: "variable",
+      } as TypedAbiVariable<string | null>,
+    },
+    constants: {
+      BP: 10_000n,
+      adminFeeBp: 0n,
+      burnPrincipal: null,
+      errInsufficientAmount: {
+        isOk: false,
+        value: 1_001n,
+      },
+      errInvalidAmount: {
+        isOk: false,
+        value: 1_002n,
+      },
+      errNotFound: {
+        isOk: false,
+        value: 1_003n,
+      },
+      errNotInitialized: {
+        isOk: false,
+        value: 1_004n,
+      },
+      errUnauthorized: {
+        isOk: false,
+        value: 1_000n,
+      },
+      errWrongBurn: {
+        isOk: false,
+        value: 1_006n,
+      },
+      errWrongToken: {
+        isOk: false,
+        value: 1_005n,
+      },
+      owner: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
+      tokenPrincipal: null,
+    },
+    non_fungible_tokens: [],
+    fungible_tokens: [],
+    epoch: "Epoch31",
+    clarity_version: "Clarity3",
+    contractName: "x-reserve-bridge",
+  },
 } as const;
