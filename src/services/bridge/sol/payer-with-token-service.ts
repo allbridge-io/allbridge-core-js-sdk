@@ -148,6 +148,8 @@ export class PayerWithTokenService {
         const bridgeCctpData = await this.prepareBridgeCctpData(params, solTxSendParams);
         return this.buildBridgeCctpTx(bridgeCctpData);
       }
+      case Messenger.X_RESERVE:
+        throw new SdkError("Messenger xReserve is not supported yet.");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
       default: {

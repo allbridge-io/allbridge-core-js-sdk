@@ -166,7 +166,7 @@ export function tronAddressToEthAddress(address: string): string {
   return TronWebUtils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
 }
 
-function bufferToSize(buffer: Buffer, size: number): Buffer {
+export function bufferToSize(buffer: Buffer, size: number): Buffer {
   if (buffer.length >= size) {
     return buffer;
   }
@@ -352,6 +352,12 @@ export async function prepareTxSendParams(
         throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
       }
       txSendParams.contractAddress = sourceToken.oftBridgeAddress;
+      break;
+    case Messenger.X_RESERVE:
+      if (!sourceToken.xReserve?.bridgeAddress || !params.destinationToken.xReserve) {
+        throw new SdkError("Such route does not support xReserve protocol");
+      }
+      txSendParams.contractAddress = sourceToken.xReserve.bridgeAddress;
       break;
     case Messenger.ALLBRIDGE:
     case Messenger.WORMHOLE:

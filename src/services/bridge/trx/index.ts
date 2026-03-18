@@ -152,6 +152,8 @@ export class TronBridgeService extends ChainBridgeService {
         }
         methodSignature = "bridge(address,uint256,bytes32,uint256,uint256,uint256,uint256)";
         break;
+      case Messenger.X_RESERVE:
+        throw new SdkError("Messenger xReserve is not supported for TRX bridge");
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
         switch (gasFeePaymentMethod) {

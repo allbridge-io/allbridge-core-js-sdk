@@ -369,6 +369,8 @@ export class AllbridgeCoreSdkService {
           destinationChainToken,
           messenger
         );
+      case Messenger.X_RESERVE:
+        return this.getAmountToBeReceivedComputeXReserve(amountToSendFloat, sourceChainToken, destinationChainToken);
       case Messenger.OFT:
         return this.getAmountToBeReceivedComputeOft(amountToSendFloat, sourceChainToken, destinationChainToken);
     }
@@ -430,6 +432,29 @@ export class AllbridgeCoreSdkService {
         return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
       }
     }
+  }
+
+  getAmountToBeReceivedComputeXReserve(
+    amountToSendFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): string {
+    validateAmountGtZero(amountToSendFloat);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
+    const xReserve = this.getXReserveConfig(sourceChainToken, destinationChainToken);
+    const amountToSend = convertFloatAmountToInt(amountToSendFloat, sourceChainToken.decimals);
+
+    const result = amountToSend.mul(Big(1).minus(xReserve.feeShare)).minus(xReserve.feeConst).round(0, Big.roundDown);
+    if (result.lte(0)) {
+      throw new SdkError("Amount is too low for xReserve route");
+    }
+    const resultInDestPrecision = convertAmountPrecision(
+      result,
+      sourceChainToken.decimals,
+      destinationChainToken.decimals
+    ).round(0);
+
+    return convertIntAmountToFloat(resultInDestPrecision, destinationChainToken.decimals).toFixed();
   }
 
   async getAmountToBeReceivedComputeOft(
@@ -528,6 +553,8 @@ export class AllbridgeCoreSdkService {
           destinationChainToken,
           messenger
         );
+      case Messenger.X_RESERVE:
+        return this.getAmountToSendComputeXReserve(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
       case Messenger.OFT:
         return this.getAmountToSendComputeOft(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
     }
@@ -592,6 +619,46 @@ export class AllbridgeCoreSdkService {
         return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
       }
     }
+  }
+
+  getAmountToSendComputeXReserve(
+    amountToBeReceivedFloat: number | string | Big,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): string {
+    validateAmountGtZero(amountToBeReceivedFloat);
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
+    const xReserve = this.getXReserveConfig(sourceChainToken, destinationChainToken);
+    const amountToBeReceived = convertFloatAmountToInt(amountToBeReceivedFloat, destinationChainToken.decimals);
+
+    const amountInSourcePrecision = convertAmountPrecision(
+      amountToBeReceived,
+      destinationChainToken.decimals,
+      sourceChainToken.decimals
+    ).round(0);
+
+    const result = amountInSourcePrecision
+      .plus(xReserve.feeConst)
+      .div(Big(1).minus(xReserve.feeShare))
+      .round(0, Big.roundUp);
+    if (result.lte(0)) {
+      throw new SdkError("Amount is too low for xReserve route");
+    }
+
+    return convertIntAmountToFloat(result, sourceChainToken.decimals).toFixed();
+  }
+
+  private getXReserveConfig(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): NonNullable<TokenWithChainDetails["xReserve"]> {
+    if (!sourceChainToken.xReserve || !destinationChainToken.xReserve) {
+      throw new SdkError("Such route does not support xReserve protocol");
+    }
+    if (Big(sourceChainToken.xReserve.feeShare).gte(1)) {
+      throw new SdkError("xReserve feeShare must be less than 1");
+    }
+    return sourceChainToken.xReserve;
   }
 
   async getAmountToSendComputeOft(

@@ -161,6 +161,12 @@ export function getSpender(
       } else {
         throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
       }
+    case Messenger.X_RESERVE:
+      if (token.xReserve?.bridgeAddress) {
+        return token.xReserve.bridgeAddress;
+      } else {
+        throw new SdkError("Such route does not support xReserve protocol");
+      }
     case Messenger.ALLBRIDGE:
     case Messenger.WORMHOLE:
       return token.bridgeAddress;

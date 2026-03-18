@@ -132,6 +132,54 @@ describe("ChainBridgeService Utils", () => {
       expect(txSendParams).toEqual(expectedTxSendParams);
     });
 
+    it("should return prepared TxSendParams with xReserve contract for X_RESERVE messenger", async () => {
+      const sourceTokenBase = tokenInfoWithChainDetailsGrl[1] as unknown as TokenWithChainDetails;
+      const destinationTokenBase = tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails;
+      const sourceToken: TokenWithChainDetails = {
+        ...sourceTokenBase,
+        xReserve: {
+          bridgeAddress: "0x1111111111111111111111111111111111111111",
+          feeConst: "0",
+          feeShare: "0.01",
+        },
+      };
+      const destinationToken: TokenWithChainDetails = {
+        ...destinationTokenBase,
+        xReserve: {
+          bridgeAddress: "0x2222222222222222222222222222222222222222",
+          feeConst: "0",
+          feeShare: "0.01",
+        },
+      };
+
+      const receiveFeeRequestEVMtoTRX: ReceiveTransactionCostRequest = {
+        sourceChainId: 2,
+        destinationChainId: 4,
+        messenger: Messenger.X_RESERVE,
+        sourceToken: sourceToken.tokenAddress,
+      };
+
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequestEVMtoTRX))
+        .reply(201, { ...receiveFeeResponse, fee: "0" })
+        .persist();
+
+      const sendParams: SendParams = {
+        amount: "1.33",
+        fromAccountAddress: "0x68D7ed9cf9881427F1dB299B90Fd63ef805dd10d",
+        toAccountAddress: "TSmGVvbW7jsZ26cJwfQHJWaDgCHnGax7SN",
+        sourceToken,
+        destinationToken,
+        messenger: Messenger.X_RESERVE,
+      };
+
+      const txSendParams = await prepareTxSendParams(ChainType.EVM, sendParams, api);
+
+      expect(txSendParams.contractAddress).toBe(sourceToken.xReserve?.bridgeAddress);
+      expect(txSendParams.messenger).toBe(Messenger.X_RESERVE);
+      expect(txSendParams.fee).toBe("0");
+    });
+
     it("should return prepared TxSendParams for TRX->EVM blockchain from SendParamsWithChainSymbols", async () => {
       const sourceToken = tokenInfoWithChainDetailsTrx[0] as unknown as TokenWithChainDetails;
 

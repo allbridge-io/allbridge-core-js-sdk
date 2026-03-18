@@ -76,6 +76,8 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
       return Messenger.CCTP_V2;
     case MessengerKeyDTO.OFT:
       return Messenger.OFT;
+    case MessengerKeyDTO.X_RESERVE:
+      return Messenger.X_RESERVE;
   }
 }
 

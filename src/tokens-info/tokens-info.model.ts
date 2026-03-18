@@ -145,6 +145,11 @@ export interface Token {
    */
   cctpV2FeeShare?: string;
   /**
+   * XReserve bridge configuration for token.
+   * Optional. Defined if XReserve supported by token
+   */
+  xReserve?: XReserveTokenInfo;
+  /**
    * Internal identifier for the same token across different chains.
    *
    * Used to link representations of a token deployed on multiple networks (e.g., Ethereum, BSC).
@@ -181,6 +186,13 @@ export interface Token {
    * Optional. Defined for SUI
    */
   suiAddresses?: SuiAddresses;
+}
+
+export interface XReserveTokenInfo {
+  bridgeAddress: string;
+  feeConst: string;
+  feeShare: string;
+  protocolAddress?: string;
 }
 
 export interface SuiAddresses {
