@@ -49,16 +49,27 @@ export class StxBridgeService extends ChainBridgeService {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     const { contractAddress: bridgeAddress, messenger, toChainId, toAccountAddress, toTokenAddress } = txSendParams;
     const amount = BigInt(txSendParams.amount);
+    const sourceTokenName = getTokenName(params.sourceToken);
 
     const postFungiblePostCondition = getFungiblePostCondition(
       amount,
       "lte",
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
-      getTokenName(params.sourceToken)
+      sourceTokenName
     );
     const postStxPostCondition = getStxPostCondition(0, "gte", bridgeAddress);
     const postConditions: PostCondition[] = [postFungiblePostCondition, postStxPostCondition];
+    if (messenger === Messenger.X_RESERVE) {
+      const postBridgeFungiblePostCondition = getFungiblePostCondition(
+        amount,
+        "lte",
+        bridgeAddress,
+        params.sourceToken.tokenAddress,
+        sourceTokenName
+      );
+      postConditions.push(postBridgeFungiblePostCondition);
+    }
 
     let totalFee = BigInt(txSendParams.fee);
     if (txSendParams.extraGas) {
