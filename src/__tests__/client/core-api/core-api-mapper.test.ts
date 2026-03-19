@@ -1,7 +1,4 @@
-import {
-  mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolInfoMap,
-} from "../../../client/core-api/core-api-mapper";
+import { mapChainDetailsResponseToChainDetailsMap } from "../../../client/core-api/core-api-mapper";
 import { ChainDetailsResponse } from "../../../client/core-api/core-api.model";
 import { ChainDetailsWithTokens, ChainDetailsMapWithFlags } from "../../../tokens-info";
 import chainDetailsGRL from "../../data/tokens-info/ChainDetails-GRL.json";

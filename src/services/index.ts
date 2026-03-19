@@ -446,7 +446,12 @@ export class AllbridgeCoreSdkService {
 
     const result = amountToSend.mul(Big(1).minus(xReserve.feeShare)).minus(xReserve.feeConst).round(0, Big.roundDown);
     if (result.lte(0)) {
-      throw new SdkError("Amount is too low for xReserve route");
+      const minAmount = Big(xReserve.feeConst).div(Big(1).minus(xReserve.feeShare));
+      const minAmountFloat = convertIntAmountToFloat(minAmount, sourceChainToken.decimals);
+
+      throw new SdkError(
+        `Amount is too low for xReserve route: amount must be greater than ${minAmountFloat.toFixed(2, Big.roundUp)} ${sourceChainToken.symbol ?? ""}`.trim()
+      );
     }
     const resultInDestPrecision = convertAmountPrecision(
       result,

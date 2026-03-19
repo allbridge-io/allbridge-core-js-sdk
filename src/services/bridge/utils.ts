@@ -617,6 +617,42 @@ export async function getExtraGasMaxLimits(
     messenger,
     sourceToken: sourceChainToken.tokenAddress,
   });
+
+  const transfer = {
+    [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
+    [AmountFormat.FLOAT]: convertIntAmountToFloat(
+      destinationChainToken.txCostAmount.transfer,
+      Chains.getChainDecimalsByType(destinationChainToken.chainType)
+    ).toFixed(),
+  };
+  const swap = {
+    [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
+    [AmountFormat.FLOAT]: convertIntAmountToFloat(
+      destinationChainToken.txCostAmount.swap,
+      Chains.getChainDecimalsByType(destinationChainToken.chainType)
+    ).toFixed(),
+  };
+
+  if (messenger === Messenger.X_RESERVE) {
+    const getZeroAmountFormatted = () => ({
+      [AmountFormat.INT]: "0",
+      [AmountFormat.FLOAT]: "0",
+    });
+
+    return {
+      extraGasMax: {
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: getZeroAmountFormatted(),
+      },
+      destinationChain: {
+        gasAmountMax: getZeroAmountFormatted(),
+        swap: swap,
+        transfer: transfer,
+      },
+      exchangeRate: transactionCostResponse.exchangeRate,
+      sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
+    };
+  }
+
   const maxAmount = destinationChainToken.txCostAmount.maxAmount;
   const maxAmountFloat = convertIntAmountToFloat(
     maxAmount,
@@ -670,20 +706,8 @@ export async function getExtraGasMaxLimits(
         [AmountFormat.INT]: maxAmount,
         [AmountFormat.FLOAT]: maxAmountFloat,
       },
-      swap: {
-        [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
-        [AmountFormat.FLOAT]: convertIntAmountToFloat(
-          destinationChainToken.txCostAmount.swap,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType)
-        ).toFixed(),
-      },
-      transfer: {
-        [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
-        [AmountFormat.FLOAT]: convertIntAmountToFloat(
-          destinationChainToken.txCostAmount.transfer,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType)
-        ).toFixed(),
-      },
+      swap: swap,
+      transfer: transfer,
     },
     exchangeRate: transactionCostResponse.exchangeRate,
     abrExchangeRate: abrAvailable ? transactionCostResponse.abrExchangeRate : undefined,

@@ -388,6 +388,41 @@ describe("ChainBridgeService Utils", () => {
       };
       expect(extraGasMaxLimitResponse).toMatchObject(expectedExtraGasMaxLimitResponse);
     });
+
+    it("should return zero limits for X_RESERVE messenger", async () => {
+      const sourceToken = tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails;
+      const destToken = tokenInfoWithChainDetailsSol[0] as unknown as TokenWithChainDetails;
+      const receiveFeeRequest: ReceiveTransactionCostRequest = {
+        sourceChainId: 2,
+        destinationChainId: 5,
+        messenger: Messenger.X_RESERVE,
+        sourceToken: sourceToken.tokenAddress,
+      };
+      scope = scope
+        .post("/receive-fee", getRequestBodyMatcher(receiveFeeRequest))
+        .reply(201, receiveFeeResponse)
+        .persist();
+
+      const extraGasMaxLimitResponse = await getExtraGasMaxLimits(sourceToken, destToken, Messenger.X_RESERVE, api);
+
+      const expectedExtraGasMaxLimitResponse: ExtraGasMaxLimitResponse = {
+        extraGasMax: {
+          [FeePaymentMethod.WITH_NATIVE_CURRENCY]: {
+            [AmountFormat.INT]: "0",
+            [AmountFormat.FLOAT]: "0",
+          },
+        },
+        destinationChain: {
+          gasAmountMax: { int: "0", float: "0" },
+          swap: { int: "1877000", float: "0.001877" },
+          transfer: { int: "1577000", float: "0.001577" },
+        },
+        exchangeRate: "0.12550590438537169016",
+        sourceNativeTokenPrice: "241.26",
+      };
+
+      expect(extraGasMaxLimitResponse).toEqual(expectedExtraGasMaxLimitResponse);
+    });
   });
 });
 
