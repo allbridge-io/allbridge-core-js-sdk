@@ -12,6 +12,8 @@ export const mainnet: AllbridgeCoreSdkOptions = {
   cctpParams: {
     cctpTransmitterProgramId: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
     cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+    cctpV2TransmitterProgramId: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
+    cctpV2TokenMessengerMinter: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
     cctpDomains: { ETH: 0, AVA: 1, OPT: 2, ARB: 3, SOL: 5, BAS: 6, POL: 7, SUI: 8 },
   },
   cachePoolInfoChainSec: 20,

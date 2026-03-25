@@ -22,6 +22,8 @@ export interface SolanaBridgeParams {
 export interface CctpParams {
   cctpTransmitterProgramId: string;
   cctpTokenMessengerMinter: string;
+  cctpV2TransmitterProgramId: string;
+  cctpV2TokenMessengerMinter: string;
   cctpDomains: CctpDomains;
 }
 
