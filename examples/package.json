@@ -20,6 +20,7 @@
     "run:bridge:evm:sendWithStables": "tsx src/examples/bridge/evm/evm-build-send-tx-gas-fee-with-stables.ts",
     "run:bridge:evm:swap": "tsx src/examples/bridge/evm/evm-build-swap-tx.ts",
     "run:bridge:solana:send": "tsx src/examples/bridge/solana/sol-build-send-tx.ts",
+    "run:bridge:solana:send:cctp": "tsx src/examples/bridge/solana/sol-build-send-tx-cctp.ts",
     "run:bridge:solana:swap": "tsx src/examples/bridge/solana/sol-build-swap-tx.ts",
     "run:bridge:sui:send": "tsx src/examples/bridge/sui/sui-build-send-tx.ts",
     "run:bridge:sui:swap": "tsx src/examples/bridge/sui/sui-build-swap-tx.ts",

@@ -110,6 +110,14 @@ export async function getCctpBridgeAccount(mintAccount: PublicKey, cctpBridgePro
   return configPda;
 }
 
+export function getCctpV2BridgeConfigAccount(mintAccount: PublicKey, programId: PublicKey): PublicKey {
+  const [configPda] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("config"), mintAccount.toBytes()],
+    programId
+  );
+  return configPda;
+}
+
 export async function getCctpBridgeTokenAccount(token: PublicKey, cctpBridgeProgramId: PublicKey): Promise<PublicKey> {
   const [poolPda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("token"), token.toBytes()],
