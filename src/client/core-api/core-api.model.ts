@@ -49,12 +49,22 @@ export interface TokenDTO {
   apr30d: string;
   lpRate: string;
   cctpAddress?: string;
+  cctpV2Address?: string;
   cctpFeeShare?: string;
+  cctpV2FeeShare?: string;
   yieldId?: number;
+  xReserve?: XReserveDTO;
   flags: {
     swap: boolean;
     pool: boolean;
   };
+}
+
+export interface XReserveDTO {
+  bridgeAddress: string;
+  feeConst: string;
+  feeShare: string;
+  protocolAddress?: string;
 }
 
 export interface PoolInfoDTO {
@@ -73,6 +83,7 @@ export enum MessengerKeyDTO {
   CCTP = "cctp",
   CCTP_V2 = "cctpV2",
   OFT = "oft",
+  X_RESERVE = "xReserve",
 }
 
 export type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
@@ -97,6 +108,7 @@ export enum Messenger {
   CCTP = 3,
   CCTP_V2 = 4,
   OFT = 5,
+  X_RESERVE = 6,
 }
 
 export interface ReceiveTransactionCostRequest {

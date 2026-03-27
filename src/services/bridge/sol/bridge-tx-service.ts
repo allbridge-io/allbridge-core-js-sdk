@@ -228,6 +228,8 @@ export class BridgeTxService {
         requiredMessageSigner = messageSentEventDataKeypair;
         break;
       }
+      case Messenger.X_RESERVE:
+        throw new SdkError("Messenger xReserve is not supported yet.");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
       default: {

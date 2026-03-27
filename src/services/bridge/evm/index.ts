@@ -1,3 +1,4 @@
+import { createAddress } from "@stacks/transactions";
 import { Big } from "big.js";
 import BN from "bn.js";
 import { Contract, Transaction as Web3Transaction } from "web3";
@@ -22,9 +23,10 @@ import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
 import OftBridge from "../../models/abi/OftBridge";
 import PayerWithAbr from "../../models/abi/PayerWithAbr";
+import XReserveBridge from "../../models/abi/XReserveBridge";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
-import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { bufferToSize, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -131,6 +133,12 @@ export class EvmBridgeService extends ChainBridgeService {
         const oft = this.buildRawTransactionOftSend(params, txSendParams, totalFee, extraGasDest);
         sendMethod = oft.sendMethod;
         value = oft.value;
+        break;
+      }
+      case Messenger.X_RESERVE: {
+        const xReserve = this.buildRawTransactionXReserveSend(params, txSendParams, totalFee, extraGasDest);
+        sendMethod = xReserve.sendMethod;
+        value = xReserve.value;
         break;
       }
       case Messenger.ALLBRIDGE:
@@ -345,6 +353,39 @@ export class EvmBridgeService extends ChainBridgeService {
     return { sendMethod, value };
   }
 
+  private buildRawTransactionXReserveSend(
+    params: SendParams,
+    txSendParams: TxSendParamsEvm,
+    totalFee: string,
+    extraGasDest?: string
+  ): {
+    sendMethod: PayableMethodObject;
+    value: string;
+  } {
+    const { amount, contractAddress, toChainId, toAccountAddress, gasFeePaymentMethod } = txSendParams;
+
+    if (gasFeePaymentMethod !== FeePaymentMethod.WITH_NATIVE_CURRENCY) {
+      throw new SdkError("xReserve bridge supports only WITH_NATIVE_CURRENCY payment method");
+    }
+    if (Big(totalFee).gt(0) || (extraGasDest && Big(extraGasDest).gt(0))) {
+      throw new SdkError("xReserve bridge does not support additional bridge fee or extra gas");
+    }
+
+    let recipient = toAccountAddress;
+    if (params.destinationToken.chainType == ChainType.STX) {
+      const { version, hash160 } = createAddress(params.toAccountAddress);
+      const versionHex = Number(version).toString(16);
+      const hashBytes = Buffer.from(`${versionHex}${hash160}`, "hex");
+      recipient = "0x" + bufferToSize(hashBytes, 32).toString("hex");
+    }
+
+    const xReserveBridgeContract = this.getXReserveBridgeContract(contractAddress);
+    return {
+      sendMethod: xReserveBridgeContract.methods.bridge(amount, recipient, toChainId),
+      value: "0",
+    };
+  }
+
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction as Web3Transaction);
 
@@ -373,5 +414,9 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private getAbrPayerContract(contractAddress: string) {
     return new this.web3.eth.Contract(PayerWithAbr.abi, contractAddress) as Contract<typeof PayerWithAbr.abi>;
+  }
+
+  private getXReserveBridgeContract(contractAddress: string) {
+    return new this.web3.eth.Contract(XReserveBridge.abi, contractAddress) as Contract<typeof XReserveBridge.abi>;
   }
 }

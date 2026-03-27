@@ -70,6 +70,7 @@
     "tsconfig.json",
     "node_modules/**",
     "src/configs/",
+    "src/__tests__/client/core-api/",
     "src/__tests__/services/liquidity-pool/sol/data/",
     "src/services/models/abi/",
     "src/services/models/alg/",

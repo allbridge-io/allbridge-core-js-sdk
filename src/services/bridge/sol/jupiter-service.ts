@@ -19,6 +19,7 @@ export interface JupiterParams {
 }
 
 const JUP_ADD_INDEX = 1.1;
+const JUP_SLIPPAGE_INDEX = 1.01;
 
 export class JupiterService {
   jupiterUrl: string;
@@ -43,7 +44,10 @@ export class JupiterService {
     try {
       const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, txFeeParams, true);
       return { jupTx: tx, solTxSendParams: { ...solTxSendParams, ...solTxSendUpdatedParams } };
-    } catch (ignoreError) {
+    } catch (error) {
+      if (error instanceof AmountNotEnoughError) {
+        throw error;
+      }
       try {
         const { tx, solTxSendUpdatedParams } = await this.processJup(solTxSendParams, params, txFeeParams, false);
         return { jupTx: tx, solTxSendParams: { ...solTxSendParams, ...solTxSendUpdatedParams } };
@@ -78,7 +82,11 @@ export class JupiterService {
 
     let amountToProcess = exactOut ? Big(fee) : Big(solTxSendParams.fee);
     if (extraGas) {
-      amountToProcess = amountToProcess.plus(extraGas);
+      if (exactOut) {
+        amountToProcess = amountToProcess.plus(extraGas);
+      } else if (solTxSendParams.extraGas) {
+        amountToProcess = amountToProcess.plus(solTxSendParams.extraGas);
+      }
     }
 
     if (txFeeParams?.payTxFeeWithStablecoinSwap) {
@@ -116,7 +124,9 @@ export class JupiterService {
       if (!amountIn) {
         throw new JupiterError("Cannot get inAmount");
       }
-      newAmount = Big(solTxSendParams.amount).minus(Big(amountIn).mul(JUP_ADD_INDEX)).toFixed(0);
+      newAmount = Big(solTxSendParams.amount)
+        .minus(Big(amountIn).mul(JUP_SLIPPAGE_INDEX).toFixed(0, Big.roundUp))
+        .toFixed(0);
     } else {
       newAmount = Big(solTxSendParams.amount).minus(amountToProcess).toFixed(0);
     }
@@ -125,7 +135,7 @@ export class JupiterService {
         `Amount not enough to pay fee, ${convertIntAmountToFloat(
           Big(newAmount).minus(1).neg(),
           params.sourceToken.decimals
-        ).toFixed()} stables is missing`
+        ).toFixed()} ${params.sourceToken.symbol} is missing`
       );
     }
     return {

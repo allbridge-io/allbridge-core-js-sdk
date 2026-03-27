@@ -166,7 +166,7 @@ export function tronAddressToEthAddress(address: string): string {
   return TronWebUtils.bytes.byteArray2hexStr(bytes).replace(/^41/, "0x");
 }
 
-function bufferToSize(buffer: Buffer, size: number): Buffer {
+export function bufferToSize(buffer: Buffer, size: number): Buffer {
   if (buffer.length >= size) {
     return buffer;
   }
@@ -353,6 +353,12 @@ export async function prepareTxSendParams(
       }
       txSendParams.contractAddress = sourceToken.oftBridgeAddress;
       break;
+    case Messenger.X_RESERVE:
+      if (!sourceToken.xReserve?.bridgeAddress || !params.destinationToken.xReserve) {
+        throw new SdkError("Such route does not support xReserve protocol");
+      }
+      txSendParams.contractAddress = sourceToken.xReserve.bridgeAddress;
+      break;
     case Messenger.ALLBRIDGE:
     case Messenger.WORMHOLE:
       txSendParams.contractAddress = sourceToken.bridgeAddress;
@@ -479,7 +485,13 @@ export async function prepareTxSendParams(
     case FeePaymentMethod.WITH_NATIVE_CURRENCY:
       break;
     case FeePaymentMethod.WITH_STABLECOIN:
-      validateAmountEnough(txSendParams.amount, sourceToken.decimals, txSendParams.fee, txSendParams.extraGas);
+      validateAmountEnough(
+        txSendParams.amount,
+        sourceToken.decimals,
+        sourceToken.symbol,
+        txSendParams.fee,
+        txSendParams.extraGas
+      );
       break;
     case FeePaymentMethod.WITH_ABR: {
       const { abrExchangeRate } = await api.getReceiveTransactionCost({
@@ -500,6 +512,7 @@ export async function prepareTxSendParams(
 function validateAmountEnough(
   amountInt: BigSource,
   decimals: number,
+  symbol: string,
   feeInt: BigSource,
   extraGasInt: BigSource | undefined
 ) {
@@ -511,7 +524,7 @@ function validateAmountEnough(
       `Amount not enough to pay fee, ${convertIntAmountToFloat(
         Big(amountTotal).minus(1).neg(),
         decimals
-      ).toFixed()} stables is missing`
+      ).toFixed()} ${symbol} is missing`
     );
   }
 }
@@ -604,6 +617,42 @@ export async function getExtraGasMaxLimits(
     messenger,
     sourceToken: sourceChainToken.tokenAddress,
   });
+
+  const transfer = {
+    [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
+    [AmountFormat.FLOAT]: convertIntAmountToFloat(
+      destinationChainToken.txCostAmount.transfer,
+      Chains.getChainDecimalsByType(destinationChainToken.chainType)
+    ).toFixed(),
+  };
+  const swap = {
+    [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
+    [AmountFormat.FLOAT]: convertIntAmountToFloat(
+      destinationChainToken.txCostAmount.swap,
+      Chains.getChainDecimalsByType(destinationChainToken.chainType)
+    ).toFixed(),
+  };
+
+  if (messenger === Messenger.X_RESERVE) {
+    const getZeroAmountFormatted = () => ({
+      [AmountFormat.INT]: "0",
+      [AmountFormat.FLOAT]: "0",
+    });
+
+    return {
+      extraGasMax: {
+        [FeePaymentMethod.WITH_NATIVE_CURRENCY]: getZeroAmountFormatted(),
+      },
+      destinationChain: {
+        gasAmountMax: getZeroAmountFormatted(),
+        swap: swap,
+        transfer: transfer,
+      },
+      exchangeRate: transactionCostResponse.exchangeRate,
+      sourceNativeTokenPrice: transactionCostResponse.sourceNativeTokenPrice,
+    };
+  }
+
   const maxAmount = destinationChainToken.txCostAmount.maxAmount;
   const maxAmountFloat = convertIntAmountToFloat(
     maxAmount,
@@ -657,20 +706,8 @@ export async function getExtraGasMaxLimits(
         [AmountFormat.INT]: maxAmount,
         [AmountFormat.FLOAT]: maxAmountFloat,
       },
-      swap: {
-        [AmountFormat.INT]: destinationChainToken.txCostAmount.swap,
-        [AmountFormat.FLOAT]: convertIntAmountToFloat(
-          destinationChainToken.txCostAmount.swap,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType)
-        ).toFixed(),
-      },
-      transfer: {
-        [AmountFormat.INT]: destinationChainToken.txCostAmount.transfer,
-        [AmountFormat.FLOAT]: convertIntAmountToFloat(
-          destinationChainToken.txCostAmount.transfer,
-          Chains.getChainDecimalsByType(destinationChainToken.chainType)
-        ).toFixed(),
-      },
+      swap: swap,
+      transfer: transfer,
     },
     exchangeRate: transactionCostResponse.exchangeRate,
     abrExchangeRate: abrAvailable ? transactionCostResponse.abrExchangeRate : undefined,

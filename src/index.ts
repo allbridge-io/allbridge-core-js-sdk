@@ -414,6 +414,12 @@ export class AllbridgeCoreSdk {
           destinationChainToken,
           messenger
         );
+      case Messenger.X_RESERVE:
+        return this.service.getAmountToBeReceivedComputeXReserve(
+          amountToSendFloat,
+          sourceChainToken,
+          destinationChainToken
+        );
     }
   }
 
@@ -500,6 +506,12 @@ export class AllbridgeCoreSdk {
           sourceChainToken,
           destinationChainToken,
           messenger
+        );
+      case Messenger.X_RESERVE:
+        return this.service.getAmountToSendComputeXReserve(
+          amountToBeReceivedFloat,
+          sourceChainToken,
+          destinationChainToken
         );
     }
   }

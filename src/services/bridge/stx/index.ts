@@ -13,7 +13,7 @@ import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions } from "../../../index";
-import { FeePaymentMethod } from "../../../models";
+import { FeePaymentMethod, Messenger } from "../../../models";
 import { assertNever } from "../../../utils/utils";
 import { RawStxTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
@@ -49,16 +49,27 @@ export class StxBridgeService extends ChainBridgeService {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     const { contractAddress: bridgeAddress, messenger, toChainId, toAccountAddress, toTokenAddress } = txSendParams;
     const amount = BigInt(txSendParams.amount);
+    const sourceTokenName = getTokenName(params.sourceToken);
 
     const postFungiblePostCondition = getFungiblePostCondition(
       amount,
       "lte",
       params.fromAccountAddress,
       params.sourceToken.tokenAddress,
-      getTokenName(params.sourceToken)
+      sourceTokenName
     );
-    const postStxPostCondition = getStxPostCondition(0, "gte", params.sourceToken.bridgeAddress);
+    const postStxPostCondition = getStxPostCondition(0, "gte", bridgeAddress);
     const postConditions: PostCondition[] = [postFungiblePostCondition, postStxPostCondition];
+    if (messenger === Messenger.X_RESERVE) {
+      const postBridgeFungiblePostCondition = getFungiblePostCondition(
+        amount,
+        "lte",
+        bridgeAddress,
+        params.sourceToken.tokenAddress,
+        sourceTokenName
+      );
+      postConditions.push(postBridgeFungiblePostCondition);
+    }
 
     let totalFee = BigInt(txSendParams.fee);
     if (txSendParams.extraGas) {
@@ -89,21 +100,30 @@ export class StxBridgeService extends ChainBridgeService {
 
     const [contractPrincipal] = parseContractId(bridgeAddress as ContractIdString);
 
-    const bridge = contractFactory(contracts.bridge, bridgeAddress);
-    const { contractAddress, contractName, functionName, functionArgs } = bridge.swapAndBridge({
-      ftRef: params.sourceToken.tokenAddress,
-      poolRef: params.sourceToken.poolAddress,
-      messengerRef: `${contractPrincipal}.messenger`,
-      gasOracleRef: `${contractPrincipal}.gas-oracle`,
-      amount,
-      recipient: Uint8Array.from(toAccountAddress),
-      destinationChainId: toChainId,
-      receiveToken: Uint8Array.from(toTokenAddress),
-      nonce: Uint8Array.from(getNonce()),
-      messengerId: messenger,
-      feeNativeAmount: feeNativeAmount,
-      feeTokenAmount: feeTokenAmount,
-    });
+    const txCall =
+      messenger === Messenger.X_RESERVE
+        ? contractFactory(contracts.xReserveBridge, bridgeAddress).bridge({
+            tokenRef: params.sourceToken.tokenAddress,
+            burnRef: params.sourceToken.xReserve?.protocolAddress ?? params.sourceToken.tokenAddress,
+            amount,
+            recipient: Uint8Array.from(toAccountAddress),
+            destinationChainId: toChainId,
+          })
+        : contractFactory(contracts.bridge, bridgeAddress).swapAndBridge({
+            ftRef: params.sourceToken.tokenAddress,
+            poolRef: params.sourceToken.poolAddress,
+            messengerRef: `${contractPrincipal}.messenger`,
+            gasOracleRef: `${contractPrincipal}.gas-oracle`,
+            amount,
+            recipient: Uint8Array.from(toAccountAddress),
+            destinationChainId: toChainId,
+            receiveToken: Uint8Array.from(toTokenAddress),
+            nonce: Uint8Array.from(getNonce()),
+            messengerId: messenger,
+            feeNativeAmount: feeNativeAmount,
+            feeTokenAmount: feeTokenAmount,
+          });
+    const { contractAddress, contractName, functionName, functionArgs } = txCall;
 
     const privateKey = makeRandomPrivKey();
     const publicKey = privateKeyToPublic(privateKey);

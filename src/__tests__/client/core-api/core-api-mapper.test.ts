@@ -19,6 +19,31 @@ describe("Core API Mapper", () => {
         const actual = mapChainDetailsResponseToChainDetailsMap(dto);
         expect(actual).toEqual(expectedTokensGroupedByChain);
       });
+
+      it("preserves optional xReserve token config", () => {
+        const dtoWithXReserve = JSON.parse(JSON.stringify(dto)) as ChainDetailsResponse;
+        const grl = dtoWithXReserve.GRL;
+        if (!grl) {
+          throw new Error("GRL chain must be defined in test fixture");
+        }
+        const token = grl.tokens[0];
+        if (!token) {
+          throw new Error("First GRL token must be defined in test fixture");
+        }
+
+        token.xReserve = {
+          bridgeAddress: "0x1111111111111111111111111111111111111111",
+          feeConst: "0",
+          feeShare: "0.01",
+        };
+
+        const actual = mapChainDetailsResponseToChainDetailsMap(dtoWithXReserve);
+        const mappedToken = actual.GRL?.tokens[0];
+        if (!mappedToken) {
+          throw new Error("Mapped GRL token must be defined");
+        }
+        expect(mappedToken.xReserve).toEqual(token.xReserve);
+      });
     });
   });
 

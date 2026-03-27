@@ -126,6 +126,8 @@ export class SuiBridgeService extends ChainBridgeService {
       case Messenger.CCTP:
       case Messenger.CCTP_V2:
         return this.buildRawTransactionCctpSend(params, txSendParams, suiAddresses, tx, inputCoin);
+      case Messenger.X_RESERVE:
+        throw new SdkError("Messenger xReserve is not supported for SUI bridge");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
     }
