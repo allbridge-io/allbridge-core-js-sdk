@@ -16,6 +16,7 @@ import {
 export interface AllbridgeCoreClientParams {
   coreApiUrl: string;
   coreApiHeaders?: Record<string, string>;
+  coreApiHeadersProvider?: () => Promise<Record<string, string> | undefined>;
   coreApiQueryParams?: Record<string, string>;
 }
 
