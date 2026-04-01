@@ -399,7 +399,7 @@ export class PayerWithTokenService {
   private async prepareBridgeCctpData(params: SendParams, solTxSendParams: SolTxSendParams): Promise<BridgeCctpData> {
     const baseData = await this.prepareSwapAndBridgeBaseData(params, solTxSendParams);
 
-    const { mintAccount, provider } = baseData;
+    const { mintAccount } = baseData;
     const { amount, toChainId } = solTxSendParams;
 
     const destinationChainSymbol = params.destinationToken.chainSymbol;
