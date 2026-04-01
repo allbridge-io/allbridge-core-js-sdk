@@ -12,8 +12,6 @@ import {
 import { assertNever } from "../../../utils/utils";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 import * as bridgeIdl from "../../models/sol/types/bridge.json";
-import { CctpBridge as CctpBridgeType } from "../../models/sol/types/cctp_bridge";
-import * as cctpBridgeIdl from "../../models/sol/types/cctp_bridge.json";
 import { PayerWithToken as PayerWithTokenType } from "../../models/sol/types/payer_with_token";
 import * as payerWithTokenIdl from "../../models/sol/types/payer_with_token.json";
 import { getMessage, getVUsdAmount } from "../../utils/sol";
@@ -143,10 +141,13 @@ export class PayerWithTokenService {
         const swapAndBridgeData = await this.prepareSwapAndBridgeWormholeData(params, solTxSendParams);
         return await this.buildSwapAndBridgeWormholeTx(swapAndBridgeData);
       }
-      case Messenger.CCTP:
-      case Messenger.CCTP_V2: {
+      case Messenger.CCTP: {
         const bridgeCctpData = await this.prepareBridgeCctpData(params, solTxSendParams);
         return this.buildBridgeCctpTx(bridgeCctpData);
+      }
+      case Messenger.CCTP_V2: {
+        const bridgeCctpData = await this.prepareBridgeCctpData(params, solTxSendParams);
+        return this.buildBridgeCctpV2Tx(bridgeCctpData);
       }
       case Messenger.X_RESERVE:
         throw new SdkError("Messenger xReserve is not supported yet.");
@@ -401,29 +402,38 @@ export class PayerWithTokenService {
     const { mintAccount, provider } = baseData;
     const { amount, toChainId } = solTxSendParams;
 
-    const cctpAddress = params.sourceToken.cctpAddress;
-    if (!cctpAddress) {
-      throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-    }
-
-    const cctpBridge: Program<CctpBridgeType> = new Program<CctpBridgeType>(
-      { ...cctpBridgeIdl, address: cctpAddress },
-      provider
-    );
-    const chainBridgeAccount = await getChainBridgeAccount(toChainId, cctpBridge.programId);
-    const cctpBridgeProgramId = cctpBridge.programId;
-    const cctpBridgeConfigAccount = await getCctpBridgeAccount(mintAccount, cctpBridge.programId);
-
-    const cctpBridgeAuthorityAccount = await getCctpAuthorityAccount(cctpBridgeConfigAccount, cctpBridge.programId);
-    const cctpBridgeTokenAccount = await getBridgeTokenAccount(mintAccount, cctpBridge.programId);
-
     const destinationChainSymbol = params.destinationToken.chainSymbol;
     const domain = this.params.cctpParams.cctpDomains[destinationChainSymbol];
-    const cctpTransmitterProgramIdAddress = this.params.cctpParams.cctpTransmitterProgramId;
-    const cctpTokenMessengerMinterAddress = this.params.cctpParams.cctpTokenMessengerMinter;
-    if (domain == undefined || !cctpTransmitterProgramIdAddress || !cctpTokenMessengerMinterAddress) {
-      throw new SdkError("CCTP is not configured");
+
+    let cctpVersion: number | undefined;
+    let cctpAddress: string | undefined;
+    let cctpTransmitterProgramIdAddress: string | undefined;
+    let cctpTokenMessengerMinterAddress: string | undefined;
+    if (params.messenger === Messenger.CCTP) {
+      cctpVersion = 1;
+      cctpAddress = params.sourceToken.cctpAddress;
+      cctpTransmitterProgramIdAddress = this.params.cctpParams.cctpTransmitterProgramId;
+      cctpTokenMessengerMinterAddress = this.params.cctpParams.cctpTokenMessengerMinter;
+    } else if (params.messenger === Messenger.CCTP_V2) {
+      cctpVersion = 2;
+      cctpAddress = params.sourceToken.cctpV2Address;
+      cctpTransmitterProgramIdAddress = this.params.cctpParams.cctpV2TransmitterProgramId;
+      cctpTokenMessengerMinterAddress = this.params.cctpParams.cctpV2TokenMessengerMinter;
     }
+    if (domain == undefined || !cctpTransmitterProgramIdAddress || !cctpTokenMessengerMinterAddress) {
+      throw new SdkError(`CCTP ${cctpVersion} is not configured`);
+    }
+    if (!cctpAddress) {
+      throw new CCTPDoesNotSupportedError(`Such route does not support CCTP ${cctpVersion} protocol`);
+    }
+
+    const cctpBridgeProgramId = new PublicKey(cctpAddress);
+    const chainBridgeAccount = await getChainBridgeAccount(toChainId, cctpBridgeProgramId);
+    const cctpBridgeConfigAccount = await getCctpBridgeAccount(mintAccount, cctpBridgeProgramId);
+
+    const cctpBridgeAuthorityAccount = await getCctpAuthorityAccount(cctpBridgeConfigAccount, cctpBridgeProgramId);
+    const cctpBridgeTokenAccount = await getBridgeTokenAccount(mintAccount, cctpBridgeProgramId);
+
     const cctpTransmitterProgramId = new PublicKey(cctpTransmitterProgramIdAddress);
     const cctpTokenMessengerMinter = new PublicKey(cctpTokenMessengerMinterAddress);
     const {
@@ -437,7 +447,7 @@ export class PayerWithTokenService {
     } = getCctpAccounts(domain, mintAccount, cctpTransmitterProgramId, cctpTokenMessengerMinter);
 
     const messageSentEventDataKeypair = Keypair.generate();
-    const lockAccount = getCctpLockAccount(cctpBridge.programId, messageSentEventDataKeypair.publicKey);
+    const lockAccount = getCctpLockAccount(cctpBridgeProgramId, messageSentEventDataKeypair.publicKey);
 
     return {
       ...baseData,
@@ -691,6 +701,90 @@ export class PayerWithTokenService {
         remoteTokenMessengerKey,
         authorityPda,
         eventAuthority: tokenMessengerEventAuthority,
+        gasPrice: gasPriceAccount,
+        thisGasPrice: thisGasPriceAccount,
+        chainBridge: chainBridgeAccount,
+        bridgeAuthority: cctpBridgeAuthorityAccount,
+        userTokenAccount,
+      })
+      .preInstructions([this.getComputeUnitLimitInstruction()])
+      .transaction();
+
+    return {
+      tx: await this.finalizeTransaction(transaction, provider, userAccount),
+      requiredMessageSigner: messageSentEventDataKeypair,
+    };
+  }
+
+  private async buildBridgeCctpV2Tx(
+    bridgeCctpData: BridgeCctpData
+  ): Promise<{ tx: VersionedTransaction; requiredMessageSigner: Keypair }> {
+    const {
+      provider,
+      payerProgram,
+
+      amount,
+      recipient,
+      recipientToken,
+
+      userAccount,
+      recipientChain,
+      maxFeeAmount,
+      extraGasAmountInFeeToken,
+
+      lockAccount,
+      mintAccount,
+      feeTokenMintAccount,
+      userTokenAccount,
+      userFeeTokenAccount,
+      gasPriceAccount,
+      thisGasPriceAccount,
+
+      chainBridgeAccount,
+      cctpBridgeProgramId,
+      cctpBridgeAuthorityAccount,
+      cctpBridgeConfigAccount,
+      cctpBridgeTokenAccount,
+      cctpTokenMessengerMinter,
+      cctpTransmitterProgramId,
+      messageTransmitterAccount,
+      tokenMessenger,
+      tokenMessengerEventAuthority,
+      tokenMinter,
+      localToken,
+      remoteTokenMessengerKey,
+      authorityPda,
+
+      messageSentEventDataKeypair,
+    } = bridgeCctpData;
+
+    const transaction = await payerProgram.methods
+      .bridgeCctpV2({
+        amount,
+        recipient,
+        receiveToken: recipientToken,
+        destinationChainId: recipientChain,
+        maxFeeAmount,
+        extraGasAmountInFeeToken,
+      })
+      .accounts({
+        mint: mintAccount,
+        feeTokenMint: feeTokenMintAccount,
+        userFeeTokenAccount,
+        bridgeToken: cctpBridgeTokenAccount,
+        cctpBridge: cctpBridgeProgramId,
+        tokenMessengerMinterProgram: cctpTokenMessengerMinter,
+        messageTransmitterProgram: cctpTransmitterProgramId,
+        messageTransmitterAccount: messageTransmitterAccount,
+        tokenMessenger,
+        tokenMinter,
+        localToken,
+        remoteTokenMessenger: remoteTokenMessengerKey,
+        authorityPda,
+        eventAuthority: tokenMessengerEventAuthority,
+        messageSentEventData: messageSentEventDataKeypair.publicKey,
+        lock: lockAccount,
+        cctpBridgeConfig: cctpBridgeConfigAccount,
         gasPrice: gasPriceAccount,
         thisGasPrice: thisGasPriceAccount,
         chainBridge: chainBridgeAccount,
