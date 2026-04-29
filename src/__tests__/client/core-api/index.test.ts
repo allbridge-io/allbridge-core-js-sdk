@@ -129,4 +129,57 @@ describe("AllbridgeCoreClient", () => {
       scope.done();
     });
   });
+
+  describe("Dynamic headers", () => {
+    let forwardedFor = "1.1.1.1";
+
+    const api = new AllbridgeCoreClientImpl(
+      new ApiClientImpl({
+        coreApiUrl: "http://localhost",
+        coreApiHeadersProvider: () => Promise.resolve({ "x-forwarded-for": forwardedFor }),
+      })
+    );
+
+    it("☀️ should be evaluated for every request", async () => {
+      let scope: nock.Scope = nock("http://localhost", {
+        reqheaders: { "x-forwarded-for": "1.1.1.1" },
+      })
+        .get("/token-info?filter=all")
+        .reply(200, tokenInfoResponse);
+
+      await api.getChainDetailsMap();
+      scope.done();
+
+      forwardedFor = "2.2.2.2";
+      scope = nock("http://localhost", {
+        reqheaders: { "x-forwarded-for": "2.2.2.2" },
+      })
+        .get("/pending-info")
+        .reply(200, {});
+
+      await api.getPendingInfo();
+      scope.done();
+    });
+
+    it("☀️ should not overwrite an explicitly configured x-forwarded-for header", async () => {
+      const staticForwardedFor = "1.2.3.4";
+      const apiWithStaticHeader = new AllbridgeCoreClientImpl(
+        new ApiClientImpl({
+          coreApiUrl: "http://localhost",
+          coreApiHeaders: { "x-forwarded-for": staticForwardedFor },
+          coreApiHeadersProvider: () => Promise.resolve({ "x-forwarded-for": "4.3.2.1" }),
+        })
+      );
+
+      const scope: nock.Scope = nock("http://localhost", {
+        reqheaders: { "x-forwarded-for": staticForwardedFor },
+      })
+        .get("/token-info?filter=all")
+        .reply(200, tokenInfoResponse);
+
+      await apiWithStaticHeader.getChainDetailsMap();
+
+      scope.done();
+    });
+  });
 });

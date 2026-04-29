@@ -62,6 +62,8 @@ describe("SDK", () => {
       cctpDomains: {},
       cctpTransmitterProgramId: "",
       cctpTokenMessengerMinter: "",
+      cctpV2TransmitterProgramId: "",
+      cctpV2TokenMessengerMinter: "",
     },
     cachePoolInfoChainSec: 20,
     additionalChainsProperties: {

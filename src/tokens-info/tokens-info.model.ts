@@ -126,27 +126,27 @@ export interface Token {
   originTokenAddress?: string;
   /**
    * Token CCTP address</br>
-   * Optional. Defined if CCTP supported by token
+   * Optional. Defined if the token is supported by CCTP
    */
   cctpAddress?: string;
   /**
-   * Token CCTP V2 address</br>
-   * Optional. Defined if CCTP supported by token
+   * Token fee share for CCTP</br>
+   * Optional. Defined if the token is supported by CCTP
    */
   cctpFeeShare?: string;
   /**
    * Token CCTP address</br>
-   * Optional. Defined if CCTP supported by token
+   * Optional. Defined if the token is supported by CCTP
    */
   cctpV2Address?: string;
   /**
-   * Token CCTP V2 address</br>
-   * Optional. Defined if CCTP supported by token
+   * Token fee share for CCTP V2</br>
+   * Optional. Defined if the token is supported by CCTP
    */
   cctpV2FeeShare?: string;
   /**
    * XReserve bridge configuration for token.
-   * Optional. Defined if XReserve supported by token
+   * Optional. Defined if the token is supported by XReserve
    */
   xReserve?: XReserveTokenInfo;
   /**
@@ -155,7 +155,7 @@ export interface Token {
    * Used to link representations of a token deployed on multiple networks (e.g., Ethereum, BSC).
    * Tokens with the same `oftId` are considered to be equivalent.
    *
-   * Optional. Defined if OFT supported by token
+   * Optional. Defined if the token is supported by OFT
    */
   oftId?: string;
   /**

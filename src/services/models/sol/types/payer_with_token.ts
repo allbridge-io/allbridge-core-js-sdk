@@ -5,1217 +5,1963 @@
  * IDL can be found at `target/idl/payer_with_token.json`.
  */
 export type PayerWithToken = {
-  address: "DfB5pJSykRUuUT2ViG8V382R6RB5CQ3GTMVFajoyxXn1";
-  metadata: {
-    name: "payerWithToken";
-    version: "0.1.0";
-    spec: "0.1.0";
-    description: "Created with Anchor";
-  };
-  instructions: [
+  "address": "DfB5pJSykRUuUT2ViG8V382R6RB5CQ3GTMVFajoyxXn1",
+  "metadata": {
+    "name": "payerWithToken",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
     {
-      name: "addFeeToken";
-      discriminator: [171, 6, 150, 97, 69, 55, 13, 136];
-      accounts: [
+      "name": "addFeeToken",
+      "discriminator": [
+        171,
+        6,
+        150,
+        97,
+        69,
+        55,
+        13,
+        136
+      ],
+      "accounts": [
         {
-          name: "initializer";
-          writable: true;
-          signer: true;
+          "name": "initializer",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "admin";
-          signer: true;
+          "name": "admin",
+          "signer": true
         },
         {
-          name: "feeTokenMint";
+          "name": "feeTokenMint"
         },
         {
-          name: "config";
-          pda: {
-            seeds: [
+          "name": "config",
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         },
         {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          name: "rent";
-          address: "SysvarRent111111111111111111111111111111111";
-        },
-      ];
-      args: [
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
         {
-          name: "args";
-          type: {
-            defined: {
-              name: "addFeeTokenArgs";
-            };
-          };
-        },
-      ];
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "addFeeTokenArgs"
+            }
+          }
+        }
+      ]
     },
     {
-      name: "bridgeCctp";
-      discriminator: [35, 114, 66, 117, 122, 78, 225, 186];
-      accounts: [
+      "name": "bridgeCctp",
+      "discriminator": [
+        35,
+        114,
+        66,
+        117,
+        122,
+        78,
+        225,
+        186
+      ],
+      "accounts": [
         {
-          name: "user";
-          writable: true;
-          signer: true;
+          "name": "user",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "mint";
-          writable: true;
+          "name": "mint",
+          "writable": true
         },
         {
-          name: "feeTokenMint";
+          "name": "feeTokenMint"
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
-        {
-          name: "userFeeTokenAccount";
-          writable: true;
-        },
-        {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "payerAuthority";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "userFeeTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "account";
-                path: "config";
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
-            ];
-          };
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "cctpBridge";
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
         },
         {
-          name: "bridgeToken";
-          writable: true;
+          "name": "cctpBridge"
         },
         {
-          name: "cctpMessenger";
+          "name": "bridgeToken",
+          "writable": true
         },
         {
-          name: "messageTransmitterProgram";
+          "name": "cctpMessenger"
         },
         {
-          name: "messageTransmitterAccount";
-          writable: true;
+          "name": "messageTransmitterProgram"
         },
         {
-          name: "tokenMessenger";
+          "name": "messageTransmitterAccount",
+          "writable": true
         },
         {
-          name: "tokenMinter";
+          "name": "tokenMessenger"
         },
         {
-          name: "localToken";
-          writable: true;
+          "name": "tokenMinter"
         },
         {
-          name: "remoteTokenMessengerKey";
+          "name": "localToken",
+          "writable": true
         },
         {
-          name: "authorityPda";
+          "name": "remoteTokenMessengerKey"
         },
         {
-          name: "eventAuthority";
+          "name": "authorityPda"
         },
         {
-          name: "messageSentEventData";
-          writable: true;
-          signer: true;
+          "name": "eventAuthority"
         },
         {
-          name: "lock";
-          writable: true;
+          "name": "messageSentEventData",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "cctpBridgeConfig";
-          writable: true;
+          "name": "lock",
+          "writable": true
         },
         {
-          name: "gasPrice";
+          "name": "cctpBridgeConfig",
+          "writable": true
         },
         {
-          name: "thisGasPrice";
+          "name": "gasPrice"
         },
         {
-          name: "chainBridge";
+          "name": "thisGasPrice"
         },
         {
-          name: "bridgeAuthority";
+          "name": "chainBridge"
         },
         {
-          name: "userTokenAccount";
-          writable: true;
+          "name": "bridgeAuthority"
         },
         {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+          "name": "userTokenAccount",
+          "writable": true
         },
         {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
-      ];
-      args: [
         {
-          name: "args";
-          type: {
-            defined: {
-              name: "payerCctpBridgeArgs";
-            };
-          };
-        },
-      ];
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "payerCctpBridgeArgs"
+            }
+          }
+        }
+      ]
     },
     {
-      name: "initialize";
-      discriminator: [175, 175, 109, 31, 13, 152, 155, 237];
-      accounts: [
+      "name": "bridgeCctpV2",
+      "discriminator": [
+        237,
+        74,
+        221,
+        146,
+        95,
+        161,
+        136,
+        197
+      ],
+      "accounts": [
         {
-          name: "initializer";
-          writable: true;
-          signer: true;
+          "name": "user",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "mint",
+          "writable": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenMint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "payerAuthority";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "account";
-                path: "config";
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
-            ];
-          };
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
+          "name": "userFeeTokenAccount",
+          "writable": true
         },
         {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "rent";
-          address: "SysvarRent111111111111111111111111111111111";
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
         },
-      ];
-      args: [
         {
-          name: "args";
-          type: {
-            defined: {
-              name: "initializeArgs";
-            };
-          };
+          "name": "cctpBridge"
         },
-      ];
+        {
+          "name": "bridgeToken",
+          "writable": true
+        },
+        {
+          "name": "tokenMessengerMinterProgram"
+        },
+        {
+          "name": "messageTransmitterProgram"
+        },
+        {
+          "name": "messageTransmitterAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenMessenger"
+        },
+        {
+          "name": "tokenMinter"
+        },
+        {
+          "name": "localToken",
+          "writable": true
+        },
+        {
+          "name": "remoteTokenMessenger"
+        },
+        {
+          "name": "authorityPda"
+        },
+        {
+          "name": "denylistAccount",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "tokenMessengerMinterProgram"
+            }
+          }
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "messageSentEventData",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lock",
+          "writable": true
+        },
+        {
+          "name": "cctpBridgeConfig",
+          "writable": true
+        },
+        {
+          "name": "gasPrice"
+        },
+        {
+          "name": "thisGasPrice"
+        },
+        {
+          "name": "chainBridge"
+        },
+        {
+          "name": "bridgeAuthority"
+        },
+        {
+          "name": "userTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "payerCctpV2BridgeArgs"
+            }
+          }
+        }
+      ]
     },
     {
-      name: "removeFeeToken";
-      discriminator: [46, 96, 240, 63, 28, 173, 62, 131];
-      accounts: [
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "initializer",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "feeTokenMint";
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
         },
         {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         },
         {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
-      ];
-      args: [];
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "initializeArgs"
+            }
+          }
+        }
+      ]
     },
     {
-      name: "setAdmin";
-      discriminator: [251, 163, 0, 52, 91, 194, 187, 92];
-      accounts: [
+      "name": "removeFeeToken",
+      "discriminator": [
+        46,
+        96,
+        240,
+        63,
+        28,
+        173,
+        62,
+        131
+      ],
+      "accounts": [
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "newAdmin";
+          "name": "feeTokenMint"
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
-      ];
-      args: [];
+        {
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
     },
     {
-      name: "setBridgeProgramId";
-      discriminator: [59, 191, 249, 155, 146, 73, 202, 139];
-      accounts: [
+      "name": "setAdmin",
+      "discriminator": [
+        251,
+        163,
+        0,
+        52,
+        91,
+        194,
+        187,
+        92
+      ],
+      "accounts": [
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "newAdmin"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
-      ];
-      args: [
-        {
-          name: "newProgramId";
-          type: "pubkey";
-        },
-      ];
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
     },
     {
-      name: "setCctpBridgeProgramId";
-      discriminator: [164, 36, 75, 241, 35, 30, 47, 159];
-      accounts: [
+      "name": "setBridgeProgramId",
+      "discriminator": [
+        59,
+        191,
+        249,
+        155,
+        146,
+        73,
+        202,
+        139
+      ],
+      "accounts": [
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
-      ];
-      args: [
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
         {
-          name: "newProgramId";
-          type: "pubkey";
-        },
-      ];
+          "name": "newProgramId",
+          "type": "pubkey"
+        }
+      ]
     },
     {
-      name: "setFeeTokenPrice";
-      discriminator: [116, 201, 189, 21, 190, 10, 242, 241];
-      accounts: [
+      "name": "setCctpBridgeProgramId",
+      "discriminator": [
+        164,
+        36,
+        75,
+        241,
+        35,
+        30,
+        47,
+        159
+      ],
+      "accounts": [
         {
-          name: "priceAuthority";
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
         {
-          name: "feeTokenMint";
-        },
-        {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
-      ];
-      args: [
-        {
-          name: "newPrice";
-          type: "u64";
-        },
-      ];
+          "name": "newProgramId",
+          "type": "pubkey"
+        }
+      ]
     },
     {
-      name: "setPriceAuthority";
-      discriminator: [51, 241, 68, 137, 206, 207, 244, 107];
-      accounts: [
+      "name": "setCctpV2BridgeProgramId",
+      "discriminator": [
+        98,
+        190,
+        8,
+        24,
+        135,
+        12,
+        117,
+        249
+      ],
+      "accounts": [
         {
-          name: "admin";
-          writable: true;
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
-      ];
-      args: [
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
         {
-          name: "newAddress";
-          type: "pubkey";
-        },
-      ];
+          "name": "newProgramId",
+          "type": "pubkey"
+        }
+      ]
     },
     {
-      name: "swapAndBridge";
-      discriminator: [204, 63, 169, 171, 186, 125, 86, 159];
-      accounts: [
+      "name": "setFeeTokenPrice",
+      "discriminator": [
+        116,
+        201,
+        189,
+        21,
+        190,
+        10,
+        242,
+        241
+      ],
+      "accounts": [
         {
-          name: "user";
-          writable: true;
-          signer: true;
+          "name": "priceAuthority",
+          "signer": true
         },
         {
-          name: "mint";
-        },
-        {
-          name: "feeTokenMint";
-        },
-        {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenMint"
+        },
+        {
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
         {
-          name: "userFeeTokenAccount";
-          writable: true;
-        },
-        {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
-        {
-          name: "payerAuthority";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "config";
-              },
-            ];
-          };
-        },
-        {
-          name: "bridge";
-        },
-        {
-          name: "bridgeToken";
-          writable: true;
-        },
-        {
-          name: "messenger";
-        },
-        {
-          name: "messengerConfig";
-          writable: true;
-        },
-        {
-          name: "sentMessageAccount";
-          writable: true;
-        },
-        {
-          name: "messengerGasUsage";
-        },
-        {
-          name: "lock";
-          writable: true;
-        },
-        {
-          name: "bridgeConfig";
-          writable: true;
-        },
-        {
-          name: "otherBridgeToken";
-          writable: true;
-        },
-        {
-          name: "pool";
-          writable: true;
-        },
-        {
-          name: "gasPrice";
-        },
-        {
-          name: "thisGasPrice";
-        },
-        {
-          name: "chainBridge";
-        },
-        {
-          name: "bridgeAuthority";
-        },
-        {
-          name: "userTokenAccount";
-          writable: true;
-        },
-        {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        },
-        {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
-        },
-      ];
-      args: [
-        {
-          name: "args";
-          type: {
-            defined: {
-              name: "payerSwapAndBridgeArgs";
-            };
-          };
-        },
-      ];
+          "name": "newPrice",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "swapAndBridgeWormhole";
-      discriminator: [41, 91, 201, 180, 150, 117, 154, 65];
-      accounts: [
+      "name": "setPriceAuthority",
+      "discriminator": [
+        51,
+        241,
+        68,
+        137,
+        206,
+        207,
+        244,
+        107
+      ],
+      "accounts": [
         {
-          name: "user";
-          writable: true;
-          signer: true;
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "mint";
-        },
-        {
-          name: "feeTokenMint";
-        },
-        {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
-        },
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
         {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
-        {
-          name: "userFeeTokenAccount";
-          writable: true;
-        },
-        {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
-              },
-              {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
-        },
-        {
-          name: "payerAuthority";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "config";
-              },
-            ];
-          };
-        },
-        {
-          name: "bridge";
-        },
-        {
-          name: "bridgeToken";
-          writable: true;
-        },
-        {
-          name: "lock";
-          writable: true;
-        },
-        {
-          name: "bridgeConfig";
-          writable: true;
-        },
-        {
-          name: "otherBridgeToken";
-          writable: true;
-        },
-        {
-          name: "pool";
-          writable: true;
-        },
-        {
-          name: "gasPrice";
-        },
-        {
-          name: "thisGasPrice";
-        },
-        {
-          name: "chainBridge";
-        },
-        {
-          name: "userTokenAccount";
-          writable: true;
-        },
-        {
-          name: "bridgeAuthority";
-        },
-        {
-          name: "wormholeMessenger";
-        },
-        {
-          name: "wormholeMessengerConfig";
-          writable: true;
-        },
-        {
-          name: "wormholeProgram";
-        },
-        {
-          name: "wormholeBridge";
-          writable: true;
-        },
-        {
-          name: "message";
-          writable: true;
-          signer: true;
-        },
-        {
-          name: "sequence";
-          writable: true;
-        },
-        {
-          name: "feeCollector";
-          writable: true;
-        },
-        {
-          name: "messengerGasUsage";
-        },
-        {
-          name: "clock";
-          address: "SysvarC1ock11111111111111111111111111111111";
-        },
-        {
-          name: "rent";
-          address: "SysvarRent111111111111111111111111111111111";
-        },
-        {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        },
-        {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
-        },
-      ];
-      args: [
-        {
-          name: "args";
-          type: {
-            defined: {
-              name: "payerSwapAndBridgeArgs";
-            };
-          };
-        },
-      ];
+          "name": "newAddress",
+          "type": "pubkey"
+        }
+      ]
     },
     {
-      name: "withdrawFeeToken";
-      discriminator: [131, 103, 89, 216, 53, 78, 255, 118];
-      accounts: [
+      "name": "swapAndBridge",
+      "discriminator": [
+        204,
+        63,
+        169,
+        171,
+        186,
+        125,
+        86,
+        159
+      ],
+      "accounts": [
         {
-          name: "admin";
-          signer: true;
+          "name": "user",
+          "writable": true,
+          "signer": true
         },
         {
-          name: "config";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "mint"
+        },
+        {
+          "name": "feeTokenMint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
-              },
-            ];
-          };
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          name: "feeTokenMint";
-        },
-        {
-          name: "feeTokenConfig";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [102, 101, 101, 95, 116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "contractFeeTokenAccount";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "userFeeTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [116, 111, 107, 101, 110];
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
               {
-                kind: "account";
-                path: "feeTokenMint";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "adminFeeTokenAccount";
-          writable: true;
-        },
-        {
-          name: "tokenProgram";
-          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        },
-        {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
-        },
-      ];
-      args: [
-        {
-          name: "amount";
-          type: "u64";
-        },
-      ];
-    },
-    {
-      name: "withdrawGasToken";
-      discriminator: [109, 117, 140, 223, 117, 175, 2, 139];
-      accounts: [
-        {
-          name: "admin";
-          signer: true;
-        },
-        {
-          name: "recipient";
-          writable: true;
-        },
-        {
-          name: "payerAuthority";
-          writable: true;
-          pda: {
-            seeds: [
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "account";
-                path: "config";
-              },
-            ];
-          };
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
         },
         {
-          name: "config";
-          pda: {
-            seeds: [
+          "name": "bridge"
+        },
+        {
+          "name": "bridgeToken",
+          "writable": true
+        },
+        {
+          "name": "messenger"
+        },
+        {
+          "name": "messengerConfig",
+          "writable": true
+        },
+        {
+          "name": "sentMessageAccount",
+          "writable": true
+        },
+        {
+          "name": "messengerGasUsage"
+        },
+        {
+          "name": "lock",
+          "writable": true
+        },
+        {
+          "name": "bridgeConfig",
+          "writable": true
+        },
+        {
+          "name": "otherBridgeToken",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "gasPrice"
+        },
+        {
+          "name": "thisGasPrice"
+        },
+        {
+          "name": "chainBridge"
+        },
+        {
+          "name": "bridgeAuthority"
+        },
+        {
+          "name": "userTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "payerSwapAndBridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "swapAndBridgeWormhole",
+      "discriminator": [
+        41,
+        91,
+        201,
+        180,
+        150,
+        117,
+        154,
+        65
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "feeTokenMint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
-                kind: "const";
-                value: [99, 111, 110, 102, 105, 103];
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
               },
-            ];
-          };
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
         {
-          name: "systemProgram";
-          address: "11111111111111111111111111111111";
+          "name": "userFeeTokenAccount",
+          "writable": true
         },
-      ];
-      args: [
         {
-          name: "amount";
-          type: "u64";
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
         },
-      ];
-    },
-  ];
-  accounts: [
-    {
-      name: "chainBridge";
-      discriminator: [25, 216, 147, 218, 140, 42, 98, 49];
-    },
-    {
-      name: "config";
-      discriminator: [155, 12, 170, 224, 30, 250, 204, 130];
-    },
-    {
-      name: "feeTokenConfig";
-      discriminator: [226, 113, 31, 124, 53, 31, 222, 222];
-    },
-  ];
-  events: [
-    {
-      name: "extraGasSentEvent";
-      discriminator: [111, 21, 139, 73, 113, 95, 104, 52];
-    },
-  ];
-  errors: [
-    {
-      code: 6000;
-      name: "payerFeeSlippage";
-      msg: "Payer fee slippage";
-    },
-  ];
-  types: [
-    {
-      name: "addFeeTokenArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "price";
-            type: "u64";
-          },
-        ];
-      };
-    },
-    {
-      name: "chainBridge";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "address";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "chainId";
-            type: "u8";
-          },
-          {
-            name: "gasUsage";
-            type: "u64";
-          },
-        ];
-      };
-    },
-    {
-      name: "config";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "admin";
-            type: "pubkey";
-          },
-          {
-            name: "authorityBumpSeed";
-            type: "u8";
-          },
-          {
-            name: "bridgeProgramId";
-            type: "pubkey";
-          },
-          {
-            name: "cctpBridgeProgramId";
-            type: "pubkey";
-          },
-          {
-            name: "priceAuthority";
-            type: "pubkey";
-          },
-        ];
-      };
-    },
-    {
-      name: "extraGasSentEvent";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "feeTokenMint";
-            type: "pubkey";
-          },
-          {
-            name: "extraGasAmountInFeeToken";
-            type: "u64";
-          },
-          {
-            name: "extraGasAmountInSol";
-            type: "u64";
-          },
-          {
-            name: "extraGasAmountInUsd";
-            type: "u64";
-          },
-        ];
-      };
+        {
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bridge"
+        },
+        {
+          "name": "bridgeToken",
+          "writable": true
+        },
+        {
+          "name": "lock",
+          "writable": true
+        },
+        {
+          "name": "bridgeConfig",
+          "writable": true
+        },
+        {
+          "name": "otherBridgeToken",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "gasPrice"
+        },
+        {
+          "name": "thisGasPrice"
+        },
+        {
+          "name": "chainBridge"
+        },
+        {
+          "name": "userTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "bridgeAuthority"
+        },
+        {
+          "name": "wormholeMessenger"
+        },
+        {
+          "name": "wormholeMessengerConfig",
+          "writable": true
+        },
+        {
+          "name": "wormholeProgram"
+        },
+        {
+          "name": "wormholeBridge",
+          "writable": true
+        },
+        {
+          "name": "message",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sequence",
+          "writable": true
+        },
+        {
+          "name": "feeCollector",
+          "writable": true
+        },
+        {
+          "name": "messengerGasUsage"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "payerSwapAndBridgeArgs"
+            }
+          }
+        }
+      ]
     },
     {
-      name: "feeTokenConfig";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "mint";
-            type: "pubkey";
-          },
-          {
-            name: "decimals";
-            type: "u8";
-          },
-          {
-            name: "price";
-            type: "u64";
-          },
-          {
-            name: "bump";
-            type: "u8";
-          },
-        ];
-      };
+      "name": "upgradeConfig",
+      "discriminator": [
+        129,
+        185,
+        25,
+        221,
+        96,
+        63,
+        251,
+        97
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
-      name: "initializeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "bridgeProgramId";
-            type: "pubkey";
-          },
-          {
-            name: "cctpBridgeProgramId";
-            type: "pubkey";
-          },
-        ];
-      };
+      "name": "withdrawFeeToken",
+      "discriminator": [
+        131,
+        103,
+        89,
+        216,
+        53,
+        78,
+        255,
+        118
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "feeTokenMint"
+        },
+        {
+          "name": "feeTokenConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "contractFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "feeTokenMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "adminFeeTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "payerCctpBridgeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "maxFeeAmount";
-            type: "u64";
-          },
-          {
-            name: "extraGasAmountInFeeToken";
-            type: "u64";
-          },
-          {
-            name: "recipient";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "destinationChainId";
-            type: "u8";
-          },
-          {
-            name: "receiveToken";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "amount";
-            type: "u64";
-          },
-        ];
-      };
+      "name": "withdrawGasToken",
+      "discriminator": [
+        109,
+        117,
+        140,
+        223,
+        117,
+        175,
+        2,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "payerAuthority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "chainBridge",
+      "discriminator": [
+        25,
+        216,
+        147,
+        218,
+        140,
+        42,
+        98,
+        49
+      ]
     },
     {
-      name: "payerSwapAndBridgeArgs";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "maxFeeAmount";
-            type: "u64";
-          },
-          {
-            name: "extraGasAmountInFeeToken";
-            type: "u64";
-          },
-          {
-            name: "destinationChainId";
-            type: "u8";
-          },
-          {
-            name: "recipient";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "recipientToken";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-          {
-            name: "vusdAmount";
-            type: "u64";
-          },
-          {
-            name: "nonce";
-            type: {
-              array: ["u8", 32];
-            };
-          },
-        ];
-      };
+      "name": "config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
     },
-  ];
+    {
+      "name": "feeTokenConfig",
+      "discriminator": [
+        226,
+        113,
+        31,
+        124,
+        53,
+        31,
+        222,
+        222
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "extraGasSentEvent",
+      "discriminator": [
+        111,
+        21,
+        139,
+        73,
+        113,
+        95,
+        104,
+        52
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "payerFeeSlippage",
+      "msg": "Payer fee slippage"
+    },
+    {
+      "code": 6001,
+      "name": "invalidData",
+      "msg": "Invalid data"
+    }
+  ],
+  "types": [
+    {
+      "name": "addFeeTokenArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chainBridge",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "chainId",
+            "type": "u8"
+          },
+          {
+            "name": "gasUsage",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "authorityBumpSeed",
+            "type": "u8"
+          },
+          {
+            "name": "bridgeProgramId",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctpBridgeProgramId",
+            "type": "pubkey"
+          },
+          {
+            "name": "priceAuthority",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctpV2BridgeProgramId",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extraGasSentEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeTokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "extraGasAmountInFeeToken",
+            "type": "u64"
+          },
+          {
+            "name": "extraGasAmountInSol",
+            "type": "u64"
+          },
+          {
+            "name": "extraGasAmountInUsd",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "feeTokenConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "initializeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bridgeProgramId",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctpBridgeProgramId",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctpV2BridgeProgramId",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "payerCctpBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxFeeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "extraGasAmountInFeeToken",
+            "type": "u64"
+          },
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destinationChainId",
+            "type": "u8"
+          },
+          {
+            "name": "receiveToken",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "payerCctpV2BridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxFeeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "extraGasAmountInFeeToken",
+            "type": "u64"
+          },
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destinationChainId",
+            "type": "u8"
+          },
+          {
+            "name": "receiveToken",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "payerSwapAndBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxFeeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "extraGasAmountInFeeToken",
+            "type": "u64"
+          },
+          {
+            "name": "destinationChainId",
+            "type": "u8"
+          },
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "recipientToken",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "vusdAmount",
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
 };

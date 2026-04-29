@@ -1,4 +1,4 @@
-import axios, { Axios } from "axios";
+import axios, { Axios, AxiosHeaders } from "axios";
 import { InvalidMessengerOptionError } from "../../exceptions";
 import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
@@ -51,6 +51,26 @@ export class ApiClientImpl implements ApiClient {
       },
       params: params.coreApiQueryParams,
     });
+
+    if (params.coreApiHeadersProvider) {
+      this.api.interceptors.request.use(async (config: { headers: any }) => {
+        const dynamicHeaders = await params.coreApiHeadersProvider?.();
+        if (!dynamicHeaders || Object.keys(dynamicHeaders).length === 0) {
+          return config;
+        }
+
+        const headers = AxiosHeaders.from(config.headers);
+        for (const [headerName, headerValue] of Object.entries(dynamicHeaders)) {
+          if (!headerValue || headers.has(headerName)) {
+            continue;
+          }
+          headers.set(headerName, headerValue);
+        }
+
+        config.headers = headers;
+        return config;
+      });
+    }
   }
 
   async getTokenInfo(): Promise<TokenInfo> {

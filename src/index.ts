@@ -42,6 +42,11 @@ export interface AllbridgeCoreSdkOptions {
    */
   coreApiHeaders?: Record<string, string>;
   /**
+   * A function that returns headers to be added to a single Core API request.
+   * It is evaluated right before each request
+   */
+  coreApiHeadersProvider?: () => Promise<Record<string, string> | undefined>;
+  /**
    * Jupiter Swap Api</br>
    * Default: https://lite-api.jup.ag/swap/v1</br>
    * {@link https://dev.jup.ag/docs/swap-api/}

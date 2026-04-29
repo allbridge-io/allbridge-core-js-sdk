@@ -316,6 +316,235 @@
       ]
     },
     {
+      "name": "bridge_cctp_v2",
+      "discriminator": [
+        237,
+        74,
+        221,
+        146,
+        95,
+        161,
+        136,
+        197
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "fee_token_mint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_token_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fee_token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_fee_token_account",
+          "writable": true
+        },
+        {
+          "name": "contract_fee_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fee_token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer_authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cctp_bridge"
+        },
+        {
+          "name": "bridge_token",
+          "writable": true
+        },
+        {
+          "name": "token_messenger_minter_program"
+        },
+        {
+          "name": "message_transmitter_program"
+        },
+        {
+          "name": "message_transmitter_account",
+          "writable": true
+        },
+        {
+          "name": "token_messenger"
+        },
+        {
+          "name": "token_minter"
+        },
+        {
+          "name": "local_token",
+          "writable": true
+        },
+        {
+          "name": "remote_token_messenger"
+        },
+        {
+          "name": "authority_pda"
+        },
+        {
+          "name": "denylist_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_messenger_minter_program"
+            }
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "message_sent_event_data",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lock",
+          "writable": true
+        },
+        {
+          "name": "cctp_bridge_config",
+          "writable": true
+        },
+        {
+          "name": "gas_price"
+        },
+        {
+          "name": "this_gas_price"
+        },
+        {
+          "name": "chain_bridge"
+        },
+        {
+          "name": "bridge_authority"
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "PayerCctpV2BridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -586,6 +815,51 @@
         30,
         47,
         159
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_program_id",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_cctp_v2_bridge_program_id",
+      "discriminator": [
+        98,
+        190,
+        8,
+        24,
+        135,
+        12,
+        117,
+        249
       ],
       "accounts": [
         {
@@ -1123,6 +1397,55 @@
       ]
     },
     {
+      "name": "upgrade_config",
+      "discriminator": [
+        129,
+        185,
+        25,
+        221,
+        96,
+        63,
+        251,
+        97
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "withdraw_fee_token",
       "discriminator": [
         131,
@@ -1354,6 +1677,11 @@
       "code": 6000,
       "name": "PayerFeeSlippage",
       "msg": "Payer fee slippage"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidData",
+      "msg": "Invalid data"
     }
   ],
   "types": [
@@ -1417,6 +1745,10 @@
           },
           {
             "name": "price_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "cctp_v2_bridge_program_id",
             "type": "pubkey"
           }
         ]
@@ -1482,12 +1814,58 @@
           {
             "name": "cctp_bridge_program_id",
             "type": "pubkey"
+          },
+          {
+            "name": "cctp_v2_bridge_program_id",
+            "type": "pubkey"
           }
         ]
       }
     },
     {
       "name": "PayerCctpBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "max_fee_amount",
+            "type": "u64"
+          },
+          {
+            "name": "extra_gas_amount_in_fee_token",
+            "type": "u64"
+          },
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destination_chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "receive_token",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PayerCctpV2BridgeArgs",
       "type": {
         "kind": "struct",
         "fields": [
