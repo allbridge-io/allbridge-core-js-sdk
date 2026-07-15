@@ -13,7 +13,7 @@ import { calculatePoolInfoImbalance } from "../../../utils/calculation";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import { PoolContract } from "../../models/srb/pool-contract";
-import { getViewResultSoroban, isErrorSorobanResult } from "../../models/srb/utils";
+import { getSorobanInclusionFee, getViewResultSoroban, isErrorSorobanResult } from "../../models/srb/utils";
 import { ChainPoolService, UserBalance } from "../models";
 import ContractClientOptions = contract.ClientOptions;
 
@@ -76,30 +76,42 @@ export class SrbPoolService extends ChainPoolService {
 
   async buildRawTransactionDeposit(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    const inclusionFee = await getSorobanInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return (
-      await poolContract.deposit({
-        sender: params.accountAddress,
-        amount: BigInt(params.amount),
-      })
+      await poolContract.deposit(
+        {
+          sender: params.accountAddress,
+          amount: BigInt(params.amount),
+        },
+        { fee: inclusionFee }
+      )
     ).toXDR();
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    const inclusionFee = await getSorobanInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return (
-      await poolContract.withdraw({
-        sender: params.accountAddress,
-        amount_lp: BigInt(params.amount),
-      })
+      await poolContract.withdraw(
+        {
+          sender: params.accountAddress,
+          amount_lp: BigInt(params.amount),
+        },
+        { fee: inclusionFee }
+      )
     ).toXDR();
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
     const poolContract = this.getContract(params.token.poolAddress, params.accountAddress);
+    const inclusionFee = await getSorobanInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return (
-      await poolContract.claim_rewards({
-        sender: params.accountAddress,
-      })
+      await poolContract.claim_rewards(
+        {
+          sender: params.accountAddress,
+        },
+        { fee: inclusionFee }
+      )
     ).toXDR();
   }
 

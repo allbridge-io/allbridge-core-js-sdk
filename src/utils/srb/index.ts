@@ -1,6 +1,5 @@
 import {
   Asset as StellarAsset,
-  BASE_FEE,
   contract,
   Horizon,
   Operation,
@@ -15,7 +14,12 @@ import { ChainSymbol } from "../../chains/chain.enums";
 import { AllbridgeCoreSdkOptions, SdkError } from "../../index";
 import { NodeRpcUrlsConfig } from "../../services";
 import { TokenContract } from "../../services/models/srb/token-contract";
-import { getViewResultSoroban, isErrorSorobanResult } from "../../services/models/srb/utils";
+import {
+  getSorobanInclusionFee,
+  getStellarInclusionFee,
+  getViewResultSoroban,
+  isErrorSorobanResult,
+} from "../../services/models/srb/utils";
 import { withExponentialBackoff } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
 import BalanceLineAsset = Horizon.HorizonApi.BalanceLineAsset;
@@ -73,7 +77,6 @@ export interface TrustLineParams {
   tokenAddress: string;
 }
 
-const FEE = 100;
 const SEND_TRANSACTION_TIMEOUT = 180;
 
 export class DefaultSrbUtils implements SrbUtils {
@@ -105,8 +108,9 @@ export class DefaultSrbUtils implements SrbUtils {
       limit: params.limit,
     });
 
+    const inclusionFee = await getStellarInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return new StellarTransactionBuilder(stellarAccount, {
-      fee: FEE.toString(10),
+      fee: inclusionFee.toString(10),
       networkPassphrase: this.params.sorobanNetworkPassphrase,
     })
       .addOperation(changeTrust)
@@ -150,13 +154,15 @@ export class DefaultSrbUtils implements SrbUtils {
   }
 
   async simulateAndCheckRestoreTxRequiredSoroban(xdrTx: string, sourceAccount: string): Promise<string | undefined> {
-    const server = new SorobanRpc.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
+    const rpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB);
+    const server = new SorobanRpc.Server(rpcUrl);
     const account = await server.getAccount(sourceAccount);
     const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
     const simulation = await server.simulateTransaction(transaction);
     if (SorobanRpc.Api.isSimulationRestore(simulation)) {
+      const inclusionFee = await getSorobanInclusionFee(rpcUrl);
       return new TransactionBuilder(account, {
-        fee: (+BASE_FEE + +simulation.restorePreamble.minResourceFee).toString(),
+        fee: (inclusionFee + +simulation.restorePreamble.minResourceFee).toString(),
         networkPassphrase: this.params.sorobanNetworkPassphrase,
       })
         .setSorobanData(simulation.restorePreamble.transactionData.build())

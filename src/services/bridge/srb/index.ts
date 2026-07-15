@@ -9,6 +9,7 @@ import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge-contract";
+import { getSorobanInclusionFee } from "../../models/srb/utils";
 import { ChainBridgeService, SendParams, SwapParams, TxSendParamsSrb, TxSwapParamsSol } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
@@ -48,33 +49,40 @@ export class SrbBridgeService extends ChainBridgeService {
       totalFee = Big(totalFee).plus(extraGas).toFixed();
     }
     const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
+    const inclusionFee = await getSorobanInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     let tx;
     switch (gasFeePaymentMethod) {
       case FeePaymentMethod.WITH_NATIVE_CURRENCY:
-        tx = await contract.swap_and_bridge({
-          sender: fromAccountAddress,
-          token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
-          amount: BigInt(amount),
-          recipient: Buffer.from(toAccountAddress),
-          destination_chain_id: +toChainId,
-          receive_token: Buffer.from(toTokenAddress),
-          nonce: getNonceBigInt(),
-          gas_amount: BigInt(totalFee),
-          fee_token_amount: BigInt(0),
-        });
+        tx = await contract.swap_and_bridge(
+          {
+            sender: fromAccountAddress,
+            token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
+            amount: BigInt(amount),
+            recipient: Buffer.from(toAccountAddress),
+            destination_chain_id: +toChainId,
+            receive_token: Buffer.from(toTokenAddress),
+            nonce: getNonceBigInt(),
+            gas_amount: BigInt(totalFee),
+            fee_token_amount: BigInt(0),
+          },
+          { fee: inclusionFee }
+        );
         break;
       case FeePaymentMethod.WITH_STABLECOIN:
-        tx = await contract.swap_and_bridge({
-          sender: fromAccountAddress,
-          token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
-          amount: BigInt(amount),
-          recipient: Buffer.from(toAccountAddress),
-          destination_chain_id: +toChainId,
-          receive_token: Buffer.from(toTokenAddress),
-          nonce: getNonceBigInt(),
-          gas_amount: BigInt(0),
-          fee_token_amount: BigInt(totalFee),
-        });
+        tx = await contract.swap_and_bridge(
+          {
+            sender: fromAccountAddress,
+            token: Address.contract(Buffer.from(fromTokenAddress)).toString(),
+            amount: BigInt(amount),
+            recipient: Buffer.from(toAccountAddress),
+            destination_chain_id: +toChainId,
+            receive_token: Buffer.from(toTokenAddress),
+            nonce: getNonceBigInt(),
+            gas_amount: BigInt(0),
+            fee_token_amount: BigInt(totalFee),
+          },
+          { fee: inclusionFee }
+        );
         break;
       case FeePaymentMethod.WITH_ABR:
         throw new SdkError("SRB bridge does not support ABR payment method");
@@ -102,15 +110,19 @@ export class SrbBridgeService extends ChainBridgeService {
       minimumReceiveAmount,
     } = params;
     const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
+    const inclusionFee = await getSorobanInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
     return (
-      await contract.swap({
-        sender: fromAccountAddress,
-        amount: BigInt(amount),
-        token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
-        receive_token: Buffer.from(toTokenAddress),
-        recipient: toAccountAddress,
-        receive_amount_min: BigInt(minimumReceiveAmount),
-      })
+      await contract.swap(
+        {
+          sender: fromAccountAddress,
+          amount: BigInt(amount),
+          token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
+          receive_token: Buffer.from(toTokenAddress),
+          recipient: toAccountAddress,
+          receive_amount_min: BigInt(minimumReceiveAmount),
+        },
+        { fee: inclusionFee }
+      )
     ).toXDR();
   }
 
