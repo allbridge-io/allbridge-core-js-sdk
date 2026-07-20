@@ -44,7 +44,6 @@ export class SolanaBridgeService extends ChainBridgeService {
   private jupiterService: JupiterService;
   private bridgeTxService: BridgeTxService;
   private payerWithTokenService: PayerWithTokenService;
-
   constructor(
     public solanaRpcUrl: string,
     public params: SolanaBridgeParams,

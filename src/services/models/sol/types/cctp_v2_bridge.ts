@@ -221,6 +221,213 @@ export type CctpV2Bridge = {
       ]
     },
     {
+      "name": "bridgeWithHook",
+      "discriminator": [
+        242,
+        17,
+        63,
+        37,
+        10,
+        179,
+        169,
+        24
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "messageSentEventData",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lock",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  111,
+                  99,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "messageSentEventData"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenMessengerMinterProgram"
+        },
+        {
+          "name": "messageTransmitterProgram"
+        },
+        {
+          "name": "messageTransmitterAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenMessenger"
+        },
+        {
+          "name": "tokenMinter"
+        },
+        {
+          "name": "localToken",
+          "writable": true
+        },
+        {
+          "name": "remoteTokenMessenger"
+        },
+        {
+          "name": "authorityPda"
+        },
+        {
+          "name": "denylistAccount",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "tokenMessengerMinterProgram"
+            }
+          }
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "bridgeToken",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "gasPrice"
+        },
+        {
+          "name": "thisGasPrice"
+        },
+        {
+          "name": "chainBridge"
+        },
+        {
+          "name": "userToken",
+          "writable": true
+        },
+        {
+          "name": "bridgeAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "bridgeWithHookArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -1209,6 +1416,44 @@ export type CctpV2Bridge = {
       }
     },
     {
+      "name": "bridgeWithHookArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recipient",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destinationChainId",
+            "type": "u8"
+          },
+          {
+            "name": "receiveToken",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "hookData",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
       "name": "chainBridge",
       "type": {
         "kind": "struct",
@@ -1378,6 +1623,15 @@ export type CctpV2Bridge = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "messageId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
           {
             "name": "message",
             "type": "bytes"

@@ -1,2 +1,3 @@
 src/services/models/abi/**
 src/services/models/sol/types/**
+src/services/models/srb/**

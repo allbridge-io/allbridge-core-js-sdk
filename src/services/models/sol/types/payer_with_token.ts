@@ -1908,6 +1908,12 @@ export type PayerWithToken = {
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "hookData",
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }

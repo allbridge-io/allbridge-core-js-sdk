@@ -252,6 +252,39 @@ const artifact = {
         },
         {
           internalType: "bytes32",
+          name: "mintRecipient",
+          type: "bytes32",
+        },
+        {
+          internalType: "uint256",
+          name: "destinationChainId",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "relayerFeeTokenAmount",
+          type: "uint256",
+        },
+        {
+          internalType: "bytes",
+          name: "hookData",
+          type: "bytes",
+        },
+      ],
+      name: "bridgeWithHook",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          internalType: "bytes32",
           name: "recipient",
           type: "bytes32",
         },
@@ -420,6 +453,25 @@ const artifact = {
           internalType: "address",
           name: "",
           type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "chainId",
+          type: "uint256",
+        },
+      ],
+      name: "otherBridges",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "cctpBridgeAddress",
+          type: "bytes32",
         },
       ],
       stateMutability: "view",

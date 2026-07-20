@@ -24,9 +24,11 @@ import CctpBridge from "../../models/abi/CctpBridge";
 import OftBridge from "../../models/abi/OftBridge";
 import PayerWithAbr from "../../models/abi/PayerWithAbr";
 import XReserveBridge from "../../models/abi/XReserveBridge";
+import { encodeCctpHookForStellar } from "../cctp-utils";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
-import { bufferToSize, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { bufferToSize, formatAddress, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { getAbrPayerTarget } from "./abr-payer";
 
 export class EvmBridgeService extends ChainBridgeService {
   chainType: ChainType.EVM = ChainType.EVM;
@@ -200,15 +202,7 @@ export class EvmBridgeService extends ChainBridgeService {
       const abi = sendMethod.encodeABI();
       const withoutSelector = "0x" + abi.slice(10);
 
-      let target: number = messenger;
-      if (params.destinationToken.chainType === ChainType.SOLANA) {
-        if (messenger === Messenger.CCTP) {
-          target = 6;
-        }
-        if (messenger === Messenger.CCTP_V2) {
-          target = 7;
-        }
-      }
+      const target = getAbrPayerTarget(params.destinationToken.chainType, messenger);
       sendMethod = abrPayerContract.methods.transferTokensAndCallTarget(
         params.sourceToken.tokenAddress,
         amount,
@@ -276,6 +270,38 @@ export class EvmBridgeService extends ChainBridgeService {
             toChainId,
             totalFee
           );
+          value = "0";
+          break;
+        }
+        default: {
+          return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+        }
+      }
+    } else if (params.destinationToken.chainType === ChainType.SRB && params.messenger === Messenger.CCTP_V2) {
+      const destinationCctpV2Address = params.destinationToken.cctpV2Address;
+      if (!destinationCctpV2Address) {
+        throw new SdkError("Destination token must contain 'cctpV2Address' for CCTP V2");
+      }
+      const recipient = formatAddress(destinationCctpV2Address, ChainType.SRB, ChainType.EVM);
+      const destinationCallerValue = await cctpBridgeContract.methods.otherBridges(toChainId).call();
+      const destinationCaller =
+        typeof destinationCallerValue === "string"
+          ? destinationCallerValue
+          : "0x" + Buffer.from(destinationCallerValue).toString("hex");
+      if (destinationCaller.toLowerCase() !== recipient.toLowerCase()) {
+        throw new SdkError(`CCTPv2 destination caller mismatch: expected ${recipient}, received ${destinationCaller}`);
+      }
+      const hookData = "0x" + encodeCctpHookForStellar(params.toAccountAddress).toString("hex");
+
+      switch (gasFeePaymentMethod) {
+        case FeePaymentMethod.WITH_ABR:
+        case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+          sendMethod = cctpBridgeContract.methods.bridgeWithHook(amount, recipient, toChainId, 0, hookData);
+          value = totalFee;
+          break;
+        }
+        case FeePaymentMethod.WITH_STABLECOIN: {
+          sendMethod = cctpBridgeContract.methods.bridgeWithHook(amount, recipient, toChainId, totalFee, hookData);
           value = "0";
           break;
         }

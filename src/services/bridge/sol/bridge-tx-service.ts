@@ -34,6 +34,7 @@ import {
 } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
 import { addUnitLimitAndUnitPriceToTx } from "../../utils/sol/compute-budget";
+import { encodeCctpHookForStellar } from "../cctp-utils";
 import { SendParams, TxSwapParamsSol } from "../models";
 import { getNonce, prepareTxSwapParams } from "../utils";
 import { convertToVersionedTransaction, SolTxSendParams } from "./utils";
@@ -77,6 +78,7 @@ interface SwapAndBridgeSolDataCctpData<IDL extends Idl> {
   amount: BN;
   recipient: number[];
   receiveToken: number[];
+  hookData?: Buffer;
   userToken: PublicKey;
   bridgeAuthority: PublicKey;
   bridgeTokenAccount: PublicKey;
@@ -233,7 +235,7 @@ export class BridgeTxService {
         break;
       }
       case Messenger.CCTP_V2: {
-        const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpV2Data(solTxSendParams);
+        const swapAndBridgeSolData = await this.prepareSwapAndBridgeCctpV2Data(params, solTxSendParams);
         const { transaction, messageSentEventDataKeypair } = await this.buildSwapAndBridgeCctpV2Transaction(
           params.destinationToken.chainSymbol,
           swapAndBridgeSolData
@@ -709,6 +711,7 @@ export class BridgeTxService {
   }
 
   private async prepareSwapAndBridgeCctpV2Data(
+    params: SendParams,
     txSendParams: SolTxSendParams
   ): Promise<SwapAndBridgeSolDataCctpData<CctpV2BridgeType>> {
     const {
@@ -729,8 +732,6 @@ export class BridgeTxService {
 
     const account = fromAccountAddress;
     const receiveTokenAddress = toTokenAddress;
-    const receiverInBuffer32 = toAccountAddress;
-
     const provider = buildAnchorProvider(this.solanaRpcUrl, account);
     const cctpBridge: Program<CctpV2BridgeType> = new Program<CctpV2BridgeType>(
       { ...cctpV2BridgeIdl, address: cctpV2BridgeAddress },
@@ -741,13 +742,27 @@ export class BridgeTxService {
     const userAccount = new PublicKey(account);
 
     const configAccountInfo = await cctpBridge.account.config.fetch(cctpBridgeConfigAccount);
+    let recipient;
+    let hookData;
+    if (params.destinationToken.chainType === ChainType.SRB) {
+      const destinationCctpV2Address = params.destinationToken.cctpV2Address;
+      if (!destinationCctpV2Address) {
+        throw new CCTPDoesNotSupportedError("The route does not support CCTPv2 protocol");
+      }
+      recipient = Array.from(new PublicKey(destinationCctpV2Address).toBytes());
+      hookData = encodeCctpHookForStellar(params.toAccountAddress);
+    } else {
+      recipient = Array.from(toAccountAddress);
+      hookData = undefined;
+    }
 
     const swapAndBridgeData = {} as SwapAndBridgeSolDataCctpData<CctpV2BridgeType>;
 
     swapAndBridgeData.cctpBridge = cctpBridge;
     swapAndBridgeData.amount = new BN(amount);
-    swapAndBridgeData.recipient = Array.from(receiverInBuffer32);
+    swapAndBridgeData.recipient = recipient;
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
+    swapAndBridgeData.hookData = hookData;
     swapAndBridgeData.userToken = getAssociatedAccount(userAccount, mint);
     swapAndBridgeData.chainBridgeAccount = await getChainBridgeAccount(toChainId, cctpBridge.programId);
     swapAndBridgeData.userAccount = userAccount;
@@ -779,6 +794,7 @@ export class BridgeTxService {
       destinationChainId,
       extraGasInstruction,
       gasPrice,
+      hookData,
       mint,
       provider,
       receiveToken,
@@ -812,13 +828,12 @@ export class BridgeTxService {
 
     const messageSentEventDataKeypair = Keypair.generate();
 
-    const tx = await program.methods
-      .bridge({
-        amount,
-        destinationChainId,
-        recipient,
-        receiveToken,
-      })
+    const bridgeArgs = { amount, destinationChainId, recipient, receiveToken };
+    const method = hookData
+      ? program.methods.bridgeWithHook({ ...bridgeArgs, hookData })
+      : program.methods.bridge(bridgeArgs);
+
+    const tx = await method
       .accounts({
         mint: mint,
         user: userAccount,

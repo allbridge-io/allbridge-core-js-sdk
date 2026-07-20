@@ -1902,6 +1902,12 @@
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "hook_data",
+            "type": {
+              "option": "bytes"
+            }
           }
         ]
       }

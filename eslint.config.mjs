@@ -18,7 +18,12 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ["scripts/*", "**/esbuild-hook.js", "src/services/models/sui/*"],
+    ignores: [
+      "scripts/*",
+      "**/esbuild-hook.js",
+      "src/services/models/sui/*",
+      "src/services/models/srb/*",
+    ],
   },
   ...fixupConfigRules(
     compat.extends(
