@@ -143,6 +143,7 @@ export class StxBridgeService extends ChainBridgeService {
     return transaction.serialize();
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawStxTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
     const amount = BigInt(txSwapParams.amount);

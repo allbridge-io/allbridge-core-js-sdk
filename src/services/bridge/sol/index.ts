@@ -13,6 +13,7 @@ import { PayerWithTokenService } from "./payer-with-token-service";
 import { amendJupiterWithSdkTx, SolTxSendParams } from "./utils";
 
 export interface SolanaBridgeParams {
+  /** @deprecated Do not use. */
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   cctpParams: CctpParams;
@@ -56,6 +57,7 @@ export class SolanaBridgeService extends ChainBridgeService {
     this.payerWithTokenService = new PayerWithTokenService(solanaRpcUrl, params, api);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     return this.bridgeTxService.buildRawTransactionSwap(params);
   }

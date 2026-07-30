@@ -23,10 +23,8 @@ export interface ApproveParams {
 
   /**
    * The Messengers for different routes to approve.
-   * Optional.
-   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
    */
-  messenger?: Messenger;
+  messenger: Messenger;
 
   gasFeePaymentMethod?: FeePaymentMethod;
 }
@@ -82,6 +80,7 @@ export interface BaseSendParams {
 
 /**
  * Required params to handle swap transfer (different tokens on the same chain)
+ * @deprecated Do not use.
  */
 export interface SwapParams extends BaseSendParams {
   /**
@@ -158,10 +157,8 @@ export interface GetAllowanceParams {
   gasFeePaymentMethod?: FeePaymentMethod;
   /**
    * The Messengers for different routes.
-   * Optional.
-   * The {@link Messenger.ALLBRIDGE}, {@link Messenger.WORMHOLE} by default.
    */
-  messenger?: Messenger;
+  messenger: Messenger;
 }
 
 export type GetAllowanceParamsDto = GetAllowanceParams;
@@ -176,12 +173,20 @@ export interface CheckAllowanceParams extends GetAllowanceParams {
 /**
  * @internal
  */
+/** @deprecated Do not use. */
 export type TxSwapParamsEvm = TxSwapParamsTyped<string>;
+/** @deprecated Do not use. */
 export type TxSwapParamsSui = TxSwapParamsTyped<string>;
+/** @deprecated Do not use. */
 export type TxSwapParamsTrx = TxSwapParamsTyped<Buffer>;
+/** @deprecated Do not use. */
 export type TxSwapParamsSol = TxSwapParamsTyped<number[]>;
+/** @deprecated Do not use. */
 export type TxSwapParamsSrb = TxSwapParamsTyped<number[]>;
 
+/**
+ * @deprecated Do not use.
+ */
 export interface TxSwapParamsTyped<T> {
   amount: string;
   contractAddress: string;
@@ -192,6 +197,9 @@ export interface TxSwapParamsTyped<T> {
   minimumReceiveAmount: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol | TxSwapParamsSrb | TxSwapParamsSui;
 
 /**

@@ -38,6 +38,9 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
   }, {});
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
@@ -158,6 +161,9 @@ const dtoKeyToMessenger: Record<AbrPayerAvailabilityKeyDTO, Messenger> = Object.
   })
 ) as Record<AbrPayerAvailabilityKeyDTO, Messenger>;
 
+/**
+ * @deprecated Do not use.
+ */
 export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   const dividerPosition = poolKey.indexOf("_");
   return {
@@ -166,10 +172,16 @@ export function mapPoolKeyToPoolKeyObject(poolKey: string): PoolKeyObject {
   };
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function mapPoolKeyObjectToPoolKey(poolKeyObject: PoolKeyObject): string {
   return poolKeyObject.chainSymbol + "_" + poolKeyObject.poolAddress;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetailsMap): PoolKeyObject[] {
   const result = [];
   for (const [chainSymbolValue, chainDetails] of Object.entries(chainDetailsMap)) {
@@ -184,6 +196,9 @@ export function mapChainDetailsMapToPoolKeyObjects(chainDetailsMap: ChainDetails
   return result;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function mapPoolInfoResponseToPoolInfoMap(responseBody: PoolInfoResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, poolInfoByAddress] of Object.entries(responseBody)) {

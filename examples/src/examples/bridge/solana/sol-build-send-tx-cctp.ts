@@ -29,14 +29,14 @@ const exampleCCTP = async () => {
   const destinationChain = chains[ChainSymbol.POL];
   const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  // initiate transfer using Messenger.CCTP_V2
+  // initiate transfer using Messenger.CCTP
   const transaction = (await sdk.bridge.rawTxBuilder.send({
     amount: "1.01",
     fromAccountAddress: fromAddress,
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.CCTP_V2,
+    messenger: Messenger.CCTP,
     //Optional add solana fee for a faster and more convincing transaction
     txFeeParams: {
       solana: SolanaAutoTxFee, // look SolanaTxFee for details

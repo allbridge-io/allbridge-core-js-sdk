@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/unified-signatures -- overloads intentionally expose route-specific deprecation metadata */
 import { BigSource } from "big.js";
 import { AdditionalBasicChainProperties } from "./chains/models";
 import { mainnet } from "./configs";
 import {
+  ActiveMessenger,
   AmountFormat,
   AmountFormatted,
   AmountsAndGasFeeOptions,
@@ -14,6 +16,7 @@ import {
   GetNativeTokenBalanceParams,
   GetTokenBalanceParams,
   LiquidityPoolService,
+  LegacyMessenger,
   Messenger,
   PendingStatusInfoResponse,
   PoolInfo,
@@ -63,6 +66,9 @@ export interface AllbridgeCoreSdkOptions {
    * {@link https://station.jup.ag/docs/apis/swap-api#using-maxaccounts}
    */
   jupiterMaxAccounts?: number;
+  /**
+   * @deprecated Do not use.
+   */
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;
@@ -70,6 +76,7 @@ export interface AllbridgeCoreSdkOptions {
    * Optional. Will be used in methods</br>
    * {@link LiquidityPoolService.getPoolInfoFromChain} and {@link LiquidityPoolService.getAmountToBeWithdrawn}</br>
    * to fetch information from the blockchain with fewer HTTP requests using JSON-RPC API
+   * @deprecated Do not use.
    */
   tronJsonRpc?: string;
   cctpParams: CctpParams;
@@ -77,6 +84,7 @@ export interface AllbridgeCoreSdkOptions {
    * The number of seconds that pool information taken from the chain will be cached.
    *
    * @type {number}
+   * @deprecated Do not use.
    */
   cachePoolInfoChainSec: number;
 
@@ -122,6 +130,9 @@ export class AllbridgeCoreSdk {
   readonly params: AllbridgeCoreSdkOptions;
 
   bridge: BridgeService;
+  /**
+   * @deprecated Do not use.
+   */
   pool: LiquidityPoolService;
   yield: YieldService;
   utils: Utils;
@@ -157,6 +168,10 @@ export class AllbridgeCoreSdk {
    *               Can be either 'swap' for send or 'pool' for liquidity pools setup.
    *               Defaults to 'swap'.
    */
+  /** @deprecated Do not use. */
+  chainDetailsMap(type: "pool"): Promise<ChainDetailsMap>;
+  chainDetailsMap(type?: "swap"): Promise<ChainDetailsMap>;
+  chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap>;
   async chainDetailsMap(type: "swap" | "pool" = "swap"): Promise<ChainDetailsMap> {
     return this.service.chainDetailsMap(type);
   }
@@ -169,6 +184,10 @@ export class AllbridgeCoreSdk {
    *               Defaults to 'swap'.
    * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
    */
+  /** @deprecated Do not use. */
+  tokens(type: "pool"): Promise<TokenWithChainDetails[]>;
+  tokens(type?: "swap"): Promise<TokenWithChainDetails[]>;
+  tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokens(type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
     return this.service.tokens(type);
   }
@@ -180,6 +199,10 @@ export class AllbridgeCoreSdk {
    *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
    *               Defaults to 'swap'.
    */
+  /** @deprecated Do not use. */
+  tokensByChain(chainSymbol: string, type: "pool"): Promise<TokenWithChainDetails[]>;
+  tokensByChain(chainSymbol: string, type?: "swap"): Promise<TokenWithChainDetails[]>;
+  tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokensByChain(chainSymbol: string, type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
     return this.service.tokensByChain(chainSymbol, type);
   }
@@ -219,6 +242,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * Returns information about pending transactions for the same destination chain and the amount of tokens can be received as a result of transfer considering pending transactions.
+   * @deprecated Do not use.
    * @param amount the amount of tokens that will be sent
    * @param amountFormat amount format
    * @param sourceToken selected token transfer from
@@ -344,6 +368,19 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger
    */
+  /** @deprecated Do not use. */
+  getAmountToBeReceived(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<string>;
+  getAmountToBeReceived(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: ActiveMessenger
+  ): Promise<string>;
   async getAmountToBeReceived(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -351,7 +388,7 @@ export class AllbridgeCoreSdk {
     /**
      * The Messengers for different routes.
      */
-    messenger: Messenger = Messenger.ALLBRIDGE
+    messenger: Messenger
   ): Promise<string> {
     return this.service.getAmountToBeReceived(amountToSendFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -365,6 +402,15 @@ export class AllbridgeCoreSdk {
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
    */
+  /** @deprecated Do not use. */
+  getAmountToBeReceivedFromChain(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string>;
   async getAmountToBeReceivedFromChain(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -372,7 +418,7 @@ export class AllbridgeCoreSdk {
     /**
      * The Messengers for different routes.
      */
-    messenger: Messenger = Messenger.ALLBRIDGE,
+    messenger: Messenger,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
@@ -395,13 +441,22 @@ export class AllbridgeCoreSdk {
    * @param destinationPool destination token pool state
    * @param messenger selected messenger
    */
+  /** @deprecated Do not use. */
   getAmountToBeReceivedFromPools(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT> = Messenger.ALLBRIDGE
+    messenger: Exclude<Messenger, Messenger.OFT>
+  ): string;
+  getAmountToBeReceivedFromPools(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger: Exclude<Messenger, Messenger.OFT>
   ): string {
     switch (messenger) {
       case Messenger.ALLBRIDGE:
@@ -437,6 +492,19 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger
    */
+  /** @deprecated Do not use. */
+  getAmountToSend(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<string>;
+  getAmountToSend(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: ActiveMessenger
+  ): Promise<string>;
   async getAmountToSend(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -444,7 +512,7 @@ export class AllbridgeCoreSdk {
     /**
      * The Messengers for different routes.
      */
-    messenger: Messenger = Messenger.ALLBRIDGE
+    messenger: Messenger
   ): Promise<string> {
     return this.service.getAmountToSend(amountToBeReceivedFloat, sourceChainToken, destinationChainToken, messenger);
   }
@@ -458,6 +526,15 @@ export class AllbridgeCoreSdk {
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
    */
+  /** @deprecated Do not use. */
+  getAmountToSendFromChain(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: Messenger,
+    sourceProvider?: Provider,
+    destinationProvider?: Provider
+  ): Promise<string>;
   async getAmountToSendFromChain(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -465,7 +542,7 @@ export class AllbridgeCoreSdk {
     /**
      * The Messengers for different routes.
      */
-    messenger: Messenger = Messenger.ALLBRIDGE,
+    messenger: Messenger,
     sourceProvider?: Provider,
     destinationProvider?: Provider
   ): Promise<string> {
@@ -488,13 +565,22 @@ export class AllbridgeCoreSdk {
    * @param destinationPool destination token pool state
    * @param messenger selected messenger
    */
+  /** @deprecated Do not use. */
   getAmountToSendFromPools(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT> = Messenger.ALLBRIDGE
+    messenger: Exclude<Messenger, Messenger.OFT>
+  ): string;
+  getAmountToSendFromPools(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    sourcePool: PoolInfo,
+    destinationPool: PoolInfo,
+    messenger: Exclude<Messenger, Messenger.OFT>
   ): string {
     switch (messenger) {
       case Messenger.ALLBRIDGE:
@@ -555,6 +641,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * Gets information about the poolInfo by token
+   * @deprecated Do not use.
    * @param token
    * @returns poolInfo
    */
@@ -567,6 +654,7 @@ export class AllbridgeCoreSdk {
    * Outdated cache leads to calculated amounts being less accurate.
    * The cache is invalidated at regular intervals, but it can be forced to be refreshed by calling this method.+
    *
+   * @deprecated Do not use.
    * @param tokens if present, the corresponding liquidity pools will be updated
    */
   async refreshPoolInfo(tokens?: TokenWithChainDetails | TokenWithChainDetails[]): Promise<void> {
@@ -575,6 +663,7 @@ export class AllbridgeCoreSdk {
 
   /**
    * Convert APR to percentage view
+   * @deprecated Do not use.
    * @param apr
    * @returns aprPercentageView
    */
@@ -586,18 +675,30 @@ export class AllbridgeCoreSdk {
    * Get possible limit of extra gas amount.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger selected Messenger, Allbridge by default
+   * @param messenger selected Messenger
    * @returns {@link ExtraGasMaxLimitResponse}
    */
+  /** @deprecated Do not use. */
+  getExtraGasMaxLimits(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<ExtraGasMaxLimitResponse>;
+  getExtraGasMaxLimits(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: ActiveMessenger
+  ): Promise<ExtraGasMaxLimitResponse>;
   async getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger = Messenger.ALLBRIDGE
+    messenger: Messenger
   ): Promise<ExtraGasMaxLimitResponse> {
     return this.service.getExtraGasMaxLimits(sourceChainToken, destinationChainToken, messenger);
   }
 
   /**
+   * @deprecated Do not use.
    * @param amount - amount
    * @param amountFormat - AmountFormat
    * @param sourceToken - selected token on the source chain
@@ -612,6 +713,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * @deprecated Do not use.
    * @param vUsdAmount - amount of vUsd, int format
    * @param destToken selected token on the destination chain
    * @return amount of destToken
@@ -650,6 +752,7 @@ export class AllbridgeCoreSdk {
 
   /**
    *  Show amount changes (fee and amount adjustment) during send through pools on source and destination chains
+   * @deprecated Do not use.
    */
   async getSendAmountDetails(
     amount: string,

@@ -12,6 +12,8 @@ export { BridgeService } from "../services/bridge/index";
 export { CctpParams, CctpDomains } from "../services/bridge/sol";
 export { LiquidityPoolService } from "../services/liquidity-pool/index";
 export {
+  ActiveMessenger,
+  LegacyMessenger,
   Messenger,
   TransferStatusResponse,
   BridgeTransaction,
@@ -207,6 +209,7 @@ export interface ExtraGasMaxLimitResponse {
 
 /**
  * Provide pending status information
+ * @deprecated Do not use.
  */
 export interface PendingStatusInfoResponse {
   /**

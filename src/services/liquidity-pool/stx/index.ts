@@ -25,6 +25,9 @@ import {
   UserBalanceInfo,
 } from "../models";
 
+/**
+ * @deprecated Do not use.
+ */
 export class StxPoolService extends ChainPoolService {
   chainType: ChainType.STX = ChainType.STX;
 

@@ -58,7 +58,7 @@ export function getStxNetwork(nodeUrl: string): StacksNetwork {
     : { ...STACKS_MAINNET, client: { baseUrl: nodeUrl } };
 }
 
-async function waitStacksTx(nodeUrl: string, txId: string, timeout: number = 20000): Promise<string> {
+async function waitStacksTx(nodeUrl: string, txId: string, timeout = 20000): Promise<string> {
   console.log("Confirming tx...");
   const startTime = Date.now();
   let lastErrorMessage = "";

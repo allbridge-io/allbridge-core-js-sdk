@@ -204,18 +204,23 @@ export function getNonceBigInt(): bigint {
 }
 
 // 1. OVERLOADS
+/** @deprecated Do not use. */
 export function prepareTxSwapParams(
   bridgeChainType: ChainType.EVM | ChainType.SUI,
   params: SwapParams
 ): TxSwapParamsEvm | TxSwapParamsSui;
+/** @deprecated Do not use. */
 export function prepareTxSwapParams(bridgeChainType: ChainType.TRX, params: SwapParams): TxSwapParamsTrx;
+/** @deprecated Do not use. */
 export function prepareTxSwapParams(
   bridgeChainType: ChainType.SOLANA | ChainType.SRB,
   params: SwapParams
 ): TxSwapParamsSol | TxSwapParamsSrb;
+/** @deprecated Do not use. */
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams;
 
 // 2. COMMON Realization
+/** @deprecated Do not use. */
 export function prepareTxSwapParams(bridgeChainType: ChainType, params: SwapParams): TxSwapParams {
   const txSwapParams = {} as TxSwapParams;
   const sourceToken = params.sourceToken;

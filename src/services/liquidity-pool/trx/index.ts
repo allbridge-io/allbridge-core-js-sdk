@@ -18,6 +18,9 @@ import {
   UserBalanceInfo,
 } from "../models";
 
+/**
+ * @deprecated Do not use.
+ */
 export class TronPoolService extends ChainPoolService {
   chainType: ChainType.TRX = ChainType.TRX;
   private P = 52;

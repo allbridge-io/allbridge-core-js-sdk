@@ -24,16 +24,18 @@ const main = async () => {
   const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT"));
 
   const destinationChain = chains[ChainSymbol.ETH];
-  const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
+  const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT"));
 
   const amount = "17.17";
+  const messenger = Messenger.OFT;
 
   //check if sending tokens already approved
-  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amount }))) {
+  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount, messenger }))) {
     // authorize the bridge to transfer tokens from sender's address
     const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
+      messenger,
     })) as RawTronTransaction;
     const approveReceipt = await sendTrxRawTransaction(rawTransactionApprove);
     console.log("Approve transaction receipt", JSON.stringify(approveReceipt, null, 2));
@@ -46,7 +48,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger,
   })) as RawTronTransaction;
 
   const transferReceipt = await sendTrxRawTransaction(rawTransactionTransfer);

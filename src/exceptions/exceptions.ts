@@ -25,6 +25,9 @@ export class AmountNotEnoughError extends SdkRootError {
   }
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class InsufficientPoolLiquidityError extends SdkRootError {
   constructor(message?: string) {
     super(ErrorCode.INSUFFICIENT_POOL_LIQUIDITY_ERROR, message);
@@ -125,6 +128,7 @@ export enum ErrorCode {
   SDK_ERROR = "SdkError",
   INVALID_AMOUNT_ERROR = "InvalidAmountError",
   AMOUNT_NOT_ENOUGH_ERROR = "AmountNotEnoughError",
+  /** @deprecated Do not use. */
   INSUFFICIENT_POOL_LIQUIDITY_ERROR = "InsufficientPoolLiquidityError",
   JUPITER_ERROR = "JupiterError",
   INVALID_GAS_FEE_PAYMENT_OPTION_ERROR = "InvalidGasFeePaymentOptionError",

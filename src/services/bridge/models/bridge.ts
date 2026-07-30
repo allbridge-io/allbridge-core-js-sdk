@@ -14,5 +14,6 @@ export abstract class ChainBridgeService {
    */
   abstract send(params: SendParams): Promise<TransactionResponse>;
   abstract buildRawTransactionSend(params: SendParams): Promise<RawTransaction>;
+  /** @deprecated Do not use. */
   abstract buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction>;
 }

@@ -8,6 +8,9 @@ export function assertNever(x: never, message?: string): never {
   throw new Error(message ?? `Unexpected value: ${x}`);
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export async function getPoolInfoByToken(
   api: AllbridgeCoreClientPoolsExt,
   sourceChainToken: TokenWithChainDetails

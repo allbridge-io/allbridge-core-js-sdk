@@ -1,4 +1,5 @@
 import { Web3 } from "web3";
+import { Messenger } from "../../../client/core-api/core-api.model";
 import { ApproveParams } from "../../../services/bridge/models";
 import {
   DefaultRawBridgeTransactionBuilder,
@@ -34,6 +35,7 @@ describe("RawTransactionBuilder", () => {
     const approveData: ApproveParams = {
       token: tokenInfoWithChainDetailsGrl[0] as unknown as TokenWithChainDetails,
       owner: "owner",
+      messenger: Messenger.ALLBRIDGE,
     };
     const web3 = new Web3("http://localhost/");
     const actual = await rawTransactionBuilder.approve(web3, approveData);

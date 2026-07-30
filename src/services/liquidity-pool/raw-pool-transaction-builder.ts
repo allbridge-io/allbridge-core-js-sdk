@@ -9,16 +9,21 @@ import { TokenService } from "../token";
 import { ApproveParams, LiquidityPoolsParams, LiquidityPoolsParamsWithAmount } from "./models";
 import { getChainPoolService } from "./index";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface RawPoolTransactionBuilder {
   /**
    * Creates a Raw Transaction for approving tokens usage by the bridge
    * @param provider - will be used to access the network
    * @param approveData
+   * @deprecated Do not use.
    */
   approve(provider: Provider, approveData: ApproveParams): Promise<RawTransaction>;
   /**
    * Creates a Raw Transaction for approving tokens usage by the bridge
    * @param approveData
+   * @deprecated Do not use.
    */
   approve(approveData: ApproveParams): Promise<RawTransaction>;
 
@@ -26,6 +31,7 @@ export interface RawPoolTransactionBuilder {
    * Creates a Raw Transaction for depositing tokens to Liquidity pools
    * @param params
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   deposit(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction>;
 
@@ -33,6 +39,7 @@ export interface RawPoolTransactionBuilder {
    * Creates a Raw Transaction for withdrawing tokens from Liquidity pools
    * @param params
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   withdraw(params: LiquidityPoolsParamsWithAmount, provider?: Provider): Promise<RawTransaction>;
 
@@ -40,10 +47,14 @@ export interface RawPoolTransactionBuilder {
    * Creates a Raw Transaction for claiming rewards from Liquidity pools
    * @param params
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   claimRewards(params: LiquidityPoolsParams, provider?: Provider): Promise<RawTransaction>;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class DefaultRawPoolTransactionBuilder implements RawPoolTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,

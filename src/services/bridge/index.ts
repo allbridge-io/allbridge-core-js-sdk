@@ -1,12 +1,12 @@
+/* eslint-disable @typescript-eslint/unified-signatures -- overloads intentionally expose route-specific deprecation metadata */
 import { AlgorandClient } from "@algorandfoundation/algokit-utils";
 import { Algodv2 } from "algosdk";
 import { TronWeb } from "tronweb";
 import { Web3 } from "web3";
 import { NodeRpcUrlsConfig } from "..";
 import { Chains } from "../../chains";
-import { Messenger } from "../../client/core-api/core-api.model";
+import { ActiveMessenger, LegacyMessenger, Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
-import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError, SdkError } from "../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3, FeePaymentMethod } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
@@ -17,6 +17,7 @@ import { EvmBridgeService } from "./evm";
 import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
+import { resolveSpender } from "./spender";
 import { SrbBridgeService } from "./srb";
 import { StxBridgeService } from "./stx";
 import { SuiBridgeService } from "./sui";
@@ -96,7 +97,7 @@ export class DefaultBridgeService implements BridgeService {
     } else {
       params = a as GetAllowanceParams;
     }
-    const spender = getSpender(params.token, params.messenger, params.gasFeePaymentMethod);
+    const spender = resolveSpender(params.token, params.messenger, params.gasFeePaymentMethod);
     return await this.tokenService.getAllowance({ ...params, spender }, provider);
   }
 
@@ -109,12 +110,12 @@ export class DefaultBridgeService implements BridgeService {
     } else {
       params = a as CheckAllowanceParams;
     }
-    const spender = getSpender(params.token, params.messenger, params.gasFeePaymentMethod);
+    const spender = resolveSpender(params.token, params.messenger, params.gasFeePaymentMethod);
     return this.tokenService.checkAllowance({ ...params, spender }, provider);
   }
 
   async approve(provider: Provider, approveData: ApproveParams): Promise<TransactionResponse> {
-    const spender = getSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
+    const spender = resolveSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
     return this.tokenService.approve(provider, { ...approveData, spender });
   }
 
@@ -131,46 +132,23 @@ export class DefaultBridgeService implements BridgeService {
   }
 }
 
+/** @deprecated Do not use. */
 export function getSpender(
   token: TokenWithChainDetails,
-  messenger: Messenger = Messenger.ALLBRIDGE,
+  messenger: LegacyMessenger,
+  gasFeePaymentMethod?: FeePaymentMethod
+): string;
+export function getSpender(
+  token: TokenWithChainDetails,
+  messenger: ActiveMessenger,
+  gasFeePaymentMethod?: FeePaymentMethod
+): string;
+export function getSpender(
+  token: TokenWithChainDetails,
+  messenger: Messenger,
   gasFeePaymentMethod: FeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY
 ): string {
-  if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
-    if (token.abrPayer) {
-      return token.abrPayer.payerAddress;
-    }
-    throw new SdkError("Token must contain 'abrPayer' for ABR payment method");
-  }
-  switch (messenger) {
-    case Messenger.CCTP:
-      if (token.cctpAddress) {
-        return token.cctpAddress;
-      } else {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP protocol");
-      }
-    case Messenger.CCTP_V2:
-      if (token.cctpV2Address) {
-        return token.cctpV2Address;
-      } else {
-        throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
-      }
-    case Messenger.OFT:
-      if (token.oftBridgeAddress) {
-        return token.oftBridgeAddress;
-      } else {
-        throw new OFTDoesNotSupportedError("Such route does not support OFT protocol");
-      }
-    case Messenger.X_RESERVE:
-      if (token.xReserve?.bridgeAddress) {
-        return token.xReserve.bridgeAddress;
-      } else {
-        throw new SdkError("Such route does not support xReserve protocol");
-      }
-    case Messenger.ALLBRIDGE:
-    case Messenger.WORMHOLE:
-      return token.bridgeAddress;
-  }
+  return resolveSpender(token, messenger, gasFeePaymentMethod);
 }
 
 export function getChainBridgeService(

@@ -94,11 +94,13 @@ export class SrbBridgeService extends ChainBridgeService {
     return tx.toXDR();
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwapFromParams(params: TxSwapParamsSol): Promise<RawTransaction> {
     const {
       amount,

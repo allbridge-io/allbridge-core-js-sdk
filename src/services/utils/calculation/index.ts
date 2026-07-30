@@ -2,6 +2,9 @@ import { Big } from "big.js";
 import { convertFloatAmountToInt, getD } from "../../../utils/calculation";
 import { SYSTEM_PRECISION } from "../../../utils/calculation/constants";
 
+/**
+ * @deprecated Do not use.
+ */
 export function depositAmountToVUsd(
   amount: string,
   aValue: string,
@@ -30,6 +33,9 @@ export function depositAmountToVUsd(
   return newD.minus(oldD).toFixed();
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function vUsdToWithdrawalAmount(lpAmount: string): string {
   const lpAmountSP = convertFloatAmountToInt(lpAmount, SYSTEM_PRECISION);
   return Big(lpAmountSP).round().toFixed();

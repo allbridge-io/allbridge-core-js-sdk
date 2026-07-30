@@ -51,6 +51,7 @@ export class SuiBridgeService extends ChainBridgeService {
     throw new SdkError("Method send not implemented.");
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawSuiTransaction> {
     const suiAddresses = params.sourceToken.suiAddresses;
     if (!suiAddresses) {

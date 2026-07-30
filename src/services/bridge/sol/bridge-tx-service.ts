@@ -91,6 +91,7 @@ interface SwapAndBridgeSolDataCctpData<IDL extends Idl> {
 }
 
 export interface SolanaBridgeParams {
+  /** @deprecated Do not use. */
   wormholeMessengerProgramId: string;
   solanaLookUpTable: string;
   cctpParams: CctpParams;
@@ -107,6 +108,7 @@ export class BridgeTxService {
     public api: AllbridgeCoreClient
   ) {}
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
     return await this.buildSwapTransaction(

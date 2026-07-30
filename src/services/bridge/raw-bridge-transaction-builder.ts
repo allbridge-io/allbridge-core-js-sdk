@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unified-signatures -- overloads intentionally expose operation-specific deprecation metadata */
 import { NodeRpcUrlsConfig } from "..";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions } from "../../index";
@@ -5,8 +6,9 @@ import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils"
 import { Provider, RawTransaction } from "../models";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
+import { resolveSpender } from "./spender";
 import { isSendParams } from "./utils";
-import { getChainBridgeService, getSpender } from "./index";
+import { getChainBridgeService } from "./index";
 
 export interface RawBridgeTransactionBuilder {
   /**
@@ -25,6 +27,9 @@ export interface RawBridgeTransactionBuilder {
    * @param params
    * @param provider - will be used to access the network
    */
+  send(params: SendParams, provider?: Provider): Promise<RawTransaction>;
+  /** @deprecated Do not use. */
+  send(params: SwapParams, provider?: Provider): Promise<RawTransaction>;
   send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction>;
 }
 
@@ -45,7 +50,7 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     } else {
       approveData = a as ApproveParams;
     }
-    const spender = getSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
+    const spender = resolveSpender(approveData.token, approveData.messenger, approveData.gasFeePaymentMethod);
     return this.tokenService.buildRawTransactionApprove(
       {
         ...approveData,
@@ -55,6 +60,10 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     );
   }
 
+  send(params: SendParams, provider?: Provider): Promise<RawTransaction>;
+  /** @deprecated Do not use. */
+  send(params: SwapParams, provider?: Provider): Promise<RawTransaction>;
+  send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction>;
   async send(params: SwapParams | SendParams, provider?: Provider): Promise<RawTransaction> {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);

@@ -6,13 +6,14 @@ async function runExampleCalculateAmounts() {
 
   const tokens = await sdk.tokens();
   const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
-  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
+  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDC"));
   const amount = "100.5";
   const sourceChainMinUnit = "wei";
+  const messenger = Messenger.CCTP;
 
-  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, Messenger.ALLBRIDGE);
+  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, messenger);
 
-  const amountToBeReceived = await sdk.getAmountToBeReceived(amount, sourceToken, destinationToken);
+  const amountToBeReceived = await sdk.getAmountToBeReceived(amount, sourceToken, destinationToken, messenger);
   console.log(
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amount,
@@ -40,7 +41,7 @@ async function runExampleCalculateAmounts() {
     );
   }
 
-  const amountToSend = await sdk.getAmountToSend(amount, sourceToken, destinationToken);
+  const amountToSend = await sdk.getAmountToSend(amount, sourceToken, destinationToken, messenger);
   console.log(
     "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
     amountToSend,
@@ -69,109 +70,7 @@ async function runExampleCalculateAmounts() {
   }
 }
 
-async function runExampleGetAmountToBeReceivedAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
-
-  const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
-  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
-  const amount = "100.5";
-  const sourceChainMinUnit = "wei";
-
-  const { amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions } = await sdk.getAmountToBeReceivedAndGasFeeOptions(
-    amount,
-    sourceToken,
-    destinationToken,
-    Messenger.ALLBRIDGE
-  );
-  console.log(
-    "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
-    amountToSendFloat,
-    sourceToken.symbol,
-    gasFeeOptions.native.int,
-    sourceChainMinUnit,
-    sourceToken.chainSymbol,
-    amountToBeReceivedFloat,
-    destinationToken.symbol,
-    destinationToken.chainSymbol
-  );
-  if (gasFeeOptions.stablecoin) {
-    // Option to pay with stablecoins is available
-    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
-    console.log(
-      "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
-      amount,
-      sourceToken.symbol,
-      floatGasFeeAmount,
-      sourceToken.symbol,
-      sourceToken.chainSymbol,
-      amountToBeReceivedFloat,
-      destinationToken.symbol,
-      destinationToken.chainSymbol
-    );
-  }
-}
-
-async function runExampleGetAmountToSendAndGasFeeOptions() {
-  const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
-
-  const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
-  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
-  const amount = "100.5";
-  const sourceChainMinUnit = "wei";
-
-  const { amountToSendFloat, amountToBeReceivedFloat, gasFeeOptions } = await sdk.getAmountToSendAndGasFeeOptions(
-    amount,
-    sourceToken,
-    destinationToken,
-    Messenger.ALLBRIDGE
-  );
-  console.log(
-    "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
-    amountToSendFloat,
-    sourceToken.symbol,
-    gasFeeOptions.native.int,
-    sourceChainMinUnit,
-    sourceToken.chainSymbol,
-    amountToBeReceivedFloat,
-    destinationToken.symbol,
-    destinationToken.chainSymbol
-  );
-  if (gasFeeOptions.stablecoin) {
-    // Option to pay with stablecoins is available
-    const floatGasFeeAmount = gasFeeOptions.stablecoin.float;
-    console.log(
-      "Send %d %s and %d %s (gas fee) on %s to receive %d %s on %s",
-      amountToSendFloat,
-      sourceToken.symbol,
-      floatGasFeeAmount,
-      sourceToken.symbol,
-      sourceToken.chainSymbol,
-      amountToBeReceivedFloat,
-      destinationToken.symbol,
-      destinationToken.chainSymbol
-    );
-  }
-}
-
 runExampleCalculateAmounts()
-  .then(() => {
-    console.log("Done");
-  })
-  .catch((e) => {
-    console.error(e);
-  });
-
-runExampleGetAmountToBeReceivedAndGasFeeOptions()
-  .then(() => {
-    console.log("Done");
-  })
-  .catch((e) => {
-    console.error(e);
-  });
-
-runExampleGetAmountToSendAndGasFeeOptions()
   .then(() => {
     console.log("Done");
   })

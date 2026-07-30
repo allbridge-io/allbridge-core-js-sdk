@@ -130,6 +130,7 @@ export class AlgBridgeService extends ChainBridgeService {
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
 

@@ -14,6 +14,9 @@ import {
   UserBalanceInfo,
 } from "../models";
 
+/**
+ * @deprecated Do not use.
+ */
 export class EvmPoolService extends ChainPoolService {
   chainType: ChainType.EVM = ChainType.EVM;
   private P = 52;

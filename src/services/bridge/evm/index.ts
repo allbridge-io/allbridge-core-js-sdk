@@ -44,11 +44,13 @@ export class EvmBridgeService extends ChainBridgeService {
     return this.sendRawTransaction(rawTransaction);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwapFromParams(params: TxSwapParamsEvm): Promise<RawTransaction> {
     const {
       amount,

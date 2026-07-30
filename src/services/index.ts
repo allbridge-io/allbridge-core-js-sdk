@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unified-signatures -- overloads intentionally expose filter-specific deprecation metadata */
 import { Big, BigSource } from "big.js";
 import { Chains } from "../chains";
 import { ApiClientImpl } from "../client/core-api/api-client";
@@ -85,6 +86,7 @@ export class AllbridgeCoreSdkService {
   readonly params: AllbridgeCoreSdkOptions;
 
   bridge: BridgeService;
+  /** @deprecated Do not use. */
   pool: LiquidityPoolService;
   yield: YieldService;
 
@@ -105,14 +107,26 @@ export class AllbridgeCoreSdkService {
     this.params = params;
   }
 
+  /** @deprecated Do not use. */
+  chainDetailsMap(type: "pool"): Promise<ChainDetailsMap>;
+  chainDetailsMap(type: "swap"): Promise<ChainDetailsMap>;
+  chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap>;
   async chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap> {
     return this.api.getChainDetailsMap(type);
   }
 
+  /** @deprecated Do not use. */
+  tokens(type: "pool"): Promise<TokenWithChainDetails[]>;
+  tokens(type: "swap"): Promise<TokenWithChainDetails[]>;
+  tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
     return this.api.tokens(type);
   }
 
+  /** @deprecated Do not use. */
+  tokensByChain(chainSymbol: string, type: "pool"): Promise<TokenWithChainDetails[]>;
+  tokensByChain(chainSymbol: string, type: "swap"): Promise<TokenWithChainDetails[]>;
+  tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]> {
     const map = await this.api.getChainDetailsMap(type);
     const chainDetails = map[chainSymbol];
@@ -139,6 +153,7 @@ export class AllbridgeCoreSdkService {
     });
   }
 
+  /** @deprecated Do not use. */
   async getPendingStatusInfo(
     amount: string,
     amountFormat: AmountFormat,
@@ -224,6 +239,7 @@ export class AllbridgeCoreSdkService {
     return this.tokenService.getNativeTokenBalance(params, provider);
   }
 
+  /** @deprecated Do not use. */
   async calculateFeePercentOnSourceChain(
     amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails
@@ -243,6 +259,7 @@ export class AllbridgeCoreSdkService {
     return getFeePercent(amountInt, vUsdInSourcePrecision);
   }
 
+  /** @deprecated Do not use. */
   async calculateFeePercentOnDestinationChain(
     amountFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -346,7 +363,7 @@ export class AllbridgeCoreSdkService {
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger = Messenger.ALLBRIDGE,
+    messenger: Messenger,
     sourcePool: () => Promise<PoolInfo>,
     destPool: () => Promise<PoolInfo>
   ): Promise<string> {
@@ -376,6 +393,7 @@ export class AllbridgeCoreSdkService {
     }
   }
 
+  /** @deprecated Do not use. */
   getAmountToBeReceivedComputeWithPools(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -535,7 +553,7 @@ export class AllbridgeCoreSdkService {
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
-    messenger: Messenger = Messenger.ALLBRIDGE,
+    messenger: Messenger,
     sourcePool: () => Promise<PoolInfo>,
     destPool: () => Promise<PoolInfo>
   ): Promise<string> {
@@ -565,6 +583,7 @@ export class AllbridgeCoreSdkService {
     }
   }
 
+  /** @deprecated Do not use. */
   getAmountToSendComputeWithPools(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -717,10 +736,12 @@ export class AllbridgeCoreSdkService {
     return sourceChainToken.transferTime?.[destinationChainToken.chainSymbol]?.[messenger] ?? null;
   }
 
+  /** @deprecated Do not use. */
   async getPoolInfoByToken(token: TokenWithChainDetails): Promise<PoolInfo> {
     return await this.api.getPoolInfoByKey({ chainSymbol: token.chainSymbol, poolAddress: token.poolAddress });
   }
 
+  /** @deprecated Do not use. */
   async refreshPoolInfo(tokens?: TokenWithChainDetails | TokenWithChainDetails[]): Promise<void> {
     if (tokens) {
       const tokensArray = tokens instanceof Array ? tokens : [tokens];
@@ -732,6 +753,7 @@ export class AllbridgeCoreSdkService {
     return this.api.refreshPoolInfo();
   }
 
+  /** @deprecated Do not use. */
   aprInPercents(apr: string): string {
     return aprInPercents(apr);
   }
@@ -744,6 +766,7 @@ export class AllbridgeCoreSdkService {
     return await getExtraGasMaxLimits(sourceChainToken, destinationChainToken, messenger, this.api);
   }
 
+  /** @deprecated Do not use. */
   async getVUsdFromAmount(
     amount: string,
     amountFormat: AmountFormat,
@@ -765,6 +788,7 @@ export class AllbridgeCoreSdkService {
     };
   }
 
+  /** @deprecated Do not use. */
   async getAmountFromVUsd(vUsdAmount: string, destToken: TokenWithChainDetails): Promise<AmountFormatted> {
     return this.getAmountFromVUsdFormatted(vUsdAmount, destToken, await getPoolInfoByToken(this.api, destToken));
   }
@@ -785,6 +809,7 @@ export class AllbridgeCoreSdkService {
     };
   }
 
+  /** @deprecated Do not use. */
   async swapAndBridgeFeeCalculation(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
@@ -805,6 +830,7 @@ export class AllbridgeCoreSdkService {
     );
   }
 
+  /** @deprecated Do not use. */
   async swapAndBridgeFeeCalculationReverse(
     amountInTokenPrecision: string,
     sourceToken: TokenWithChainDetails,
@@ -830,6 +856,7 @@ export class AllbridgeCoreSdkService {
     return result;
   }
 
+  /** @deprecated Do not use. */
   async getSendAmountDetails(
     amount: string,
     amountFormat: AmountFormat,

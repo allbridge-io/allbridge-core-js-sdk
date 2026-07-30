@@ -21,12 +21,14 @@ import { AllbridgeCoreClientParams } from "./core-client-base";
 
 export interface TokenInfo {
   chainDetailsMap: ChainDetailsMapWithFlags;
+  /** @deprecated Do not use. */
   poolInfoMap: PoolInfoMap;
 }
 
 export interface ApiClient {
   getTokenInfo(): Promise<TokenInfo>;
 
+  /** @deprecated Do not use. */
   getPendingInfo(): Promise<PendingInfoResponse>;
 
   getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
@@ -35,6 +37,7 @@ export interface ApiClient {
 
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 
+  /** @deprecated Do not use. */
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
@@ -81,6 +84,7 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
+  /** @deprecated Do not use. */
   async getPendingInfo(): Promise<PendingInfoResponse> {
     const { data } = await this.api.get<PendingInfoResponse>("/pending-info");
     return data;
@@ -114,6 +118,7 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
+  /** @deprecated Do not use. */
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     const poolKeys = pools instanceof Array ? pools : [pools];
     const { data } = await this.api.post<PoolInfoResponse>(

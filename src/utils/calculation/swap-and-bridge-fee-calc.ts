@@ -2,28 +2,43 @@ import { Big, BigSource } from "big.js";
 import { PoolInfo, Token } from "../../tokens-info";
 import { fromSystemPrecision, getY, toSystemPrecision } from "./index";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface SwapPoolInfo {
   decimals: number;
   feeShare: string;
   poolInfo: PoolInfo;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface SwapAndBridgeCalculationData {
   swapToVUsdCalcResult: SwapToVUsdCalcResult;
   swapFromVUsdCalcResult: SwapFromVUsdCalcResult;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface SwapToVUsdCalcResult {
   bridgeFeeInTokenPrecision: string;
   amountIncludingCommissionInSystemPrecision: string;
   amountExcludingCommissionInSystemPrecision: string;
 }
+/**
+ * @deprecated Do not use.
+ */
 export interface SwapFromVUsdCalcResult {
   bridgeFeeInTokenPrecision: string;
   amountIncludingCommissionInTokenPrecision: string;
   amountExcludingCommissionInTokenPrecision: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function swapAndBridgeFeeCalculation(
   amountInTokenPrecision: string,
   sourcePoolInfo: SwapPoolInfo,
@@ -42,6 +57,9 @@ export function swapAndBridgeFeeCalculation(
   return { swapToVUsdCalcResult, swapFromVUsdCalcResult };
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function swapAndBridgeFeeCalculationReverse(
   amountInTokenPrecision: string,
   sourcePoolInfo: SwapPoolInfo,

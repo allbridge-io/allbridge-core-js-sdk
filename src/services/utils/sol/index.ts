@@ -13,6 +13,9 @@ export async function getTokenAccountData(account: PublicKey, provider: Provider
   return await getAccount(provider.connection, account);
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export async function getVUsdAmount(
   amount: string,
   bridge: Program<BridgeType>,
@@ -37,6 +40,9 @@ export async function getVUsdAmount(
   return swapToVUsd(amount, { decimals, feeShare }, poolInfo);
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getMessage(args: {
   amount: string;
   recipient: Buffer;
