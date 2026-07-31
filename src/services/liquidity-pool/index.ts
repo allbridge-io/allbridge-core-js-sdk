@@ -143,7 +143,8 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private tokenService: TokenService
   ) {
     this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
-    const ttl = params.cachePoolInfoChainSec > 0 ? params.cachePoolInfoChainSec * 1000 : 20 * 1000;
+    const cachePoolInfoChainSec = params.cachePoolInfoChainSec ?? 20;
+    const ttl = cachePoolInfoChainSec > 0 ? cachePoolInfoChainSec * 1000 : 20 * 1000;
     this.cache = new Cache<PoolInfo>({ defaultTtl: ttl });
   }
 

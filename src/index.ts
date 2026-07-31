@@ -69,7 +69,7 @@ export interface AllbridgeCoreSdkOptions {
   /**
    * @deprecated Do not use.
    */
-  wormholeMessengerProgramId: string;
+  wormholeMessengerProgramId?: string;
   solanaLookUpTable: string;
   sorobanNetworkPassphrase: string;
   /**
@@ -86,7 +86,7 @@ export interface AllbridgeCoreSdkOptions {
    * @type {number}
    * @deprecated Do not use.
    */
-  cachePoolInfoChainSec: number;
+  cachePoolInfoChainSec?: number;
 
   /**
    * @internal

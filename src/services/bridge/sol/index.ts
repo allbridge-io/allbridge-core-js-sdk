@@ -14,7 +14,7 @@ import { amendJupiterWithSdkTx, SolTxSendParams } from "./utils";
 
 export interface SolanaBridgeParams {
   /** @deprecated Do not use. */
-  wormholeMessengerProgramId: string;
+  wormholeMessengerProgramId?: string;
   solanaLookUpTable: string;
   cctpParams: CctpParams;
   jupiterParams: JupiterParams;

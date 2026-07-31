@@ -372,6 +372,9 @@ export class PayerWithTokenService {
     const messengerGasUsageAccount = await getGasUsageAccount(toChainId, wormholeMessengerAccount);
 
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
+    if (!wormholeProgramId) {
+      throw new SdkError("Do not use.");
+    }
     const { wormholeBridgeAccount, wormholeSequenceAccount, wormholeFeeCollectorAccount } =
       this.getWormholeProgramAddresses(wormholeProgramId, bridgeAuthorityAccount);
 

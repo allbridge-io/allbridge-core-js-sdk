@@ -208,4 +208,12 @@ describe("deprecated public API", () => {
       expect(messenger.flags & ts.SymbolFlags.Optional).toBe(0);
     }
   );
+
+  it.each(["wormholeMessengerProgramId", "cachePoolInfoChainSec"])(
+    "AllbridgeCoreSdkOptions.%s is optional",
+    (memberName) => {
+      const member = getMember("AllbridgeCoreSdkOptions", memberName);
+      expect(member.flags & ts.SymbolFlags.Optional).not.toBe(0);
+    }
+  );
 });

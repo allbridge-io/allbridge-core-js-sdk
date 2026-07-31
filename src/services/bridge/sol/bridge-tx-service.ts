@@ -92,7 +92,7 @@ interface SwapAndBridgeSolDataCctpData<IDL extends Idl> {
 
 export interface SolanaBridgeParams {
   /** @deprecated Do not use. */
-  wormholeMessengerProgramId: string;
+  wormholeMessengerProgramId?: string;
   solanaLookUpTable: string;
   cctpParams: CctpParams;
 }
@@ -454,6 +454,9 @@ export class BridgeTxService {
       extraGasInstruction,
     } = swapAndBridgeData;
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
+    if (!wormholeProgramId) {
+      throw new SdkError("Do not use.");
+    }
 
     const [whBridgeAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("Bridge")],
