@@ -221,16 +221,16 @@ export type CctpV2Bridge = {
       ]
     },
     {
-      "name": "bridgeWithHook",
+      "name": "bridgeToStellar",
       "discriminator": [
-        242,
-        17,
-        63,
-        37,
-        10,
-        179,
-        169,
-        24
+        154,
+        94,
+        190,
+        69,
+        118,
+        64,
+        6,
+        134
       ],
       "accounts": [
         {
@@ -421,11 +421,64 @@ export type CctpV2Bridge = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "bridgeWithHookArgs"
+              "name": "bridgeToStellarArgs"
             }
           }
         }
       ]
+    },
+    {
+      "name": "closeLock",
+      "discriminator": [
+        58,
+        254,
+        183,
+        130,
+        151,
+        238,
+        95,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "rentRecipient",
+          "writable": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "lock",
+          "writable": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "initialize",
@@ -1067,6 +1120,57 @@ export type CctpV2Bridge = {
       ]
     },
     {
+      "name": "setStellarChainId",
+      "discriminator": [
+        101,
+        154,
+        227,
+        68,
+        36,
+        7,
+        223,
+        197
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "stellarChainId",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "setTokenMessengerMinter",
       "discriminator": [
         136,
@@ -1378,6 +1482,26 @@ export type CctpV2Bridge = {
       "code": 6000,
       "name": "valueTooHigh",
       "msg": "Value is too high"
+    },
+    {
+      "code": 6001,
+      "name": "amountTooLow",
+      "msg": "Amount is too low"
+    },
+    {
+      "code": 6002,
+      "name": "useBridgeToStellar",
+      "msg": "Use bridge_to_stellar for this destination"
+    },
+    {
+      "code": 6003,
+      "name": "stellarChainIdNotSet",
+      "msg": "Stellar chain ID is not configured"
+    },
+    {
+      "code": 6004,
+      "name": "stellarBridgeNotRegistered",
+      "msg": "Stellar chain bridge address is not registered"
     }
   ],
   "types": [
@@ -1416,32 +1540,10 @@ export type CctpV2Bridge = {
       }
     },
     {
-      "name": "bridgeWithHookArgs",
+      "name": "bridgeToStellarArgs",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "recipient",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "destinationChainId",
-            "type": "u8"
-          },
-          {
-            "name": "receiveToken",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
           {
             "name": "amount",
             "type": "u64"
@@ -1521,6 +1623,10 @@ export type CctpV2Bridge = {
           {
             "name": "minFinalityThreshold",
             "type": "u32"
+          },
+          {
+            "name": "stellarChainId",
+            "type": "u8"
           }
         ]
       }
