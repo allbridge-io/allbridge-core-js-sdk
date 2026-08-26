@@ -36,6 +36,9 @@ interface LPTransactionData {
   preInstructions: TransactionInstruction[];
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class SolanaPoolService extends ChainPoolService {
   chainType: ChainType.SOLANA = ChainType.SOLANA;
   private P = 48;

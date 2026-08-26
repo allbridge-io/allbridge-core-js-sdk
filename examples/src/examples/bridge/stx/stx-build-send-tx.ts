@@ -15,18 +15,16 @@ dotenv.config({ path: ".env" });
 const main = async () => {
   // sender address on STX
   const accountAddress = getEnvVar("STX_ACCOUNT_ADDRESS");
-  const tokenAddress = getEnvVar("STX_TOKEN_ADDRESS");
   const toAddress = getEnvVar("ETH_ACCOUNT_ADDRESS"); // recipient address on destination chain
-  const toToken = getEnvVar("ETH_TOKEN_ADDRESS");
 
   const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, STX: getEnvVar("STX_PROVIDER_URL") });
   const chains = await sdk.chainDetailsMap();
 
   const sourceChain = chains[ChainSymbol.STX];
-  const sourceToken = ensure(sourceChain.tokens.find((t) => t.tokenAddress === tokenAddress));
+  const sourceToken = ensure(sourceChain.tokens.find((token) => token.symbol === "USDCx"));
 
   const destinationChain = chains[ChainSymbol.ETH];
-  const destinationToken = ensure(destinationChain.tokens.find((t) => t.tokenAddress === toToken));
+  const destinationToken = ensure(destinationChain.tokens.find((token) => token.symbol === "USDC"));
 
   const amount = "10";
 
@@ -37,7 +35,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken,
     destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger: Messenger.X_RESERVE,
   })) as RawStxTransaction;
 
   console.log(`Sending ${amount} ${sourceToken.symbol}`);

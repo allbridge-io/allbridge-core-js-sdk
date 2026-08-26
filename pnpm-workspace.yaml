@@ -1,0 +1,13 @@
+allowBuilds:
+  bigint-buffer: true
+  bufferutil: true
+  es5-ext: true
+  esbuild: false
+  keccak: true
+  secp256k1: true
+  unrs-resolver: true
+  utf-8-validate: true
+  web3-bzz: true
+  web3-shh: true
+  web3@1.10.4: true
+  web3@4.16.0: true

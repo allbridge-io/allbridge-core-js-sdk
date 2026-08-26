@@ -16,13 +16,13 @@ const main = async () => {
 
   const halfToken = "0.5";
   // create withdraw raw transaction
-  const rawTransactionDeposit = (await sdk.pool.rawTxBuilder.withdraw({
+  const rawTransactionWithdraw = (await sdk.pool.rawTxBuilder.withdraw({
     amount: halfToken,
     accountAddress: accountAddress,
     token: tokenInfo,
   })) as RawEvmTransaction;
 
-  const txReceipt = await sendEvmRawTransaction(rawTransactionDeposit);
+  const txReceipt = await sendEvmRawTransaction(rawTransactionWithdraw);
   console.log("Token withdraw:", txReceipt.transactionHash);
 };
 

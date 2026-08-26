@@ -119,13 +119,23 @@ describe("SDK", () => {
     });
 
     test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToBeReceived(
+        amountToSend,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToSend(
+        amountToReceive,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(+actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
@@ -179,13 +189,23 @@ describe("SDK", () => {
     const amountToReceive = "97.776";
 
     test(`☀ getAmountToBeReceived for ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToBeReceived(
+        amountToSend,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToSend(
+        amountToReceive,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(+actual).toBeCloseTo(+amountToSend, 2);
       scope.done();
     });
@@ -240,13 +260,23 @@ describe("SDK", () => {
     const amountToReceive = "9.938096";
 
     test(`☀ getAmountToBeReceived for amount ${amountToSend} should return -> ${amountToReceive}`, async () => {
-      const actual = await sdk.getAmountToBeReceived(amountToSend, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToBeReceived(
+        amountToSend,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(actual).toEqual(amountToReceive);
       scope.done();
     });
 
     test(`☀ getAmountToSend for amount ${amountToReceive} should return -> ${amountToSend}`, async () => {
-      const actual = await sdk.getAmountToSend(amountToReceive, sourceChainToken, destinationChainToken);
+      const actual = await sdk.getAmountToSend(
+        amountToReceive,
+        sourceChainToken,
+        destinationChainToken,
+        Messenger.ALLBRIDGE
+      );
       expect(actual).toEqual(amountToSend);
       scope.done();
     });
@@ -400,6 +430,7 @@ describe("SDK", () => {
           const actual = await sdk.bridge.getAllowance(provider, {
             token: tokenInfo,
             owner: owner,
+            messenger: Messenger.ALLBRIDGE,
           });
           expect(allowanceMocked).toHaveBeenCalledWith(owner, tokenInfo.bridgeAddress);
           expect(allowanceMocked).toHaveBeenCalledTimes(1);
@@ -419,6 +450,7 @@ describe("SDK", () => {
             },
             owner: owner,
             gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
+            messenger: Messenger.ALLBRIDGE,
           };
 
           const actual = await sdk.bridge.getAllowance(provider, params);
@@ -440,6 +472,7 @@ describe("SDK", () => {
             },
             owner: owner,
             gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
+            messenger: Messenger.ALLBRIDGE,
           };
 
           const actual = await sdk.bridge.getAllowance(provider, params);
@@ -471,6 +504,7 @@ describe("SDK", () => {
               token: grlTokenInfo,
               owner: owner,
               amount: amount,
+              messenger: Messenger.ALLBRIDGE,
             });
             expect(allowanceMocked).toHaveBeenCalledWith(owner, grlTokenInfo.bridgeAddress);
             expect(allowanceMocked).toHaveBeenCalledTimes(1);
@@ -530,6 +564,7 @@ describe("SDK", () => {
               owner,
               gasFeePaymentMethod,
               amount,
+              messenger: Messenger.ALLBRIDGE,
             };
 
             const actual = await sdk.bridge.checkAllowance(provider, params);
@@ -571,6 +606,7 @@ describe("SDK", () => {
           const actual = await sdk.bridge.getAllowance(provider, {
             owner: owner,
             token: trxTokenInfo,
+            messenger: Messenger.ALLBRIDGE,
           });
           expect(allowanceMocked).toHaveBeenCalledWith(owner, trxTokenInfo.bridgeAddress);
           expect(allowanceMocked).toHaveBeenCalledTimes(1);
@@ -600,6 +636,7 @@ describe("SDK", () => {
               token: trxTokenInfo,
               owner: owner,
               amount: amount,
+              messenger: Messenger.ALLBRIDGE,
             });
             expect(allowanceMocked).toHaveBeenCalledWith(owner, trxTokenInfo.bridgeAddress);
             expect(allowanceMocked).toHaveBeenCalledTimes(1);

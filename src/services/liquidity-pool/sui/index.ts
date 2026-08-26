@@ -29,6 +29,9 @@ import {
   UserBalanceInfo,
 } from "../models";
 
+/**
+ * @deprecated Do not use.
+ */
 export class SuiPoolService extends ChainPoolService {
   chainType: ChainType.SUI = ChainType.SUI;
 

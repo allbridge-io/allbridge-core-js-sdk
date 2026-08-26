@@ -40,7 +40,7 @@ const main = async () => {
       const txReceipt = await sendEvmRawTransaction(tx);
       console.log("approve tx id:", txReceipt.transactionHash);
     }
-    const willBeReceived = await sdk.getAmountToBeReceived(amount, destinationToken, sourceToken, Messenger.CCTP);
+    const willBeReceived = await sdk.getAmountToBeReceived(amount, sourceToken, destinationToken, Messenger.CCTP);
     console.log("willBeReceived", willBeReceived);
     const sendParams: SendParams = {
       amount,

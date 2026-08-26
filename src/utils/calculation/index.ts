@@ -37,12 +37,18 @@ export function convertIntAmountToFloat(amountInt: BigSource, decimals: number):
   return Big(amountValue).div(toPowBase10(decimals));
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function calculatePoolInfoImbalance(poolInfo: Pick<PoolInfo, "tokenBalance" | "vUsdBalance">): string {
   return convertIntAmountToFloat(Big(poolInfo.tokenBalance).minus(poolInfo.vUsdBalance).toFixed(), SYSTEM_PRECISION)
     .div(2)
     .toFixed();
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function swapToVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -60,6 +66,9 @@ export function swapToVUsd(
   return Big(poolInfo.vUsdBalance).minus(vUsdNewAmount).round(0, Big.roundDown).toFixed();
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function swapFromVUsd(
   amount: BigSource,
   { feeShare, decimals }: Pick<Token, "feeShare" | "decimals">,
@@ -76,6 +85,9 @@ export function swapFromVUsd(
   return Big(result).minus(fee).round(0, Big.roundDown).toFixed();
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getSwapFromVUsdPoolInfo(
   vUsdAmount: BigSource,
   poolInfo: Omit<PoolInfo, "imbalance">
@@ -95,6 +107,7 @@ export function getSwapFromVUsdPoolInfo(
 }
 
 /**
+ * @deprecated Do not use.
  * @param amount - vUsd amount should be received
  * @param feeShare
  * @param decimals
@@ -121,6 +134,7 @@ export function swapToVUsdReverse(
 }
 
 /**
+ * @deprecated Do not use.
  * @param amount - amount should be received
  * @param feeShare
  * @param decimals
@@ -150,6 +164,9 @@ export function swapFromVUsdReverse(
 // commonPart = 4a(d - x) - d
 // sqrt = sqrt(x * (4ad³ + x * commonPart²)
 // y =   (sqrt + x * commonPart) / divider
+/**
+ * @deprecated Do not use.
+ */
 export function getY(x: BigSource, a: BigSource, d: BigSource): Big {
   const commonPartBig = Big(4).times(a).times(Big(d).minus(x)).minus(d);
   const dCubed = Big(d).pow(3);
@@ -166,6 +183,9 @@ export function getY(x: BigSource, a: BigSource, d: BigSource): Big {
   return result.plus(1); // +1 to offset rounding errors
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getEarned(userLpAmount: string, userRewardDebt: string, accRewardPerShareP: string, p: number): string {
   const userLpAmountBN = new BN(userLpAmount);
   const accRewardPerSharePBN = new BN(accRewardPerShareP);
@@ -174,6 +194,9 @@ export function getEarned(userLpAmount: string, userRewardDebt: string, accRewar
   return rewards.sub(userRewardDebtBN).toString();
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function aprInPercents(apr: string): string {
   return Big(apr).gt(0) ? `${Number(Big(apr).times(100).toFixed(2)).toLocaleString()}%` : "N/A";
 }
@@ -182,6 +205,9 @@ export function aprInPercents(apr: string): string {
 // b = xy(16A - 4) / 3
 // c = sqrt(a² + b³)
 // D = cbrt(a + c) + cbrt(a - c)
+/**
+ * @deprecated Do not use.
+ */
 export function getD(aValue: string, x: string, y: string): string {
   const xy = Big(x).times(y);
   const xPlusY = Big(x).plus(y);

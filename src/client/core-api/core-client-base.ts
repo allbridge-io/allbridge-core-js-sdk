@@ -21,6 +21,7 @@ export interface AllbridgeCoreClientParams {
 }
 
 export interface AllbridgeCoreClient {
+  /** @deprecated Do not use. */
   getPendingInfo(): Promise<PendingInfoResponse>;
 
   getTransferStatus(chainSymbol: string, txId: string): Promise<TransferStatusResponse>;
@@ -36,12 +37,17 @@ export interface AllbridgeCoreClientWithTokens extends AllbridgeCoreClient {
   tokens(): Promise<TokenWithChainDetailsWithFlags[]>;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface AllbridgeCoreClientWithPoolInfo extends AllbridgeCoreClientWithTokens {
+  /** @deprecated Do not use. */
   getChainDetailsMapAndPoolInfoMap(): Promise<{
     chainDetailsMap: ChainDetailsMapWithFlags;
     poolInfoMap: PoolInfoMap;
   }>;
 
+  /** @deprecated Do not use. */
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
 }
 
@@ -57,6 +63,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo 
     return Object.values(map).flatMap((chainDetails) => chainDetails.tokens);
   }
 
+  /** @deprecated Do not use. */
   async getPendingInfo(): Promise<PendingInfoResponse> {
     return this.apiClient.getPendingInfo();
   }
@@ -65,6 +72,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo 
     return this.apiClient.getGasBalance(chainSymbol, address);
   }
 
+  /** @deprecated Do not use. */
   async getChainDetailsMapAndPoolInfoMap(): Promise<{
     chainDetailsMap: ChainDetailsMapWithFlags;
     poolInfoMap: PoolInfoMap;
@@ -80,6 +88,7 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo 
     return await this.apiClient.getReceiveTransactionCost(args);
   }
 
+  /** @deprecated Do not use. */
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     return await this.apiClient.getPoolInfoMap(pools);
   }

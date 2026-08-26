@@ -36,7 +36,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger: Messenger.CCTP,
     // gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
   })) as RawSuiTransaction;
 

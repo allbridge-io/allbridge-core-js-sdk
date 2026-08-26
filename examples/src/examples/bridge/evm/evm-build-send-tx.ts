@@ -14,7 +14,7 @@ dotenv.config({ path: ".env" });
 
 const main = async () => {
   const fromAddress = getEnvVar("ETH_ACCOUNT_ADDRESS"); // sender address
-  const toAddress = getEnvVar("TRX_ACCOUNT_ADDRESS"); // recipient address
+  const toAddress = getEnvVar("ARB_ACCOUNT_ADDRESS"); // recipient address
 
   const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, ETH: getEnvVar("WEB3_PROVIDER_URL") });
 
@@ -23,17 +23,19 @@ const main = async () => {
   const sourceChain = chains[ChainSymbol.ETH];
   const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChain = chains[ChainSymbol.POL];
+  const destinationChain = chains[ChainSymbol.ARB];
   const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   const amount = "1.01";
+  const messenger = Messenger.CCTP_V2;
 
   //check if sending tokens already approved
-  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amount }))) {
+  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount, messenger }))) {
     // authorize the bridge to transfer tokens from sender's address
     const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
+      messenger,
     })) as RawEvmTransaction;
     const approveTxReceipt = await sendEvmRawTransaction(rawTransactionApprove);
     console.log("Approve tx id:", approveTxReceipt.transactionHash);
@@ -46,7 +48,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger,
   })) as RawEvmTransaction;
   console.log(`Sending ${amount} ${sourceToken.symbol}`);
   const txReceipt = await sendEvmRawTransaction(rawTransactionTransfer);

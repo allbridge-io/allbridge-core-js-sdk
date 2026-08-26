@@ -17,6 +17,9 @@ import { getSorobanInclusionFee, getViewResultSoroban, isErrorSorobanResult } fr
 import { ChainPoolService, UserBalance } from "../models";
 import ContractClientOptions = contract.ClientOptions;
 
+/**
+ * @deprecated Do not use.
+ */
 export class SrbPoolService extends ChainPoolService {
   chainType: ChainType.SRB = ChainType.SRB;
   private P = 48;

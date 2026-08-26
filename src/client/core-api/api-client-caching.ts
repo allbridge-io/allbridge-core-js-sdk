@@ -47,6 +47,7 @@ export class ApiClientCaching implements ApiClient {
     return gasBalancePromise;
   }
 
+  /** @deprecated Do not use. */
   async getPendingInfo(): Promise<PendingInfoResponse> {
     const PENDING_INFO_CACHE_KEY = "PENDING_INFO_CACHE_KEY";
     const pendingInfo = this.pendingInfoCache.get(PENDING_INFO_CACHE_KEY);
@@ -73,6 +74,7 @@ export class ApiClientCaching implements ApiClient {
     return this.apiClient.getTransferStatus(chainSymbol, txId);
   }
 
+  /** @deprecated Do not use. */
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     return this.apiClient.getPoolInfoMap(pools);
   }

@@ -26,7 +26,11 @@ import { StxPoolService } from "./stx";
 import { SuiPoolService } from "./sui";
 import { TronPoolService } from "./trx";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface LiquidityPoolService {
+  /** @deprecated Do not use. */
   rawTxBuilder: RawPoolTransactionBuilder;
 
   /**
@@ -34,6 +38,7 @@ export interface LiquidityPoolService {
    * @param provider - will be used to access the network
    * @param params See {@link GetAllowanceParams}
    * @returns the amount of approved tokens
+   * @deprecated Do not use.
    */
   getAllowance(provider: Provider, params: GetAllowanceParams): Promise<string>;
 
@@ -41,6 +46,7 @@ export interface LiquidityPoolService {
    * Get amount of tokens approved for poolInfo
    * @param params See {@link GetAllowanceParams}
    * @returns the amount of approved tokens
+   * @deprecated Do not use.
    */
   getAllowance(params: GetAllowanceParams): Promise<string>;
 
@@ -49,6 +55,7 @@ export interface LiquidityPoolService {
    * @param provider - will be used to access the network
    * @param params See {@link CheckAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer
+   * @deprecated Do not use.
    */
   checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
@@ -56,6 +63,7 @@ export interface LiquidityPoolService {
    * Check if the amount of approved tokens is enough
    * @param params See {@link CheckAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer
+   * @deprecated Do not use.
    */
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
@@ -76,6 +84,7 @@ export interface LiquidityPoolService {
    * @param token
    * @param provider - will be used to access the network
    * @returns amount
+   * @deprecated Do not use.
    */
   getAmountToBeDeposited(amount: string, token: TokenWithChainDetails, provider?: Provider): Promise<string>;
 
@@ -86,6 +95,7 @@ export interface LiquidityPoolService {
    * @param token
    * @param provider - will be used to access the network
    * @returns amount
+   * @deprecated Do not use.
    */
   getAmountToBeWithdrawn(
     amount: string,
@@ -100,6 +110,7 @@ export interface LiquidityPoolService {
    * @param token
    * @param provider
    * @returns UserBalanceInfo
+   * @deprecated Do not use.
    */
   getUserBalanceInfo(
     accountAddress: string,
@@ -112,11 +123,16 @@ export interface LiquidityPoolService {
    * @param token
    * @param provider - will be used to access the network
    * @returns poolInfo
+   * @deprecated Do not use.
    */
   getPoolInfoFromChain(token: TokenWithChainDetails, provider?: Provider): Promise<Required<PoolInfo>>;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class DefaultLiquidityPoolService implements LiquidityPoolService {
+  /** @deprecated Do not use. */
   public rawTxBuilder: RawPoolTransactionBuilder;
   private cache: Cache<PoolInfo>;
 
@@ -127,7 +143,8 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
     private tokenService: TokenService
   ) {
     this.rawTxBuilder = new DefaultRawPoolTransactionBuilder(api, nodeRpcUrlsConfig, this.params, tokenService);
-    const ttl = params.cachePoolInfoChainSec > 0 ? params.cachePoolInfoChainSec * 1000 : 20 * 1000;
+    const cachePoolInfoChainSec = params.cachePoolInfoChainSec ?? 20;
+    const ttl = cachePoolInfoChainSec > 0 ? cachePoolInfoChainSec * 1000 : 20 * 1000;
     this.cache = new Cache<PoolInfo>({ defaultTtl: ttl });
   }
 
@@ -217,6 +234,9 @@ export class DefaultLiquidityPoolService implements LiquidityPoolService {
   }
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getChainPoolService(
   chainSymbol: string,
   api: AllbridgeCoreClient,

@@ -16,7 +16,7 @@ dotenv.config({ path: ".env" });
 
 const main = async () => {
   const fromAddress = getEnvVar("ETH_ACCOUNT_ADDRESS"); // sender address
-  const toAddress = getEnvVar("POL_ACCOUNT_ADDRESS"); // recipient address
+  const toAddress = getEnvVar("ARB_ACCOUNT_ADDRESS"); // recipient address
 
   const sdk = new AllbridgeCoreSdk({ ...nodeRpcUrlsDefault, ETH: getEnvVar("WEB3_PROVIDER_URL") });
 
@@ -25,22 +25,26 @@ const main = async () => {
   const sourceChain = chains[ChainSymbol.ETH];
   const sourceToken = ensure(sourceChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
-  const destinationChain = chains[ChainSymbol.POL];
+  const destinationChain = chains[ChainSymbol.ARB];
   const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDC"));
 
   const amount = "5.05";
-  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, Messenger.ALLBRIDGE);
+  const messenger = Messenger.CCTP_V2;
+  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, messenger);
   const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
 
   const gasFeeAmountFloat = gasFeeAmount.float;
   const totalAmountFloat = new Big(amount).add(gasFeeAmountFloat).toFixed();
 
   //check if sending tokens already approved
-  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: totalAmountFloat }))) {
+  if (
+    !(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: totalAmountFloat, messenger }))
+  ) {
     // authorize the bridge to transfer tokens from sender's address
     const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
+      messenger,
     })) as RawEvmTransaction;
     const approveTxReceipt = await sendEvmRawTransaction(rawTransactionApprove);
     console.log("approve tx id:", approveTxReceipt.transactionHash);
@@ -53,7 +57,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger,
     gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
     fee: gasFeeAmount.int,
   })) as RawEvmTransaction;

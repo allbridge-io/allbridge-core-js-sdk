@@ -27,11 +27,13 @@ export class TronBridgeService extends ChainBridgeService {
     return await sendRawTransaction(this.tronWeb, rawTransaction);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
     const txSwapParams = prepareTxSwapParams(this.chainType, params);
     return await this.buildRawTransactionSwapFromParams(txSwapParams);
   }
 
+  /** @deprecated Do not use. */
   async buildRawTransactionSwapFromParams(params: TxSwapParamsTrx): Promise<RawTransaction> {
     const {
       amount,

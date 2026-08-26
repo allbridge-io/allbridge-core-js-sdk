@@ -29,19 +29,23 @@ const main = async () => {
   const destinationToken = ensure(destinationChain.tokens.find((tokenInfo) => tokenInfo.symbol === "USDT"));
 
   const amountToSendFloat = "17.187";
+  const messenger = Messenger.OFT;
 
   //check if sending tokens already approved
-  if (!(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amountToSendFloat }))) {
+  if (
+    !(await sdk.bridge.checkAllowance({ token: sourceToken, owner: fromAddress, amount: amountToSendFloat, messenger }))
+  ) {
     // authorize the bridge to transfer tokens from sender's address
     const rawTransactionApprove = (await sdk.bridge.rawTxBuilder.approve({
       token: sourceToken,
       owner: fromAddress,
+      messenger,
     })) as RawTronTransaction;
     const approveReceipt = await sendTrxRawTransaction(rawTransactionApprove);
     console.log("Approve transaction receipt", JSON.stringify(approveReceipt, null, 2));
   }
 
-  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, Messenger.ALLBRIDGE);
+  const gasFeeOptions = await sdk.getGasFeeOptions(sourceToken, destinationToken, messenger);
   console.log("gasFeeOptions", gasFeeOptions);
   const gasFeeAmount = ensure(gasFeeOptions[FeePaymentMethod.WITH_STABLECOIN]);
   const gasFeeAmountFloat = gasFeeAmount.float;
@@ -57,7 +61,7 @@ const main = async () => {
     toAccountAddress: toAddress,
     sourceToken: sourceToken,
     destinationToken: destinationToken,
-    messenger: Messenger.ALLBRIDGE,
+    messenger,
     gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
     fee: gasFeeAmount.int,
   };

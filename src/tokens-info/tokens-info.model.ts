@@ -42,6 +42,7 @@ export interface ChainDetails extends BasicChainProperties {
   paddingUtilId?: string;
   /**
    * Bridge contract address
+   * @deprecated Do not use.
    */
   bridgeAddress: string;
   /**
@@ -114,6 +115,7 @@ export interface Token {
   decimals: number;
   /**
    * Token pool address
+   * @deprecated Do not use.
    */
   poolAddress: string;
   /**
@@ -160,6 +162,7 @@ export interface Token {
   oftId?: string;
   /**
    * Token fee share
+   * @deprecated Do not use.
    */
   feeShare: string;
   /**
@@ -169,14 +172,17 @@ export interface Token {
   apr: string;
   /**
    * Token APR based on last 7 days
+   * @deprecated Do not use.
    */
   apr7d: string;
   /**
    * Token APR based on last 30 days
+   * @deprecated Do not use.
    */
   apr30d: string;
   /**
    * Token LP rate
+   * @deprecated Do not use.
    */
   lpRate: string;
 
@@ -196,12 +202,18 @@ export interface XReserveTokenInfo {
 }
 
 export interface SuiAddresses {
+  /** @deprecated Do not use. */
   bridgeAddress: string;
+  /** @deprecated Do not use. */
   bridgeAddressOrigin?: string;
+  /** @deprecated Do not use. */
   bridgeObjectAddress: string;
 
+  /** @deprecated Do not use. */
   allbridgeMessengerAddress: string;
+  /** @deprecated Do not use. */
   allbridgeMessengerAddressOrigin?: string;
+  /** @deprecated Do not use. */
   allbridgeMessengerObjectAddress: string;
 
   gasOracleAddress: string;
@@ -210,9 +222,13 @@ export interface SuiAddresses {
 
   utilsAddress: string;
 
+  /** @deprecated Do not use. */
   wormholeMessengerAddress: string;
+  /** @deprecated Do not use. */
   wormholeMessengerAddressOrigin?: string;
+  /** @deprecated Do not use. */
   wormholeMessengerObjectAddress: string;
+  /** @deprecated Do not use. */
   wormholeStateObjectAddress: string;
 
   cctpAddress: string;
@@ -241,11 +257,16 @@ export type TokenCoreFields = Pick<
 >;
 
 export interface TokenWithChainDetailsWithFlags extends TokenWithChainDetails {
-  flags: { swap: boolean; pool: boolean };
+  flags: {
+    swap: boolean;
+    /** @deprecated Do not use. */
+    pool: boolean;
+  };
 }
 
 /**
  * General Pool Interface
+ * @deprecated Do not use.
  */
 export interface PoolInfo {
   /**
@@ -300,6 +321,9 @@ export type MessengerTransferTime = {
   [messenger in Messenger]?: number;
 };
 
+/**
+ * @deprecated Do not use.
+ */
 export interface PoolKeyObject {
   chainSymbol: string;
   poolAddress: string;
@@ -323,4 +347,7 @@ export interface TxCostAmount {
   transfer: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export type PoolInfoMap = Record<string, PoolInfo>;

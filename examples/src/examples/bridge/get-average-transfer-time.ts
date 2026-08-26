@@ -15,10 +15,10 @@ const main = async () => {
   const sdk = new AllbridgeCoreSdk(nodeRpcUrlsDefault);
 
   const tokens = await sdk.tokens();
-  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDT"));
-  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "TRX" && token.symbol === "USDT"));
+  const sourceToken = ensure(tokens.find((token) => token.chainSymbol === "ETH" && token.symbol === "USDC"));
+  const destinationToken = ensure(tokens.find((token) => token.chainSymbol === "POL" && token.symbol === "USDC"));
 
-  const transferTimeMs = ensure(sdk.getAverageTransferTime(sourceToken, destinationToken, Messenger.ALLBRIDGE));
+  const transferTimeMs = ensure(sdk.getAverageTransferTime(sourceToken, destinationToken, Messenger.CCTP));
 
   console.log(
     "Average transfer time from %s to %s is %s",

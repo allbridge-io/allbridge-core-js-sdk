@@ -33,6 +33,8 @@ import {
   getSendMessageAccount,
 } from "../../utils/sol/accounts";
 import { buildAnchorProvider } from "../../utils/sol/anchor-provider";
+import { decodeStellarContractId } from "../../utils/srb";
+import { encodeCctpHookForStellar } from "../cctp-utils";
 import { SendParams } from "../models";
 import { getNonce } from "../utils";
 import { SolanaBridgeParams } from "./bridge-tx-service";
@@ -97,6 +99,7 @@ interface SwapAndBridgeWormholeData extends SwapAndBridgeCommonData {
 
 interface BridgeCctpData extends SwapAndBridgeBaseData {
   amount: BN;
+  hookData?: Buffer;
   lockAccount: PublicKey;
 
   chainBridgeAccount: PublicKey;
@@ -372,6 +375,9 @@ export class PayerWithTokenService {
     const messengerGasUsageAccount = await getGasUsageAccount(toChainId, wormholeMessengerAccount);
 
     const wormholeProgramId = this.params.wormholeMessengerProgramId;
+    if (!wormholeProgramId) {
+      throw new SdkError("Do not use.");
+    }
     const { wormholeBridgeAccount, wormholeSequenceAccount, wormholeFeeCollectorAccount } =
       this.getWormholeProgramAddresses(wormholeProgramId, bridgeAuthorityAccount);
 
@@ -407,6 +413,7 @@ export class PayerWithTokenService {
     const domain = this.params.cctpParams.cctpDomains[destinationChainSymbol];
 
     let cctpVersion: number | undefined;
+    let hookData: Buffer | undefined;
     let cctpAddress: string | undefined;
     let cctpTransmitterProgramIdAddress: string | undefined;
     let cctpTokenMessengerMinterAddress: string | undefined;
@@ -420,6 +427,14 @@ export class PayerWithTokenService {
       cctpAddress = params.sourceToken.cctpV2Address;
       cctpTransmitterProgramIdAddress = this.params.cctpParams.cctpV2TransmitterProgramId;
       cctpTokenMessengerMinterAddress = this.params.cctpParams.cctpV2TokenMessengerMinter;
+      if (params.destinationToken.chainType === ChainType.SRB) {
+        const destinationCctpV2Address = params.destinationToken.cctpV2Address;
+        if (!destinationCctpV2Address) {
+          throw new CCTPDoesNotSupportedError("Such route does not support CCTP V2 protocol");
+        }
+        baseData.recipient = Array.from(decodeStellarContractId(destinationCctpV2Address));
+        hookData = encodeCctpHookForStellar(params.toAccountAddress);
+      }
     }
     if (domain == undefined || !cctpTransmitterProgramIdAddress || !cctpTokenMessengerMinterAddress) {
       throw new SdkError(`CCTP ${cctpVersion} is not configured`);
@@ -458,6 +473,7 @@ export class PayerWithTokenService {
       messageSentEventDataKeypair,
 
       amount: new BN(amount),
+      hookData,
       chainBridgeAccount,
       cctpBridgeProgramId,
       cctpBridgeAuthorityAccount,
@@ -729,6 +745,7 @@ export class PayerWithTokenService {
       amount,
       recipient,
       recipientToken,
+      hookData,
 
       userAccount,
       recipientChain,
@@ -769,6 +786,7 @@ export class PayerWithTokenService {
         destinationChainId: recipientChain,
         maxFeeAmount,
         extraGasAmountInFeeToken,
+        hookData: hookData ?? null,
       })
       .accounts({
         mint: mintAccount,

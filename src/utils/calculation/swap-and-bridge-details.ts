@@ -2,16 +2,25 @@ import { Big } from "big.js";
 import { PoolInfo, TokenWithChainDetails } from "../../tokens-info";
 import { convertIntAmountToFloat, fromSystemPrecision, swapFromVUsd, swapToVUsd } from "./index";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface SendAmountDetails {
   sourceLPSwap: AmountImpact;
   destLPSwap: AmountImpact;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface AmountImpact {
   fee: string;
   swap: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getSendAmountDetails(
   amountInTokenPrecision: string,
   sourceToken: TokenWithChainDetails,

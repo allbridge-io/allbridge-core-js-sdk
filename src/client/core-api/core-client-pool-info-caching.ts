@@ -19,12 +19,21 @@ import { AllbridgeCoreClientWithPoolInfo, AllbridgeCoreClientWithTokens } from "
 
 const _55_SECONDS_TTL = 55 * 1000;
 
+/**
+ * @deprecated Do not use.
+ */
 export interface AllbridgeCoreClientPoolsExt {
+  /** @deprecated Do not use. */
   getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo>;
+  /** @deprecated Do not use. */
   refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void>;
+  /** @deprecated Do not use. */
   cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo): void;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWithTokens, AllbridgeCoreClientPoolsExt {
   private readonly poolInfoCache;
 
@@ -49,6 +58,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
     return this.client.getReceiveTransactionCost(args);
   }
 
+  /** @deprecated Do not use. */
   getPendingInfo(): Promise<PendingInfoResponse> {
     return this.client.getPendingInfo();
   }
@@ -57,6 +67,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
     return this.client.getGasBalance(chainSymbol, address);
   }
 
+  /** @deprecated Do not use. */
   async getPoolInfoByKey(poolKeyObject: PoolKeyObject): Promise<PoolInfo> {
     this.poolInfoCache.putAllIfNotExists((await this.client.getChainDetailsMapAndPoolInfoMap()).poolInfoMap);
     const poolInfo = this.poolInfoCache.get(poolKeyObject);
@@ -76,6 +87,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
     }
   }
 
+  /** @deprecated Do not use. */
   async refreshPoolInfo(poolKeyObjects?: PoolKeyObject | PoolKeyObject[]): Promise<void> {
     let poolInfoMap;
     if (poolKeyObjects) {
@@ -88,6 +100,7 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
     this.poolInfoCache.putAll(poolInfoMap);
   }
 
+  /** @deprecated Do not use. */
   cachePut(poolKeyObject: PoolKeyObject, poolInfo: PoolInfo): void {
     this.poolInfoCache.put(mapPoolKeyObjectToPoolKey(poolKeyObject), poolInfo);
   }

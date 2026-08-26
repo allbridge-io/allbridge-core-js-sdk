@@ -16,6 +16,9 @@ import {
   UserBalanceInfo,
 } from "../models";
 
+/**
+ * @deprecated Do not use.
+ */
 export class AlgPoolService extends ChainPoolService {
   chainType: ChainType.ALG = ChainType.ALG;
   private P = 48;

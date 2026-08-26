@@ -15,6 +15,7 @@ export interface ChainDetailsDTO {
   chainId: number;
   bridgeId?: string;
   paddingUtilId?: string;
+  /** @deprecated Do not use. */
   bridgeAddress: string;
   oftBridgeAddress?: string;
   abrPayer?: AbrPayerChainInfoDTO;
@@ -39,14 +40,21 @@ export interface TokenDTO {
   symbol: string;
   name: string;
   decimals: number;
+  /** @deprecated Do not use. */
   poolAddress: string;
   tokenAddress: string;
+  /** @deprecated Do not use. */
   poolInfo: PoolInfoDTO;
   oftId?: string;
+  /** @deprecated Do not use. */
   feeShare: string;
+  /** @deprecated Do not use. */
   apr: string;
+  /** @deprecated Do not use. */
   apr7d: string;
+  /** @deprecated Do not use. */
   apr30d: string;
+  /** @deprecated Do not use. */
   lpRate: string;
   cctpAddress?: string;
   cctpV2Address?: string;
@@ -56,6 +64,7 @@ export interface TokenDTO {
   xReserve?: XReserveDTO;
   flags: {
     swap: boolean;
+    /** @deprecated Do not use. */
     pool: boolean;
   };
 }
@@ -67,6 +76,9 @@ export interface XReserveDTO {
   protocolAddress?: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface PoolInfoDTO {
   aValue: string;
   dValue: string;
@@ -78,7 +90,9 @@ export interface PoolInfoDTO {
 }
 
 export enum MessengerKeyDTO {
+  /** @deprecated Do not use. */
   ALLBRIDGE = "allbridge",
+  /** @deprecated Do not use. */
   WORMHOLE = "wormhole",
   CCTP = "cctp",
   CCTP_V2 = "cctpV2",
@@ -103,13 +117,18 @@ export type MessengerTransferTimeDTO = {
 };
 
 export enum Messenger {
+  /** @deprecated Do not use. */
   ALLBRIDGE = 1,
+  /** @deprecated Do not use. */
   WORMHOLE = 2,
   CCTP = 3,
   CCTP_V2 = 4,
   OFT = 5,
   X_RESERVE = 6,
 }
+
+export type LegacyMessenger = Messenger.ALLBRIDGE | Messenger.WORMHOLE;
+export type ActiveMessenger = Exclude<Messenger, LegacyMessenger>;
 
 export interface ReceiveTransactionCostRequest {
   sourceChainId: number;
@@ -205,10 +224,22 @@ export interface BridgeTransaction {
   isClaimable?: boolean;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export type PoolInfoResponse = Record<string, PoolInfo>;
+/**
+ * @deprecated Do not use.
+ */
 export type PendingInfoResponse = Partial<Record<string, TokenPendingInfoDTO>>;
+/**
+ * @deprecated Do not use.
+ */
 export type TokenPendingInfoDTO = Record<string, PendingInfoDTO>;
 
+/**
+ * @deprecated Do not use.
+ */
 export interface PendingInfoDTO {
   pendingTxs: number;
   totalSentAmount: string;
