@@ -36,7 +36,7 @@ export class EvmBridgeService extends ChainBridgeService {
   constructor(
     public web3: EssentialWeb3,
     public api: AllbridgeCoreClient,
-    private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
+    private nodeRpcUrlsConfig: NodeRpcUrlsConfig
   ) {
     super();
   }
@@ -71,7 +71,7 @@ export class EvmBridgeService extends ChainBridgeService {
       fromTokenAddress,
       toTokenAddress,
       toAccountAddress,
-      minimumReceiveAmount,
+      minimumReceiveAmount
     );
 
     return Promise.resolve({
@@ -121,7 +121,7 @@ export class EvmBridgeService extends ChainBridgeService {
       totalFee = convertAmountPrecision(
         totalFeeInNativeRaw,
         params.sourceToken.abrPayer.abrToken.decimals,
-        Chains.getChainDecimalsByType(params.sourceToken.chainType),
+        Chains.getChainDecimalsByType(params.sourceToken.chainType)
       ).toFixed();
     }
 
@@ -146,43 +146,44 @@ export class EvmBridgeService extends ChainBridgeService {
         break;
       }
       case Messenger.ALLBRIDGE:
-      case Messenger.WORMHOLE: {
-        const bridgeContract = this.getBridgeContract(contractAddress);
-        switch (gasFeePaymentMethod) {
-          case FeePaymentMethod.WITH_ABR:
-          case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
-            sendMethod = bridgeContract.methods.swapAndBridge(
-              fromTokenAddress,
-              amount,
-              toAccountAddress,
-              toChainId,
-              toTokenAddress,
-              nonce,
-              messenger,
-              0,
-            );
-            value = totalFee;
-            break;
-          }
-          case FeePaymentMethod.WITH_STABLECOIN: {
-            sendMethod = bridgeContract.methods.swapAndBridge(
-              fromTokenAddress,
-              amount,
-              toAccountAddress,
-              toChainId,
-              toTokenAddress,
-              nonce,
-              messenger,
-              totalFee,
-            );
-            value = "0";
-            break;
-          }
-          default: {
-            return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+      case Messenger.WORMHOLE:
+        {
+          const bridgeContract = this.getBridgeContract(contractAddress);
+          switch (gasFeePaymentMethod) {
+            case FeePaymentMethod.WITH_ABR:
+            case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
+              sendMethod = bridgeContract.methods.swapAndBridge(
+                fromTokenAddress,
+                amount,
+                toAccountAddress,
+                toChainId,
+                toTokenAddress,
+                nonce,
+                messenger,
+                0
+              );
+              value = totalFee;
+              break;
+            }
+            case FeePaymentMethod.WITH_STABLECOIN: {
+              sendMethod = bridgeContract.methods.swapAndBridge(
+                fromTokenAddress,
+                amount,
+                toAccountAddress,
+                toChainId,
+                toTokenAddress,
+                nonce,
+                messenger,
+                totalFee
+              );
+              value = "0";
+              break;
+            }
+            default: {
+              return assertNever(gasFeePaymentMethod, "Unhandled FeePaymentMethod");
+            }
           }
         }
-      }
         break;
     }
 
@@ -207,7 +208,7 @@ export class EvmBridgeService extends ChainBridgeService {
         amount,
         totalFeeInAbr,
         target,
-        withoutSelector,
+        withoutSelector
       );
 
       return Promise.resolve({
@@ -229,7 +230,7 @@ export class EvmBridgeService extends ChainBridgeService {
   private async buildRawTransactionCctpSend(
     params: SendParams,
     txSendParams: TxSendParamsEvm,
-    totalFee: string,
+    totalFee: string
   ): Promise<{
     sendMethod: PayableMethodObject;
     value: string;
@@ -245,7 +246,7 @@ export class EvmBridgeService extends ChainBridgeService {
         this.chainType,
         params.toAccountAddress,
         params.destinationToken.tokenAddress,
-        this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL),
+        this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SOL)
       );
 
       switch (gasFeePaymentMethod) {
@@ -256,7 +257,7 @@ export class EvmBridgeService extends ChainBridgeService {
             recipient,
             toAccountAddress,
             toChainId,
-            0,
+            0
           );
           value = totalFee;
           break;
@@ -267,7 +268,7 @@ export class EvmBridgeService extends ChainBridgeService {
             recipient,
             toAccountAddress,
             toChainId,
-            totalFee,
+            totalFee
           );
           value = "0";
           break;
@@ -323,7 +324,7 @@ export class EvmBridgeService extends ChainBridgeService {
     params: SendParams,
     txSendParams: TxSendParamsEvm,
     totalFee: string,
-    extraGasDest?: string,
+    extraGasDest?: string
   ): {
     sendMethod: PayableMethodObject;
     value: string;
@@ -344,7 +345,7 @@ export class EvmBridgeService extends ChainBridgeService {
           toChainId,
           0,
           extraGasDest ?? "0",
-          "10",
+          "10"
         );
         value = totalFee;
         break;
@@ -357,7 +358,7 @@ export class EvmBridgeService extends ChainBridgeService {
           toChainId,
           totalFee,
           extraGasDest ?? "0",
-          "10",
+          "10"
         );
         value = "0";
         break;
@@ -374,7 +375,7 @@ export class EvmBridgeService extends ChainBridgeService {
     params: SendParams,
     txSendParams: TxSendParamsEvm,
     totalFee: string,
-    extraGasDest?: string,
+    extraGasDest?: string
   ): {
     sendMethod: PayableMethodObject;
     value: string;
@@ -409,7 +410,7 @@ export class EvmBridgeService extends ChainBridgeService {
     // null for DISABLE SITE SUGGESTED GAS FEE IN METAMASK
     const feeOptions: {
       maxPriorityFeePerGas?: number | string | BN | null;
-      maxFeePerGas?: number | string | BN | null
+      maxFeePerGas?: number | string | BN | null;
     } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
       ...(rawTransaction as object),
