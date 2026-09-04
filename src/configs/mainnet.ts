@@ -1,7 +1,7 @@
 import { AllbridgeCoreSdkOptions, NodeRpcUrls, NodeUrlsConfig } from "../index";
 
 export const mainnet: AllbridgeCoreSdkOptions = {
-  coreApiUrl: "https://core.api.allbridgecoreapi.net",
+  coreApiUrl: "https://api.core.allbridge.io",
   coreApiQueryParams: {},
   coreApiHeaders: {},
   jupiterUrl: "https://lite-api.jup.ag/swap/v1",
