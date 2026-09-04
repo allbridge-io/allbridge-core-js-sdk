@@ -137,9 +137,13 @@ jobs:
           path: dist/
 
       - name: Semantic Release
-        # npm auth is done via OIDC trusted publishing (id-token: write), no NPM_TOKEN needed
+        # npm auth is done via OIDC trusted publishing (id-token: write), no NPM_TOKEN needed.
+        # Provenance is disabled: npm auto-enables it with OIDC, but the registry then requires
+        # package.json "repository.url" to match the source repo (allbridge-io), while we
+        # intentionally point it to the public mirror (allbridge-public).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'false'
         run: pnpm run semantic-release
 
       - name: Check if new release was created
