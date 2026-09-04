@@ -89,6 +89,11 @@ jobs:
     if: github.event_name == 'push' && contains('["main", "beta", "alpha"]', github.ref_name)
     runs-on: ubuntu-latest
     environment: npm-registry
+    permissions:
+      contents: write # semantic-release: tags and GitHub Release
+      issues: write # semantic-release: comments on released issues
+      pull-requests: write # semantic-release: comments on released PRs
+      id-token: write # npm trusted publishing (OIDC)
     outputs:
       new-release-published: ${{ steps.check-release.outputs.released }}
       new-release-version: ${{ steps.check-release.outputs.version }}
@@ -122,6 +127,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Update npm CLI (OIDC trusted publishing requires npm >= 11.5.1)
+        run: npm install -g npm@latest
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
@@ -129,9 +137,9 @@ jobs:
           path: dist/
 
       - name: Semantic Release
+        # npm auth is done via OIDC trusted publishing (id-token: write), no NPM_TOKEN needed
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm run semantic-release
 
       - name: Check if new release was created
