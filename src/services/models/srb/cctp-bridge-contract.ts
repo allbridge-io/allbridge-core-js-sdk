@@ -207,11 +207,6 @@ export interface Client {
   set_gas_oracle: ({gas_oracle}: {gas_oracle: string}, options?: MethodOptions) => Promise<AssembledTransaction<Result<void>>>
 
   /**
-   * Construct and simulate a bridge_with_hook transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  bridge_with_hook: ({sender, amount, recipient, destination_chain_id, gas_amount, fee_token_amount, hook_data}: {sender: string, amount: u128, recipient: Buffer, destination_chain_id: u32, gas_amount: u128, fee_token_amount: u128, hook_data: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<Result<void>>>
-
-  /**
    * Construct and simulate a get_chain_bridge transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   get_chain_bridge: ({chain_id}: {chain_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<Result<ChainBridge>>>
@@ -352,7 +347,6 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAANbWF4X2ZlZV9zaGFyZQAAAAAAAAAAAAABAAAD6QAAAAsAAAAD",
         "AAAAAAAAAAAAAAAOcmVjZWl2ZV90b2tlbnMAAAAAAAUAAAAAAAAABnNlbmRlcgAAAAAAEwAAAAAAAAAKbWVzc2FnZV9pZAAAAAAD7gAAACAAAAAAAAAAB21lc3NhZ2UAAAAADgAAAAAAAAALYXR0ZXN0YXRpb24AAAAADgAAAAAAAAAQZXh0cmFfZ2FzX2Ftb3VudAAAAAoAAAABAAAD6QAAAAIAAAAD",
         "AAAAAAAAAAAAAAAOc2V0X2dhc19vcmFjbGUAAAAAAAEAAAAAAAAACmdhc19vcmFjbGUAAAAAABMAAAABAAAD6QAAAAIAAAAD",
-        "AAAAAAAAAAAAAAAQYnJpZGdlX3dpdGhfaG9vawAAAAcAAAAAAAAABnNlbmRlcgAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAAKAAAAAAAAAAlyZWNpcGllbnQAAAAAAAPuAAAAIAAAAAAAAAAUZGVzdGluYXRpb25fY2hhaW5faWQAAAAEAAAAAAAAAApnYXNfYW1vdW50AAAAAAAKAAAAAAAAABBmZWVfdG9rZW5fYW1vdW50AAAACgAAAAAAAAAJaG9va19kYXRhAAAAAAAADgAAAAEAAAPpAAAAAgAAAAM=",
         "AAAAAAAAAAAAAAAQZ2V0X2NoYWluX2JyaWRnZQAAAAEAAAAAAAAACGNoYWluX2lkAAAABAAAAAEAAAPpAAAH0AAAAAtDaGFpbkJyaWRnZQAAAAAD",
         "AAAAAAAAAAAAAAARc2V0X21heF9mZWVfc2hhcmUAAAAAAAABAAAAAAAAAAV2YWx1ZQAAAAAAAAsAAAABAAAD6QAAAAIAAAAD",
         "AAAAAAAAAAAAAAASYWRtaW5fZmVlX3NoYXJlX2JwAAAAAAAAAAAAAQAAA+kAAAAGAAAAAw==",
@@ -395,7 +389,6 @@ export class Client extends ContractClient {
     max_fee_share: this.txFromJSON<Result<i128>>,
     receive_tokens: this.txFromJSON<Result<void>>,
     set_gas_oracle: this.txFromJSON<Result<void>>,
-    bridge_with_hook: this.txFromJSON<Result<void>>,
     get_chain_bridge: this.txFromJSON<Result<ChainBridge>>,
     set_max_fee_share: this.txFromJSON<Result<void>>,
     admin_fee_share_bp: this.txFromJSON<Result<u64>>,

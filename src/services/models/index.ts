@@ -16,6 +16,7 @@ export interface SolanaTxFeeParams {
   /**
    * Covers transaction fees (including Accounts creation) by swapping stablecoin into the required native token.
    * Applicable only for {@link Messenger.ALLBRIDGE}.
+   * @deprecated Do not use.
    */
   payTxFeeWithStablecoinSwap?: boolean;
 }

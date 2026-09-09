@@ -1,5 +1,5 @@
 {
-  "address": "jUK1TcugDebbLdEdxzZqrChtFGbnR8Sigkqdw4QdRSJ",
+  "address": "9jVyuaD67X2zNPZ6sq1sY1XsqTvRgvEWZ6t99BytTnKJ",
   "metadata": {
     "name": "cctp_v2_bridge",
     "version": "0.1.0",
@@ -215,16 +215,16 @@
       ]
     },
     {
-      "name": "bridge_with_hook",
+      "name": "bridge_to_stellar",
       "discriminator": [
-        242,
-        17,
-        63,
-        37,
-        10,
-        179,
-        169,
-        24
+        154,
+        94,
+        190,
+        69,
+        118,
+        64,
+        6,
+        134
       ],
       "accounts": [
         {
@@ -415,11 +415,64 @@
           "name": "args",
           "type": {
             "defined": {
-              "name": "BridgeWithHookArgs"
+              "name": "BridgeToStellarArgs"
             }
           }
         }
       ]
+    },
+    {
+      "name": "close_lock",
+      "discriminator": [
+        58,
+        254,
+        183,
+        130,
+        151,
+        238,
+        95,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "rent_recipient",
+          "writable": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "lock",
+          "writable": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "initialize",
@@ -1061,6 +1114,57 @@
       ]
     },
     {
+      "name": "set_stellar_chain_id",
+      "discriminator": [
+        101,
+        154,
+        227,
+        68,
+        36,
+        7,
+        223,
+        197
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "stellar_chain_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "set_token_messenger_minter",
       "discriminator": [
         136,
@@ -1372,6 +1476,26 @@
       "code": 6000,
       "name": "ValueTooHigh",
       "msg": "Value is too high"
+    },
+    {
+      "code": 6001,
+      "name": "AmountTooLow",
+      "msg": "Amount is too low"
+    },
+    {
+      "code": 6002,
+      "name": "UseBridgeToStellar",
+      "msg": "Use bridge_to_stellar for this destination"
+    },
+    {
+      "code": 6003,
+      "name": "StellarChainIdNotSet",
+      "msg": "Stellar chain ID is not configured"
+    },
+    {
+      "code": 6004,
+      "name": "StellarBridgeNotRegistered",
+      "msg": "Stellar chain bridge address is not registered"
     }
   ],
   "types": [
@@ -1410,32 +1534,10 @@
       }
     },
     {
-      "name": "BridgeWithHookArgs",
+      "name": "BridgeToStellarArgs",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "recipient",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "destination_chain_id",
-            "type": "u8"
-          },
-          {
-            "name": "receive_token",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
           {
             "name": "amount",
             "type": "u64"
@@ -1515,6 +1617,10 @@
           {
             "name": "min_finality_threshold",
             "type": "u32"
+          },
+          {
+            "name": "stellar_chain_id",
+            "type": "u8"
           }
         ]
       }

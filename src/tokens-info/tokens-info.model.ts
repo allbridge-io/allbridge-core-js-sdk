@@ -46,7 +46,7 @@ export interface ChainDetails extends BasicChainProperties {
    */
   bridgeAddress: string;
   /**
-   * OFT Bridge contract address
+   * OFT Bridge contract address (the contract to approve for {@link Messenger.OFT})
    * Optional. Defined if the chain supports OFT
    */
   oftBridgeAddress?: string;
@@ -127,7 +127,7 @@ export interface Token {
    */
   originTokenAddress?: string;
   /**
-   * Token CCTP address</br>
+   * Token CCTP address (bridge contract to approve for {@link Messenger.CCTP})</br>
    * Optional. Defined if the token is supported by CCTP
    */
   cctpAddress?: string;
@@ -137,18 +137,18 @@ export interface Token {
    */
   cctpFeeShare?: string;
   /**
-   * Token CCTP address</br>
-   * Optional. Defined if the token is supported by CCTP
+   * Token CCTP V2 address (bridge contract to approve for {@link Messenger.CCTP_V2})</br>
+   * Optional. Defined if the token is supported by CCTP V2
    */
   cctpV2Address?: string;
   /**
    * Token fee share for CCTP V2</br>
-   * Optional. Defined if the token is supported by CCTP
+   * Optional. Defined if the token is supported by CCTP V2
    */
   cctpV2FeeShare?: string;
   /**
-   * XReserve bridge configuration for token.
-   * Optional. Defined if the token is supported by XReserve
+   * xReserve bridge configuration for token, see {@link XReserveTokenInfo}.
+   * Optional. Defined if the token is supported by {@link Messenger.X_RESERVE}
    */
   xReserve?: XReserveTokenInfo;
   /**
@@ -157,7 +157,8 @@ export interface Token {
    * Used to link representations of a token deployed on multiple networks (e.g., Ethereum, BSC).
    * Tokens with the same `oftId` are considered to be equivalent.
    *
-   * Optional. Defined if the token is supported by OFT
+   * Optional. Defined if the token is supported by {@link Messenger.OFT}.
+   * The bridge contract to approve is {@link ChainDetails.oftBridgeAddress}.
    */
   oftId?: string;
   /**
@@ -166,8 +167,8 @@ export interface Token {
    */
   feeShare: string;
   /**
-   * @Deprecated use {@link apr7d}</br>
    * Token APR
+   * @deprecated Do not use.
    */
   apr: string;
   /**
@@ -194,10 +195,25 @@ export interface Token {
   suiAddresses?: SuiAddresses;
 }
 
+/**
+ * xReserve route configuration of a token, see {@link Messenger.X_RESERVE}
+ */
 export interface XReserveTokenInfo {
+  /**
+   * xReserve bridge contract address (the contract to approve)
+   */
   bridgeAddress: string;
+  /**
+   * Constant part of the fee, in the smallest denomination of the token
+   */
   feeConst: string;
+  /**
+   * Share of the transferred amount charged as a fee
+   */
   feeShare: string;
+  /**
+   * xReserve protocol contract address
+   */
   protocolAddress?: string;
 }
 

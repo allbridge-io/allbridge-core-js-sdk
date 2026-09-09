@@ -742,19 +742,21 @@ export class BridgeTxService {
     const userAccount = new PublicKey(account);
 
     const configAccountInfo = await cctpBridge.account.config.fetch(cctpBridgeConfigAccount);
-    let recipient;
     let hookData;
     if (params.destinationToken.chainType === ChainType.SRB) {
-      const destinationCctpV2Address = params.destinationToken.cctpV2Address;
-      if (!destinationCctpV2Address) {
+      if (!params.destinationToken.cctpV2Address) {
         throw new CCTPDoesNotSupportedError("The route does not support CCTPv2 protocol");
       }
-      recipient = Array.from(new PublicKey(destinationCctpV2Address).toBytes());
+      if (configAccountInfo.stellarChainId !== +toChainId) {
+        throw new SdkError(
+          `CCTPv2 Stellar chain ID mismatch: expected ${toChainId}, received ${configAccountInfo.stellarChainId}`
+        );
+      }
       hookData = encodeCctpHookForStellar(params.toAccountAddress);
     } else {
-      recipient = Array.from(toAccountAddress);
       hookData = undefined;
     }
+    const recipient = Array.from(toAccountAddress);
 
     const swapAndBridgeData = {} as SwapAndBridgeSolDataCctpData<CctpV2BridgeType>;
 
@@ -828,10 +830,9 @@ export class BridgeTxService {
 
     const messageSentEventDataKeypair = Keypair.generate();
 
-    const bridgeArgs = { amount, destinationChainId, recipient, receiveToken };
     const method = hookData
-      ? program.methods.bridgeWithHook({ ...bridgeArgs, hookData })
-      : program.methods.bridge(bridgeArgs);
+      ? program.methods.bridgeToStellar({ amount, hookData })
+      : program.methods.bridge({ amount, destinationChainId, recipient, receiveToken });
 
     const tx = await method
       .accounts({

@@ -27,7 +27,7 @@ import XReserveBridge from "../../models/abi/XReserveBridge";
 import { encodeCctpHookForStellar } from "../cctp-utils";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
-import { bufferToSize, formatAddress, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
+import { bufferToSize, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { getAbrPayerTarget } from "./abr-payer";
 
 export class EvmBridgeService extends ChainBridgeService {
@@ -278,30 +278,20 @@ export class EvmBridgeService extends ChainBridgeService {
         }
       }
     } else if (params.destinationToken.chainType === ChainType.SRB && params.messenger === Messenger.CCTP_V2) {
-      const destinationCctpV2Address = params.destinationToken.cctpV2Address;
-      if (!destinationCctpV2Address) {
+      if (!params.destinationToken.cctpV2Address) {
         throw new SdkError("Destination token must contain 'cctpV2Address' for CCTP V2");
-      }
-      const recipient = formatAddress(destinationCctpV2Address, ChainType.SRB, ChainType.EVM);
-      const destinationCallerValue = await cctpBridgeContract.methods.otherBridges(toChainId).call();
-      const destinationCaller =
-        typeof destinationCallerValue === "string"
-          ? destinationCallerValue
-          : "0x" + Buffer.from(destinationCallerValue).toString("hex");
-      if (destinationCaller.toLowerCase() !== recipient.toLowerCase()) {
-        throw new SdkError(`CCTPv2 destination caller mismatch: expected ${recipient}, received ${destinationCaller}`);
       }
       const hookData = "0x" + encodeCctpHookForStellar(params.toAccountAddress).toString("hex");
 
       switch (gasFeePaymentMethod) {
         case FeePaymentMethod.WITH_ABR:
         case FeePaymentMethod.WITH_NATIVE_CURRENCY: {
-          sendMethod = cctpBridgeContract.methods.bridgeWithHook(amount, recipient, toChainId, 0, hookData);
+          sendMethod = cctpBridgeContract.methods.bridgeToStellar(amount, 0, hookData);
           value = totalFee;
           break;
         }
         case FeePaymentMethod.WITH_STABLECOIN: {
-          sendMethod = cctpBridgeContract.methods.bridgeWithHook(amount, recipient, toChainId, totalFee, hookData);
+          sendMethod = cctpBridgeContract.methods.bridgeToStellar(amount, totalFee, hookData);
           value = "0";
           break;
         }
@@ -417,9 +407,11 @@ export class EvmBridgeService extends ChainBridgeService {
   private async sendRawTransaction(rawTransaction: RawTransaction) {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
 
-    // @ts-expect-error DISABLE SITE SUGGESTED GAS FEE IN METAMASK
-    // prettier-ignore
-    const feeOptions: { maxPriorityFeePerGas?: number | string | BN; maxFeePerGas?: number | string | BN } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
+    // null for DISABLE SITE SUGGESTED GAS FEE IN METAMASK
+    const feeOptions: {
+      maxPriorityFeePerGas?: number | string | BN | null;
+      maxFeePerGas?: number | string | BN | null;
+    } = { maxPriorityFeePerGas: null, maxFeePerGas: null };
     const { transactionHash } = await this.web3.eth.sendTransaction({
       ...(rawTransaction as object),
       gas: estimateGas,

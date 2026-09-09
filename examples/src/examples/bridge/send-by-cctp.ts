@@ -10,7 +10,7 @@ import { sendEvmRawTransaction } from "../../utils/web3";
 import { ensure } from "../../utils/utils";
 import { getEnvVar } from "../../utils/env";
 
-const ETH_NODE_RPC_URL = getEnvVar("ETH_NODE_RPC_URL");
+const ETH_NODE_RPC_URL = getEnvVar("WEB3_PROVIDER_URL");
 const fromAccountAddress = getEnvVar("ETH_ACCOUNT_ADDRESS");
 const toAccountAddress = getEnvVar("ARB_ACCOUNT_ADDRESS");
 

@@ -53,11 +53,11 @@ describe("BridgeTxService CCTPv2 native builder", () => {
 
   function createPreparedData(destinationHookData?: Buffer) {
     const bridgeMethod = createMethod();
-    const bridgeWithHookMethod = createMethod();
+    const bridgeToStellarMethod = createMethod();
     const bridge = jest.fn().mockReturnValue(bridgeMethod);
-    const bridgeWithHook = jest.fn().mockReturnValue(bridgeWithHookMethod);
+    const bridgeToStellar = jest.fn().mockReturnValue(bridgeToStellarMethod);
     const program = {
-      methods: { bridge, bridgeWithHook },
+      methods: { bridge, bridgeToStellar },
     } as unknown as Program<CctpV2Bridge>;
     const connection = {
       getLatestBlockhash: jest.fn().mockResolvedValue({ blockhash: PUBLIC_KEY.toBase58() }),
@@ -65,7 +65,7 @@ describe("BridgeTxService CCTPv2 native builder", () => {
 
     return {
       bridge,
-      bridgeWithHook,
+      bridgeToStellar,
       data: {
         amount,
         cctpBridge: program,
@@ -84,23 +84,20 @@ describe("BridgeTxService CCTPv2 native builder", () => {
     };
   }
 
-  it("uses bridgeWithHook when prepared destination data contains a hook", async () => {
-    const { bridge, bridgeWithHook, data } = createPreparedData(hookData);
+  it("uses bridgeToStellar when prepared destination data contains a hook", async () => {
+    const { bridge, bridgeToStellar, data } = createPreparedData(hookData);
 
     await service.buildSwapAndBridgeCctpV2Transaction("SRB", data);
 
-    expect(bridgeWithHook).toHaveBeenCalledWith({
+    expect(bridgeToStellar).toHaveBeenCalledWith({
       amount,
-      destinationChainId: 7,
-      recipient: Array.from(OTHER_BRIDGE.toBytes()),
-      receiveToken: Array(32).fill(0),
       hookData,
     });
     expect(bridge).not.toHaveBeenCalled();
   });
 
   it("uses bridge when prepared destination data has no hook", async () => {
-    const { bridge, bridgeWithHook, data } = createPreparedData();
+    const { bridge, bridgeToStellar, data } = createPreparedData();
 
     await service.buildSwapAndBridgeCctpV2Transaction("SRB", data);
 
@@ -110,7 +107,7 @@ describe("BridgeTxService CCTPv2 native builder", () => {
       recipient: Array.from(OTHER_BRIDGE.toBytes()),
       receiveToken: Array(32).fill(0),
     });
-    expect(bridgeWithHook).not.toHaveBeenCalled();
+    expect(bridgeToStellar).not.toHaveBeenCalled();
   });
 });
 

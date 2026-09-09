@@ -5,7 +5,6 @@ import { ChainSymbol, ChainType, FeePaymentMethod, SendParams, TokenWithChainDet
 import { NodeRpcUrlsConfig } from "../../../../services";
 import { encodeCctpHookForStellar } from "../../../../services/bridge/cctp-utils";
 import { EvmBridgeService } from "../../../../services/bridge/evm";
-import { formatAddress } from "../../../../services/bridge/utils";
 import CctpBridge from "../../../../services/models/abi/CctpBridge";
 import { ChainDetailsMapWithFlags } from "../../../../tokens-info";
 import tokensGroupedByChain from "../../../data/tokens-info/ChainDetailsMap-ETH-USDT.json";
@@ -105,37 +104,25 @@ describe("EvmBridge", () => {
       gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
     };
 
-    test("builds bridgeWithHook with the Stellar bridge as mint recipient", async () => {
+    test("builds bridgeToStellar with the recipient encoded in the hook data", async () => {
       const cctpBridge = new new Web3().eth.Contract(CctpBridge.abi, sourceBridge);
-      const expectedRecipient = formatAddress(destinationBridge, ChainType.SRB, ChainType.EVM);
-      const bridgeWithHook = jest.fn(cctpBridge.methods.bridgeWithHook);
-      const otherBridges = jest
-        .fn()
-        .mockReturnValue({ call: jest.fn().mockResolvedValue(`0x${expectedRecipient.slice(2).toUpperCase()}`) });
+      const bridgeToStellar = jest.fn(cctpBridge.methods.bridgeToStellar);
       jest.spyOn(EvmBridgeService.prototype as any, "getCctpBridgeContract").mockReturnValue({
-        methods: { ...cctpBridge.methods, bridgeWithHook, otherBridges },
+        methods: { ...cctpBridge.methods, bridgeToStellar },
       });
 
       const actual = await evmBridge.buildRawTransactionSend(params);
       const expectedData = new Web3().eth.abi.encodeFunctionCall(
         {
-          name: "bridgeWithHook",
+          name: "bridgeToStellar",
           type: "function",
           inputs: [
             { name: "amount", type: "uint256" },
-            { name: "mintRecipient", type: "bytes32" },
-            { name: "destinationChainId", type: "uint256" },
             { name: "relayerFeeTokenAmount", type: "uint256" },
             { name: "hookData", type: "bytes" },
           ],
         },
-        [
-          "1330000",
-          formatAddress(destinationBridge, ChainType.SRB, ChainType.EVM),
-          "7",
-          "0",
-          "0x" + encodeCctpHookForStellar(recipient).toString("hex"),
-        ]
+        ["1330000", "0", "0x" + encodeCctpHookForStellar(recipient).toString("hex")]
       );
 
       expect(actual).toEqual({
@@ -144,22 +131,6 @@ describe("EvmBridge", () => {
         value: "20000000000000000",
         data: expectedData,
       });
-    });
-
-    test("rejects when the configured Stellar destination caller differs from the bridge", async () => {
-      const expected = formatAddress(destinationBridge, ChainType.SRB, ChainType.EVM);
-      const configured = "0x0000000000000000000000000000000000000000000000000000000000000001";
-      const bridgeWithHook = jest.fn();
-      const otherBridges = jest.fn().mockReturnValue({ call: jest.fn().mockResolvedValue(configured) });
-      jest.spyOn(EvmBridgeService.prototype as any, "getCctpBridgeContract").mockReturnValue({
-        methods: { bridgeWithHook, otherBridges },
-      });
-
-      await expect(evmBridge.buildRawTransactionSend(params)).rejects.toThrow(
-        `CCTPv2 destination caller mismatch: expected ${expected}, received ${configured}`
-      );
-      expect(otherBridges).toHaveBeenCalledWith(7);
-      expect(bridgeWithHook).not.toHaveBeenCalled();
     });
   });
 });

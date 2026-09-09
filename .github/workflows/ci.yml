@@ -89,10 +89,14 @@ jobs:
     if: github.event_name == 'push' && contains('["main", "beta", "alpha"]', github.ref_name)
     runs-on: ubuntu-latest
     environment: npm-registry
+    permissions:
+      contents: write # semantic-release: tags and GitHub Release
+      issues: write # semantic-release: comments on released issues
+      pull-requests: write # semantic-release: comments on released PRs
+      id-token: write # npm trusted publishing (OIDC)
     outputs:
       new-release-published: ${{ steps.check-release.outputs.released }}
       new-release-version: ${{ steps.check-release.outputs.version }}
-      mirror-enabled: ${{ steps.check-mirror.outputs.enabled }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -122,6 +126,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Update npm CLI (OIDC trusted publishing requires npm >= 11.5.1)
+        run: npm install -g npm@latest
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
@@ -129,9 +136,11 @@ jobs:
           path: dist/
 
       - name: Semantic Release
+        # npm auth is done via OIDC trusted publishing (id-token: write), no NPM_TOKEN needed.
+        # Provenance is auto-enabled by npm with OIDC; it requires package.json "repository.url"
+        # to match this (public) repo: https://github.com/allbridge-io/allbridge-core-js-sdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm run semantic-release
 
       - name: Check if new release was created
@@ -159,60 +168,6 @@ jobs:
             echo "released=false" >> $GITHUB_OUTPUT
             echo "No tags found"
           fi
-
-      - name: Check if mirror is enabled
-        id: check-mirror
-        run: |
-          if [ -n "$PUBLIC_REPO_PAT" ]; then
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          PUBLIC_REPO_PAT: ${{ secrets.PUBLIC_REPO_PAT }}
-
-  mirror-to-public:
-    name: Mirror to Public Repo
-    needs: release
-    if: |
-      github.repository == 'allbridge-io/allbridge-core-js-sdk' &&
-      needs.release.outputs.new-release-published == 'true' &&
-      needs.release.outputs.mirror-enabled == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout with full history
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Get release notes
-        id: release-info
-        run: |
-          VERSION="${{ needs.release.outputs.new-release-version }}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-          # Get release notes from GitHub Release and adjust links
-          NOTES=$(gh release view "v$VERSION" --json body -q .body 2>/dev/null || echo "Release v$VERSION")
-          echo "$NOTES" | sed 's|allbridge-io/allbridge-core-js-sdk|allbridge-public/allbridge-core-js-sdk|g' > /tmp/release-notes.md
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push to public repo
-        run: |
-          git remote add public https://x-access-token:${{ secrets.PUBLIC_REPO_PAT }}@github.com/allbridge-public/allbridge-core-js-sdk.git
-          git push public HEAD:${{ github.ref_name }} --force
-          git push public --tags --force
-
-      - name: Create GitHub Release in public repo
-        run: |
-          VERSION="${{ needs.release.outputs.new-release-version }}"
-          gh release create "v$VERSION" \
-            --repo allbridge-public/allbridge-core-js-sdk \
-            --title "v$VERSION" \
-            --notes-file /tmp/release-notes.md
-        env:
-          GH_TOKEN: ${{ secrets.PUBLIC_REPO_PAT }}
 
   docs:
     name: Deploy Docs

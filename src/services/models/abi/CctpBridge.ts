@@ -251,16 +251,6 @@ const artifact = {
           type: "uint256",
         },
         {
-          internalType: "bytes32",
-          name: "mintRecipient",
-          type: "bytes32",
-        },
-        {
-          internalType: "uint256",
-          name: "destinationChainId",
-          type: "uint256",
-        },
-        {
           internalType: "uint256",
           name: "relayerFeeTokenAmount",
           type: "uint256",
@@ -271,7 +261,7 @@ const artifact = {
           type: "bytes",
         },
       ],
-      name: "bridgeWithHook",
+      name: "bridgeToStellar",
       outputs: [],
       stateMutability: "payable",
       type: "function",
@@ -472,6 +462,19 @@ const artifact = {
           internalType: "bytes32",
           name: "cctpBridgeAddress",
           type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "stellarChainId",
+      outputs: [
+        {
+          internalType: "uint64",
+          name: "",
+          type: "uint64",
         },
       ],
       stateMutability: "view",
