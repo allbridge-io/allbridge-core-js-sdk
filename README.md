@@ -50,10 +50,10 @@ $ npm install @allbridge/bridge-core-sdk
 
 ### Find out how to integrate Allbridge Core SDK and Browser Extension Wallet
 
-[***Evm***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/evm.md)
-[***Solana***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/solana.md)
-[***Stellar***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/stellar.md)
-[***Tron***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/documentation/browser/tron.md)
+[***Evm***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/evm.md)
+[***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/solana.md)
+[***Stellar***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/stellar.md)
+[***Tron***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/documentation/browser/tron.md)
 
 ### 1. Initialize SDK
 
@@ -152,7 +152,7 @@ so it can be used as an additional check. If a messenger is not supported for th
 `CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError` or `SdkError` (for xReserve).
 
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-available-messengers.ts)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-available-messengers.ts)
 
 #### CCTP and CCTP V2
 
@@ -162,11 +162,11 @@ The fee is a share of the transferred amount, see `token.cctpFeeShare` / `token.
 use [`getAmountToBeReceived`](#calculating-amount-of-tokens-to-be-received-after-fee) to get the exact result.
 
 Examples:
-[***EVM (CCTP)***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/send-by-cctp.ts),
-[***EVM (CCTP V2)***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx.ts),
-[***EVM (CCTP V2, gas fee paid with stablecoin)***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-gas-fee-with-stables.ts),
-[***Solana***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-cctp.ts),
-[***Sui***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/sui/sui-build-send-tx.ts)
+[***EVM (CCTP)***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/send-by-cctp.ts),
+[***EVM (CCTP V2)***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx.ts),
+[***EVM (CCTP V2, gas fee paid with stablecoin)***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-gas-fee-with-stables.ts),
+[***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-cctp.ts),
+[***Sui***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/sui/sui-build-send-tx.ts)
 
 #### OFT
 
@@ -176,8 +176,8 @@ The fee share is provided by the Allbridge Core API for the route,
 use [`getAmountToBeReceived`](#calculating-amount-of-tokens-to-be-received-after-fee) to get the exact result.
 
 Examples:
-[***Tron***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/trx/trx-build-send-tx.ts),
-[***Tron (gas fee paid with stablecoin)***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/trx/trx-build-send-tx-gas-fee-with-stables.ts)
+[***Tron***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/trx/trx-build-send-tx.ts),
+[***Tron (gas fee paid with stablecoin)***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/trx/trx-build-send-tx-gas-fee-with-stables.ts)
 
 #### X_RESERVE
 
@@ -188,7 +188,7 @@ Because of the constant part of the fee there is a minimum transfer amount;
 Extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zero limits.
 
 Examples:
-[***Stacks***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/stx/stx-build-send-tx.ts)
+[***Stacks***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/stx/stx-build-send-tx.ts)
 
 ### 4.1 Approve the transfer of tokens (only for Evm, Tron)
 
@@ -247,7 +247,7 @@ import {
 } from "@allbridge/bridge-core-sdk";
 import * as dotenv from "dotenv";
 // Utils method
-// For more details, see Examples (https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/examples)
+// For more details, see Examples (https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
 // import { getEnvVar } from "../../../utils/env";
 // import { sendEvmRawTransaction } from "../../../utils/web3";
 // import { ensure } from "../../../utils/utils";
@@ -301,7 +301,7 @@ runExample();
 ```
 
 ***TIP:***
-For more details, see [***Examples***](https://github.com/allbridge-public/allbridge-core-js-sdk/tree/main/examples)
+For more details, see [***Examples***](https://github.com/allbridge-io/allbridge-core-js-sdk/tree/main/examples)
 
 ## Other operations
 
@@ -325,7 +325,7 @@ const rawTransactionSend = await sdk.bridge.rawTxBuilder.send(sendParams);
 
 ***TIP:***
 For more details, see [***Example
-***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-cctp.ts)
+***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-cctp.ts)
 
 ### Get information about sent transaction
 
@@ -364,7 +364,7 @@ const amountToSend = await sdk.getAmountToSend(
 ```
 
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/calculate-amounts.ts)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/calculate-amounts.ts)
 
 ### Getting the amount of gas fee
 
@@ -417,7 +417,7 @@ const extraGasLimits = await sdk.getExtraGasMaxLimits(
 ```
 
 ***TIP:***
-For more details, see [***Example***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-extra-gas-max-limits.ts)
+For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-extra-gas-max-limits.ts)
 
 ### Getting the average transfer time
 
