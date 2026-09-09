@@ -79,6 +79,10 @@ export interface AllbridgeCoreSdkOptions {
    * @deprecated Do not use.
    */
   tronJsonRpc?: string;
+  /**
+   * Solana CCTP / CCTP V2 program ids and CCTP domains, see {@link CctpParams}.
+   * Required for transfers with {@link Messenger.CCTP} and {@link Messenger.CCTP_V2} from Solana.
+   */
   cctpParams: CctpParams;
   /**
    * The number of seconds that pool information taken from the chain will be cached.
@@ -165,8 +169,8 @@ export class AllbridgeCoreSdk {
    * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
    *
    * @param type - A string value which specifies ChainDetailsMap to retrieve.
-   *               Can be either 'swap' for send or 'pool' for liquidity pools setup.
-   *               Defaults to 'swap'.
+   *               Defaults to 'swap' (tokens to send).
+   *               The 'pool' value (liquidity pools setup) is deprecated. Do not use.
    */
   /** @deprecated Do not use. */
   chainDetailsMap(type: "pool"): Promise<ChainDetailsMap>;
@@ -180,8 +184,8 @@ export class AllbridgeCoreSdk {
    * Returns a list of supported {@link TokenWithChainDetails | tokens}.
    *
    * @param type - A string value which specifies a set of tokens to retrieve.
-   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
-   *               Defaults to 'swap'.
+   *               Defaults to 'swap' (tokens to send).
+   *               The 'pool' value (liquidity pools operations) is deprecated. Do not use.
    * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
    */
   /** @deprecated Do not use. */
@@ -196,8 +200,8 @@ export class AllbridgeCoreSdk {
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
    * @param type - A string value which specifies a set of tokens to retrieve.
-   *               Can be either 'swap' for tokens to send or 'pool' for liquidity pools operations.
-   *               Defaults to 'swap'.
+   *               Defaults to 'swap' (tokens to send).
+   *               The 'pool' value (liquidity pools operations) is deprecated. Do not use.
    */
   /** @deprecated Do not use. */
   tokensByChain(chainSymbol: string, type: "pool"): Promise<TokenWithChainDetails[]>;
@@ -319,8 +323,7 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
    *
-   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
-   * {@link getAmountToBeReceived}, {@link getAmountToBeReceivedFromChain}, or {@link getAmountToBeReceivedFromPools}.
+   * @deprecated Use {@link getGasFeeOptions} and {@link getAmountToBeReceived}.
    */
   async getAmountToBeReceivedAndGasFeeOptions(
     amountToSendFloat: BigSource,
@@ -344,8 +347,7 @@ export class AllbridgeCoreSdk {
    * @param destinationChainToken selected token on the destination chain
    * @param messenger
    *
-   * @Deprecated Use {@link getGasFeeOptions} and separately call one of:
-   * {@link getAmountToSend}, {@link getAmountToSendFromChain}, or {@link getAmountToSendFromPools}.
+   * @deprecated Use {@link getGasFeeOptions} and {@link getAmountToSend}.
    */
   async getAmountToSendAndGasFeeOptions(
     amountToBeReceivedFloat: BigSource,
@@ -362,11 +364,13 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens to be received as a result of transfer.
+   * Calculates the amount of tokens to be received as a result of transfer
+   * after applying the fee of the selected messenger.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger selected messenger
+   * @param messenger selected messenger, see {@link ActiveMessenger}
+   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
    */
   /** @deprecated Do not use. */
   getAmountToBeReceived(
@@ -486,11 +490,13 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer.
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer
+   * after applying the fee of the selected messenger.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger selected messenger
+   * @param messenger selected messenger, see {@link ActiveMessenger}
+   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
    */
   /** @deprecated Do not use. */
   getAmountToSend(
@@ -613,7 +619,7 @@ export class AllbridgeCoreSdk {
    * Fetches possible ways to pay the transfer gas fee.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger
+   * @param messenger selected messenger, see {@link ActiveMessenger}
    * @returns {@link GasFeeOptions}
    */
   async getGasFeeOptions(
@@ -628,7 +634,7 @@ export class AllbridgeCoreSdk {
    * Gets the average time in ms to complete a transfer for given tokens and messenger.
    * @param sourceChainToken selected token on the source chain.
    * @param destinationChainToken selected token on the destination chain.
-   * @param messenger
+   * @param messenger selected messenger, see {@link ActiveMessenger}
    * @returns Average transfer time in milliseconds or null if a given combination of tokens and messenger is not supported.
    */
   getAverageTransferTime(
@@ -673,9 +679,10 @@ export class AllbridgeCoreSdk {
 
   /**
    * Get possible limit of extra gas amount.
+   * For {@link Messenger.X_RESERVE} extra gas is not supported and zero limits are returned.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
-   * @param messenger selected Messenger
+   * @param messenger selected messenger, see {@link ActiveMessenger}
    * @returns {@link ExtraGasMaxLimitResponse}
    */
   /** @deprecated Do not use. */

@@ -90,6 +90,9 @@ export enum FeePaymentMethod {
   WITH_ABR = "abr",
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface AmountsAndGasFeeOptions {
   /**
    * The floating point amount of tokens to be sent (not including gas fee).

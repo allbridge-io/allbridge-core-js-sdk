@@ -116,18 +116,45 @@ export type MessengerTransferTimeDTO = {
   [messenger in MessengerKeyDTO]: number | null;
 };
 
+/**
+ * Bridging protocol used for a transfer.
+ * Only {@link ActiveMessenger} values are supported.
+ */
 export enum Messenger {
   /** @deprecated Do not use. */
   ALLBRIDGE = 1,
   /** @deprecated Do not use. */
   WORMHOLE = 2,
+  /**
+   * Circle CCTP.
+   * Route is supported when `cctpAddress` is defined on both source and destination tokens.
+   */
   CCTP = 3,
+  /**
+   * Circle CCTP V2.
+   * Route is supported when `cctpV2Address` is defined on both source and destination tokens.
+   */
   CCTP_V2 = 4,
+  /**
+   * LayerZero OFT.
+   * Route is supported when source and destination tokens have the same `oftId`
+   * and `oftBridgeAddress` is defined on both chains.
+   */
   OFT = 5,
+  /**
+   * xReserve.
+   * Route is supported when `xReserve` is defined on both source and destination tokens.
+   */
   X_RESERVE = 6,
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export type LegacyMessenger = Messenger.ALLBRIDGE | Messenger.WORMHOLE;
+/**
+ * Messengers supported for transfers: {@link Messenger.CCTP}, {@link Messenger.CCTP_V2}, {@link Messenger.OFT}, {@link Messenger.X_RESERVE}
+ */
 export type ActiveMessenger = Exclude<Messenger, LegacyMessenger>;
 
 export interface ReceiveTransactionCostRequest {
