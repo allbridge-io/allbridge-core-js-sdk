@@ -19,6 +19,7 @@
     "run:bridge:trx:send": "tsx src/examples/bridge/trx/trx-build-send-tx.ts",
     "run:bridge:trx:sendWithStables": "tsx src/examples/bridge/trx/trx-build-send-tx-gas-fee-with-stables.ts",
     "run:bridge:calculateAmount": "tsx src/examples/bridge/calculate-amounts.ts",
+    "run:bridge:getAvailableMessengers": "tsx src/examples/bridge/get-available-messengers.ts",
     "run:bridge:getAvetageTransferTime": "tsx src/examples/bridge/get-average-transfer-time.ts",
     "run:bridge:getTransferStatus": "tsx src/examples/bridge/get-transfer-status.ts",
     "run:bridge:getExtraGasMaxLimits": "tsx src/examples/bridge/get-extra-gas-max-limits.ts",

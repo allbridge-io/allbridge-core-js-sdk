@@ -1,3 +1,4 @@
+// Liquidity pools are deprecated. Only withdrawal of the previously deposited liquidity is supported.
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { ensure } from "../../../utils/utils";

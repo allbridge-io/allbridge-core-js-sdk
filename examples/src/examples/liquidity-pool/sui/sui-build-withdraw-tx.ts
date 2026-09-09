@@ -1,3 +1,4 @@
+// Liquidity pools are deprecated. Only withdrawal of the previously deposited liquidity is supported.
 import * as dotenv from "dotenv";
 import { getEnvVar } from "../../../utils/env";
 import { AllbridgeCoreSdk, nodeRpcUrlsDefault, RawSuiTransaction } from "@allbridge/bridge-core-sdk";

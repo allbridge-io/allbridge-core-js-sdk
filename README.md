@@ -151,6 +151,9 @@ function getAvailableMessengers(sourceToken: TokenWithChainDetails, destinationT
 so it can be used as an additional check. If a messenger is not supported for the chosen route, the SDK methods throw
 `CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError` or `SdkError` (for xReserve).
 
+***TIP:***
+For more details, see [***Example***](https://github.com/allbridge-public/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-available-messengers.ts)
+
 #### CCTP and CCTP V2
 
 Native USDC transfers through Circle CCTP.
