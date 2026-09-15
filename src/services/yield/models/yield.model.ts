@@ -1,21 +1,33 @@
 import { Big } from "big.js";
 import { TokenWithChainDetails } from "../../../tokens-info";
 
+/**
+ * @deprecated Do not use.
+ */
 export type TokenWithChainDetailsYield = TokenWithChainDetails & {
   yieldAddress: string;
   yieldId: string;
 };
 
+/**
+ * @deprecated Do not use.
+ */
 export interface CYDToken extends TokenWithChainDetails {
   yieldAddress: string;
   tokens: TokenWithChainDetailsYield[];
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldGetAllowanceParams {
   token: TokenWithChainDetailsYield;
   owner: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldCheckAllowanceParams extends YieldGetAllowanceParams {
   /**
    * The float amount of tokens to check the allowance.
@@ -23,11 +35,17 @@ export interface YieldCheckAllowanceParams extends YieldGetAllowanceParams {
   amount: string | number | Big;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldBalanceParams {
   owner: string;
   token: Pick<CYDToken, "chainSymbol" | "yieldAddress">;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldGetEstimatedAmountOnDepositParams {
   /**
    * The float amount of tokens to deposit.
@@ -36,6 +54,9 @@ export interface YieldGetEstimatedAmountOnDepositParams {
   token: TokenWithChainDetailsYield;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldGetWithdrawProportionAmountParams {
   /**
    * The float amount of tokens to withdraw.
@@ -45,6 +66,9 @@ export interface YieldGetWithdrawProportionAmountParams {
   cydToken: Pick<CYDToken, "chainSymbol" | "yieldAddress" | "tokens">;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldWithdrawAmount {
   /**
    * The float amount of tokens to be withdrawn.
@@ -53,6 +77,9 @@ export interface YieldWithdrawAmount {
   token: TokenWithChainDetailsYield;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldApproveParams {
   /**
    * The token info
@@ -72,6 +99,9 @@ export interface YieldApproveParams {
   amount?: string | number | Big;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldDepositParams {
   /**
    * The account address to operate tokens with.
@@ -92,6 +122,9 @@ export interface YieldDepositParams {
   minVirtualAmount: string;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldWithdrawParams {
   /**
    * The account address to operate tokens with.

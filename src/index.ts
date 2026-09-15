@@ -138,6 +138,9 @@ export class AllbridgeCoreSdk {
    * @deprecated Do not use.
    */
   pool: LiquidityPoolService;
+  /**
+   * @deprecated Do not use.
+   */
   yield: YieldService;
   utils: Utils;
 
@@ -166,46 +169,65 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * Returns {@link ChainDetailsMap} containing a list of supported tokens groped by chain.
-   *
-   * @param type - A string value which specifies ChainDetailsMap to retrieve.
-   *               Defaults to 'swap' (tokens to send).
-   *               The 'pool' value (liquidity pools setup) is deprecated. Do not use.
+   * Returns {@link ChainDetailsMap} containing a list of tokens for liquidity pools operations grouped by chain.
+   * @param type - 'pool'
+   * @deprecated Do not use.
    */
-  /** @deprecated Do not use. */
   chainDetailsMap(type: "pool"): Promise<ChainDetailsMap>;
+  /**
+   * Returns {@link ChainDetailsMap} containing a list of supported tokens grouped by chain.
+   * @param type - Optional. 'swap' (tokens to send) is the only supported value and the default.
+   */
   chainDetailsMap(type?: "swap"): Promise<ChainDetailsMap>;
+  /**
+   * Returns {@link ChainDetailsMap} containing a list of supported tokens grouped by chain.
+   * @param type - 'swap' for tokens to send. The 'pool' value (liquidity pools setup) is deprecated. Do not use.
+   */
   chainDetailsMap(type: "swap" | "pool"): Promise<ChainDetailsMap>;
   async chainDetailsMap(type: "swap" | "pool" = "swap"): Promise<ChainDetailsMap> {
     return this.service.chainDetailsMap(type);
   }
 
   /**
+   * Returns a list of {@link TokenWithChainDetails | tokens} for liquidity pools operations.
+   * @param type - 'pool'
+   * @deprecated Do not use.
+   */
+  tokens(type: "pool"): Promise<TokenWithChainDetails[]>;
+  /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens}.
-   *
-   * @param type - A string value which specifies a set of tokens to retrieve.
-   *               Defaults to 'swap' (tokens to send).
-   *               The 'pool' value (liquidity pools operations) is deprecated. Do not use.
+   * @param type - Optional. 'swap' (tokens to send) is the only supported value and the default.
    * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
    */
-  /** @deprecated Do not use. */
-  tokens(type: "pool"): Promise<TokenWithChainDetails[]>;
   tokens(type?: "swap"): Promise<TokenWithChainDetails[]>;
+  /**
+   * Returns a list of supported {@link TokenWithChainDetails | tokens}.
+   * @param type - 'swap' for tokens to send. The 'pool' value (liquidity pools operations) is deprecated. Do not use.
+   * @returns A promise that resolves to an array of {@link TokenWithChainDetails}.
+   */
   tokens(type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokens(type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
     return this.service.tokens(type);
   }
 
   /**
+   * Returns a list of {@link TokenWithChainDetails | tokens} for liquidity pools operations on the selected chain.
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param type - 'pool'
+   * @deprecated Do not use.
+   */
+  tokensByChain(chainSymbol: string, type: "pool"): Promise<TokenWithChainDetails[]>;
+  /**
    * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
    * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
-   * @param type - A string value which specifies a set of tokens to retrieve.
-   *               Defaults to 'swap' (tokens to send).
-   *               The 'pool' value (liquidity pools operations) is deprecated. Do not use.
+   * @param type - Optional. 'swap' (tokens to send) is the only supported value and the default.
    */
-  /** @deprecated Do not use. */
-  tokensByChain(chainSymbol: string, type: "pool"): Promise<TokenWithChainDetails[]>;
   tokensByChain(chainSymbol: string, type?: "swap"): Promise<TokenWithChainDetails[]>;
+  /**
+   * Returns a list of supported {@link TokenWithChainDetails | tokens} on the selected chain.
+   * @param chainSymbol - The symbol of the chain representing one of the supported blockchain networks (e.g., "ETH" for Ethereum). For more details, see: {@link ChainSymbol}.
+   * @param type - 'swap' for tokens to send. The 'pool' value (liquidity pools operations) is deprecated. Do not use.
+   */
   tokensByChain(chainSymbol: string, type: "swap" | "pool"): Promise<TokenWithChainDetails[]>;
   async tokensByChain(chainSymbol: string, type: "swap" | "pool" = "swap"): Promise<TokenWithChainDetails[]> {
     return this.service.tokensByChain(chainSymbol, type);
@@ -364,6 +386,20 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Calculates the amount of tokens to be received as a result of transfer through a legacy messenger.
+   * @param amountToSendFloat the amount of tokens that will be sent
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger {@link LegacyMessenger}
+   * @deprecated Do not use.
+   */
+  getAmountToBeReceived(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<string>;
+  /**
    * Calculates the amount of tokens to be received as a result of transfer
    * after applying the fee of the selected messenger.
    * @param amountToSendFloat the amount of tokens that will be sent
@@ -372,13 +408,6 @@ export class AllbridgeCoreSdk {
    * @param messenger selected messenger, see {@link ActiveMessenger}
    * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
    */
-  /** @deprecated Do not use. */
-  getAmountToBeReceived(
-    amountToSendFloat: BigSource,
-    sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
-    messenger: LegacyMessenger
-  ): Promise<string>;
   getAmountToBeReceived(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -405,8 +434,8 @@ export class AllbridgeCoreSdk {
    * @param messenger selected messenger
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
+   * @deprecated Do not use.
    */
-  /** @deprecated Do not use. */
   getAmountToBeReceivedFromChain(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -444,8 +473,8 @@ export class AllbridgeCoreSdk {
    * @param sourcePool source token pool state
    * @param destinationPool destination token pool state
    * @param messenger selected messenger
+   * @deprecated Do not use.
    */
-  /** @deprecated Do not use. */
   getAmountToBeReceivedFromPools(
     amountToSendFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -490,6 +519,20 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer through a legacy messenger.
+   * @param amountToBeReceivedFloat the amount of tokens that should be received
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger {@link LegacyMessenger}
+   * @deprecated Do not use.
+   */
+  getAmountToSend(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<string>;
+  /**
    * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer
    * after applying the fee of the selected messenger.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
@@ -498,13 +541,6 @@ export class AllbridgeCoreSdk {
    * @param messenger selected messenger, see {@link ActiveMessenger}
    * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
    */
-  /** @deprecated Do not use. */
-  getAmountToSend(
-    amountToBeReceivedFloat: BigSource,
-    sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
-    messenger: LegacyMessenger
-  ): Promise<string>;
   getAmountToSend(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -531,8 +567,8 @@ export class AllbridgeCoreSdk {
    * @param messenger selected messenger
    * @param sourceProvider Optional. source chain Provider
    * @param destinationProvider Optional. destination chain Provider
+   * @deprecated Do not use.
    */
-  /** @deprecated Do not use. */
   getAmountToSendFromChain(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -570,8 +606,8 @@ export class AllbridgeCoreSdk {
    * @param sourcePool source token pool state
    * @param destinationPool destination token pool state
    * @param messenger selected messenger
+   * @deprecated Do not use.
    */
-  /** @deprecated Do not use. */
   getAmountToSendFromPools(
     amountToBeReceivedFloat: BigSource,
     sourceChainToken: TokenWithChainDetails,
@@ -678,6 +714,18 @@ export class AllbridgeCoreSdk {
   }
 
   /**
+   * Get possible limit of extra gas amount for a legacy messenger.
+   * @param sourceChainToken selected token on the source chain
+   * @param destinationChainToken selected token on the destination chain
+   * @param messenger {@link LegacyMessenger}
+   * @deprecated Do not use.
+   */
+  getExtraGasMaxLimits(
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails,
+    messenger: LegacyMessenger
+  ): Promise<ExtraGasMaxLimitResponse>;
+  /**
    * Get possible limit of extra gas amount.
    * For {@link Messenger.X_RESERVE} extra gas is not supported and zero limits are returned.
    * @param sourceChainToken selected token on the source chain
@@ -685,12 +733,6 @@ export class AllbridgeCoreSdk {
    * @param messenger selected messenger, see {@link ActiveMessenger}
    * @returns {@link ExtraGasMaxLimitResponse}
    */
-  /** @deprecated Do not use. */
-  getExtraGasMaxLimits(
-    sourceChainToken: TokenWithChainDetails,
-    destinationChainToken: TokenWithChainDetails,
-    messenger: LegacyMessenger
-  ): Promise<ExtraGasMaxLimitResponse>;
   getExtraGasMaxLimits(
     sourceChainToken: TokenWithChainDetails,
     destinationChainToken: TokenWithChainDetails,
@@ -730,7 +772,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @deprecated Use {@link getSendAmountDetails}
+   * @deprecated Do not use.
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken
@@ -744,7 +786,7 @@ export class AllbridgeCoreSdk {
   }
 
   /**
-   * @deprecated Use {@link getAmountToBeReceived} and then {@link getSendAmountDetails}
+   * @deprecated Do not use.
    * @param amountInTokenPrecision
    * @param sourceToken
    * @param destToken

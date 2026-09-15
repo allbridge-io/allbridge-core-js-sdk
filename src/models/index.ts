@@ -56,8 +56,11 @@ export {
 } from "../utils/calculation/swap-and-bridge-fee-calc";
 export { SendAmountDetails, AmountImpact } from "../utils/calculation/swap-and-bridge-details";
 export {
+  AbrPayerAvailability,
+  AbrPayerChainInfo,
   PoolInfo,
   TokenCoreFields,
+  XReserveTokenInfo,
   TokenWithChainDetails,
   TransferTime,
   TxCostAmount,

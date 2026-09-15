@@ -52,6 +52,7 @@ export interface ChainDetails extends BasicChainProperties {
   oftBridgeAddress?: string;
   /**
    * Yield contract address
+   * @deprecated Do not use.
    */
   yieldAddress?: string;
   /**
@@ -187,6 +188,9 @@ export interface Token {
    */
   lpRate: string;
 
+  /**
+   * @deprecated Do not use.
+   */
   yieldId?: number;
   /**
    * Sui addresses

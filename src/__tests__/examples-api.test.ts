@@ -40,7 +40,12 @@ describe("examples public API usage", () => {
       "examples/src/examples/liquidity-pool/sui/sui-build-withdraw-tx.ts",
       "examples/src/examples/liquidity-pool/trx/trx-build-withdraw-tx.ts",
     ]);
-    const liquidityWithdrawalTransactionApi = new Set(["sdk.pool.rawTxBuilder.withdraw", "pool", "rawTxBuilder"]);
+    const liquidityWithdrawalTransactionApi = new Set([
+      "sdk.pool.rawTxBuilder.withdraw",
+      "pool",
+      "rawTxBuilder",
+      "RawPoolSolanaTransaction",
+    ]);
     const liquidityWithdrawalAmountExamples = new Set([
       "examples/src/examples/liquidity-pool/alg/get-amount-to-be-withdrawn.ts",
       "examples/src/examples/liquidity-pool/evm/get-amount-to-be-withdrawn.ts",

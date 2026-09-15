@@ -20,6 +20,9 @@ export interface ChainDetailsDTO {
   oftBridgeAddress?: string;
   abrPayer?: AbrPayerChainInfoDTO;
   swapAddress: string;
+  /**
+   * @deprecated Do not use.
+   */
   yieldAddress?: string;
   transferTime: TransferTimeDTO;
   txCostAmount: TxCostAmountDTO;
@@ -60,6 +63,9 @@ export interface TokenDTO {
   cctpV2Address?: string;
   cctpFeeShare?: string;
   cctpV2FeeShare?: string;
+  /**
+   * @deprecated Do not use.
+   */
   yieldId?: number;
   xReserve?: XReserveDTO;
   flags: {

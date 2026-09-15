@@ -40,8 +40,7 @@
     "run:liquidity-pool:sui:withdraw": "tsx src/examples/liquidity-pool/sui/sui-build-withdraw-tx.ts",
     "run:liquidity-pool:sui:getAmountToBeWithdrawn": "tsx src/examples/liquidity-pool/sui/get-amount-to-be-withdrawn.ts",
     "run:liquidity-pool:trx:withdraw": "tsx src/examples/liquidity-pool/trx/trx-build-withdraw-tx.ts",
-    "run:liquidity-pool:trx:getAmountToBeWithdrawn": "tsx src/examples/liquidity-pool/trx/get-amount-to-be-withdrawn.ts",
-    "run:yield:evm:example": "tsx src/examples/yield/evm/example.ts"
+    "run:liquidity-pool:trx:getAmountToBeWithdrawn": "tsx src/examples/liquidity-pool/trx/get-amount-to-be-withdrawn.ts"
   },
   "dependencies": {
     "@allbridge/bridge-core-sdk": "file:..",

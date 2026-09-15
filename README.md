@@ -13,7 +13,7 @@
 
 # Allbridge Core SDK
 
-Provides an easy integration with the Allbridge Core ChainBridgeService for DApps in the browser or Node.js
+Provides an easy integration with the Allbridge Core bridge for DApps in the browser or Node.js
 
 ## Table of Contents
 
@@ -235,7 +235,7 @@ const rawTx = await sdk.bridge.rawTxBuilder.send({
 
 ### Full example
 
-Swap USDC on ETH chain to USDC on ARB chain using CCTP V2
+Send USDC from ETH chain to ARB chain using CCTP V2
 
 ```ts
 import {

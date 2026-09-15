@@ -9,11 +9,15 @@ import { TokenService } from "../token";
 import { YieldApproveParams, YieldDepositParams, YieldWithdrawParams } from "./models/yield.model";
 import { getChainYieldService } from "./index";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface RawYieldTransactionBuilder {
   /**
    * Creates a Raw Transaction for approving tokens usage by the Yield
    * @param approveData
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   approve(approveData: YieldApproveParams, provider?: Provider): Promise<RawTransaction>;
 
@@ -21,6 +25,7 @@ export interface RawYieldTransactionBuilder {
    * Creates a Raw Transaction for depositing tokens to Yield
    * @param params
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   deposit(params: YieldDepositParams, provider?: Provider): Promise<RawTransaction>;
 
@@ -28,10 +33,14 @@ export interface RawYieldTransactionBuilder {
    * Creates a Raw Transaction for withdrawing tokens from Yield
    * @param params
    * @param provider - will be used to access the network
+   * @deprecated Do not use.
    */
   withdraw(params: YieldWithdrawParams, provider?: Provider): Promise<RawTransaction>;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class DefaultRawYieldTransactionBuilder implements RawYieldTransactionBuilder {
   constructor(
     private api: AllbridgeCoreClient,

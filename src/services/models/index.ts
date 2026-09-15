@@ -75,6 +75,9 @@ export type RawTransaction =
 export type RawEvmTransaction = EssentialWeb3Transaction;
 export type RawTronTransaction = Types.Transaction;
 export type RawSorobanTransaction = string;
+/**
+ * @deprecated Do not use.
+ */
 export type RawPoolSolanaTransaction = SolanaWeb3Transaction;
 export type RawBridgeSolanaTransaction = VersionedTransaction;
 export type RawSuiTransaction = string;

@@ -27,11 +27,18 @@ import { DefaultRawYieldTransactionBuilder, RawYieldTransactionBuilder } from ".
 import { TronYieldService } from "./trx";
 import { isYieldSupported } from "./validations";
 
+/**
+ * @deprecated Do not use.
+ */
 export interface YieldService {
+  /**
+   * @deprecated Do not use.
+   */
   rawTxBuilder: RawYieldTransactionBuilder;
 
   /**
    * Returns a list of supported {@link CYDToken}.
+   * @deprecated Do not use.
    */
   getCYDTokens(): Promise<CYDToken[]>;
 
@@ -40,6 +47,7 @@ export interface YieldService {
    * @param provider - will be used to access the network
    * @param params See {@link YieldGetAllowanceParams}
    * @returns the amount of approved tokens
+   * @deprecated Do not use.
    */
   getAllowance(params: YieldGetAllowanceParams, provider?: Provider): Promise<string>;
 
@@ -48,6 +56,7 @@ export interface YieldService {
    * @param params See {@link YieldCheckAllowanceParams}
    * @param provider - will be used to access the network
    * @returns true if the amount of approved tokens is enough to make a transfer
+   * @deprecated Do not use.
    */
   checkAllowance(params: YieldCheckAllowanceParams, provider?: Provider): Promise<boolean>;
 
@@ -56,6 +65,7 @@ export interface YieldService {
    * @param params
    * @param provider
    * @returns Token balance
+   * @deprecated Do not use.
    */
   balanceOf(params: YieldBalanceParams, provider?: Provider): Promise<string>;
 
@@ -64,6 +74,7 @@ export interface YieldService {
    * @param params - will be used to access the network
    * @param provider - will be used to access the network
    * @returns amount
+   * @deprecated Do not use.
    */
   getEstimatedAmountOnDeposit(params: YieldGetEstimatedAmountOnDepositParams, provider?: Provider): Promise<string>;
 
@@ -72,6 +83,7 @@ export interface YieldService {
    * @param params
    * @param provider - will be used to access the network
    * @returns amounts
+   * @deprecated Do not use.
    */
   getWithdrawAmounts(
     params: YieldGetWithdrawProportionAmountParams,
@@ -79,6 +91,9 @@ export interface YieldService {
   ): Promise<YieldWithdrawAmount[]>;
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export class DefaultYieldService implements YieldService {
   public rawTxBuilder: RawYieldTransactionBuilder;
 
@@ -192,6 +207,9 @@ export class DefaultYieldService implements YieldService {
   }
 }
 
+/**
+ * @deprecated Do not use.
+ */
 export function getChainYieldService(
   chainSymbol: string,
   api: AllbridgeCoreClient,
