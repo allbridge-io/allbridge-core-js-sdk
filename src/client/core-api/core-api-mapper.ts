@@ -40,31 +40,42 @@ export function mapChainDetailsResponseToChainDetailsMap(response: ChainDetailsR
 
 /**
  * @deprecated Do not use.
+ * The current Core API does not serve pool data, so the result is empty for it.
  */
 export function mapChainDetailsResponseToPoolInfoMap(response: ChainDetailsResponse): PoolInfoMap {
   const poolInfoMap: PoolInfoMap = {};
   for (const [chainSymbolValue, chainDetailsDTO] of Object.entries(response)) {
     const chainSymbol = chainSymbolValue;
     for (const token of chainDetailsDTO.tokens) {
-      const poolKey = mapPoolKeyObjectToPoolKey({
-        chainSymbol,
-        poolAddress: token.poolAddress,
-      });
-      const imbalance = calculatePoolInfoImbalance(token.poolInfo);
-      poolInfoMap[poolKey] = { ...token.poolInfo, imbalance };
+      const { poolAddress, poolInfo } = token;
+      if (!poolAddress || !poolInfo) {
+        continue;
+      }
+      const poolKey = mapPoolKeyObjectToPoolKey({ chainSymbol, poolAddress });
+      const imbalance = calculatePoolInfoImbalance(poolInfo);
+      poolInfoMap[poolKey] = { ...poolInfo, imbalance };
     }
   }
   return poolInfoMap;
 }
 
+/**
+ * Flags assumed for tokens served without them: the current Core API returns every token as a token to send
+ * and has no liquidity pools.
+ */
+const DEFAULT_TOKEN_FLAGS: TokenWithChainDetailsWithFlags["flags"] = { swap: true, pool: false };
+
 function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenDTO): TokenWithChainDetailsWithFlags {
   const { name: chainName, ...chainDetailsWithoutName } = chainDetails;
-  const { poolInfo: _poolInfo, ...dtoWithoutPoolInfo } = dto;
+  const { poolInfo: _poolInfo, flags, ...dtoWithoutPoolInfo } = dto;
+  // The deprecated pool-era token fields (poolAddress, feeShare, apr, lpRate, ...) are kept on the public type
+  // for backward compatibility but are undefined when served by the current Core API.
   return {
     ...dtoWithoutPoolInfo,
     ...chainDetailsWithoutName,
     chainName,
-  };
+    flags: flags ?? { ...DEFAULT_TOKEN_FLAGS },
+  } as TokenWithChainDetailsWithFlags;
 }
 
 function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
@@ -106,7 +117,9 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
   if (!basicChainProperties) {
     return null;
   }
-  const chainDetails: ChainDetails = {
+  // bridgeAddress is deprecated and undefined when served by the current Core API; the public type keeps it
+  // for backward compatibility.
+  const chainDetails = {
     ...basicChainProperties,
     allbridgeChainId: dto.chainId,
     bridgeId: dto.bridgeId,
@@ -129,7 +142,7 @@ function mapChainDetailsFromDto(chainSymbol: string, dto: ChainDetailsDTO): Chai
     txCostAmount: dto.txCostAmount,
     confirmations: dto.confirmations,
     suiAddresses: dto.suiAddresses,
-  };
+  } as ChainDetails;
   return {
     ...chainDetails,
     tokens: dto.tokens.map((tokenDto) => mapTokenWithChainDetailsFromDto(chainDetails, tokenDto)),

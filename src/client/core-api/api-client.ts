@@ -2,17 +2,12 @@ import { Axios, AxiosHeaders, create } from "axios";
 import { InvalidMessengerOptionError } from "../../exceptions";
 import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
-import {
-  mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolInfoMap,
-  mapPoolInfoResponseToPoolInfoMap,
-} from "./core-api-mapper";
+import { mapChainDetailsResponseToChainDetailsMap, mapChainDetailsResponseToPoolInfoMap } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
   GasBalanceResponse,
   Messenger,
   PendingInfoResponse,
-  PoolInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -84,10 +79,13 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
-  /** @deprecated Do not use. */
-  async getPendingInfo(): Promise<PendingInfoResponse> {
-    const { data } = await this.api.get<PendingInfoResponse>("/pending-info");
-    return data;
+  /**
+   * @deprecated Do not use.
+   * The `/pending-info` endpoint was removed from the Core API together with the liquidity pools;
+   * always resolves to an empty object without calling the server.
+   */
+  getPendingInfo(): Promise<PendingInfoResponse> {
+    return Promise.resolve({});
   }
 
   async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
@@ -118,18 +116,12 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
-  /** @deprecated Do not use. */
-  async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
-    const poolKeys = pools instanceof Array ? pools : [pools];
-    const { data } = await this.api.post<PoolInfoResponse>(
-      "/pool-info",
-      { pools: poolKeys },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return mapPoolInfoResponseToPoolInfoMap(data);
+  /**
+   * @deprecated Do not use.
+   * The `/pool-info` endpoint was removed from the Core API together with the liquidity pools;
+   * always resolves to an empty map without calling the server.
+   */
+  getPoolInfoMap(_pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
+    return Promise.resolve({});
   }
 }

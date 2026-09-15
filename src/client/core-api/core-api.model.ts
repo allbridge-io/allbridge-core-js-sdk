@@ -15,11 +15,12 @@ export interface ChainDetailsDTO {
   chainId: number;
   bridgeId?: string;
   paddingUtilId?: string;
-  /** @deprecated Do not use. */
-  bridgeAddress: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  bridgeAddress?: string;
   oftBridgeAddress?: string;
   abrPayer?: AbrPayerChainInfoDTO;
-  swapAddress: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  swapAddress?: string;
   /**
    * @deprecated Do not use.
    */
@@ -43,22 +44,23 @@ export interface TokenDTO {
   symbol: string;
   name: string;
   decimals: number;
-  /** @deprecated Do not use. */
-  poolAddress: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  poolAddress?: string;
   tokenAddress: string;
-  /** @deprecated Do not use. */
-  poolInfo: PoolInfoDTO;
+  originTokenAddress?: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  poolInfo?: PoolInfoDTO;
   oftId?: string;
-  /** @deprecated Do not use. */
-  feeShare: string;
-  /** @deprecated Do not use. */
-  apr: string;
-  /** @deprecated Do not use. */
-  apr7d: string;
-  /** @deprecated Do not use. */
-  apr30d: string;
-  /** @deprecated Do not use. */
-  lpRate: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  feeShare?: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  apr?: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  apr7d?: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  apr30d?: string;
+  /** @deprecated Do not use. Not served by the current Core API. */
+  lpRate?: string;
   cctpAddress?: string;
   cctpV2Address?: string;
   cctpFeeShare?: string;
@@ -68,7 +70,11 @@ export interface TokenDTO {
    */
   yieldId?: number;
   xReserve?: XReserveDTO;
-  flags: {
+  /**
+   * Optional: the current Core API always returns all tokens and omits the flags,
+   * in which case every token is treated as `swap: true, pool: false`.
+   */
+  flags?: {
     swap: boolean;
     /** @deprecated Do not use. */
     pool: boolean;

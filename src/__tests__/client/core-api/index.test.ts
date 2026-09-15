@@ -2,17 +2,16 @@ import nock from "nock";
 import { ChainSymbol } from "../../../chains/chain.enums";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
+  AddressStatus,
   Messenger,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
-import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../../tokens-info";
-import poolMap from "../../data/pool-info/pool-info-map.json";
+import { ChainDetailsMapWithFlags, PoolKeyObject } from "../../../tokens-info";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMapWithFlags.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
-import poolResponse from "../../mock/core-api/pool-info.json";
 import transferStatusResponse from "../../mock/core-api/send-status.json";
 import tokenInfoResponse from "../../mock/core-api/token-info.json";
 import { getRequestBodyMatcher, initChainsWithTestnet } from "../../mock/utils";
@@ -87,27 +86,41 @@ describe("AllbridgeCoreClient", () => {
     });
   });
 
-  describe("given /poolInfo-info endpoint", () => {
-    let scope: nock.Scope;
+  describe("given Core API without liquidity pools", () => {
+    it("☀️ getChainDetailsMap() maps /token-info without pool fields and flags", async () => {
+      const tokenInfoWithoutPools = JSON.parse(JSON.stringify(tokenInfoResponse)) as Record<string, any>;
+      for (const chainDetails of Object.values(tokenInfoWithoutPools)) {
+        delete chainDetails.bridgeAddress;
+        for (const token of chainDetails.tokens) {
+          delete token.poolAddress;
+          delete token.poolInfo;
+          delete token.feeShare;
+          delete token.apr;
+          delete token.lpRate;
+          delete token.flags;
+        }
+      }
+      const scope = nock("http://localhost").get("/token-info?filter=all").reply(200, tokenInfoWithoutPools);
 
-    const poolKey: PoolKeyObject = {
-      chainSymbol: "GRL",
-      poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F",
-    };
+      const { chainDetailsMap, poolInfoMap } = await api.getChainDetailsMapAndPoolInfoMap();
 
-    beforeEach(() => {
-      scope = nock("http://localhost")
-        .post("/pool-info", getRequestBodyMatcher({ pools: [poolKey] }))
-        .reply(201, poolResponse);
+      expect(Object.keys(chainDetailsMap)).toEqual(Object.keys(expectedTokensGroupedByChain));
+      expect(chainDetailsMap.GRL?.tokens.map((token) => token.flags)).toEqual(
+        expectedTokensGroupedByChain.GRL?.tokens.map(() => ({ swap: true, pool: false }))
+      );
+      expect(poolInfoMap).toEqual({});
+      scope.done();
     });
 
-    it("☀️ getPoolInfoMap() returns PoolInfoMap", async () => {
-      const expectedPoolInfoMap = poolMap as unknown as PoolInfoMap;
+    it("☀️ getPendingInfo() resolves to empty object without calling the server", async () => {
+      expect(await api.getPendingInfo()).toEqual({});
+      expect(nock.pendingMocks()).toEqual([]);
+    });
 
-      const actual = await api.getPoolInfoMap([poolKey]);
-      expect(actual).toEqual(expectedPoolInfoMap);
-
-      scope.done();
+    it("☀️ getPoolInfoMap() resolves to empty map without calling the server", async () => {
+      const poolKey: PoolKeyObject = { chainSymbol: "GRL", poolAddress: "0x727e10f9E750C922bf9dee7620B58033F566b34F" };
+      expect(await api.getPoolInfoMap(poolKey)).toEqual({});
+      expect(nock.pendingMocks()).toEqual([]);
     });
   });
 
@@ -154,10 +167,10 @@ describe("AllbridgeCoreClient", () => {
       scope = nock("http://localhost", {
         reqheaders: { "x-forwarded-for": "2.2.2.2" },
       })
-        .get("/pending-info")
-        .reply(200, {});
+        .get("/check/ARB/0x0000000000000000000000000000000000000001")
+        .reply(200, { status: AddressStatus.OK, gasBalance: "0" });
 
-      await api.getPendingInfo();
+      await api.getGasBalance(ChainSymbol.ARB, "0x0000000000000000000000000000000000000001");
       scope.done();
     });
 
