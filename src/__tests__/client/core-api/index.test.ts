@@ -65,6 +65,18 @@ describe("AllbridgeCoreClient", () => {
       expect(actual).toEqual(expectedTransferStatus);
       scope.done();
     });
+
+    it("☀️ getTransferStatus passes the refunded flag through", async () => {
+      // drop the beforeEach interceptor this test does not use, or it leaks into later tests
+      nock.cleanAll();
+      const refundedTxId = "1".repeat(64);
+      const refundedScope = nock("http://localhost")
+        .get(`/chain/${chainSymbol}/${refundedTxId}`)
+        .reply(200, { ...transferStatusResponse, refunded: true });
+      const actual: TransferStatusResponse = await api.getTransferStatus(chainSymbol, refundedTxId);
+      expect(actual.refunded).toBe(true);
+      refundedScope.done();
+    });
   });
 
   describe("given /receive-fee endpoint", () => {
