@@ -24,9 +24,10 @@ import { setAddress as setCctpAddress } from "../../models/sui/cctp-bridge";
 import { bridge } from "../../models/sui/cctp-bridge/cctp-bridge-interface/functions";
 import { setAddress as setUtilsAddress } from "../../models/sui/utils";
 import { fromHex } from "../../models/sui/utils/bytes32/functions";
+import { nearIntentsChainNotSupportedError, nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { fetchAllPagesRecursive } from "../../utils/sui/paginated";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
-import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui, TxTransferParams } from "../models";
 import { getNonceBigInt, normalizeSuiHex, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class SuiBridgeService extends ChainBridgeService {
@@ -49,6 +50,13 @@ export class SuiBridgeService extends ChainBridgeService {
 
   send(): Promise<TransactionResponse> {
     throw new SdkError("Method send not implemented.");
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawSuiTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   /** @deprecated Do not use. */
@@ -134,6 +142,8 @@ export class SuiBridgeService extends ChainBridgeService {
         throw new SdkError("Messenger xReserve is not supported for SUI bridge");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
     }
   }
 

@@ -4,8 +4,9 @@ import { JupiterError, MethodNotSupportedError } from "../../../exceptions";
 import { ChainType, FeePaymentMethod, SwapParams } from "../../../models";
 import { assertNever } from "../../../utils/utils";
 import { RawTransaction, TransactionResponse } from "../../models";
+import { nearIntentsChainNotSupportedError } from "../../near-intents/utils";
 import { addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
-import { ChainBridgeService, SendParams, TxSendParamsSol } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsSol, TxTransferParams } from "../models";
 import { prepareTxSendParams } from "../utils";
 import { BridgeTxService } from "./bridge-tx-service";
 import { JupiterParams, JupiterService } from "./jupiter-service";
@@ -134,6 +135,13 @@ export class SolanaBridgeService extends ChainBridgeService {
     solTxSendParams: SolTxSendParams
   ): Promise<{ tx: VersionedTransaction; requiredMessageSigner?: Keypair }> {
     return this.payerWithTokenService.buildRawTransactionSend(params, solTxSendParams);
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   send(_params: SendParams): Promise<TransactionResponse> {

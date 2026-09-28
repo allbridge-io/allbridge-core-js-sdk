@@ -3,6 +3,11 @@ import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
   GasBalanceResponse,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
+  NearIntentsSubmitDepositRequest,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -77,5 +82,19 @@ export class ApiClientCaching implements ApiClient {
   /** @deprecated Do not use. */
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     return this.apiClient.getPoolInfoMap(pools);
+  }
+
+  /** Not cached: every quote is a fresh market price. */
+  async getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse> {
+    return this.apiClient.getNearIntentsQuote(args);
+  }
+
+  /** Not cached: every call creates a new one-shot deposit address. */
+  async createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse> {
+    return this.apiClient.createNearIntentsDeposit(args);
+  }
+
+  async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
+    return this.apiClient.submitNearIntentsDeposit(args);
   }
 }

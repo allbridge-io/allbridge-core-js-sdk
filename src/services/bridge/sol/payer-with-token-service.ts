@@ -14,6 +14,7 @@ import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 import * as bridgeIdl from "../../models/sol/types/bridge.json";
 import { PayerWithToken as PayerWithTokenType } from "../../models/sol/types/payer_with_token";
 import * as payerWithTokenIdl from "../../models/sol/types/payer_with_token.json";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { getMessage, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
@@ -157,6 +158,8 @@ export class PayerWithTokenService {
         throw new SdkError("Messenger xReserve is not supported yet.");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
       default: {
         return assertNever(params.messenger, "Unhandled Messenger type");
       }

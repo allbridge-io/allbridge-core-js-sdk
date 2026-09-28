@@ -13,6 +13,7 @@ import { CctpBridge as CctpBridgeType } from "../../models/sol/types/cctp_bridge
 import * as cctpBridgeIdl from "../../models/sol/types/cctp_bridge.json";
 import { CctpV2Bridge as CctpV2BridgeType } from "../../models/sol/types/cctp_v2_bridge";
 import * as cctpV2BridgeIdl from "../../models/sol/types/cctp_v2_bridge.json";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { getMessage, getTokenAccountData, getVUsdAmount } from "../../utils/sol";
 import {
   getAssociatedAccount,
@@ -248,6 +249,8 @@ export class BridgeTxService {
         throw new SdkError("Messenger xReserve is not supported yet.");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
       default: {
         return assertNever(params.messenger, "Unhandled Messenger type");
       }

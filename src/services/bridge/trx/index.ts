@@ -6,8 +6,9 @@ import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { assertNever } from "../../../utils/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
+import { nearIntentsChainNotSupportedError, nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { sendRawTransaction } from "../../utils/trx";
-import { SendParams, TxSendParamsTrx, TxSwapParamsTrx } from "../models";
+import { SendParams, TxSendParamsTrx, TxSwapParamsTrx, TxTransferParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
@@ -25,6 +26,13 @@ export class TronBridgeService extends ChainBridgeService {
     const txSendParams = await prepareTxSendParams(this.chainType, params, this.api);
     const rawTransaction = await this.buildRawTransactionSendFromParams(params, txSendParams);
     return await sendRawTransaction(this.tronWeb, rawTransaction);
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   /** @deprecated Do not use. */
@@ -156,6 +164,8 @@ export class TronBridgeService extends ChainBridgeService {
         break;
       case Messenger.X_RESERVE:
         throw new SdkError("Messenger xReserve is not supported for TRX bridge");
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
         switch (gasFeePaymentMethod) {

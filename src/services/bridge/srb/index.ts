@@ -12,8 +12,16 @@ import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge-contract";
 import { Client as CctpBridgeContract } from "../../models/srb/cctp-bridge-contract";
 import { getSorobanInclusionFee } from "../../models/srb/utils";
+import { nearIntentsChainNotSupportedError } from "../../near-intents/utils";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
-import { ChainBridgeService, SendParams, SwapParams, TxSendParamsSrb, TxSwapParamsSol } from "../models";
+import {
+  ChainBridgeService,
+  SendParams,
+  SwapParams,
+  TxSendParamsSrb,
+  TxSwapParamsSol,
+  TxTransferParams,
+} from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
 
@@ -135,6 +143,13 @@ export class SrbBridgeService extends ChainBridgeService {
     }
 
     return tx.toXDR();
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   /** @deprecated Do not use. */

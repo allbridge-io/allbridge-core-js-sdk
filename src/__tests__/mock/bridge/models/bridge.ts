@@ -9,6 +9,7 @@ import {
   SendParams,
   SwapParams,
   TxSendParams,
+  TxTransferParams,
 } from "../../../../services/bridge/models";
 import { SolanaBridgeParams } from "../../../../services/bridge/sol";
 import { RawTransaction, TransactionResponse } from "../../../../services/models";
@@ -51,6 +52,10 @@ export class TestBridge extends ChainBridgeService {
   }
 
   buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction> {
+    return Promise.resolve("");
+  }
+
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
     return Promise.resolve("");
   }
 

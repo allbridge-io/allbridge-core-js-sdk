@@ -28,6 +28,7 @@ import {
 } from "./models";
 import { AllbridgeCoreSdkService, NodeRpcUrlsConfig } from "./services";
 import { CctpParams } from "./services/bridge/sol";
+import { NearIntentsService } from "./services/near-intents";
 import { YieldService } from "./services/yield";
 import { DefaultUtils, Utils } from "./utils";
 
@@ -142,6 +143,10 @@ export class AllbridgeCoreSdk {
    * @deprecated Do not use.
    */
   yield: YieldService;
+  /**
+   * NEAR Intents ({@link Messenger.NEAR_INTENTS}) quotes and deposits, see {@link NearIntentsService}.
+   */
+  nearIntents: NearIntentsService;
   utils: Utils;
 
   private service: AllbridgeCoreSdkService;
@@ -164,6 +169,7 @@ export class AllbridgeCoreSdk {
     this.bridge = this.service.bridge;
     this.pool = this.service.pool;
     this.yield = this.service.yield;
+    this.nearIntents = this.service.nearIntents;
     this.utils = new DefaultUtils(this.service);
     this.params = params;
   }
@@ -402,11 +408,14 @@ export class AllbridgeCoreSdk {
   /**
    * Calculates the amount of tokens to be received as a result of transfer
    * after applying the fee of the selected messenger.
+   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountOut` of a live `EXACT_INPUT` quote
+   * (the Core API waits for NEAR Intents solvers, about 3 s); see {@link NearIntentsService.getQuote} for `minAmountOut`.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger, see {@link ActiveMessenger}
-   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
+   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError, NearIntentsDoesNotSupportedError or SdkError if the route is not supported by the messenger;
+   * NearIntentsAmountTooLowError, NearIntentsNoLiquidityError or NearIntentsQuoteError if NEAR Intents has no quote
    */
   getAmountToBeReceived(
     amountToSendFloat: BigSource,
@@ -481,7 +490,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT>
+    messenger: Exclude<Messenger, Messenger.OFT | Messenger.NEAR_INTENTS>
   ): string;
   getAmountToBeReceivedFromPools(
     amountToSendFloat: BigSource,
@@ -489,7 +498,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT>
+    messenger: Exclude<Messenger, Messenger.OFT | Messenger.NEAR_INTENTS>
   ): string {
     switch (messenger) {
       case Messenger.ALLBRIDGE:
@@ -535,11 +544,14 @@ export class AllbridgeCoreSdk {
   /**
    * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer
    * after applying the fee of the selected messenger.
+   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountIn` of a live `EXACT_OUTPUT` quote
+   * (the Core API waits for NEAR Intents solvers, about 3 s).
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger, see {@link ActiveMessenger}
-   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError or SdkError if the route is not supported by the messenger
+   * @throws CCTPDoesNotSupportedError, OFTDoesNotSupportedError, NearIntentsDoesNotSupportedError or SdkError if the route is not supported by the messenger;
+   * NearIntentsAmountTooLowError, NearIntentsNoLiquidityError or NearIntentsQuoteError if NEAR Intents has no quote
    */
   getAmountToSend(
     amountToBeReceivedFloat: BigSource,
@@ -614,7 +626,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT>
+    messenger: Exclude<Messenger, Messenger.OFT | Messenger.NEAR_INTENTS>
   ): string;
   getAmountToSendFromPools(
     amountToBeReceivedFloat: BigSource,
@@ -622,7 +634,7 @@ export class AllbridgeCoreSdk {
     destinationChainToken: TokenWithChainDetails,
     sourcePool: PoolInfo,
     destinationPool: PoolInfo,
-    messenger: Exclude<Messenger, Messenger.OFT>
+    messenger: Exclude<Messenger, Messenger.OFT | Messenger.NEAR_INTENTS>
   ): string {
     switch (messenger) {
       case Messenger.ALLBRIDGE:
@@ -656,7 +668,7 @@ export class AllbridgeCoreSdk {
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger, see {@link ActiveMessenger}
-   * @returns {@link GasFeeOptions}
+   * @returns {@link GasFeeOptions}; for {@link Messenger.NEAR_INTENTS} only a zero native fee (the protocol fee is inside the quote)
    */
   async getGasFeeOptions(
     sourceChainToken: TokenWithChainDetails,
@@ -727,7 +739,7 @@ export class AllbridgeCoreSdk {
   ): Promise<ExtraGasMaxLimitResponse>;
   /**
    * Get possible limit of extra gas amount.
-   * For {@link Messenger.X_RESERVE} extra gas is not supported and zero limits are returned.
+   * For {@link Messenger.X_RESERVE} and {@link Messenger.NEAR_INTENTS} extra gas is not supported and zero limits are returned.
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
    * @param messenger selected messenger, see {@link ActiveMessenger}

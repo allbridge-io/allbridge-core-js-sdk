@@ -11,6 +11,8 @@ import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3, FeePaym
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
+import { DefaultNearIntentsService, NearIntentsService } from "../near-intents";
+import { assertNearIntentsSendParams, nearIntentsChainNotSupportedError } from "../near-intents/utils";
 import { TokenService } from "../token";
 import { AlgBridgeService } from "./alg";
 import { EvmBridgeService } from "./evm";
@@ -45,14 +47,16 @@ export interface BridgeService {
    * Check if the amount of approved tokens is enough to make a transfer
    * @param provider - will be used to access the network
    * @param params See {@link CheckAllowanceParams}
-   * @returns true if the amount of approved tokens is enough to make a transfer
+   * @returns true if the amount of approved tokens is enough to make a transfer;
+   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval
    */
   checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
   /**
    * Check if the amount of approved tokens is enough to make a transfer
    * @param params See {@link CheckAllowanceParams}
-   * @returns true if the amount of approved tokens is enough to make a transfer
+   * @returns true if the amount of approved tokens is enough to make a transfer;
+   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval
    */
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
@@ -83,9 +87,16 @@ export class DefaultBridgeService implements BridgeService {
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params)
   ) {
-    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(api, nodeRpcUrlsConfig, params, tokenService);
+    this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(
+      api,
+      nodeRpcUrlsConfig,
+      params,
+      tokenService,
+      nearIntentsService
+    );
   }
 
   async getAllowance(a: Provider | GetAllowanceParams, b?: GetAllowanceParams): Promise<string> {
@@ -110,6 +121,9 @@ export class DefaultBridgeService implements BridgeService {
     } else {
       params = a as CheckAllowanceParams;
     }
+    if (params.messenger === Messenger.NEAR_INTENTS) {
+      return true;
+    }
     const spender = resolveSpender(params.token, params.messenger, params.gasFeePaymentMethod);
     return this.tokenService.checkAllowance({ ...params, spender }, provider);
   }
@@ -122,13 +136,28 @@ export class DefaultBridgeService implements BridgeService {
   async send(provider: Provider, params: SendParams): Promise<TransactionResponse> {
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
-    return getChainBridgeService(
+    const chainBridgeService = getChainBridgeService(
       params.sourceToken.chainSymbol,
       this.api,
       this.nodeRpcUrlsConfig,
       this.params,
       provider
-    ).send(params);
+    );
+    if (params.messenger === Messenger.NEAR_INTENTS) {
+      if (!(chainBridgeService instanceof EvmBridgeService)) {
+        throw nearIntentsChainNotSupportedError(params.sourceToken.chainSymbol);
+      }
+      assertNearIntentsSendParams(params);
+      const { rawTransaction, deposit } = await this.nearIntentsService.buildSendTransaction(params, provider);
+      const response = await chainBridgeService.sendRawTransaction(rawTransaction);
+      await this.nearIntentsService.submitDeposit({
+        depositAddress: deposit.depositAddress,
+        depositMemo: deposit.depositMemo,
+        txId: response.txId,
+      });
+      return response;
+    }
+    return chainBridgeService.send(params);
   }
 }
 
