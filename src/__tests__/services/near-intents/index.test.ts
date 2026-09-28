@@ -48,6 +48,7 @@ const quoteResponse: NearIntentsQuoteResponse = {
   timeEstimate: 25,
   amountInUsd: "1.50",
   amountOutUsd: "1.49",
+  estimated: false,
 };
 
 const testConfig: AllbridgeCoreSdkOptions = {
@@ -90,6 +91,21 @@ describe("NEAR Intents", () => {
       const actual = await sdk.getAmountToBeReceived("1.5", sourceToken, destinationToken, Messenger.NEAR_INTENTS);
 
       expect(actual).toEqual("1.49");
+      scope.done();
+    });
+
+    test("☀ getAmountToBeReceived returns amountOut of an estimated quote without USD values", async () => {
+      const scope = nock("http://localhost").post("/near-intents/quote").reply(200, {
+        amountIn: "1500000000000000000",
+        amountOut: "1488000",
+        minAmountOut: "1473120",
+        timeEstimate: 25,
+        estimated: true,
+      });
+
+      const actual = await sdk.getAmountToBeReceived("1.5", sourceToken, destinationToken, Messenger.NEAR_INTENTS);
+
+      expect(actual).toEqual("1.488");
       scope.done();
     });
 
@@ -233,9 +249,44 @@ describe("NEAR Intents", () => {
         amountOut: "1.49",
         minAmountOut: "1.4751",
         timeEstimate: 25,
+        estimated: false,
         amountInUsd: "1.50",
         amountOutUsd: "1.49",
       });
+    });
+
+    test("☀ getQuote passes through an estimated quote without USD values", async () => {
+      const estimatedResponse: NearIntentsQuoteResponse = {
+        amountIn: "1500000000000000000",
+        amountOut: "1488000",
+        minAmountOut: "1473120",
+        timeEstimate: 25,
+        estimated: true,
+      };
+      api.getNearIntentsQuote.mockResolvedValueOnce(estimatedResponse);
+
+      const actual = await service.getQuote({ amount: "1.5", sourceToken, destinationToken });
+
+      expect(actual).toEqual({
+        amountIn: "1.5",
+        amountOut: "1.488",
+        minAmountOut: "1.47312",
+        timeEstimate: 25,
+        estimated: true,
+        amountInUsd: undefined,
+        amountOutUsd: undefined,
+      });
+    });
+
+    test("☀ getQuote treats a quote without estimated (older server) as live", async () => {
+      const { estimated: _estimated, ...legacyResponse } = quoteResponse;
+      api.getNearIntentsQuote.mockResolvedValueOnce(legacyResponse);
+
+      const actual = await service.getQuote({ amount: "1.5", sourceToken, destinationToken });
+
+      expect(actual.estimated).toBe(false);
+      expect(actual.amountOut).toBe("1.49");
+      expect(actual.amountInUsd).toBe("1.50");
     });
 
     test("☀ createDeposit passes recipient and refundTo and returns dates", async () => {

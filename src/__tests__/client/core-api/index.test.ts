@@ -222,6 +222,7 @@ describe("AllbridgeCoreClient", () => {
       timeEstimate: 20,
       amountInUsd: "1.00",
       amountOutUsd: "0.99",
+      estimated: false,
     };
 
     afterEach(() => {

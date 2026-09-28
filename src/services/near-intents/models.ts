@@ -47,13 +47,21 @@ export interface NearIntentsQuote {
    */
   timeEstimate: number;
   /**
-   * USD value of {@link amountIn}
+   * True when the server computed the amounts from its per-route model of recent NEAR Intents quotes
+   * instead of requesting a live quote for this exact amount (keeps repeated quotes fast, e.g. while
+   * the user types). An estimated quote is fine for display, but the real amounts may differ slightly.
+   * `nearIntents.createDeposit` and `buildSendTransaction` always get a live quote, so the amounts
+   * they return are the binding ones.
    */
-  amountInUsd: string;
+  estimated: boolean;
   /**
-   * USD value of {@link amountOut}
+   * USD value of {@link amountIn}; absent on an estimated quote for a token without a known price
    */
-  amountOutUsd: string;
+  amountInUsd?: string;
+  /**
+   * USD value of {@link amountOut}; absent on an estimated quote for a token without a known price
+   */
+  amountOutUsd?: string;
 }
 
 /**

@@ -233,8 +233,15 @@ export interface NearIntentsQuoteResponse {
   minAmountOut: string;
   /** Estimated transfer time, seconds */
   timeEstimate: number;
-  amountInUsd: string;
-  amountOutUsd: string;
+  /**
+   * True when the server answered from its per-route quote model instead of a live 1Click quote.
+   * Deposits are never estimated. Older servers omit it.
+   */
+  estimated: boolean;
+  /** Absent on an estimated answer for a token without a catalog price */
+  amountInUsd?: string;
+  /** Absent on an estimated answer for a token without a catalog price */
+  amountOutUsd?: string;
 }
 
 export interface NearIntentsDepositRequest extends NearIntentsQuoteRequest {

@@ -90,6 +90,8 @@ export class DefaultNearIntentsService implements NearIntentsService {
       amountOut: convertIntAmountToFloat(quote.amountOut, params.destinationToken.decimals).toFixed(),
       minAmountOut: convertIntAmountToFloat(quote.minAmountOut, params.destinationToken.decimals).toFixed(),
       timeEstimate: quote.timeEstimate,
+      // older servers do not send `estimated`: their quotes are always live
+      estimated: quote.estimated ?? false,
       amountInUsd: quote.amountInUsd,
       amountOutUsd: quote.amountOutUsd,
     };

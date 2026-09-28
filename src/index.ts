@@ -408,8 +408,9 @@ export class AllbridgeCoreSdk {
   /**
    * Calculates the amount of tokens to be received as a result of transfer
    * after applying the fee of the selected messenger.
-   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountOut` of a live `EXACT_INPUT` quote
-   * (the Core API waits for NEAR Intents solvers, about 3 s); see {@link NearIntentsService.getQuote} for `minAmountOut`.
+   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountOut` of an `EXACT_INPUT` quote: live (the Core API
+   * waits for NEAR Intents solvers, about 3 s) or estimated from recent quotes on the route;
+   * see {@link NearIntentsService.getQuote} for `minAmountOut` and `estimated`.
    * @param amountToSendFloat the amount of tokens that will be sent
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
@@ -544,8 +545,9 @@ export class AllbridgeCoreSdk {
   /**
    * Calculates the amount of tokens to send based on requested tokens amount be received as a result of transfer
    * after applying the fee of the selected messenger.
-   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountIn` of a live `EXACT_OUTPUT` quote
-   * (the Core API waits for NEAR Intents solvers, about 3 s).
+   * For {@link Messenger.NEAR_INTENTS} the amount is the `amountIn` of an `EXACT_OUTPUT` quote: live (the Core API
+   * waits for NEAR Intents solvers, about 3 s) or estimated from recent quotes on the route;
+   * see {@link NearIntentsService.getQuote} for `estimated`.
    * @param amountToBeReceivedFloat the amount of tokens that should be received
    * @param sourceChainToken selected token on the source chain
    * @param destinationChainToken selected token on the destination chain
