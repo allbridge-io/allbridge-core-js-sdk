@@ -321,6 +321,13 @@ export interface TransferStatusResponse {
   send: BridgeTransaction;
   receive?: BridgeTransaction;
 
+  /**
+   * True when the transfer was refunded to the sender on the source chain instead of being delivered
+   * (e.g. a {@link Messenger.NEAR_INTENTS} deposit refunded by NEAR Intents); `receive` stays absent.
+   * Optional: older Core API versions may omit it.
+   */
+  refunded?: boolean;
+
   responseTime?: number;
 }
 
