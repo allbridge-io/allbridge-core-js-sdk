@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/unified-signatures -- overloads intentionally expose operation-specific deprecation metadata */
 import { NodeRpcUrlsConfig } from "..";
+import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, RawTransaction } from "../models";
+import { DefaultNearIntentsService, NearIntentsService } from "../near-intents";
+import { assertNearIntentsSendParams } from "../near-intents/utils";
 import { TokenService } from "../token";
 import { ApproveParams, SendParams, SwapParams } from "./models";
 import { resolveSpender } from "./spender";
@@ -24,6 +27,11 @@ export interface RawBridgeTransactionBuilder {
   approve(approveData: ApproveParams): Promise<RawTransaction>;
   /**
    * Creates a Raw Transaction for initiating the transfer of tokens
+   *
+   * For {@link Messenger.NEAR_INTENTS}: the transaction is a plain transfer of the source tokens to a NEAR Intents deposit address.
+   * {@link SendParams.nearIntentsDeposit} is used when defined, otherwise a new deposit is created
+   * (to get the deposit details as well, use `nearIntents.buildSendTransaction`).
+   * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM, SOL, TRX, SRB (needs the deposit memo) and SUI.
    * @param params
    * @param provider - will be used to access the network
    */
@@ -38,7 +46,8 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     private api: AllbridgeCoreClient,
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params)
   ) {}
 
   async approve(a: Provider | ApproveParams, b?: ApproveParams): Promise<RawTransaction> {
@@ -68,6 +77,11 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     validateAmountGtZero(params.amount);
     validateAmountDecimals("amount", params.amount, params.sourceToken.decimals);
     if (isSendParams(params)) {
+      if (params.messenger === Messenger.NEAR_INTENTS) {
+        assertNearIntentsSendParams(params);
+        const { rawTransaction } = await this.nearIntentsService.buildSendTransaction(params, provider);
+        return rawTransaction;
+      }
       return getChainBridgeService(
         params.sourceToken.chainSymbol,
         this.api,

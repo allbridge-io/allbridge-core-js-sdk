@@ -1,7 +1,24 @@
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { RawTransaction, TransactionResponse } from "../../models";
-import { SendParams, SwapParams } from "./bridge.model";
+import { SendParams, SwapParams, TxTransferParams } from "./bridge.model";
+
+/**
+ * A chain bridge service that can sign and send a raw transaction with its provider.
+ * @internal
+ */
+export interface RawTransactionSender {
+  sendRawTransaction(rawTransaction: RawTransaction): Promise<TransactionResponse>;
+}
+
+/**
+ * @internal
+ */
+export function canSendRawTransaction(
+  service: ChainBridgeService
+): service is ChainBridgeService & RawTransactionSender {
+  return typeof (service as Partial<RawTransactionSender>).sendRawTransaction === "function";
+}
 
 export abstract class ChainBridgeService {
   abstract chainType: ChainType;
@@ -16,4 +33,9 @@ export abstract class ChainBridgeService {
   abstract buildRawTransactionSend(params: SendParams): Promise<RawTransaction>;
   /** @deprecated Do not use. */
   abstract buildRawTransactionSwap(params: SwapParams): Promise<RawTransaction>;
+  /**
+   * Builds a plain transfer of `params.amount` of `params.token` to `params.toAddress`
+   * (a value transfer when `params.token.isNative`). Used for `Messenger.NEAR_INTENTS` deposits.
+   */
+  abstract buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction>;
 }

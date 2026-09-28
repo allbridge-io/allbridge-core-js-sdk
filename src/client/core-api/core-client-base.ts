@@ -7,6 +7,11 @@ import {
 import { ApiClient } from "./api-client";
 import {
   GasBalanceResponse,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
+  NearIntentsSubmitDepositRequest,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -29,6 +34,12 @@ export interface AllbridgeCoreClient {
   getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse>;
 
   getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse>;
+
+  getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse>;
+
+  createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse>;
+
+  submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void>;
 }
 
 export interface AllbridgeCoreClientWithTokens extends AllbridgeCoreClient {
@@ -91,5 +102,17 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo 
   /** @deprecated Do not use. */
   async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
     return await this.apiClient.getPoolInfoMap(pools);
+  }
+
+  async getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse> {
+    return await this.apiClient.getNearIntentsQuote(args);
+  }
+
+  async createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse> {
+    return await this.apiClient.createNearIntentsDeposit(args);
+  }
+
+  async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
+    return await this.apiClient.submitNearIntentsDeposit(args);
   }
 }

@@ -78,7 +78,7 @@ function mapTokenWithChainDetailsFromDto(chainDetails: ChainDetails, dto: TokenD
   } as TokenWithChainDetailsWithFlags;
 }
 
-function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
+export function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
   switch (dto) {
     case MessengerKeyDTO.ALLBRIDGE:
       return Messenger.ALLBRIDGE;
@@ -92,6 +92,8 @@ function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger | null {
       return Messenger.OFT;
     case MessengerKeyDTO.X_RESERVE:
       return Messenger.X_RESERVE;
+    case MessengerKeyDTO.NEAR_INTENTS:
+      return Messenger.NEAR_INTENTS;
   }
 }
 
@@ -165,8 +167,9 @@ function mapAbrPayerAvailabilityFromDto(dto: AbrPayerAvailabilityTypeDTO): AbrPa
   return out;
 }
 
-// Build mapping from dto key ("allbridge") to Messenger enum value (1..5)
-const dtoKeyToMessenger: Record<AbrPayerAvailabilityKeyDTO, Messenger> = Object.fromEntries(
+// Build mapping from dto key ("allbridge") to Messenger enum value (1..7).
+// Pairs the enums by key name: every MessengerKeyDTO key must exist in Messenger with the same spelling.
+export const dtoKeyToMessenger: Record<AbrPayerAvailabilityKeyDTO, Messenger> = Object.fromEntries(
   Object.entries(MessengerKeyDTO).map(([enumKey, dtoKey]) => {
     // enumKey: "ALLBRIDGE"
     // dtoKey:  "allbridge"

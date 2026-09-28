@@ -4,11 +4,21 @@ import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   AddressStatus,
   Messenger,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
 } from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
+import {
+  NearIntentsAmountTooLowError,
+  NearIntentsDoesNotSupportedError,
+  NearIntentsNoLiquidityError,
+  NearIntentsQuoteError,
+} from "../../../exceptions";
 import { ChainDetailsMapWithFlags, PoolKeyObject } from "../../../tokens-info";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMapWithFlags.json";
 import transferStatus from "../../data/transfer-status/TransferStatus.json";
@@ -193,6 +203,131 @@ describe("AllbridgeCoreClient", () => {
       await apiWithStaticHeader.getChainDetailsMap();
 
       scope.done();
+    });
+  });
+
+  describe("given /near-intents endpoints", () => {
+    const quoteRequest: NearIntentsQuoteRequest = {
+      sourceChainId: 1,
+      sourceToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      destinationChainId: 6,
+      destinationToken: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+      amount: "1000000",
+      swapType: "EXACT_INPUT",
+    };
+    const quoteResponse: NearIntentsQuoteResponse = {
+      amountIn: "1000000",
+      amountOut: "990000",
+      minAmountOut: "980100",
+      timeEstimate: 20,
+      amountInUsd: "1.00",
+      amountOutUsd: "0.99",
+      estimated: false,
+    };
+
+    afterEach(() => {
+      nock.cleanAll();
+    });
+
+    it("☀️ getNearIntentsQuote posts the quote request and returns the quote", async () => {
+      const scope = nock("http://localhost")
+        .post("/near-intents/quote", getRequestBodyMatcher(quoteRequest))
+        .reply(200, quoteResponse);
+      expect(await api.getNearIntentsQuote(quoteRequest)).toEqual(quoteResponse);
+      scope.done();
+    });
+
+    it("☀️ createNearIntentsDeposit posts the deposit request and returns the deposit", async () => {
+      const depositRequest: NearIntentsDepositRequest = {
+        ...quoteRequest,
+        recipient: "0x0000000000000000000000000000000000000002",
+        refundTo: "0x0000000000000000000000000000000000000001",
+      };
+      const depositResponse: NearIntentsDepositResponse = {
+        depositAddress: "0x00000000000000000000000000000000000000d1",
+        amountIn: "1000000",
+        amountOut: "990000",
+        minAmountOut: "980100",
+        deadline: "2030-01-01T00:00:00.000Z",
+        timeEstimate: 20,
+      };
+      const scope = nock("http://localhost")
+        .post("/near-intents/deposit", getRequestBodyMatcher(depositRequest))
+        .reply(200, depositResponse);
+      expect(await api.createNearIntentsDeposit(depositRequest)).toEqual(depositResponse);
+      scope.done();
+    });
+
+    it("☀️ submitNearIntentsDeposit posts the tx id", async () => {
+      const submitRequest = { depositAddress: "0x00000000000000000000000000000000000000d1", txId: "0xabc" };
+      const scope = nock("http://localhost")
+        .post("/near-intents/deposit/submit", getRequestBodyMatcher(submitRequest))
+        .reply(200, {});
+      await expect(api.submitNearIntentsDeposit(submitRequest)).resolves.toBeUndefined();
+      scope.done();
+    });
+
+    it("☁ 400 AMOUNT_TOO_LOW maps to NearIntentsAmountTooLowError with minAmount and minAmountUsd", async () => {
+      nock("http://localhost").post("/near-intents/quote").reply(400, {
+        code: "AMOUNT_TOO_LOW",
+        message: "Amount is too low for bridge, try at least 1500000",
+        minAmount: "1500000",
+        minAmountUsd: "1000",
+      });
+      const error = await api.getNearIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(NearIntentsAmountTooLowError);
+      expect(error).toMatchObject({
+        message: "Amount is too low for bridge, try at least 1500000",
+        minAmount: "1500000",
+        minAmountUsd: "1000",
+      });
+    });
+
+    it("☁ 400 NO_LIQUIDITY maps to NearIntentsNoLiquidityError", async () => {
+      nock("http://localhost")
+        .post("/near-intents/quote")
+        .reply(400, { code: "NO_LIQUIDITY", message: "No liquidity available" });
+      await expect(api.getNearIntentsQuote(quoteRequest)).rejects.toBeInstanceOf(NearIntentsNoLiquidityError);
+    });
+
+    it("☁ 400 FAILED_TO_GET_QUOTE maps to NearIntentsQuoteError", async () => {
+      nock("http://localhost")
+        .post("/near-intents/deposit")
+        .reply(400, { code: "FAILED_TO_GET_QUOTE", message: "Failed to get quote" });
+      const error = await api
+        .createNearIntentsDeposit({ ...quoteRequest, recipient: "r", refundTo: "f" })
+        .catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(NearIntentsQuoteError);
+      expect(error).toMatchObject({ code: "FAILED_TO_GET_QUOTE", message: "Failed to get quote" });
+    });
+
+    it("☁ 502 UPSTREAM_ERROR maps to NearIntentsQuoteError", async () => {
+      nock("http://localhost")
+        .post("/near-intents/quote")
+        .reply(502, { code: "UPSTREAM_ERROR", message: "NEAR Intents is unavailable" });
+      const error = await api.getNearIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(NearIntentsQuoteError);
+      expect(error).toMatchObject({ code: "UPSTREAM_ERROR" });
+    });
+
+    it("☁ 502 without body maps to NearIntentsQuoteError", async () => {
+      nock("http://localhost").post("/near-intents/quote").reply(502);
+      const error = await api.getNearIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(NearIntentsQuoteError);
+      expect(error).toMatchObject({ code: "UPSTREAM_ERROR" });
+    });
+
+    it("☁ 404 maps to NearIntentsDoesNotSupportedError", async () => {
+      nock("http://localhost").post("/near-intents/quote").reply(404, { message: "Not Found", statusCode: 404 });
+      await expect(api.getNearIntentsQuote(quoteRequest)).rejects.toBeInstanceOf(NearIntentsDoesNotSupportedError);
+    });
+
+    it("☁ 400 validation error without code is rethrown as is", async () => {
+      nock("http://localhost")
+        .post("/near-intents/quote")
+        .reply(400, { message: ["amount must be a positive integer string"], statusCode: 400 });
+      const error = await api.getNearIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toMatchObject({ isAxiosError: true, response: { status: 400 } });
     });
   });
 });

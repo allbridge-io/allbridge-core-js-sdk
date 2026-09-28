@@ -2,6 +2,7 @@ import { Big } from "big.js";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AmountFormat, FeePaymentMethod, TokenCoreFields, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
+import { NearIntentsDeposit } from "../../near-intents/models";
 
 export interface ApproveParams {
   /**
@@ -149,6 +150,13 @@ export interface SendParams extends BaseSendParams {
    * WITH_NATIVE_CURRENCY by default.
    */
   gasFeePaymentMethod?: FeePaymentMethod;
+  /**
+   * A NEAR Intents deposit created with `nearIntents.createDeposit`.<br/>
+   * Optional. Used only with {@link Messenger.NEAR_INTENTS}: when defined, the transfer goes to its deposit address
+   * (its `amountIn` must equal {@link amount}); otherwise a new deposit is created for {@link amount}
+   * with `recipient` = {@link toAccountAddress} and `refundTo` = {@link fromAccountAddress}.
+   */
+  nearIntentsDeposit?: NearIntentsDeposit;
 }
 
 export interface GetAllowanceParams {
@@ -201,6 +209,24 @@ export interface TxSwapParamsTyped<T> {
  * @deprecated Do not use.
  */
 export type TxSwapParams = TxSwapParamsEvm | TxSwapParamsTrx | TxSwapParamsSol | TxSwapParamsSrb | TxSwapParamsSui;
+
+/**
+ * Params of a plain token (or native currency, when `token.isNative`) transfer, used for {@link Messenger.NEAR_INTENTS} deposits.
+ * @internal
+ */
+export interface TxTransferParams {
+  /**
+   * Integer amount in the token units
+   */
+  amount: string;
+  token: TokenWithChainDetails;
+  fromAccountAddress: string;
+  toAddress: string;
+  /**
+   * Transfer memo, required by some chains (e.g. the Stellar deposit memo)
+   */
+  memo?: string;
+}
 
 /**
  * @internal

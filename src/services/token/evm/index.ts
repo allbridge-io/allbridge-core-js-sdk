@@ -37,6 +37,9 @@ export class EvmTokenService extends ChainTokenService {
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
+    if (params.token.isNative) {
+      return (await this.web3.eth.getBalance(params.account)).toString();
+    }
     return await this.getERC20Contract(params.token.tokenAddress).methods.balanceOf(params.account).call();
   }
 

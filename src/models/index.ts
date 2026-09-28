@@ -15,6 +15,7 @@ export {
   ActiveMessenger,
   LegacyMessenger,
   Messenger,
+  NearIntentsSwapType,
   TransferStatusResponse,
   BridgeTransaction,
   GasBalanceResponse,
@@ -22,6 +23,16 @@ export {
   AddressStatus,
 } from "../client/core-api/core-api.model";
 export { RawBridgeTransactionBuilder } from "../services/bridge/raw-bridge-transaction-builder";
+export { NearIntentsService } from "../services/near-intents/index";
+export {
+  NearIntentsQuoteParams,
+  NearIntentsQuote,
+  NearIntentsCreateDepositParams,
+  NearIntentsDeposit,
+  NearIntentsSubmitDepositParams,
+  NearIntentsSendParams,
+  NearIntentsSendTransaction,
+} from "../services/near-intents/models";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {
   UserBalanceInfo,
@@ -61,6 +72,7 @@ export {
   PoolInfo,
   TokenCoreFields,
   XReserveTokenInfo,
+  NearIntentsTokenInfo,
   TokenWithChainDetails,
   TransferTime,
   TxCostAmount,

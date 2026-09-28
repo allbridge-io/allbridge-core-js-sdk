@@ -153,6 +153,19 @@ export interface Token {
    */
   xReserve?: XReserveTokenInfo;
   /**
+   * NEAR Intents configuration of the token, see {@link NearIntentsTokenInfo}.
+   * Optional. Defined if the token is supported by {@link Messenger.NEAR_INTENTS};
+   * a route is supported when it is defined on both source and destination tokens.
+   */
+  nearIntents?: NearIntentsTokenInfo;
+  /**
+   * True when the token is the native gas token of the chain (e.g. ETH on Ethereum),
+   * listed under a sentinel `tokenAddress`. Native tokens are transferred as a value transfer and need no approval.
+   * Currently only served for {@link Messenger.NEAR_INTENTS} routes.
+   * Optional. `undefined` means a regular token contract.
+   */
+  isNative?: boolean;
+  /**
    * Internal identifier for the same token across different chains.
    *
    * Used to link representations of a token deployed on multiple networks (e.g., Ethereum, BSC).
@@ -221,6 +234,16 @@ export interface XReserveTokenInfo {
   protocolAddress?: string;
 }
 
+/**
+ * NEAR Intents configuration of a token, see {@link Messenger.NEAR_INTENTS}
+ */
+export interface NearIntentsTokenInfo {
+  /**
+   * NEAR Intents (1Click) asset id, opaque (e.g. `nep141:eth-0xa0b8...eb48.omft.near`)
+   */
+  assetId: string;
+}
+
 export interface SuiAddresses {
   /** @deprecated Do not use. */
   bridgeAddress: string;
@@ -273,7 +296,7 @@ export interface TokenWithChainDetails extends Token, Omit<ChainDetails, "name">
 
 export type TokenCoreFields = Pick<
   TokenWithChainDetails,
-  "tokenAddress" | "chainSymbol" | "decimals" | "originTokenAddress"
+  "tokenAddress" | "chainSymbol" | "decimals" | "originTokenAddress" | "isNative"
 >;
 
 export interface TokenWithChainDetailsWithFlags extends TokenWithChainDetails {

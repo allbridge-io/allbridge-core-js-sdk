@@ -71,6 +71,14 @@ export interface TokenDTO {
   yieldId?: number;
   xReserve?: XReserveDTO;
   /**
+   * NEAR Intents (1Click) asset of the token. Defined when the token is listed by NEAR Intents.
+   */
+  nearIntents?: NearIntentsDTO;
+  /**
+   * True when the token is the native gas token of the chain (listed under a sentinel address).
+   */
+  isNative?: boolean;
+  /**
    * Optional: the current Core API always returns all tokens and omits the flags,
    * in which case every token is treated as `swap: true, pool: false`.
    */
@@ -86,6 +94,10 @@ export interface XReserveDTO {
   feeConst: string;
   feeShare: string;
   protocolAddress?: string;
+}
+
+export interface NearIntentsDTO {
+  assetId: string;
 }
 
 /**
@@ -110,6 +122,7 @@ export enum MessengerKeyDTO {
   CCTP_V2 = "cctpV2",
   OFT = "oft",
   X_RESERVE = "xReserve",
+  NEAR_INTENTS = "nearIntents",
 }
 
 export type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
@@ -158,6 +171,14 @@ export enum Messenger {
    * Route is supported when `xReserve` is defined on both source and destination tokens.
    */
   X_RESERVE = 6,
+  /**
+   * NEAR Intents (1Click).
+   * Route is supported when `nearIntents` is defined on both source and destination tokens.
+   * The transfer is a plain token (or native currency) transfer to a one-shot deposit address,
+   * so no approval is needed. Amounts are market-priced quotes from the Core API, not a deterministic fee:
+   * see `AllbridgeCoreSdk.nearIntents`.
+   */
+  NEAR_INTENTS = 7,
 }
 
 /**
@@ -165,7 +186,7 @@ export enum Messenger {
  */
 export type LegacyMessenger = Messenger.ALLBRIDGE | Messenger.WORMHOLE;
 /**
- * Messengers supported for transfers: {@link Messenger.CCTP}, {@link Messenger.CCTP_V2}, {@link Messenger.OFT}, {@link Messenger.X_RESERVE}
+ * Messengers supported for transfers: {@link Messenger.CCTP}, {@link Messenger.CCTP_V2}, {@link Messenger.OFT}, {@link Messenger.X_RESERVE}, {@link Messenger.NEAR_INTENTS}
  */
 export type ActiveMessenger = Exclude<Messenger, LegacyMessenger>;
 
@@ -182,6 +203,85 @@ export interface ReceiveTransactionCostResponse {
   sourceNativeTokenPrice: string;
   abrExchangeRate?: string;
   adminFeeShareWithExtras?: string;
+}
+
+/**
+ * NEAR Intents quote direction.
+ * - `EXACT_INPUT`: `amount` is what the user sends.
+ * - `EXACT_OUTPUT`: `amount` is what the user wants to receive.
+ */
+export type NearIntentsSwapType = "EXACT_INPUT" | "EXACT_OUTPUT";
+
+export interface NearIntentsQuoteRequest {
+  sourceChainId: number;
+  sourceToken: string;
+  destinationChainId: number;
+  destinationToken: string;
+  /**
+   * Integer amount: in source token units for `EXACT_INPUT`, in destination token units for `EXACT_OUTPUT`.
+   */
+  amount: string;
+  swapType: NearIntentsSwapType;
+}
+
+export interface NearIntentsQuoteResponse {
+  /** Integer amount in source token units */
+  amountIn: string;
+  /** Integer amount in destination token units */
+  amountOut: string;
+  /** Integer amount in destination token units, the slippage floor */
+  minAmountOut: string;
+  /** Estimated transfer time, seconds */
+  timeEstimate: number;
+  /**
+   * True when the server answered from its per-route quote model instead of a live 1Click quote.
+   * Deposits are never estimated. Older servers omit it.
+   */
+  estimated: boolean;
+  /** Absent on an estimated answer for a token without a catalog price */
+  amountInUsd?: string;
+  /** Absent on an estimated answer for a token without a catalog price */
+  amountOutUsd?: string;
+}
+
+export interface NearIntentsDepositRequest extends NearIntentsQuoteRequest {
+  recipient: string;
+  refundTo: string;
+}
+
+export interface NearIntentsDepositResponse {
+  depositAddress: string;
+  depositMemo?: string;
+  /** Integer amount in source token units */
+  amountIn: string;
+  /** Integer amount in destination token units */
+  amountOut: string;
+  /** Integer amount in destination token units, the slippage floor */
+  minAmountOut: string;
+  /** ISO 8601 */
+  deadline: string;
+  /** ISO 8601 */
+  timeWhenInactive?: string;
+  /** Estimated transfer time, seconds */
+  timeEstimate: number;
+}
+
+export interface NearIntentsSubmitDepositRequest {
+  depositAddress: string;
+  depositMemo?: string;
+  txId: string;
+}
+
+/**
+ * Error codes of the Core API NEAR Intents endpoints (HTTP 400 and 502 bodies).
+ */
+export type NearIntentsErrorCode = "AMOUNT_TOO_LOW" | "NO_LIQUIDITY" | "FAILED_TO_GET_QUOTE" | "UPSTREAM_ERROR";
+
+export interface NearIntentsErrorResponse {
+  code: NearIntentsErrorCode;
+  message: string;
+  minAmount?: string;
+  minAmountUsd?: string;
 }
 
 export interface GasBalanceResponse {
