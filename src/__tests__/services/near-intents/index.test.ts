@@ -13,7 +13,8 @@ import {
 } from "../../../index";
 import { NodeRpcUrlsConfig } from "../../../services";
 import { DefaultBridgeService, getSpender } from "../../../services/bridge";
-import { DefaultNearIntentsService } from "../../../services/near-intents";
+import { TronBridgeService } from "../../../services/bridge/trx";
+import { DefaultNearIntentsService, NearIntentsService } from "../../../services/near-intents";
 import { TokenService } from "../../../services/token";
 import { EvmTokenService } from "../../../services/token/evm";
 import { getRequestBodyMatcher, initChainsWithTestnet } from "../../mock/utils";
@@ -321,6 +322,81 @@ describe("NEAR Intents", () => {
       expect(() => getSpender(sourceToken, Messenger.NEAR_INTENTS)).toThrow("NEAR Intents transfers need no approval");
       expect(tokenService.getAllowance).not.toHaveBeenCalled();
       expect(tokenService.buildRawTransactionApprove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("bridge.send (deprecated) with Messenger.NEAR_INTENTS", () => {
+    const deposit = {
+      depositAddress: "TKzxdSv2FZKQrEqkKVgp5DcwEXBEKMg2Ax", // cSpell:disable-line
+      depositMemo: undefined,
+      amountIn: "1.33",
+      amountOut: "1.32",
+      minAmountOut: "1.3",
+      deadline: new Date("2099-01-01T00:00:00.000Z"),
+      timeEstimate: 20,
+    };
+    const trxSourceToken = destinationToken;
+    const sendParams = {
+      amount: "1.33",
+      fromAccountAddress: "TB4K8DV1CDsuT6SGdQ2L2je4XG88KSrgRh", // cSpell:disable-line
+      toAccountAddress: "0x01237296aaF2ba01AC9a819813E260Bb4Ad6642d",
+      sourceToken: trxSourceToken,
+      destinationToken: sourceToken,
+      messenger: Messenger.NEAR_INTENTS,
+    };
+    let nearIntentsService: jest.Mocked<NearIntentsService>;
+
+    beforeEach(() => {
+      nearIntentsService = {
+        getQuote: jest.fn(),
+        createDeposit: jest.fn(),
+        submitDeposit: jest.fn().mockResolvedValue(undefined),
+        buildSendTransaction: jest.fn().mockResolvedValue({ rawTransaction: { txID: "raw" }, deposit }),
+      };
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    function bridgeServiceFor(nodeRpcUrls: Record<string, string>) {
+      return new DefaultBridgeService(
+        {} as AllbridgeCoreClient,
+        new NodeRpcUrlsConfig(nodeRpcUrls),
+        testConfig,
+        {} as TokenService,
+        nearIntentsService
+      );
+    }
+
+    test("☀ TRX: sends the deposit transfer with the TronWeb provider and submits the deposit", async () => {
+      const sendRawTransaction = jest
+        .spyOn(TronBridgeService.prototype, "sendRawTransaction")
+        .mockResolvedValue({ txId: "trx-tx-id" });
+      const tronWeb = {} as any;
+
+      const actual = await bridgeServiceFor({}).send(tronWeb, sendParams);
+
+      expect(actual).toEqual({ txId: "trx-tx-id" });
+      expect(nearIntentsService.buildSendTransaction).toHaveBeenCalledWith(sendParams, tronWeb);
+      expect(sendRawTransaction).toHaveBeenCalledWith({ txID: "raw" });
+      expect(nearIntentsService.submitDeposit).toHaveBeenCalledWith({
+        depositAddress: deposit.depositAddress,
+        depositMemo: undefined,
+        txId: "trx-tx-id",
+      });
+    });
+
+    test("☁ SOL: points to rawTxBuilder.send, the chain service cannot sign", async () => {
+      await expect(
+        bridgeServiceFor({ SOL: "https://solana.example" }).send({} as any, {
+          ...sendParams,
+          sourceToken: { ...trxSourceToken, chainSymbol: ChainSymbol.SOL, chainType: ChainType.SOLANA },
+        })
+      ).rejects.toThrow(
+        "bridge.send cannot send NEAR Intents transfers from SOL: use bridge.rawTxBuilder.send and sign the transaction"
+      );
+      expect(nearIntentsService.buildSendTransaction).not.toHaveBeenCalled();
     });
   });
 

@@ -12,11 +12,12 @@ import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
 import { Provider, TransactionResponse } from "../models";
 import { DefaultNearIntentsService, NearIntentsService } from "../near-intents";
-import { assertNearIntentsSendParams, nearIntentsChainNotSupportedError } from "../near-intents/utils";
+import { assertNearIntentsSendParams, nearIntentsSendNotSupportedError } from "../near-intents/utils";
 import { TokenService } from "../token";
 import { AlgBridgeService } from "./alg";
 import { EvmBridgeService } from "./evm";
 import { ApproveParams, ChainBridgeService, CheckAllowanceParams, GetAllowanceParams, SendParams } from "./models";
+import { canSendRawTransaction } from "./models/bridge";
 import { DefaultRawBridgeTransactionBuilder, RawBridgeTransactionBuilder } from "./raw-bridge-transaction-builder";
 import { SolanaBridgeService } from "./sol";
 import { resolveSpender } from "./spender";
@@ -74,6 +75,9 @@ export interface BridgeService {
   /**
    * @deprecated Use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}<p>
    * Send tokens through the ChainBridgeService
+   *
+   * For {@link Messenger.NEAR_INTENTS}: only chains whose provider signs the transaction (EVM, TRX);
+   * for the other chains use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}.
    * @param provider - will be used to access the network
    * @param params
    */
@@ -144,8 +148,8 @@ export class DefaultBridgeService implements BridgeService {
       provider
     );
     if (params.messenger === Messenger.NEAR_INTENTS) {
-      if (!(chainBridgeService instanceof EvmBridgeService)) {
-        throw nearIntentsChainNotSupportedError(params.sourceToken.chainSymbol);
+      if (!canSendRawTransaction(chainBridgeService)) {
+        throw nearIntentsSendNotSupportedError(params.sourceToken.chainSymbol);
       }
       assertNearIntentsSendParams(params);
       const { rawTransaction, deposit } = await this.nearIntentsService.buildSendTransaction(params, provider);

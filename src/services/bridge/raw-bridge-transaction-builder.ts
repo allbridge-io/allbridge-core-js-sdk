@@ -31,7 +31,7 @@ export interface RawBridgeTransactionBuilder {
    * For {@link Messenger.NEAR_INTENTS}: the transaction is a plain transfer of the source tokens to a NEAR Intents deposit address.
    * {@link SendParams.nearIntentsDeposit} is used when defined, otherwise a new deposit is created
    * (to get the deposit details as well, use `nearIntents.buildSendTransaction`).
-   * `extraGas` and a non-zero `fee` are rejected. Only EVM source chains are supported for now.
+   * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM, SOL, TRX, SRB (needs the deposit memo) and SUI.
    * @param params
    * @param provider - will be used to access the network
    */

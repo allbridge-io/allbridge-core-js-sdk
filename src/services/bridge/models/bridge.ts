@@ -3,6 +3,23 @@ import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { SendParams, SwapParams, TxTransferParams } from "./bridge.model";
 
+/**
+ * A chain bridge service that can sign and send a raw transaction with its provider.
+ * @internal
+ */
+export interface RawTransactionSender {
+  sendRawTransaction(rawTransaction: RawTransaction): Promise<TransactionResponse>;
+}
+
+/**
+ * @internal
+ */
+export function canSendRawTransaction(
+  service: ChainBridgeService
+): service is ChainBridgeService & RawTransactionSender {
+  return typeof (service as Partial<RawTransactionSender>).sendRawTransaction === "function";
+}
+
 export abstract class ChainBridgeService {
   abstract chainType: ChainType;
   abstract api: AllbridgeCoreClient;

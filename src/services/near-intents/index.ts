@@ -35,7 +35,7 @@ import { assertNearIntentsRoute } from "./utils";
  * 3. Sign and send the transaction before `deposit.deadline`.
  * 4. Optionally {@link submitDeposit} with the transaction hash to speed up the processing.
  *
- * No approval is needed. Only EVM source chains are supported for now.
+ * No approval is needed. Source chains: EVM, SOL, TRX, SRB and SUI (ALG and STX are not supported).
  */
 export interface NearIntentsService {
   /**

@@ -24,7 +24,7 @@ import { setAddress as setCctpAddress } from "../../models/sui/cctp-bridge";
 import { bridge } from "../../models/sui/cctp-bridge/cctp-bridge-interface/functions";
 import { setAddress as setUtilsAddress } from "../../models/sui/utils";
 import { fromHex } from "../../models/sui/utils/bytes32/functions";
-import { nearIntentsChainNotSupportedError, nearIntentsNotABridgeContractError } from "../../near-intents/utils";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { fetchAllPagesRecursive } from "../../utils/sui/paginated";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui, TxTransferParams } from "../models";
@@ -53,10 +53,25 @@ export class SuiBridgeService extends ChainBridgeService {
   }
 
   /**
-   * NEAR Intents deposit transfers are not supported from this chain yet.
+   * Builds a coin transfer of `amount` to `params.toAddress`: SUI split from the gas coin when `token.isNative`,
+   * otherwise a coin of the `token.originTokenAddress` type taken from the sender's coins.
+   * Used for `Messenger.NEAR_INTENTS` deposits.
+   * @returns the transaction JSON
    */
-  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawSuiTransaction> {
-    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
+  async buildRawTransactionTransfer(params: TxTransferParams): Promise<RawSuiTransaction> {
+    const { amount, token, fromAccountAddress, toAddress } = params;
+    let coinType: string | undefined;
+    if (!token.isNative) {
+      coinType = token.originTokenAddress;
+      if (!coinType) {
+        throw new SdkError("SUI token must contain 'originTokenAddress'");
+      }
+    }
+    const tx = new Transaction();
+    tx.setSender(fromAccountAddress);
+    const coin = coinWithBalance(coinType ? { balance: BigInt(amount), type: coinType } : { balance: BigInt(amount) });
+    tx.transferObjects([coin], toAddress);
+    return await tx.toJSON({ client: this.client });
   }
 
   /** @deprecated Do not use. */

@@ -1,4 +1,4 @@
-import { Address, contract } from "@stellar/stellar-sdk";
+import { Address, Asset, contract, Horizon, Memo, Operation, TransactionBuilder } from "@stellar/stellar-sdk";
 import { Big } from "big.js";
 import { ChainSymbol } from "../../../chains/chain.enums";
 import { Messenger } from "../../../client/core-api/core-api.model";
@@ -6,13 +6,13 @@ import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions, ChainType } from "../../../index";
 import { FeePaymentMethod } from "../../../models";
+import { convertIntAmountToFloat } from "../../../utils/calculation";
 import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeContract } from "../../models/srb/bridge-contract";
 import { Client as CctpBridgeContract } from "../../models/srb/cctp-bridge-contract";
-import { getSorobanInclusionFee } from "../../models/srb/utils";
-import { nearIntentsChainNotSupportedError } from "../../near-intents/utils";
+import { getSorobanInclusionFee, getStellarInclusionFee } from "../../models/srb/utils";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import {
   ChainBridgeService,
@@ -24,6 +24,11 @@ import {
 } from "../models";
 import { getNonceBigInt, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import ContractClientOptions = contract.ClientOptions;
+
+/**
+ * Validity window (seconds) of a classic Stellar transaction built by the SDK.
+ */
+const STELLAR_TRANSACTION_TIMEOUT = 180;
 
 export class SrbBridgeService extends ChainBridgeService {
   chainType: ChainType.SRB = ChainType.SRB;
@@ -146,10 +151,37 @@ export class SrbBridgeService extends ChainBridgeService {
   }
 
   /**
-   * NEAR Intents deposit transfers are not supported from this chain yet.
+   * Builds a classic Stellar `payment` of `amount` to `params.toAddress` with `params.memo` as the text memo:
+   * XLM when `token.isNative`, otherwise the classic asset behind the Soroban token
+   * (`token.originTokenAddress` = `CODE:ISSUER`). Used for `Messenger.NEAR_INTENTS` deposits.
+   * @returns the transaction XDR
+   * @throws SdkError if `params.memo` is missing: NEAR Intents cannot attribute a Stellar deposit without it
    */
-  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
-    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
+  async buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    const { amount, token, fromAccountAddress, toAddress, memo } = params;
+    if (!memo) {
+      throw new SdkError("Stellar transfer requires a deposit memo");
+    }
+    const asset = token.isNative ? Asset.native() : getClassicAsset(token.originTokenAddress);
+
+    const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
+    const sourceAccount = await stellar.loadAccount(fromAccountAddress);
+    const inclusionFee = await getStellarInclusionFee(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
+    return new TransactionBuilder(sourceAccount, {
+      fee: inclusionFee.toString(10),
+      networkPassphrase: this.params.sorobanNetworkPassphrase,
+    })
+      .addOperation(
+        Operation.payment({
+          destination: toAddress,
+          asset,
+          amount: convertIntAmountToFloat(amount, token.decimals).toFixed(),
+        })
+      )
+      .addMemo(Memo.text(memo))
+      .setTimeout(STELLAR_TRANSACTION_TIMEOUT)
+      .build()
+      .toXDR();
   }
 
   /** @deprecated Do not use. */
@@ -200,4 +232,12 @@ export class SrbBridgeService extends ChainBridgeService {
     };
     return new contract(config);
   }
+}
+
+function getClassicAsset(originTokenAddress: string | undefined): Asset {
+  const [code, issuer] = originTokenAddress?.split(":") ?? [];
+  if (!code || !issuer) {
+    throw new SdkError("SRB token must contain 'originTokenAddress' in the 'CODE:ISSUER' format");
+  }
+  return new Asset(code, issuer);
 }

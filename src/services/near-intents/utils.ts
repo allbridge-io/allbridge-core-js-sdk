@@ -12,6 +12,17 @@ export function nearIntentsChainNotSupportedError(chainSymbol: string): SdkError
 }
 
 /**
+ * Thrown by the deprecated `bridge.send` for a NEAR Intents transfer from a chain whose bridge service
+ * cannot sign and send a transaction itself.
+ * @internal
+ */
+export function nearIntentsSendNotSupportedError(chainSymbol: string): SdkError {
+  return new SdkError(
+    `bridge.send cannot send NEAR Intents transfers from ${chainSymbol}: use bridge.rawTxBuilder.send and sign the transaction`
+  );
+}
+
+/**
  * Thrown when a NEAR Intents transfer reaches a bridge-contract code path.
  * @internal
  */

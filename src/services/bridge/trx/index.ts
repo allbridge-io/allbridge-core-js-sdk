@@ -6,7 +6,7 @@ import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { assertNever } from "../../../utils/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
-import { nearIntentsChainNotSupportedError, nearIntentsNotABridgeContractError } from "../../near-intents/utils";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { sendRawTransaction } from "../../utils/trx";
 import { SendParams, TxSendParamsTrx, TxSwapParamsTrx, TxTransferParams } from "../models";
 import { ChainBridgeService } from "../models/bridge";
@@ -29,10 +29,33 @@ export class TronBridgeService extends ChainBridgeService {
   }
 
   /**
-   * NEAR Intents deposit transfers are not supported from this chain yet.
+   * Signs the raw transaction with the TronWeb instance and sends it.
+   * @internal
    */
-  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
-    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
+  async sendRawTransaction(rawTransaction: RawTransaction): Promise<TransactionResponse> {
+    return await sendRawTransaction(this.tronWeb, rawTransaction);
+  }
+
+  /**
+   * Builds a plain transfer: TRC-20 `transfer(toAddress, amount)` on the token contract,
+   * or a TRX transfer of `amount` sun when `token.isNative`. Used for `Messenger.NEAR_INTENTS` deposits.
+   */
+  async buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    const { amount, token, fromAccountAddress, toAddress } = params;
+    if (token.isNative) {
+      return await this.tronWeb.transactionBuilder.sendTrx(toAddress, +amount, fromAccountAddress);
+    }
+    const parameters = [
+      { type: "address", value: toAddress },
+      { type: "uint256", value: amount },
+    ];
+    return this.buildRawTransaction(
+      token.tokenAddress,
+      "transfer(address,uint256)",
+      parameters,
+      "0",
+      fromAccountAddress
+    );
   }
 
   /** @deprecated Do not use. */

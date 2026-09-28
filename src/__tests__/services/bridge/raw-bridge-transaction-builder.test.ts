@@ -201,15 +201,21 @@ describe("RawTransactionBuilder", () => {
       ).rejects.toThrow("Such route does not support NEAR Intents protocol");
     });
 
-    test("throws for a non-EVM source chain", async () => {
+    test("throws for a source chain without deposit transfers (STX)", async () => {
+      const stxBuilder = new DefaultRawBridgeTransactionBuilder(
+        nearApi as unknown as AllbridgeCoreClient,
+        new NodeRpcUrlsConfig({ STX: "http://localhost/" }),
+        {} as never,
+        tokenService
+      );
       await expect(
-        builder.send({
+        stxBuilder.send({
           ...sendParams,
-          sourceToken: { ...sourceToken, chainSymbol: ChainSymbol.SRB, chainType: ChainType.SRB, decimals: 7 },
+          sourceToken: { ...sourceToken, chainSymbol: ChainSymbol.STX, chainType: ChainType.STX },
           destinationToken: { ...destinationToken, chainSymbol: "GRL" as ChainSymbol, chainType: ChainType.EVM },
           amount: "1.33",
         })
-      ).rejects.toThrow("NEAR Intents transfers from SRB are not supported yet");
+      ).rejects.toThrow("NEAR Intents transfers from STX are not supported yet");
     });
   });
 });
