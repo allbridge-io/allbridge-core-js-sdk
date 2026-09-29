@@ -77,6 +77,45 @@ describe("AllbridgeCoreClient", () => {
       expect(actual.refunded).toBe(true);
       refundedScope.done();
     });
+
+    it("☀️ getTransferStatus passes the refund details through", async () => {
+      nock.cleanAll();
+      const refundedTxId = "2".repeat(64);
+      const refundTxId = "0x9e49f10107dabdfd413de4042df1d453ef6be8296d04090f2a48ceedcf35b0da";
+      const refundedScope = nock("http://localhost")
+        .get(`/chain/${chainSymbol}/${refundedTxId}`)
+        .reply(200, {
+          ...transferStatusResponse,
+          refunded: true,
+          refundTxId,
+          refundedAmount: "7999989817",
+          refundedAmountFormatted: 7999.989817,
+        });
+      const actual: TransferStatusResponse = await api.getTransferStatus(chainSymbol, refundedTxId);
+      expect(actual.refundTxId).toEqual(refundTxId);
+      expect(actual.refundedAmount).toEqual("7999989817");
+      expect(actual.refundedAmountFormatted).toEqual(7999.989817);
+      refundedScope.done();
+    });
+
+    it("☀️ getTransferStatus keeps null refund details of a transfer not yet indexed", async () => {
+      nock.cleanAll();
+      const refundedTxId = "3".repeat(64);
+      const refundedScope = nock("http://localhost")
+        .get(`/chain/${chainSymbol}/${refundedTxId}`)
+        .reply(200, {
+          ...transferStatusResponse,
+          refunded: true,
+          refundTxId: null,
+          refundedAmount: null,
+          refundedAmountFormatted: null,
+        });
+      const actual: TransferStatusResponse = await api.getTransferStatus(chainSymbol, refundedTxId);
+      expect(actual.refundTxId).toBeNull();
+      expect(actual.refundedAmount).toBeNull();
+      expect(actual.refundedAmountFormatted).toBeNull();
+      refundedScope.done();
+    });
   });
 
   describe("given /receive-fee endpoint", () => {

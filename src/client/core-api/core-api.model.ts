@@ -328,6 +328,27 @@ export interface TransferStatusResponse {
    */
   refunded?: boolean;
 
+  /**
+   * Hash of the refund transaction on the source chain, when {@link refunded} and the refund tx is known
+   * ({@link Messenger.NEAR_INTENTS} only). `null` until the Core API has indexed it, which can be a poll
+   * later than `refunded`. Optional: older Core API versions omit it.
+   */
+  refundTxId?: string | null;
+
+  /**
+   * Amount returned to the sender, in the smallest units of the source token (like {@link sendAmount}),
+   * when {@link refunded} ({@link Messenger.NEAR_INTENTS} only). It is the deposited amount minus the refund fee,
+   * so it can differ from the quoted amount after an incomplete deposit. `null` until known.
+   * Optional: older Core API versions omit it.
+   */
+  refundedAmount?: string | null;
+
+  /**
+   * {@link refundedAmount} in source token units (like {@link sendAmountFormatted}). `null` until known.
+   * Optional: older Core API versions omit it.
+   */
+  refundedAmountFormatted?: number | null;
+
   responseTime?: number;
 }
 
