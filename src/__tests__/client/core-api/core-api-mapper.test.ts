@@ -1,5 +1,10 @@
-import { mapChainDetailsResponseToChainDetailsMap } from "../../../client/core-api/core-api-mapper";
-import { ChainDetailsResponse } from "../../../client/core-api/core-api.model";
+import {
+  dtoKeyToMessenger,
+  mapChainDetailsResponseToChainDetailsMap,
+  mapChainDetailsResponseToPoolInfoMap,
+  mapMessengerKeyDtoToMessenger,
+} from "../../../client/core-api/core-api-mapper";
+import { ChainDetailsResponse, Messenger, MessengerKeyDTO } from "../../../client/core-api/core-api.model";
 import { ChainDetailsWithTokens, ChainDetailsMapWithFlags } from "../../../tokens-info";
 import chainDetailsGRL from "../../data/tokens-info/ChainDetails-GRL.json";
 import tokensGroupedByChain from "../../data/tokens-info/ChainDetailsMapWithFlags.json";
@@ -11,6 +16,21 @@ const expectedTokensGroupedByChain = tokensGroupedByChain as unknown as ChainDet
 initChainsWithTestnet();
 
 describe("Core API Mapper", () => {
+  describe("MessengerKeyDTO", () => {
+    // dtoKeyToMessenger pairs MessengerKeyDTO and Messenger by enum key name, so the keys must be spelled identically.
+    it.each(Object.entries(MessengerKeyDTO))("key %s (%s) maps to the Messenger with the same key", (key, dtoKey) => {
+      const expected = Messenger[key as keyof typeof Messenger];
+      expect(expected).toBeDefined();
+      expect(dtoKeyToMessenger[dtoKey]).toEqual(expected);
+      expect(mapMessengerKeyDtoToMessenger(dtoKey)).toEqual(expected);
+    });
+
+    it("maps nearIntents to Messenger.NEAR_INTENTS = 7", () => {
+      expect(Messenger.NEAR_INTENTS).toEqual(7);
+      expect(mapMessengerKeyDtoToMessenger(MessengerKeyDTO.NEAR_INTENTS)).toEqual(Messenger.NEAR_INTENTS);
+    });
+  });
+
   describe("given ChainDetailsMapDTO", () => {
     const dto: ChainDetailsResponse = tokensInfo as unknown as ChainDetailsResponse;
 
@@ -43,6 +63,84 @@ describe("Core API Mapper", () => {
           throw new Error("Mapped GRL token must be defined");
         }
         expect(mappedToken.xReserve).toEqual(token.xReserve);
+      });
+
+      it("preserves nearIntents and isNative, maps transferTime and payerAvailability for nearIntents", () => {
+        const dtoWithNearIntents = JSON.parse(JSON.stringify(dto)) as ChainDetailsResponse;
+        const grl = dtoWithNearIntents.GRL;
+        const token = grl?.tokens[0];
+        if (!grl || !token) {
+          throw new Error("First GRL token must be defined in test fixture");
+        }
+        token.nearIntents = { assetId: "nep141:eth.omft.near" };
+        token.isNative = true;
+        const [destination] = Object.keys(grl.transferTime);
+        if (!destination) {
+          throw new Error("GRL transferTime must have a destination in test fixture");
+        }
+        grl.transferTime[destination] = {
+          ...grl.transferTime[destination],
+          nearIntents: 20_000,
+        } as (typeof grl.transferTime)[string];
+        grl.abrPayer = {
+          payerAddress: "0x0000000000000000000000000000000000000001",
+          tokenAddress: "0x0000000000000000000000000000000000000002",
+          tokenDecimals: 18,
+          payerAvailability: { cctp: true, nearIntents: false },
+        };
+
+        const actual = mapChainDetailsResponseToChainDetailsMap(dtoWithNearIntents);
+        const mappedGrl = actual.GRL;
+        const mappedToken = mappedGrl?.tokens[0];
+        if (!mappedGrl || !mappedToken) {
+          throw new Error("Mapped GRL token must be defined");
+        }
+        expect(mappedToken.nearIntents).toEqual({ assetId: "nep141:eth.omft.near" });
+        expect(mappedToken.isNative).toEqual(true);
+        expect(mappedGrl.transferTime[destination]?.[Messenger.NEAR_INTENTS]).toEqual(20_000);
+        expect(mappedGrl.abrPayer?.payerAvailability).toEqual({ [Messenger.CCTP]: true });
+      });
+    });
+  });
+
+  describe("given ChainDetailsMapDTO without liquidity pools (current Core API)", () => {
+    // The current Core API serves neither the pool-era token fields nor the flags and bridgeAddress.
+    const dto: ChainDetailsResponse = JSON.parse(JSON.stringify(tokensInfo)) as ChainDetailsResponse;
+    for (const chainDetails of Object.values(dto)) {
+      delete chainDetails.bridgeAddress;
+      for (const token of chainDetails.tokens) {
+        delete token.poolAddress;
+        delete token.poolInfo;
+        delete token.feeShare;
+        delete token.apr;
+        delete token.lpRate;
+        delete token.flags;
+      }
+    }
+
+    describe("mapChainDetailsMapFromDTO", () => {
+      it("maps every token as a token to send", () => {
+        const actual = mapChainDetailsResponseToChainDetailsMap(dto);
+        const grl = actual.GRL;
+        if (!grl) {
+          throw new Error("Mapped GRL chain must be defined");
+        }
+        expect(grl.tokens).toHaveLength(expectedTokensGroupedByChain.GRL?.tokens.length ?? -1);
+        for (const token of grl.tokens) {
+          expect(token.flags).toEqual({ swap: true, pool: false });
+          expect(token.poolAddress).toBeUndefined();
+          expect(token.feeShare).toBeUndefined();
+          expect(token.bridgeAddress).toBeUndefined();
+        }
+        expect(grl.bridgeAddress).toBeUndefined();
+        expect(grl.tokens[0]?.tokenAddress).toEqual(expectedTokensGroupedByChain.GRL?.tokens[0]?.tokenAddress);
+        expect(grl.transferTime).toEqual(expectedTokensGroupedByChain.GRL?.transferTime);
+      });
+    });
+
+    describe("mapChainDetailsResponseToPoolInfoMap", () => {
+      it("returns empty PoolInfoMap", () => {
+        expect(mapChainDetailsResponseToPoolInfoMap(dto)).toEqual({});
       });
     });
   });

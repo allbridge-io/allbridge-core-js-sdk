@@ -1,18 +1,25 @@
-import { Axios, AxiosHeaders, create } from "axios";
-import { InvalidMessengerOptionError } from "../../exceptions";
+import { Axios, AxiosHeaders, create, isAxiosError } from "axios";
+import {
+  InvalidMessengerOptionError,
+  NearIntentsAmountTooLowError,
+  NearIntentsDoesNotSupportedError,
+  NearIntentsNoLiquidityError,
+  NearIntentsQuoteError,
+} from "../../exceptions";
 import { ChainDetailsMapWithFlags, PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { VERSION } from "../../version";
-import {
-  mapChainDetailsResponseToChainDetailsMap,
-  mapChainDetailsResponseToPoolInfoMap,
-  mapPoolInfoResponseToPoolInfoMap,
-} from "./core-api-mapper";
+import { mapChainDetailsResponseToChainDetailsMap, mapChainDetailsResponseToPoolInfoMap } from "./core-api-mapper";
 import {
   ChainDetailsResponse,
   GasBalanceResponse,
   Messenger,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsErrorResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
+  NearIntentsSubmitDepositRequest,
   PendingInfoResponse,
-  PoolInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
   TransferStatusResponse,
@@ -39,6 +46,60 @@ export interface ApiClient {
 
   /** @deprecated Do not use. */
   getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap>;
+
+  /**
+   * `POST /near-intents/quote`: a dry NEAR Intents quote, see {@link mapNearIntentsError} for the thrown errors.
+   */
+  getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse>;
+
+  /**
+   * `POST /near-intents/deposit`: a NEAR Intents quote with a one-shot deposit address.
+   */
+  createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse>;
+
+  /**
+   * `POST /near-intents/deposit/submit`: notifies NEAR Intents about the deposit transaction.
+   */
+  submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void>;
+}
+
+/**
+ * Maps an error of a Core API `/near-intents/*` call to a typed SDK error:
+ * - HTTP 404 -> {@link NearIntentsDoesNotSupportedError}
+ * - `AMOUNT_TOO_LOW` -> {@link NearIntentsAmountTooLowError} (with `minAmount` / `minAmountUsd` when known)
+ * - `NO_LIQUIDITY` -> {@link NearIntentsNoLiquidityError}
+ * - `FAILED_TO_GET_QUOTE`, `UPSTREAM_ERROR` or HTTP 502 -> {@link NearIntentsQuoteError}
+ *
+ * Any other error is returned unchanged.
+ * @internal
+ */
+export function mapNearIntentsError(error: unknown): unknown {
+  if (!isAxiosError(error) || !error.response) {
+    return error;
+  }
+  const status = error.response.status;
+  const body = (error.response.data ?? {}) as Partial<NearIntentsErrorResponse>;
+  const message = typeof body.message === "string" ? body.message : undefined;
+  switch (body.code) {
+    case "AMOUNT_TOO_LOW":
+      return new NearIntentsAmountTooLowError(
+        message ?? "Amount is too low for NEAR Intents route",
+        body.minAmount,
+        body.minAmountUsd
+      );
+    case "NO_LIQUIDITY":
+      return new NearIntentsNoLiquidityError(message ?? "No liquidity available for NEAR Intents route");
+    case "FAILED_TO_GET_QUOTE":
+    case "UPSTREAM_ERROR":
+      return new NearIntentsQuoteError(message ?? "Failed to get NEAR Intents quote", body.code);
+  }
+  if (status === 404) {
+    return new NearIntentsDoesNotSupportedError(message ?? "Such route does not support NEAR Intents protocol");
+  }
+  if (status === 502) {
+    return new NearIntentsQuoteError(message ?? "NEAR Intents upstream error", "UPSTREAM_ERROR");
+  }
+  return error;
 }
 
 export class ApiClientImpl implements ApiClient {
@@ -84,10 +145,13 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
-  /** @deprecated Do not use. */
-  async getPendingInfo(): Promise<PendingInfoResponse> {
-    const { data } = await this.api.get<PendingInfoResponse>("/pending-info");
-    return data;
+  /**
+   * @deprecated Do not use.
+   * The `/pending-info` endpoint was removed from the Core API together with the liquidity pools;
+   * always resolves to an empty object without calling the server.
+   */
+  getPendingInfo(): Promise<PendingInfoResponse> {
+    return Promise.resolve({});
   }
 
   async getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
@@ -118,18 +182,44 @@ export class ApiClientImpl implements ApiClient {
     };
   }
 
-  /** @deprecated Do not use. */
-  async getPoolInfoMap(pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
-    const poolKeys = pools instanceof Array ? pools : [pools];
-    const { data } = await this.api.post<PoolInfoResponse>(
-      "/pool-info",
-      { pools: poolKeys },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return mapPoolInfoResponseToPoolInfoMap(data);
+  /**
+   * @deprecated Do not use.
+   * The `/pool-info` endpoint was removed from the Core API together with the liquidity pools;
+   * always resolves to an empty map without calling the server.
+   */
+  getPoolInfoMap(_pools: PoolKeyObject[] | PoolKeyObject): Promise<PoolInfoMap> {
+    return Promise.resolve({});
+  }
+
+  async getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse> {
+    try {
+      const { data } = await this.api.post<NearIntentsQuoteResponse>("/near-intents/quote", args, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return data;
+    } catch (e) {
+      throw mapNearIntentsError(e);
+    }
+  }
+
+  async createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse> {
+    try {
+      const { data } = await this.api.post<NearIntentsDepositResponse>("/near-intents/deposit", args, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return data;
+    } catch (e) {
+      throw mapNearIntentsError(e);
+    }
+  }
+
+  async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
+    try {
+      await this.api.post("/near-intents/deposit/submit", args, {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (e) {
+      throw mapNearIntentsError(e);
+    }
   }
 }

@@ -29,6 +29,16 @@ export class SrbTokenService extends ChainTokenService {
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
+    if (params.token.isNative) {
+      try {
+        return await this.getNativeTokenBalance({ account: params.account, chainSymbol: params.token.chainSymbol });
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          return "0";
+        }
+        throw err;
+      }
+    }
     if (!params.token.originTokenAddress) {
       throw new SdkError("OriginTokenAddress missing");
     }

@@ -51,6 +51,9 @@ export class SolanaTokenService extends ChainTokenService {
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
     const { account, token } = params;
+    if (token.isNative) {
+      return this.getNativeTokenBalance({ account, chainSymbol: token.chainSymbol });
+    }
     try {
       const associatedAccount = getAssociatedAccount(new PublicKey(account), new PublicKey(token.tokenAddress));
       const accountData = await getTokenAccountData(associatedAccount, this.buildAnchorProvider(account));

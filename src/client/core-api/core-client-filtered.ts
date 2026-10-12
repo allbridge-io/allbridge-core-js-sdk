@@ -9,6 +9,11 @@ import {
 } from "../../tokens-info";
 import {
   GasBalanceResponse,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
+  NearIntentsSubmitDepositRequest,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -82,6 +87,18 @@ export class AllbridgeCoreClientFilteredImpl implements AllbridgeCoreClientFilte
 
   async getReceiveTransactionCost(args: ReceiveTransactionCostRequest): Promise<ReceiveTransactionCostResponse> {
     return await this.client.getReceiveTransactionCost(args);
+  }
+
+  async getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse> {
+    return await this.client.getNearIntentsQuote(args);
+  }
+
+  async createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse> {
+    return await this.client.createNearIntentsDeposit(args);
+  }
+
+  async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
+    return await this.client.submitNearIntentsDeposit(args);
   }
 
   /** @deprecated Do not use. */

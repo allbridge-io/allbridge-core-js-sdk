@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CoinStruct, SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { MethodNotSupportedError, SdkError } from "../../../exceptions";
@@ -38,6 +39,10 @@ export class SuiTokenService extends ChainTokenService {
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
+    if (params.token.isNative) {
+      const balance = await this.suiClient.getBalance({ owner: params.account, coinType: SUI_TYPE_ARG });
+      return balance.totalBalance;
+    }
     if (!params.token.originTokenAddress) {
       throw new SdkError("SUI token must contain 'originTokenAddress'");
     }

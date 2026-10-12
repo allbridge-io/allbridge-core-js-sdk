@@ -3,7 +3,7 @@ import { ChainType } from "../../../../chains/chain.enums";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientWithPoolInfo } from "../../../../client/core-api/core-client-base";
 import { ChainSymbol, FeePaymentMethod } from "../../../../models";
-import { TxSendParams } from "../../../../services/bridge/models";
+import { TokenWithChainDetails, TxSendParams } from "../../../../services/bridge/models";
 import { TronBridgeService } from "../../../../services/bridge/trx";
 import { formatAddress } from "../../../../services/bridge/utils";
 import { mockNonceBigInt } from "../../../mock/bridge/utils";
@@ -20,6 +20,7 @@ describe("TrxBridge", () => {
     tronWebMock = {
       transactionBuilder: {
         triggerSmartContract: jest.fn(),
+        sendTrx: jest.fn(),
       },
     };
     trxBridge = new TronBridgeService(tronWebMock as TronWeb, api as AllbridgeCoreClientWithPoolInfo);
@@ -90,6 +91,72 @@ describe("TrxBridge", () => {
         ],
         from
       );
+    });
+  });
+
+  describe("Given a NEAR Intents deposit transfer", () => {
+    /* cSpell:disable */
+    const from = "TB4K8DV1CDsuT6SGdQ2L2je4XG88KSrgRh";
+    const depositAddress = "TKzxdSv2FZKQrEqkKVgp5DcwEXBEKMg2Ax";
+    const tokenAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+    /* cSpell:enable */
+
+    test("buildRawTransactionTransfer calls the TRC-20 transfer on the token contract", async () => {
+      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce(triggerSmartContractSendResponse);
+
+      const actual = await trxBridge.buildRawTransactionTransfer({
+        amount: "1330000",
+        token: { chainSymbol: ChainSymbol.TRX, decimals: 6, tokenAddress } as TokenWithChainDetails,
+        fromAccountAddress: from,
+        toAddress: depositAddress,
+      });
+
+      expect(actual).toEqual(triggerSmartContractSendResponse.transaction);
+      expect(tronWebMock.transactionBuilder.sendTrx).not.toHaveBeenCalled();
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).toHaveBeenCalledWith(
+        tokenAddress,
+        "transfer(address,uint256)",
+        { callValue: 0 },
+        [
+          { type: "address", value: depositAddress },
+          { type: "uint256", value: "1330000" },
+        ],
+        from
+      );
+    });
+
+    test("buildRawTransactionTransfer builds a TRX transfer for a native token", async () => {
+      const sendTrxTransaction = { txID: "native-tx", raw_data: {} };
+      tronWebMock.transactionBuilder.sendTrx.mockResolvedValueOnce(sendTrxTransaction);
+
+      const actual = await trxBridge.buildRawTransactionTransfer({
+        amount: "25000000",
+        token: {
+          chainSymbol: ChainSymbol.TRX,
+          decimals: 6,
+          tokenAddress: "TXka46PPwttNPWfFDPtt3GUodbPThyufaV", // cSpell:disable-line
+          isNative: true,
+        } as TokenWithChainDetails,
+        fromAccountAddress: from,
+        toAddress: depositAddress,
+      });
+
+      expect(actual).toBe(sendTrxTransaction);
+      expect(tronWebMock.transactionBuilder.sendTrx).toHaveBeenCalledWith(depositAddress, 25000000, from);
+      expect(tronWebMock.transactionBuilder.triggerSmartContract).not.toHaveBeenCalled();
+    });
+
+    test("buildRawTransactionTransfer throws when the TRC-20 call cannot be built", async () => {
+      tronWebMock.transactionBuilder.triggerSmartContract.mockResolvedValueOnce({ result: { result: false } });
+
+      await expect(
+        trxBridge.buildRawTransactionTransfer({
+          amount: "1",
+          token: { chainSymbol: ChainSymbol.TRX, decimals: 6, tokenAddress } as TokenWithChainDetails,
+          fromAccountAddress: from,
+          toAddress: depositAddress,
+        })
+      ).rejects.toThrow("Unknown error");
     });
   });
 });

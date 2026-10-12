@@ -29,6 +29,7 @@ import {
 import { ChainDetailsMap, TokenWithChainDetails } from "../../tokens-info";
 import { convertAmountPrecision, convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { assertNever } from "../../utils/utils";
+import { nearIntentsNotABridgeContractError } from "../near-intents/utils";
 import {
   SendParams,
   TxSendParams,
@@ -364,6 +365,8 @@ export async function prepareTxSendParams(
       }
       txSendParams.contractAddress = sourceToken.xReserve.bridgeAddress;
       break;
+    case Messenger.NEAR_INTENTS:
+      throw nearIntentsNotABridgeContractError();
     case Messenger.ALLBRIDGE:
     case Messenger.WORMHOLE:
       txSendParams.contractAddress = sourceToken.bridgeAddress;
@@ -638,7 +641,7 @@ export async function getExtraGasMaxLimits(
     ).toFixed(),
   };
 
-  if (messenger === Messenger.X_RESERVE) {
+  if (messenger === Messenger.X_RESERVE || messenger === Messenger.NEAR_INTENTS) {
     const getZeroAmountFormatted = () => ({
       [AmountFormat.INT]: "0",
       [AmountFormat.FLOAT]: "0",

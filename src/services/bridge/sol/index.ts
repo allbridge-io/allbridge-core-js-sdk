@@ -1,11 +1,26 @@
-import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync,
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
-import { JupiterError, MethodNotSupportedError } from "../../../exceptions";
+import { JupiterError, MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { ChainType, FeePaymentMethod, SwapParams } from "../../../models";
 import { assertNever } from "../../../utils/utils";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { addUnitLimitAndUnitPriceToVersionedTx } from "../../utils/sol/compute-budget";
-import { ChainBridgeService, SendParams, TxSendParamsSol } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsSol, TxTransferParams } from "../models";
 import { prepareTxSendParams } from "../utils";
 import { BridgeTxService } from "./bridge-tx-service";
 import { JupiterParams, JupiterService } from "./jupiter-service";
@@ -134,6 +149,71 @@ export class SolanaBridgeService extends ChainBridgeService {
     solTxSendParams: SolTxSendParams
   ): Promise<{ tx: VersionedTransaction; requiredMessageSigner?: Keypair }> {
     return this.payerWithTokenService.buildRawTransactionSend(params, solTxSendParams);
+  }
+
+  /**
+   * Builds a plain transfer to `params.toAddress`, signed by (and paid by) `params.fromAccountAddress`:
+   * - `token.isNative`: a `SystemProgram.transfer` of `amount` lamports;
+   * - otherwise: an idempotent creation of the recipient's associated token account followed by
+   *   an SPL `transferChecked` of `amount` from the sender's associated token account.
+   *   The token program (SPL Token or Token-2022) is taken from the mint account owner.
+   *   Token-2022 mints with a transfer hook are not supported (the hook accounts are not resolved).
+   *
+   * No compute budget instructions are added: the wallet sets the priority fee.
+   * Used for `Messenger.NEAR_INTENTS` deposits.
+   */
+  async buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    const { amount, token, fromAccountAddress, toAddress } = params;
+    const sender = new PublicKey(fromAccountAddress);
+    const recipient = new PublicKey(toAddress);
+
+    const instructions: TransactionInstruction[] = [];
+    if (token.isNative) {
+      instructions.push(SystemProgram.transfer({ fromPubkey: sender, toPubkey: recipient, lamports: BigInt(amount) }));
+    } else {
+      const mint = new PublicKey(token.tokenAddress);
+      const tokenProgramId = await this.getTokenProgramId(mint);
+      const senderTokenAccount = getAssociatedTokenAddressSync(mint, sender, true, tokenProgramId);
+      const recipientTokenAccount = getAssociatedTokenAddressSync(mint, recipient, true, tokenProgramId);
+      instructions.push(
+        createAssociatedTokenAccountIdempotentInstruction(
+          sender,
+          recipientTokenAccount,
+          recipient,
+          mint,
+          tokenProgramId
+        ),
+        createTransferCheckedInstruction(
+          senderTokenAccount,
+          mint,
+          recipientTokenAccount,
+          sender,
+          BigInt(amount),
+          token.decimals,
+          [],
+          tokenProgramId
+        )
+      );
+    }
+
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    const message = new TransactionMessage({
+      payerKey: sender,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToV0Message();
+    return new VersionedTransaction(message);
+  }
+
+  private async getTokenProgramId(mint: PublicKey): Promise<PublicKey> {
+    const mintAccount = await this.connection.getAccountInfo(mint);
+    if (!mintAccount) {
+      throw new SdkError(`Solana mint ${mint.toBase58()} not found`);
+    }
+    if (mintAccount.owner.equals(TOKEN_PROGRAM_ID) || mintAccount.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+      return mintAccount.owner;
+    }
+    throw new SdkError(`Solana mint ${mint.toBase58()} is not owned by a token program`);
   }
 
   send(_params: SendParams): Promise<TransactionResponse> {

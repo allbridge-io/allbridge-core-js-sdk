@@ -24,9 +24,10 @@ import { setAddress as setCctpAddress } from "../../models/sui/cctp-bridge";
 import { bridge } from "../../models/sui/cctp-bridge/cctp-bridge-interface/functions";
 import { setAddress as setUtilsAddress } from "../../models/sui/utils";
 import { fromHex } from "../../models/sui/utils/bytes32/functions";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { fetchAllPagesRecursive } from "../../utils/sui/paginated";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
-import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui, TxTransferParams } from "../models";
 import { getNonceBigInt, normalizeSuiHex, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class SuiBridgeService extends ChainBridgeService {
@@ -49,6 +50,28 @@ export class SuiBridgeService extends ChainBridgeService {
 
   send(): Promise<TransactionResponse> {
     throw new SdkError("Method send not implemented.");
+  }
+
+  /**
+   * Builds a coin transfer of `amount` to `params.toAddress`: SUI split from the gas coin when `token.isNative`,
+   * otherwise a coin of the `token.originTokenAddress` type taken from the sender's coins.
+   * Used for `Messenger.NEAR_INTENTS` deposits.
+   * @returns the transaction JSON
+   */
+  async buildRawTransactionTransfer(params: TxTransferParams): Promise<RawSuiTransaction> {
+    const { amount, token, fromAccountAddress, toAddress } = params;
+    let coinType: string | undefined;
+    if (!token.isNative) {
+      coinType = token.originTokenAddress;
+      if (!coinType) {
+        throw new SdkError("SUI token must contain 'originTokenAddress'");
+      }
+    }
+    const tx = new Transaction();
+    tx.setSender(fromAccountAddress);
+    const coin = coinWithBalance(coinType ? { balance: BigInt(amount), type: coinType } : { balance: BigInt(amount) });
+    tx.transferObjects([coin], toAddress);
+    return await tx.toJSON({ client: this.client });
   }
 
   /** @deprecated Do not use. */
@@ -134,6 +157,8 @@ export class SuiBridgeService extends ChainBridgeService {
         throw new SdkError("Messenger xReserve is not supported for SUI bridge");
       case Messenger.OFT:
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
     }
   }
 

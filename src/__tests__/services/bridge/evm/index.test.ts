@@ -133,4 +133,58 @@ describe("EvmBridge", () => {
       });
     });
   });
+
+  describe("Given a NEAR Intents deposit transfer", () => {
+    const from = "0x01237296aaF2ba01AC9a819813E260Bb4Ad6642d";
+    const depositAddress = "0x76b4c56085ED136a8744D52bE956396624a730E8";
+    const tokenAddress = "0xc7dbc4a896b34b7a10dda2ef72052145a9122f43";
+
+    test("buildRawTransactionTransfer encodes an ERC-20 transfer to the deposit address", async () => {
+      const actual = await evmBridge.buildRawTransactionTransfer({
+        amount: "1330000",
+        token: { chainSymbol: "GRL" as ChainSymbol, decimals: 6, tokenAddress } as TokenWithChainDetails,
+        fromAccountAddress: from,
+        toAddress: depositAddress,
+      });
+      const expectedData = new Web3().eth.abi.encodeFunctionCall(
+        {
+          name: "transfer",
+          type: "function",
+          inputs: [
+            { name: "to", type: "address" },
+            { name: "amount", type: "uint256" },
+          ],
+        },
+        [depositAddress, "1330000"]
+      );
+
+      expect(expectedData.startsWith("0xa9059cbb")).toBe(true);
+      expect(actual).toEqual({
+        from,
+        to: tokenAddress,
+        value: "0",
+        data: expectedData,
+      });
+    });
+
+    test("buildRawTransactionTransfer builds a value transfer for a native token", async () => {
+      const actual = await evmBridge.buildRawTransactionTransfer({
+        amount: "1500000000000000000",
+        token: {
+          chainSymbol: "GRL" as ChainSymbol,
+          decimals: 18,
+          tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+          isNative: true,
+        } as TokenWithChainDetails,
+        fromAccountAddress: from,
+        toAddress: depositAddress,
+      });
+
+      expect(actual).toEqual({
+        from,
+        to: depositAddress,
+        value: "1500000000000000000",
+      });
+    });
+  });
 });

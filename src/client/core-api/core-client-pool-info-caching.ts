@@ -10,6 +10,11 @@ import {
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
   GasBalanceResponse,
+  NearIntentsDepositRequest,
+  NearIntentsDepositResponse,
+  NearIntentsQuoteRequest,
+  NearIntentsQuoteResponse,
+  NearIntentsSubmitDepositRequest,
   PendingInfoResponse,
   ReceiveTransactionCostRequest,
   ReceiveTransactionCostResponse,
@@ -65,6 +70,18 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
 
   getGasBalance(chainSymbol: string, address: string): Promise<GasBalanceResponse> {
     return this.client.getGasBalance(chainSymbol, address);
+  }
+
+  getNearIntentsQuote(args: NearIntentsQuoteRequest): Promise<NearIntentsQuoteResponse> {
+    return this.client.getNearIntentsQuote(args);
+  }
+
+  createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse> {
+    return this.client.createNearIntentsDeposit(args);
+  }
+
+  submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
+    return this.client.submitNearIntentsDeposit(args);
   }
 
   /** @deprecated Do not use. */

@@ -15,11 +15,12 @@ import { MethodNotSupportedError, SdkError } from "../../../exceptions";
 import { AllbridgeCoreSdkOptions } from "../../../index";
 import { FeePaymentMethod, Messenger } from "../../../models";
 import { assertNever } from "../../../utils/utils";
-import { RawStxTransaction, TransactionResponse } from "../../models";
+import { RawStxTransaction, RawTransaction, TransactionResponse } from "../../models";
 import { stacksContracts as contracts } from "../../models/stx/clarigen-types";
+import { nearIntentsChainNotSupportedError } from "../../near-intents/utils";
 import { getTokenName } from "../../utils/stx/get-token-name";
 import { getFungiblePostCondition, getStxPostCondition } from "../../utils/stx/post-conditions";
-import { ChainBridgeService, SendParams, SwapParams } from "../models";
+import { ChainBridgeService, SendParams, SwapParams, TxTransferParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class StxBridgeService extends ChainBridgeService {
@@ -141,6 +142,13 @@ export class StxBridgeService extends ChainBridgeService {
     };
     const transaction = await makeUnsignedContractCall(txOptions);
     return transaction.serialize();
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   /** @deprecated Do not use. */

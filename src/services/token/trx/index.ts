@@ -33,6 +33,9 @@ export class TronTokenService extends ChainTokenService {
   }
 
   async getTokenBalance(params: GetTokenBalanceParams): Promise<string> {
+    if (params.token.isNative) {
+      return this.getNativeTokenBalance({ account: params.account, chainSymbol: params.token.chainSymbol });
+    }
     const contract = await this.getContract(params.token.tokenAddress);
     const balance = await contract.balanceOf(params.account).call();
     return balance.toString();

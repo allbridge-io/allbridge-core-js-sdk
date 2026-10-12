@@ -2,12 +2,16 @@ import { Messenger } from "../../client/core-api/core-api.model";
 import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError, SdkError } from "../../exceptions";
 import { FeePaymentMethod } from "../../models";
 import { TokenWithChainDetails } from "../../tokens-info";
+import { nearIntentsNoApprovalError } from "../near-intents/utils";
 
 export function resolveSpender(
   token: TokenWithChainDetails,
   messenger: Messenger,
   gasFeePaymentMethod: FeePaymentMethod = FeePaymentMethod.WITH_NATIVE_CURRENCY
 ): string {
+  if (messenger === Messenger.NEAR_INTENTS) {
+    throw nearIntentsNoApprovalError();
+  }
   if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (token.abrPayer) {
       return token.abrPayer.payerAddress;

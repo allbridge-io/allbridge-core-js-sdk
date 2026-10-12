@@ -62,6 +62,7 @@ import { BridgeService, DefaultBridgeService } from "./bridge";
 import { GetNativeTokenBalanceParams } from "./bridge/models";
 import { getExtraGasMaxLimits, getGasFeeOptions } from "./bridge/utils";
 import { DefaultLiquidityPoolService, LiquidityPoolService } from "./liquidity-pool";
+import { DefaultNearIntentsService, NearIntentsService } from "./near-intents";
 import { DefaultTokenService, TokenService } from "./token";
 import { DefaultYieldService, YieldService } from "./yield";
 
@@ -89,6 +90,7 @@ export class AllbridgeCoreSdkService {
   /** @deprecated Do not use. */
   pool: LiquidityPoolService;
   yield: YieldService;
+  nearIntents: NearIntentsService;
 
   constructor(
     public readonly nodeRpcUrlsConfig: NodeRpcUrlsConfig,
@@ -101,7 +103,8 @@ export class AllbridgeCoreSdkService {
     const coreClientPoolInfoCaching = new AllbridgeCoreClientPoolInfoCaching(coreClient);
     this.api = new AllbridgeCoreClientFilteredImpl(coreClientPoolInfoCaching, params);
     this.tokenService = new DefaultTokenService(this.api, nodeRpcUrlsConfig, params);
-    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
+    this.nearIntents = new DefaultNearIntentsService(this.api, nodeRpcUrlsConfig, params);
+    this.bridge = new DefaultBridgeService(this.api, nodeRpcUrlsConfig, params, this.tokenService, this.nearIntents);
     this.pool = new DefaultLiquidityPoolService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.yield = new DefaultYieldService(this.api, nodeRpcUrlsConfig, params, this.tokenService);
     this.params = params;
@@ -390,6 +393,8 @@ export class AllbridgeCoreSdkService {
         return this.getAmountToBeReceivedComputeXReserve(amountToSendFloat, sourceChainToken, destinationChainToken);
       case Messenger.OFT:
         return this.getAmountToBeReceivedComputeOft(amountToSendFloat, sourceChainToken, destinationChainToken);
+      case Messenger.NEAR_INTENTS:
+        return this.getAmountToBeReceivedComputeNearIntents(amountToSendFloat, sourceChainToken, destinationChainToken);
     }
   }
 
@@ -580,6 +585,8 @@ export class AllbridgeCoreSdkService {
         return this.getAmountToSendComputeXReserve(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
       case Messenger.OFT:
         return this.getAmountToSendComputeOft(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
+      case Messenger.NEAR_INTENTS:
+        return this.getAmountToSendComputeNearIntents(amountToBeReceivedFloat, sourceChainToken, destinationChainToken);
     }
   }
 
@@ -718,6 +725,44 @@ export class AllbridgeCoreSdkService {
       sourceChainToken.decimals
     ).round(0);
     return convertIntAmountToFloat(resultInSourcePrecision, sourceChainToken.decimals).toFixed();
+  }
+
+  /**
+   * {@link Messenger.NEAR_INTENTS}: an `EXACT_INPUT` quote, returns its `amountOut` (float, destination token units).
+   */
+  async getAmountToBeReceivedComputeNearIntents(
+    amountToSendFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<string> {
+    validateAmountGtZero(amountToSendFloat);
+    validateAmountDecimals("amountToSendFloat", amountToSendFloat, sourceChainToken.decimals);
+    const quote = await this.nearIntents.getQuote({
+      amount: Big(amountToSendFloat).toFixed(),
+      sourceToken: sourceChainToken,
+      destinationToken: destinationChainToken,
+      swapType: "EXACT_INPUT",
+    });
+    return quote.amountOut;
+  }
+
+  /**
+   * {@link Messenger.NEAR_INTENTS}: an `EXACT_OUTPUT` quote, returns its `amountIn` (float, source token units).
+   */
+  async getAmountToSendComputeNearIntents(
+    amountToBeReceivedFloat: BigSource,
+    sourceChainToken: TokenWithChainDetails,
+    destinationChainToken: TokenWithChainDetails
+  ): Promise<string> {
+    validateAmountGtZero(amountToBeReceivedFloat);
+    validateAmountDecimals("amountToBeReceivedFloat", amountToBeReceivedFloat, destinationChainToken.decimals);
+    const quote = await this.nearIntents.getQuote({
+      amount: Big(amountToBeReceivedFloat).toFixed(),
+      sourceToken: sourceChainToken,
+      destinationToken: destinationChainToken,
+      swapType: "EXACT_OUTPUT",
+    });
+    return quote.amountIn;
   }
 
   async getGasFeeOptions(

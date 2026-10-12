@@ -10,8 +10,9 @@ import { assertNever } from "../../../utils/utils";
 import { RawTransaction, TransactionResponse } from "../../models";
 import { BridgeClient } from "../../models/alg/BridgeClient";
 import { PaddingUtilClient } from "../../models/alg/PaddingUtilClient";
+import { nearIntentsChainNotSupportedError } from "../../near-intents/utils";
 import { checkAssetOptIn, feeForInner, populateAndEncodeTxs } from "../../utils/alg";
-import { ChainBridgeService, SendParams, SwapParams } from "../models";
+import { ChainBridgeService, SendParams, SwapParams, TxTransferParams } from "../models";
 import { getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 
 export class AlgBridgeService extends ChainBridgeService {
@@ -128,6 +129,13 @@ export class AlgBridgeService extends ChainBridgeService {
 
     const { transactions } = await composer.buildTransactions();
     return populateAndEncodeTxs(transactions, sender, this.algorand.client.algod);
+  }
+
+  /**
+   * NEAR Intents deposit transfers are not supported from this chain yet.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    return Promise.reject(nearIntentsChainNotSupportedError(params.token.chainSymbol));
   }
 
   /** @deprecated Do not use. */

@@ -21,12 +21,14 @@ import { NodeRpcUrlsConfig } from "../../index";
 import { RawTransaction } from "../../models";
 import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
+import ERC20 from "../../models/abi/ERC20";
 import OftBridge from "../../models/abi/OftBridge";
 import PayerWithAbr from "../../models/abi/PayerWithAbr";
 import XReserveBridge from "../../models/abi/XReserveBridge";
+import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { encodeCctpHookForStellar } from "../cctp-utils";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
-import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm } from "../models";
+import { ChainBridgeService, SendParams, TxSendParamsEvm, TxSwapParamsEvm, TxTransferParams } from "../models";
 import { bufferToSize, getNonce, prepareTxSendParams, prepareTxSwapParams } from "../utils";
 import { getAbrPayerTarget } from "./abr-payer";
 
@@ -145,6 +147,8 @@ export class EvmBridgeService extends ChainBridgeService {
         value = xReserve.value;
         break;
       }
+      case Messenger.NEAR_INTENTS:
+        throw nearIntentsNotABridgeContractError();
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
         {
@@ -224,6 +228,28 @@ export class EvmBridgeService extends ChainBridgeService {
       to: contractAddress,
       value: value,
       data: sendMethod.encodeABI(),
+    });
+  }
+
+  /**
+   * Builds a plain transfer: ERC-20 `transfer(toAddress, amount)` on the token contract,
+   * or a native currency value transfer when `token.isNative`. Used for {@link Messenger.NEAR_INTENTS} deposits.
+   */
+  buildRawTransactionTransfer(params: TxTransferParams): Promise<RawTransaction> {
+    const { amount, token, fromAccountAddress, toAddress } = params;
+    if (token.isNative) {
+      return Promise.resolve({
+        from: fromAccountAddress,
+        to: toAddress,
+        value: amount,
+      });
+    }
+    const transferMethod = this.getERC20Contract(token.tokenAddress).methods.transfer(toAddress, amount);
+    return Promise.resolve({
+      from: fromAccountAddress,
+      to: token.tokenAddress,
+      value: "0",
+      data: transferMethod.encodeABI(),
     });
   }
 
@@ -404,7 +430,11 @@ export class EvmBridgeService extends ChainBridgeService {
     };
   }
 
-  private async sendRawTransaction(rawTransaction: RawTransaction) {
+  /**
+   * Estimates gas and sends the raw transaction through the provider.
+   * @internal
+   */
+  async sendRawTransaction(rawTransaction: RawTransaction): Promise<TransactionResponse> {
     const estimateGas = await this.web3.eth.estimateGas(rawTransaction);
 
     // null for DISABLE SITE SUGGESTED GAS FEE IN METAMASK
@@ -434,6 +464,10 @@ export class EvmBridgeService extends ChainBridgeService {
 
   private getAbrPayerContract(contractAddress: string) {
     return new this.web3.eth.Contract(PayerWithAbr.abi, contractAddress) as Contract<typeof PayerWithAbr.abi>;
+  }
+
+  private getERC20Contract(contractAddress: string) {
+    return new this.web3.eth.Contract(ERC20.abi, contractAddress) as Contract<typeof ERC20.abi>;
   }
 
   private getXReserveBridgeContract(contractAddress: string) {
