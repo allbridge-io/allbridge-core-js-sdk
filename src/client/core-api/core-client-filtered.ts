@@ -9,6 +9,10 @@ import {
 } from "../../tokens-info";
 import {
   GasBalanceResponse,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
   NearIntentsQuoteRequest,
@@ -99,6 +103,14 @@ export class AllbridgeCoreClientFilteredImpl implements AllbridgeCoreClientFilte
 
   async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
     return await this.client.submitNearIntentsDeposit(args);
+  }
+
+  async getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse> {
+    return await this.client.getLifiIntentsQuote(args);
+  }
+
+  async createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse> {
+    return await this.client.createLifiIntentsOrder(args);
   }
 
   /** @deprecated Do not use. */

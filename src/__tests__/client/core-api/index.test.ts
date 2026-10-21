@@ -3,6 +3,10 @@ import { ChainSymbol } from "../../../chains/chain.enums";
 import { ApiClientImpl } from "../../../client/core-api/api-client";
 import {
   AddressStatus,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   Messenger,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
@@ -14,6 +18,11 @@ import {
 } from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClientImpl } from "../../../client/core-api/core-client-base";
 import {
+  LifiIntentsAmountTooHighError,
+  LifiIntentsAmountTooLowError,
+  LifiIntentsDoesNotSupportedError,
+  LifiIntentsNoQuoteError,
+  LifiIntentsQuoteError,
   NearIntentsAmountTooLowError,
   NearIntentsDoesNotSupportedError,
   NearIntentsNoLiquidityError,
@@ -378,6 +387,133 @@ describe("AllbridgeCoreClient", () => {
         .post("/near-intents/quote")
         .reply(400, { message: ["amount must be a positive integer string"], statusCode: 400 });
       const error = await api.getNearIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toMatchObject({ isAxiosError: true, response: { status: 400 } });
+    });
+  });
+
+  describe("given /lifi-intents endpoints", () => {
+    const quoteRequest: LifiIntentsQuoteRequest = {
+      sourceChainId: 1,
+      sourceToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      destinationChainId: 6,
+      destinationToken: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+      amount: "1000000",
+      swapType: "EXACT_INPUT",
+    };
+    const quoteResponse: LifiIntentsQuoteResponse = {
+      amountIn: "1000000",
+      amountOut: "990000",
+      fee: "1000",
+      timeEstimate: 30,
+    };
+    const orderRequest: LifiIntentsOrderRequest = {
+      ...quoteRequest,
+      sender: "0x0000000000000000000000000000000000000001",
+      recipient: "0x0000000000000000000000000000000000000002",
+      app: "core",
+    };
+
+    afterEach(() => {
+      nock.cleanAll();
+    });
+
+    it("☀️ getLifiIntentsQuote posts the quote request and returns the quote", async () => {
+      const scope = nock("http://localhost")
+        .post("/lifi-intents/quote", getRequestBodyMatcher(quoteRequest))
+        .reply(200, quoteResponse);
+      expect(await api.getLifiIntentsQuote(quoteRequest)).toEqual(quoteResponse);
+      scope.done();
+    });
+
+    it("☀️ createLifiIntentsOrder posts the order request and returns the order", async () => {
+      const orderResponse: LifiIntentsOrderResponse = {
+        ...quoteResponse,
+        orderId: "0x" + "ab".repeat(32),
+        validUntil: 1900000060,
+        fillDeadline: 1900000600,
+        approval: {
+          token: quoteRequest.sourceToken,
+          spender: "0x00000000000000000000000000000000000000b1",
+          amount: "1000000",
+        },
+        tx: { contractAddress: "0x00000000000000000000000000000000000000b1", value: "0", tx: "0xdeadbeef" },
+      };
+      const scope = nock("http://localhost")
+        .post("/lifi-intents/order", getRequestBodyMatcher(orderRequest))
+        .reply(200, orderResponse);
+      expect(await api.createLifiIntentsOrder(orderRequest)).toEqual(orderResponse);
+      scope.done();
+    });
+
+    it("☁ 404 PAIR_NOT_AVAILABLE maps to LifiIntentsDoesNotSupportedError", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/quote")
+        .reply(404, { code: "PAIR_NOT_AVAILABLE", message: "No LI.FI Intents route ETH USDC -> ARB USDC" });
+      const error = await api.getLifiIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsDoesNotSupportedError);
+      expect(error).toMatchObject({ message: "No LI.FI Intents route ETH USDC -> ARB USDC" });
+    });
+
+    it("☁ 404 without a code (LI.FI Intents disabled) maps to LifiIntentsDoesNotSupportedError", async () => {
+      nock("http://localhost").post("/lifi-intents/quote").reply(404, { message: "Not Found", statusCode: 404 });
+      await expect(api.getLifiIntentsQuote(quoteRequest)).rejects.toBeInstanceOf(LifiIntentsDoesNotSupportedError);
+    });
+
+    it("☁ 400 AMOUNT_TOO_LOW maps to LifiIntentsAmountTooLowError with minAmount", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/quote")
+        .reply(400, { code: "AMOUNT_TOO_LOW", message: "Amount is below the minimum", minAmount: "1500000" });
+      const error = await api.getLifiIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsAmountTooLowError);
+      expect(error).toMatchObject({ message: "Amount is below the minimum", minAmount: "1500000" });
+    });
+
+    it("☁ 400 AMOUNT_TOO_HIGH maps to LifiIntentsAmountTooHighError with maxAmount", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/order")
+        .reply(400, { code: "AMOUNT_TOO_HIGH", message: "Amount is above the maximum", maxAmount: "3803804" });
+      const error = await api.createLifiIntentsOrder(orderRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsAmountTooHighError);
+      expect(error).toMatchObject({ message: "Amount is above the maximum", maxAmount: "3803804" });
+    });
+
+    it("☁ 404 NO_QUOTE maps to LifiIntentsNoQuoteError", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/quote")
+        .reply(404, { code: "NO_QUOTE", message: "No solver quotes this amount" });
+      await expect(api.getLifiIntentsQuote(quoteRequest)).rejects.toBeInstanceOf(LifiIntentsNoQuoteError);
+    });
+
+    it("☁ 400 INVALID_REQUEST maps to LifiIntentsQuoteError", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/quote")
+        .reply(400, { code: "INVALID_REQUEST", message: "LI.FI quote rejected" });
+      const error = await api.getLifiIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsQuoteError);
+      expect(error).toMatchObject({ code: "INVALID_REQUEST", message: "LI.FI quote rejected" });
+    });
+
+    it("☁ 502 UPSTREAM_ERROR maps to LifiIntentsQuoteError", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/order")
+        .reply(502, { code: "UPSTREAM_ERROR", message: "LI.FI is unavailable" });
+      const error = await api.createLifiIntentsOrder(orderRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsQuoteError);
+      expect(error).toMatchObject({ code: "UPSTREAM_ERROR" });
+    });
+
+    it("☁ 502 without body maps to LifiIntentsQuoteError", async () => {
+      nock("http://localhost").post("/lifi-intents/quote").reply(502);
+      const error = await api.getLifiIntentsQuote(quoteRequest).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(LifiIntentsQuoteError);
+      expect(error).toMatchObject({ code: "UPSTREAM_ERROR" });
+    });
+
+    it("☁ 400 validation error without code is rethrown as is", async () => {
+      nock("http://localhost")
+        .post("/lifi-intents/quote")
+        .reply(400, { message: ["amount must be a positive integer string"], statusCode: 400 });
+      const error = await api.getLifiIntentsQuote(quoteRequest).catch((e: unknown) => e);
       expect(error).toMatchObject({ isAxiosError: true, response: { status: 400 } });
     });
   });

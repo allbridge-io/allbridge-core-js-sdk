@@ -75,6 +75,11 @@ export interface TokenDTO {
    */
   nearIntents?: NearIntentsDTO;
   /**
+   * LI.FI Intents route info of the token. Defined when the token is on a LI.FI Intents route
+   * (as a source or a destination).
+   */
+  lifiIntents?: LifiIntentsDTO;
+  /**
    * True when the token is the native gas token of the chain (listed under a sentinel address).
    */
   isNative?: boolean;
@@ -100,6 +105,19 @@ export interface NearIntentsDTO {
   assetId: string;
 }
 
+export interface LifiIntentsDTO {
+  /**
+   * The LifiIntentsBridge contract on the token's chain (the spender to approve and the contract the order
+   * transaction calls). Absent on a chain that is only a LI.FI Intents destination.
+   */
+  bridgeAddress?: string;
+  /**
+   * Destination chain symbol -> token addresses (as listed by `/token-info` on that chain) the token can be sent to.
+   * Only on tokens of a chain with a `bridgeAddress` that have at least one route.
+   */
+  destinations?: Record<string, string[]>;
+}
+
 /**
  * @deprecated Do not use.
  */
@@ -123,6 +141,7 @@ export enum MessengerKeyDTO {
   OFT = "oft",
   X_RESERVE = "xReserve",
   NEAR_INTENTS = "nearIntents",
+  LIFI_INTENTS = "lifiIntents",
 }
 
 export type AbrPayerAvailabilityKeyDTO = (typeof MessengerKeyDTO)[keyof typeof MessengerKeyDTO];
@@ -179,6 +198,15 @@ export enum Messenger {
    * see `AllbridgeCoreSdk.nearIntents`.
    */
   NEAR_INTENTS = 7,
+  /**
+   * LI.FI Intents (solver marketplace on the Open Intents Framework).
+   * Route is supported when the source token has `lifiIntents.bridgeAddress` and lists the destination token in
+   * `lifiIntents.destinations`; EVM source chains only.
+   * The transfer is a call of the Allbridge `LifiIntentsBridge` contract built by the Core API: the source token
+   * is approved to `lifiIntents.bridgeAddress` (no approval for a native token), then the order transaction is signed.
+   * Amounts are market-priced quotes from the Core API, see `AllbridgeCoreSdk.lifiIntents`.
+   */
+  LIFI_INTENTS = 8,
 }
 
 /**
@@ -186,7 +214,7 @@ export enum Messenger {
  */
 export type LegacyMessenger = Messenger.ALLBRIDGE | Messenger.WORMHOLE;
 /**
- * Messengers supported for transfers: {@link Messenger.CCTP}, {@link Messenger.CCTP_V2}, {@link Messenger.OFT}, {@link Messenger.X_RESERVE}, {@link Messenger.NEAR_INTENTS}
+ * Messengers supported for transfers: {@link Messenger.CCTP}, {@link Messenger.CCTP_V2}, {@link Messenger.OFT}, {@link Messenger.X_RESERVE}, {@link Messenger.NEAR_INTENTS}, {@link Messenger.LIFI_INTENTS}
  */
 export type ActiveMessenger = Exclude<Messenger, LegacyMessenger>;
 
@@ -284,6 +312,100 @@ export interface NearIntentsErrorResponse {
   minAmountUsd?: string;
 }
 
+/**
+ * LI.FI Intents quote direction.
+ * - `EXACT_INPUT`: `amount` is what the user sends (the Allbridge fee included).
+ * - `EXACT_OUTPUT`: `amount` is what the recipient receives.
+ */
+export type LifiIntentsSwapType = NearIntentsSwapType;
+
+/**
+ * The Allbridge app a LI.FI Intents transfer belongs to; sent as the `appId` of the `LifiIntentsBridge` call.
+ */
+export type LifiIntentsApp = "core" | "next";
+
+export interface LifiIntentsQuoteRequest {
+  sourceChainId: number;
+  sourceToken: string;
+  destinationChainId: number;
+  destinationToken: string;
+  /**
+   * Integer amount: in source token units for `EXACT_INPUT`, in destination token units for `EXACT_OUTPUT`.
+   */
+  amount: string;
+  swapType: LifiIntentsSwapType;
+}
+
+export interface LifiIntentsQuoteResponse {
+  /** Integer amount in source token units the user pays, the Allbridge fee included */
+  amountIn: string;
+  /** Integer amount in destination token units the recipient receives */
+  amountOut: string;
+  /** Integer amount in source token units: the Allbridge fee, part of `amountIn` */
+  fee: string;
+  /** Estimated transfer time, seconds */
+  timeEstimate: number;
+}
+
+export interface LifiIntentsOrderRequest extends LifiIntentsQuoteRequest {
+  /** The address that signs and pays; refunds of an unfilled order go back to it */
+  sender: string;
+  /** The recipient on the destination chain */
+  recipient: string;
+  /** `core` by default */
+  app?: LifiIntentsApp;
+}
+
+export interface LifiIntentsApprovalDTO {
+  /** The source token to approve */
+  token: string;
+  /** The LifiIntentsBridge contract */
+  spender: string;
+  /** Integer allowance needed: `amountIn` */
+  amount: string;
+}
+
+export interface LifiIntentsTransferTxDTO {
+  /** The LifiIntentsBridge contract to call */
+  contractAddress: string;
+  /** Integer native value to attach: `amountIn` for a native token, `"0"` otherwise */
+  value: string;
+  /** 0x-prefixed calldata of the `bridge` / `bridgeNative` call */
+  tx: string;
+}
+
+export interface LifiIntentsOrderResponse extends LifiIntentsQuoteResponse {
+  /** The escrow order id (bytes32 hex): the transfer id the explorer shows */
+  orderId: string;
+  /** Unix seconds: the LI.FI quote validity */
+  validUntil: number;
+  /** Unix seconds: the order transaction reverts after this */
+  fillDeadline: number;
+  /** The allowance the sender must have given before sending `tx`; absent for a native token */
+  approval?: LifiIntentsApprovalDTO;
+  tx: LifiIntentsTransferTxDTO;
+}
+
+/**
+ * Error codes of the Core API LI.FI Intents endpoints (HTTP 400, 404 and 502 bodies).
+ */
+export type LifiIntentsErrorCode =
+  | "PAIR_NOT_AVAILABLE"
+  | "AMOUNT_TOO_LOW"
+  | "AMOUNT_TOO_HIGH"
+  | "NO_QUOTE"
+  | "INVALID_REQUEST"
+  | "UPSTREAM_ERROR";
+
+export interface LifiIntentsErrorResponse {
+  code: LifiIntentsErrorCode;
+  message: string;
+  /** `AMOUNT_TOO_LOW`: the least accepted integer amount in source token units, fee included */
+  minAmount?: string;
+  /** `AMOUNT_TOO_HIGH`: the greatest accepted integer amount in source token units, fee included */
+  maxAmount?: string;
+}
+
 export interface GasBalanceResponse {
   gasBalance: string | null;
   status: AddressStatus;
@@ -323,22 +445,25 @@ export interface TransferStatusResponse {
 
   /**
    * True when the transfer was refunded to the sender on the source chain instead of being delivered
-   * (e.g. a {@link Messenger.NEAR_INTENTS} deposit refunded by NEAR Intents); `receive` stays absent.
+   * (e.g. a {@link Messenger.NEAR_INTENTS} deposit refunded by NEAR Intents, or a {@link Messenger.LIFI_INTENTS}
+   * order refunded by the escrow); `receive` stays absent.
    * Optional: older Core API versions may omit it.
    */
   refunded?: boolean;
 
   /**
    * Hash of the refund transaction on the source chain, when {@link refunded} and the refund tx is known
-   * ({@link Messenger.NEAR_INTENTS} only). `null` until the Core API has indexed it, which can be a poll
+   * ({@link Messenger.NEAR_INTENTS} and {@link Messenger.LIFI_INTENTS} only). `null` until the Core API has indexed it, which can be a poll
    * later than `refunded`. Optional: older Core API versions omit it.
    */
   refundTxId?: string | null;
 
   /**
    * Amount returned to the sender, in the smallest units of the source token (like {@link sendAmount}),
-   * when {@link refunded} ({@link Messenger.NEAR_INTENTS} only). It is the deposited amount minus the refund fee,
-   * so it can differ from the quoted amount after an incomplete deposit. `null` until known.
+   * when {@link refunded} ({@link Messenger.NEAR_INTENTS} and {@link Messenger.LIFI_INTENTS} only).
+   * NEAR Intents: the deposited amount minus the refund fee, so it can differ from the quoted amount after an
+   * incomplete deposit. LI.FI Intents: the order input (`amountIn` minus the Allbridge fee, which is not refunded).
+   * `null` until known.
    * Optional: older Core API versions omit it.
    */
   refundedAmount?: string | null;

@@ -16,6 +16,8 @@ export {
   LegacyMessenger,
   Messenger,
   NearIntentsSwapType,
+  LifiIntentsSwapType,
+  LifiIntentsApp,
   TransferStatusResponse,
   BridgeTransaction,
   GasBalanceResponse,
@@ -33,6 +35,18 @@ export {
   NearIntentsSendParams,
   NearIntentsSendTransaction,
 } from "../services/near-intents/models";
+export { LifiIntentsService } from "../services/lifi-intents/index";
+export { isLifiIntentsRouteSupported } from "../services/lifi-intents/utils";
+export {
+  LifiIntentsQuoteParams,
+  LifiIntentsQuote,
+  LifiIntentsCreateOrderParams,
+  LifiIntentsApproval,
+  LifiIntentsOrderTransaction,
+  LifiIntentsOrder,
+  LifiIntentsSendParams,
+  LifiIntentsSendTransaction,
+} from "../services/lifi-intents/models";
 export { RawPoolTransactionBuilder } from "../services/liquidity-pool/raw-pool-transaction-builder";
 export {
   UserBalanceInfo,
@@ -73,6 +87,7 @@ export {
   TokenCoreFields,
   XReserveTokenInfo,
   NearIntentsTokenInfo,
+  LifiIntentsTokenInfo,
   TokenWithChainDetails,
   TransferTime,
   TxCostAmount,

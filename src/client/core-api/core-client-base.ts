@@ -7,6 +7,10 @@ import {
 import { ApiClient } from "./api-client";
 import {
   GasBalanceResponse,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
   NearIntentsQuoteRequest,
@@ -40,6 +44,10 @@ export interface AllbridgeCoreClient {
   createNearIntentsDeposit(args: NearIntentsDepositRequest): Promise<NearIntentsDepositResponse>;
 
   submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void>;
+
+  getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse>;
+
+  createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse>;
 }
 
 export interface AllbridgeCoreClientWithTokens extends AllbridgeCoreClient {
@@ -114,5 +122,13 @@ export class AllbridgeCoreClientImpl implements AllbridgeCoreClientWithPoolInfo 
 
   async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
     return await this.apiClient.submitNearIntentsDeposit(args);
+  }
+
+  async getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse> {
+    return await this.apiClient.getLifiIntentsQuote(args);
+  }
+
+  async createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse> {
+    return await this.apiClient.createLifiIntentsOrder(args);
   }
 }
