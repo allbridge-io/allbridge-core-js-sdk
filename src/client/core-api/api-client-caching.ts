@@ -3,6 +3,10 @@ import { PoolInfoMap, PoolKeyObject } from "../../tokens-info";
 import { ApiClient, TokenInfo } from "./api-client";
 import {
   GasBalanceResponse,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
   NearIntentsQuoteRequest,
@@ -96,5 +100,15 @@ export class ApiClientCaching implements ApiClient {
 
   async submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
     return this.apiClient.submitNearIntentsDeposit(args);
+  }
+
+  /** Not cached: every quote is a fresh market price. */
+  async getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse> {
+    return this.apiClient.getLifiIntentsQuote(args);
+  }
+
+  /** Not cached: every call builds a new short-lived order. */
+  async createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse> {
+    return this.apiClient.createLifiIntentsOrder(args);
   }
 }

@@ -10,6 +10,7 @@ import {
   SdkError,
 } from "../../../exceptions";
 import { assertNever } from "../../../utils/utils";
+import { lifiIntentsNotABridgeContractError } from "../../lifi-intents/utils";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 import * as bridgeIdl from "../../models/sol/types/bridge.json";
 import { PayerWithToken as PayerWithTokenType } from "../../models/sol/types/payer_with_token";
@@ -160,6 +161,8 @@ export class PayerWithTokenService {
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
       case Messenger.NEAR_INTENTS:
         throw nearIntentsNotABridgeContractError();
+      case Messenger.LIFI_INTENTS:
+        throw lifiIntentsNotABridgeContractError();
       default: {
         return assertNever(params.messenger, "Unhandled Messenger type");
       }

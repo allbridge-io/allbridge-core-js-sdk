@@ -2,6 +2,7 @@ import {
   ActiveMessenger,
   AllbridgeCoreSdk,
   ChainSymbol,
+  isLifiIntentsRouteSupported,
   Messenger,
   nodeRpcUrlsDefault,
   TokenWithChainDetails,
@@ -37,6 +38,10 @@ function getAvailableMessengers(
   // xReserve: both tokens must have xReserve config
   if (sourceToken.xReserve && destinationToken.xReserve) {
     messengers.push(Messenger.X_RESERVE);
+  }
+  // LI.FI Intents: the source token has lifiIntents.bridgeAddress and lists the destination token in lifiIntents.destinations
+  if (isLifiIntentsRouteSupported(sourceToken, destinationToken)) {
+    messengers.push(Messenger.LIFI_INTENTS);
   }
   return messengers;
 }

@@ -164,6 +164,71 @@ export class NearIntentsQuoteError extends SdkRootError {
 }
 
 /**
+ * The route is not supported by `Messenger.LIFI_INTENTS`: the source token has no `lifiIntents.bridgeAddress`,
+ * does not list the destination token in `lifiIntents.destinations`, the source chain is not EVM,
+ * or the Core API answered 404 (`PAIR_NOT_AVAILABLE`, or LI.FI Intents disabled).
+ */
+export class LifiIntentsDoesNotSupportedError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.LIFI_INTENTS_DOES_NOT_SUPPORTED_ERROR, message);
+  }
+}
+
+/**
+ * The LI.FI Intents amount is below the route minimum.
+ */
+export class LifiIntentsAmountTooLowError extends SdkRootError {
+  /**
+   * The least accepted amount, integer in the source token units, the Allbridge fee included. Optional.
+   */
+  public minAmount?: string;
+
+  constructor(message?: string, minAmount?: string) {
+    super(ErrorCode.LIFI_INTENTS_AMOUNT_TOO_LOW_ERROR, message);
+    this.minAmount = minAmount;
+  }
+}
+
+/**
+ * The LI.FI Intents amount is above the route maximum.
+ */
+export class LifiIntentsAmountTooHighError extends SdkRootError {
+  /**
+   * The greatest accepted amount, integer in the source token units, the Allbridge fee included. Optional.
+   */
+  public maxAmount?: string;
+
+  constructor(message?: string, maxAmount?: string) {
+    super(ErrorCode.LIFI_INTENTS_AMOUNT_TOO_HIGH_ERROR, message);
+    this.maxAmount = maxAmount;
+  }
+}
+
+/**
+ * The LI.FI Intents route exists but no solver quotes this amount right now (`NO_QUOTE`).
+ */
+export class LifiIntentsNoQuoteError extends SdkRootError {
+  constructor(message?: string) {
+    super(ErrorCode.LIFI_INTENTS_NO_QUOTE_ERROR, message);
+  }
+}
+
+/**
+ * LI.FI Intents failed to produce a quote or an order (`INVALID_REQUEST`, or an upstream error).
+ */
+export class LifiIntentsQuoteError extends SdkRootError {
+  /**
+   * Core API error code, e.g. `INVALID_REQUEST` or `UPSTREAM_ERROR`. Optional.
+   */
+  public code?: string;
+
+  constructor(message?: string, code?: string) {
+    super(ErrorCode.LIFI_INTENTS_QUOTE_ERROR, message);
+    this.code = code;
+  }
+}
+
+/**
  * @deprecated Do not use.
  */
 export class YieldDoesNotSupportedError extends SdkRootError {
@@ -203,6 +268,11 @@ export enum ErrorCode {
   NEAR_INTENTS_AMOUNT_TOO_LOW_ERROR = "NearIntentsAmountTooLowError",
   NEAR_INTENTS_NO_LIQUIDITY_ERROR = "NearIntentsNoLiquidityError",
   NEAR_INTENTS_QUOTE_ERROR = "NearIntentsQuoteError",
+  LIFI_INTENTS_DOES_NOT_SUPPORTED_ERROR = "LifiIntentsDoesNotSupportedError",
+  LIFI_INTENTS_AMOUNT_TOO_LOW_ERROR = "LifiIntentsAmountTooLowError",
+  LIFI_INTENTS_AMOUNT_TOO_HIGH_ERROR = "LifiIntentsAmountTooHighError",
+  LIFI_INTENTS_NO_QUOTE_ERROR = "LifiIntentsNoQuoteError",
+  LIFI_INTENTS_QUOTE_ERROR = "LifiIntentsQuoteError",
   /**
    * @deprecated Do not use.
    */

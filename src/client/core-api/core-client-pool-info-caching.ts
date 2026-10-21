@@ -10,6 +10,10 @@ import {
 import { mapChainDetailsMapToPoolKeyObjects, mapPoolKeyObjectToPoolKey } from "./core-api-mapper";
 import {
   GasBalanceResponse,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
   NearIntentsQuoteRequest,
@@ -82,6 +86,14 @@ export class AllbridgeCoreClientPoolInfoCaching implements AllbridgeCoreClientWi
 
   submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void> {
     return this.client.submitNearIntentsDeposit(args);
+  }
+
+  getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse> {
+    return this.client.getLifiIntentsQuote(args);
+  }
+
+  createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse> {
+    return this.client.createLifiIntentsOrder(args);
   }
 
   /** @deprecated Do not use. */

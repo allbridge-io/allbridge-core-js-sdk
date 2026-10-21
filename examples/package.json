@@ -13,6 +13,7 @@
     "run:getTokensInfo": "tsx src/examples/get-tokens-info.ts",
     "run:bridge:evm:send": "tsx src/examples/bridge/evm/evm-build-send-tx.ts",
     "run:bridge:evm:sendWithStables": "tsx src/examples/bridge/evm/evm-build-send-tx-gas-fee-with-stables.ts",
+    "run:bridge:evm:sendLifiIntents": "tsx src/examples/bridge/evm/evm-build-send-tx-lifi-intents.ts",
     "run:bridge:solana:send": "tsx src/examples/bridge/solana/sol-build-send-tx-cctp.ts",
     "run:bridge:sui:send": "tsx src/examples/bridge/sui/sui-build-send-tx.ts",
     "run:bridge:stx:send": "tsx src/examples/bridge/stx/stx-build-send-tx.ts",

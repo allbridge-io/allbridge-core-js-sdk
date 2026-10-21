@@ -25,6 +25,7 @@ Provides an easy integration with the Allbridge Core bridge for DApps in the bro
     - [CCTP and CCTP V2](#cctp-and-cctp-v2)
     - [OFT](#oft)
     - [X_RESERVE](#x_reserve)
+    - [LIFI_INTENTS](#lifi_intents)
   - [4.1 Approve the transfer of tokens](#41-approve-the-transfer-of-tokens-only-for-evm-tron)
   - [4.2 Send Tokens](#42-send-tokens)
   - [Full example](#full-example)
@@ -102,6 +103,7 @@ Every token is returned as a `TokenWithChainDetails` object. Besides the general
 | `cctpV2Address`, `cctpV2FeeShare` | token is supported by CCTP V2      | CCTP V2 bridge contract address (the approve spender) and CCTP V2 fee share      |
 | `oftId`, `oftBridgeAddress`       | token / chain is supported by OFT  | Id shared by the same token on different chains, OFT bridge contract address     |
 | `xReserve`                        | token is supported by xReserve     | xReserve bridge contract address (the approve spender), `feeShare` and `feeConst` |
+| `lifiIntents`                     | token is on a LI.FI Intents route  | `bridgeAddress` (the approve spender, source chains only) and `destinations`      |
 | `transferTime`                    | always                             | Average transfer time to other chains, per messenger                             |
 | `abrPayer`                        | chain supports paying fees in ABR  | ABR payer contract address and per-messenger availability                        |
 
@@ -118,11 +120,12 @@ The messenger is a required parameter of all route-dependent SDK methods:
 | `Messenger.CCTP_V2`   | Circle CCTP V2 | `cctpV2Address` is defined on both source and destination tokens                                       |
 | `Messenger.OFT`       | LayerZero OFT  | `oftId` is the same on source and destination tokens and `oftBridgeAddress` is defined on both chains  |
 | `Messenger.X_RESERVE` | xReserve       | `xReserve` is defined on both source and destination tokens                                            |
+| `Messenger.LIFI_INTENTS` | LI.FI Intents | source token has `lifiIntents.bridgeAddress` and lists the destination token in `lifiIntents.destinations` (EVM source chains only), see `isLifiIntentsRouteSupported` |
 
 `Messenger.ALLBRIDGE` and `Messenger.WORMHOLE` are deprecated and must not be used.
 
 ```ts
-import {Messenger} from "@allbridge/bridge-core-sdk";
+import {isLifiIntentsRouteSupported, Messenger} from "@allbridge/bridge-core-sdk";
 
 function getAvailableMessengers(sourceToken: TokenWithChainDetails, destinationToken: TokenWithChainDetails): Messenger[] {
   const messengers: Messenger[] = [];
@@ -143,13 +146,16 @@ function getAvailableMessengers(sourceToken: TokenWithChainDetails, destinationT
   if (sourceToken.xReserve && destinationToken.xReserve) {
     messengers.push(Messenger.X_RESERVE);
   }
+  if (isLifiIntentsRouteSupported(sourceToken, destinationToken)) {
+    messengers.push(Messenger.LIFI_INTENTS);
+  }
   return messengers;
 }
 ```
 
 `getAverageTransferTime` returns `null` when the messenger is not available between the source and destination chains,
 so it can be used as an additional check. If a messenger is not supported for the chosen route, the SDK methods throw
-`CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError` or `SdkError` (for xReserve).
+`CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError`, `LifiIntentsDoesNotSupportedError` or `SdkError` (for xReserve).
 
 ***TIP:***
 For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-available-messengers.ts)
@@ -189,6 +195,44 @@ Extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zer
 
 Examples:
 [***Stacks***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/stx/stx-build-send-tx.ts)
+
+#### LIFI_INTENTS
+
+Transfers through LI.FI Intents, a solver marketplace: the tokens are locked in an escrow on the source chain and a
+solver pays the recipient on the destination chain within seconds. Native tokens (e.g. ETH) can be sent as well.
+The route configuration is in `token.lifiIntents`: `bridgeAddress` is the Allbridge `LifiIntentsBridge` contract that
+has to be approved (a native token needs no approval), `destinations` lists the destination tokens per chain.
+Amounts are market-priced quotes from the Allbridge Core API, not a deterministic fee:
+`getAmountToBeReceived` / `getAmountToSend` request a quote, `sdk.lifiIntents.getQuote` returns it with the Allbridge `fee`.
+The quote errors are typed: `LifiIntentsAmountTooLowError` (`minAmount`), `LifiIntentsAmountTooHighError` (`maxAmount`),
+`LifiIntentsNoQuoteError` and `LifiIntentsQuoteError`.
+
+The order transaction is built by the Core API and is short-lived (the quote is valid for 40-120 s, the transaction
+reverts after about 10 min), so approve first and create the order right before signing:
+
+```ts
+const messenger = Messenger.LIFI_INTENTS;
+if (!(await sdk.bridge.checkAllowance({token: sourceToken, owner: fromAddress, amount, messenger}))) {
+  const rawTransactionApprove = await sdk.bridge.rawTxBuilder.approve({token: sourceToken, owner: fromAddress, messenger});
+  // sign and send rawTransactionApprove, wait for it to be mined
+}
+// creates the order and returns its LifiIntentsBridge call; order.orderId is the transfer id for getTransferStatus
+const {rawTransaction, order} = await sdk.lifiIntents.buildSendTransaction({
+  amount,
+  fromAccountAddress: fromAddress,
+  toAccountAddress: toAddress,
+  sourceToken,
+  destinationToken,
+});
+// sign and send rawTransaction at once
+```
+
+`bridge.rawTxBuilder.send` with `Messenger.LIFI_INTENTS` does the same and returns only the raw transaction.
+The gas fee is zero and extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zero limits.
+An unfilled order is refunded to the sender by LI.FI (`getTransferStatus` reports `refunded`); the Allbridge fee is not refunded.
+
+Examples:
+[***EVM***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-lifi-intents.ts)
 
 ### 4.1 Approve the transfer of tokens (only for Evm, Tron)
 

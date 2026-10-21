@@ -6,6 +6,7 @@ import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError, SdkError } from "../../../exceptions";
 import { CctpParams, ChainType, SwapParams, TxFeeParams } from "../../../models";
 import { assertNever } from "../../../utils/utils";
+import { lifiIntentsNotABridgeContractError } from "../../lifi-intents/utils";
 import { RawTransaction } from "../../models";
 import { Bridge as BridgeType } from "../../models/sol/types/bridge";
 import * as bridgeIdl from "../../models/sol/types/bridge.json";
@@ -251,6 +252,8 @@ export class BridgeTxService {
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
       case Messenger.NEAR_INTENTS:
         throw nearIntentsNotABridgeContractError();
+      case Messenger.LIFI_INTENTS:
+        throw lifiIntentsNotABridgeContractError();
       default: {
         return assertNever(params.messenger, "Unhandled Messenger type");
       }

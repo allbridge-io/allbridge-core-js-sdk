@@ -29,6 +29,11 @@ describe("Core API Mapper", () => {
       expect(Messenger.NEAR_INTENTS).toEqual(7);
       expect(mapMessengerKeyDtoToMessenger(MessengerKeyDTO.NEAR_INTENTS)).toEqual(Messenger.NEAR_INTENTS);
     });
+
+    it("maps lifiIntents to Messenger.LIFI_INTENTS = 8", () => {
+      expect(Messenger.LIFI_INTENTS).toEqual(8);
+      expect(mapMessengerKeyDtoToMessenger(MessengerKeyDTO.LIFI_INTENTS)).toEqual(Messenger.LIFI_INTENTS);
+    });
   });
 
   describe("given ChainDetailsMapDTO", () => {
@@ -99,6 +104,36 @@ describe("Core API Mapper", () => {
         expect(mappedToken.isNative).toEqual(true);
         expect(mappedGrl.transferTime[destination]?.[Messenger.NEAR_INTENTS]).toEqual(20_000);
         expect(mappedGrl.abrPayer?.payerAvailability).toEqual({ [Messenger.CCTP]: true });
+      });
+
+      it("preserves lifiIntents and maps transferTime for lifiIntents", () => {
+        const dtoWithLifiIntents = JSON.parse(JSON.stringify(dto)) as ChainDetailsResponse;
+        const grl = dtoWithLifiIntents.GRL;
+        const token = grl?.tokens[0];
+        if (!grl || !token) {
+          throw new Error("First GRL token must be defined in test fixture");
+        }
+        token.lifiIntents = {
+          bridgeAddress: "0xc5F40962983d41c2551139181EF3B2f73a4168be",
+          destinations: { ARB: ["0xaf88d065e77c8cC2239327C5EDb3A432268e5831"] },
+        };
+        const [destination] = Object.keys(grl.transferTime);
+        if (!destination) {
+          throw new Error("GRL transferTime must have a destination in test fixture");
+        }
+        grl.transferTime[destination] = {
+          ...grl.transferTime[destination],
+          lifiIntents: 30_000,
+        } as (typeof grl.transferTime)[string];
+
+        const actual = mapChainDetailsResponseToChainDetailsMap(dtoWithLifiIntents);
+        const mappedGrl = actual.GRL;
+        const mappedToken = mappedGrl?.tokens[0];
+        if (!mappedGrl || !mappedToken) {
+          throw new Error("Mapped GRL token must be defined");
+        }
+        expect(mappedToken.lifiIntents).toEqual(token.lifiIntents);
+        expect(mappedGrl.transferTime[destination]?.[Messenger.LIFI_INTENTS]).toEqual(30_000);
       });
     });
   });
