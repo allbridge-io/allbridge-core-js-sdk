@@ -55,14 +55,12 @@ export function assertLifiIntentsRoute(sourceToken: TokenWithChainDetails, desti
 
 /**
  * LI.FI Intents transfers have no relayer fee and no extra gas: rejects a positive `fee` or `extraGas`
- * and a `gasFeePaymentMethod` other than the native currency.
+ * and paying with ABR (the zero fee can be "paid" with the native currency or the stablecoin, as `getGasFeeOptions` offers).
  * @internal
  */
 export function assertLifiIntentsSendParams(params: SendParams) {
-  if (params.gasFeePaymentMethod && params.gasFeePaymentMethod !== FeePaymentMethod.WITH_NATIVE_CURRENCY) {
-    throw new InvalidGasFeePaymentOptionError(
-      "LI.FI Intents transfers have no relayer fee: omit 'gasFeePaymentMethod' or pass WITH_NATIVE_CURRENCY"
-    );
+  if (params.gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
+    throw new InvalidGasFeePaymentOptionError("LI.FI Intents transfers cannot pay the fee with ABR");
   }
   if (params.extraGas && Big(params.extraGas).gt(0)) {
     throw new InvalidGasFeePaymentOptionError("LI.FI Intents transfers do not support extra gas");

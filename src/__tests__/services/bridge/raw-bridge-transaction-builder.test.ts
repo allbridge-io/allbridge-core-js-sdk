@@ -339,7 +339,17 @@ describe("RawTransactionBuilder", () => {
       expect(actual).toEqual({ from, to: bridgeAddress, value: "1330000000000000000", data: "0xfeed" });
     });
 
-    test("rejects extra gas, a non-zero fee and a non-native payment method", async () => {
+    test("accepts the zero stablecoin fee option", async () => {
+      const actual = await builder.send({
+        ...sendParams,
+        fee: "0",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
+      });
+
+      expect(actual).toEqual({ from, to: bridgeAddress, value: "0", data: "0xdeadbeef" });
+    });
+
+    test("rejects extra gas, a non-zero fee and paying with ABR", async () => {
       await expect(builder.send({ ...sendParams, extraGas: "1000" })).rejects.toBeInstanceOf(
         InvalidGasFeePaymentOptionError
       );
@@ -347,7 +357,7 @@ describe("RawTransactionBuilder", () => {
         InvalidGasFeePaymentOptionError
       );
       await expect(
-        builder.send({ ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN })
+        builder.send({ ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_ABR })
       ).rejects.toBeInstanceOf(InvalidGasFeePaymentOptionError);
       expect(lifiApi.createLifiIntentsOrder).not.toHaveBeenCalled();
     });

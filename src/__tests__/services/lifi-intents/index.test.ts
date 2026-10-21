@@ -585,7 +585,7 @@ describe("LI.FI Intents", () => {
         InvalidGasFeePaymentOptionError
       );
       await expect(
-        bridgeService.send({} as any, { ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN })
+        bridgeService.send({} as any, { ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_ABR })
       ).rejects.toBeInstanceOf(InvalidGasFeePaymentOptionError);
       expect(lifiIntentsService.buildSendTransaction).not.toHaveBeenCalled();
     });
