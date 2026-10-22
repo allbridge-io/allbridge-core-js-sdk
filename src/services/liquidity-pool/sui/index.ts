@@ -1,4 +1,5 @@
-import { CoinStruct, SuiObjectResponse, SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import type { SuiClientTypes } from "@mysten/sui/client";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
 import { ChainType } from "../../../chains/chain.enums";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
@@ -18,6 +19,7 @@ import {
 } from "../../models/sui/bridge/bridge-interface/functions";
 import { Pool } from "../../models/sui/bridge/pool/structs";
 import { UserDeposit } from "../../models/sui/bridge/user-deposit/structs";
+import { createSuiClient, SuiCoin } from "../../utils/sui/client";
 import { getCoinsWithAmounts } from "../../utils/sui/coins";
 import { fetchAllPagesRecursive } from "../../utils/sui/paginated";
 import { suiView } from "../../utils/sui/view";
@@ -35,7 +37,7 @@ import {
 export class SuiPoolService extends ChainPoolService {
   chainType: ChainType.SUI = ChainType.SUI;
 
-  private readonly client: SuiJsonRpcClient;
+  private readonly client: SuiGrpcClient;
 
   constructor(
     public suiRpcUrl: string,
@@ -43,10 +45,7 @@ export class SuiPoolService extends ChainPoolService {
     public api: AllbridgeCoreClient
   ) {
     super();
-    this.client = new SuiJsonRpcClient({
-      url: suiRpcUrl,
-      network: params.suiIsTestnet ? "testnet" : "mainnet",
-    });
+    this.client = createSuiClient(suiRpcUrl, params.suiIsTestnet);
   }
 
   async getUserBalanceInfo(accountAddress: string, token: TokenWithChainDetails): Promise<UserBalanceInfo> {
@@ -59,28 +58,29 @@ export class SuiPoolService extends ChainPoolService {
     }
     setAddress(suiAddresses.bridgeAddress, suiAddresses.bridgeAddressOrigin);
 
+    const typeArg = phantom(token.originTokenAddress);
     const deposits = await this.fetchDeposits(accountAddress, token.originTokenAddress);
     const total = deposits.reduce(
       (total, element) => {
-        if (element.data) {
-          total.lpAmount += BigInt((element.data.content as any).fields.lp_amount);
-          total.rewardDebt += BigInt((element.data.content as any).fields.reward_debt);
-          return total;
-        } else {
-          throw new SdkError("Deposits fetch failed");
-        }
+        const userDeposit = UserDeposit.fromCoreObject(typeArg, element);
+        total.lpAmount += BigInt(userDeposit.lpAmount);
+        total.rewardDebt += BigInt(userDeposit.rewardDebt);
+        return total;
       },
       { lpAmount: BigInt(0), rewardDebt: BigInt(0) }
     );
     return new UserBalance({ lpAmount: total.lpAmount.toString(), rewardDebt: total.rewardDebt.toString() });
   }
 
-  private async fetchDeposits(accountAddress: string, tokenAddress: string): Promise<SuiObjectResponse[]> {
+  private async fetchDeposits(
+    accountAddress: string,
+    tokenAddress: string
+  ): Promise<SuiClientTypes.Object<{ content: true }>[]> {
     return await fetchAllPagesRecursive((cursor: string | null | undefined) =>
-      this.client.getOwnedObjects({
+      this.client.core.listOwnedObjects({
         owner: accountAddress,
-        filter: { StructType: UserDeposit.phantom(phantom(tokenAddress)).phantomType },
-        options: { showContent: true },
+        type: UserDeposit.phantom(phantom(tokenAddress)).phantomType,
+        include: { content: true },
         cursor,
       })
     );
@@ -128,8 +128,8 @@ export class SuiPoolService extends ChainPoolService {
     if (!params.token.originTokenAddress) {
       throw new SdkError("SUI token must contain 'originTokenAddress'");
     }
-    const coins: CoinStruct[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
-      this.client.getCoins({
+    const coins: SuiCoin[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
+      this.client.core.listCoins({
         owner: params.accountAddress,
         coinType: params.token.originTokenAddress,
         cursor,
@@ -159,7 +159,7 @@ export class SuiPoolService extends ChainPoolService {
       userDeposit: depositObj,
       coin: amountCoin,
     });
-    tx.mergeCoins(firstCoin.coinObjectId, [rewards]);
+    tx.mergeCoins(firstCoin.objectId, [rewards]);
     if (isNewDeposit) {
       tx.transferObjects([depositObj], params.accountAddress);
     }
@@ -180,11 +180,7 @@ export class SuiPoolService extends ChainPoolService {
       const depositObj = newUserDeposit(tx, tokenType);
       return { depositObj, isNewDeposit: true };
     } else {
-      if (deposits[0].data?.objectId) {
-        return { depositObj: deposits[0].data.objectId, isNewDeposit: false };
-      } else {
-        throw new SdkError("Something went wrong while deposit");
-      }
+      return { depositObj: deposits[0].objectId, isNewDeposit: false };
     }
   }
 
@@ -218,8 +214,8 @@ export class SuiPoolService extends ChainPoolService {
       amountLp: BigInt(params.amount),
     });
 
-    const coins: CoinStruct[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
-      this.client.getCoins({
+    const coins: SuiCoin[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
+      this.client.core.listCoins({
         owner: params.accountAddress,
         coinType: params.token.originTokenAddress,
         cursor,
@@ -231,7 +227,7 @@ export class SuiPoolService extends ChainPoolService {
     }
 
     if (coins[0]) {
-      tx.mergeCoins(coins[0].coinObjectId, [rewards[0], rewards[1]]);
+      tx.mergeCoins(coins[0].objectId, [rewards[0], rewards[1]]);
     } else {
       tx.mergeCoins(rewards[0], [rewards[1]]);
       tx.transferObjects([rewards[0]], params.accountAddress);
@@ -268,8 +264,8 @@ export class SuiPoolService extends ChainPoolService {
       userDeposit: depositObj,
     });
 
-    const coins: CoinStruct[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
-      this.client.getCoins({
+    const coins: SuiCoin[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
+      this.client.core.listCoins({
         owner: params.accountAddress,
         coinType: params.token.originTokenAddress,
         cursor,
@@ -277,7 +273,7 @@ export class SuiPoolService extends ChainPoolService {
     );
 
     if (coins[0]) {
-      tx.mergeCoins(coins[0].coinObjectId, [reward]);
+      tx.mergeCoins(coins[0].objectId, [reward]);
     } else {
       tx.transferObjects([reward], params.accountAddress);
     }

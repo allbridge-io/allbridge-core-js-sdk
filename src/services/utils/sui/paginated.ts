@@ -1,7 +1,7 @@
 interface PaginatedResults<Data> {
-  data: Data[];
+  objects: Data[];
   hasNextPage: boolean;
-  nextCursor?: string | null;
+  cursor?: string | null;
 }
 
 export async function fetchAllPagesRecursive<Data, Result extends PaginatedResults<Data>>(
@@ -10,10 +10,10 @@ export async function fetchAllPagesRecursive<Data, Result extends PaginatedResul
   accumulatedData: Data[] = []
 ): Promise<Data[]> {
   const result = await fetchFunction(cursor);
-  const newAccumulatedData = accumulatedData.concat(result.data);
+  const newAccumulatedData = accumulatedData.concat(result.objects);
 
-  if (result.hasNextPage && result.nextCursor) {
-    return fetchAllPagesRecursive(fetchFunction, result.nextCursor, newAccumulatedData);
+  if (result.hasNextPage && result.cursor) {
+    return fetchAllPagesRecursive(fetchFunction, result.cursor, newAccumulatedData);
   } else {
     return newAccumulatedData;
   }
