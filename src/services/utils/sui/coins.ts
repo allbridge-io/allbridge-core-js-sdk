@@ -1,7 +1,7 @@
-import { CoinStruct } from "@mysten/sui/jsonRpc";
 import { Transaction } from "@mysten/sui/transactions";
+import { SuiCoin } from "./client";
 
-export function getCoinsWithAmounts(amounts: string[], coins: CoinStruct[], tx: Transaction) {
+export function getCoinsWithAmounts(amounts: string[], coins: SuiCoin[], tx: Transaction) {
   if (coins.length === 0 || !coins[0]) {
     return [];
   }
@@ -9,7 +9,7 @@ export function getCoinsWithAmounts(amounts: string[], coins: CoinStruct[], tx: 
   const requiredAmount = amounts.reduce((total, amount) => total + BigInt(amount), BigInt(0));
 
   let currentBalance = BigInt(firstCoin.balance);
-  const accumulatedCoins: CoinStruct[] = [];
+  const accumulatedCoins: SuiCoin[] = [];
 
   for (const coin of coins.slice(1)) {
     if (currentBalance > requiredAmount) {
@@ -27,17 +27,17 @@ export function getCoinsWithAmounts(amounts: string[], coins: CoinStruct[], tx: 
   }
 }
 
-function splitAndMergeCoins(tx: Transaction, firstCoin: CoinStruct, accumulatedCoins: CoinStruct[], amounts: string[]) {
+function splitAndMergeCoins(tx: Transaction, firstCoin: SuiCoin, accumulatedCoins: SuiCoin[], amounts: string[]) {
   const pureAmounts = amounts.map((amount) => {
     return tx.pure.u64(amount);
   });
   if (accumulatedCoins.length > 0) {
     tx.mergeCoins(
-      firstCoin.coinObjectId,
-      accumulatedCoins.map((c) => c.coinObjectId)
+      firstCoin.objectId,
+      accumulatedCoins.map((c) => c.objectId)
     );
-    return tx.splitCoins(firstCoin.coinObjectId, pureAmounts);
+    return tx.splitCoins(firstCoin.objectId, pureAmounts);
   }
 
-  return tx.splitCoins(firstCoin.coinObjectId, pureAmounts);
+  return tx.splitCoins(firstCoin.objectId, pureAmounts);
 }

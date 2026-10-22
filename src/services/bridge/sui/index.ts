@@ -1,4 +1,4 @@
-import { CoinStruct, SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { coinWithBalance, Transaction, TransactionResult } from "@mysten/sui/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
 import { Big } from "big.js";
@@ -25,6 +25,7 @@ import { bridge } from "../../models/sui/cctp-bridge/cctp-bridge-interface/funct
 import { setAddress as setUtilsAddress } from "../../models/sui/utils";
 import { fromHex } from "../../models/sui/utils/bytes32/functions";
 import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
+import { createSuiClient, SuiCoin } from "../../utils/sui/client";
 import { fetchAllPagesRecursive } from "../../utils/sui/paginated";
 import { getCctpSolTokenRecipientAddress } from "../get-cctp-sol-token-recipient-address";
 import { ChainBridgeService, SendParams, TxSendParamsSui, TxSwapParamsSui, TxTransferParams } from "../models";
@@ -34,7 +35,7 @@ export class SuiBridgeService extends ChainBridgeService {
   chainType: ChainType.SUI = ChainType.SUI;
   chainSymbol: ChainSymbol.SUI = ChainSymbol.SUI;
 
-  private readonly client: SuiJsonRpcClient;
+  private readonly client: SuiGrpcClient;
 
   constructor(
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
@@ -42,10 +43,7 @@ export class SuiBridgeService extends ChainBridgeService {
     public api: AllbridgeCoreClient
   ) {
     super();
-    this.client = new SuiJsonRpcClient({
-      url: nodeRpcUrlsConfig.getNodeRpcUrl(this.chainSymbol),
-      network: params.suiIsTestnet ? "testnet" : "mainnet",
-    });
+    this.client = createSuiClient(nodeRpcUrlsConfig.getNodeRpcUrl(this.chainSymbol), params.suiIsTestnet);
   }
 
   send(): Promise<TransactionResponse> {
@@ -102,8 +100,8 @@ export class SuiBridgeService extends ChainBridgeService {
     };
     const swapResult = swap(tx, [fromTokenAddress, toTokenAddress], args);
 
-    const coins: CoinStruct[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
-      this.client.getCoins({
+    const coins: SuiCoin[] = await fetchAllPagesRecursive((cursor: string | null | undefined) =>
+      this.client.core.listCoins({
         owner: params.toAccountAddress,
         coinType: toTokenAddress,
         cursor,
@@ -112,7 +110,7 @@ export class SuiBridgeService extends ChainBridgeService {
     if (coins.length === 0 || !coins[0]) {
       tx.transferObjects([swapResult], params.toAccountAddress);
     } else {
-      tx.mergeCoins(coins[0].coinObjectId, [swapResult]);
+      tx.mergeCoins(coins[0].objectId, [swapResult]);
     }
     return await tx.toJSON({ client: this.client });
   }
