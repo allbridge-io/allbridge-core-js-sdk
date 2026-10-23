@@ -110,9 +110,9 @@ describe("ChainTokenService.getTokenBalance for a native token", () => {
   });
 
   test("☀ SUI returns the mist balance", async () => {
-    const getBalance = jest.fn().mockResolvedValue({ totalBalance: "2500000000" });
+    const getBalance = jest.fn().mockResolvedValue({ balance: { balance: "2500000000" } });
     const service = new SuiTokenService("https://sui.example", { suiIsTestnet: true } as AllbridgeCoreSdkOptions, api);
-    (service as unknown as { suiClient: { getBalance: jest.Mock } }).suiClient = { getBalance };
+    (service as unknown as { suiClient: { core: { getBalance: jest.Mock } } }).suiClient = { core: { getBalance } };
     const account = "0x" + "11".repeat(32);
 
     const actual = await service.getTokenBalance({

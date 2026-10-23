@@ -1,29 +1,38 @@
-import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
 import { Reified, toBcs, ToJSON, TypeArgument } from "../../models/sui/_framework/reified";
 
 const mockSender = "0x0000000000000000000000000000000000000000000000000000000000000000";
+/** No gas coins are attached to a view call: the budget is only the simulation's upper bound. */
+const VIEW_GAS_BUDGET = 50_000_000;
 
+/**
+ * Simulates `tx` (no gas coins, zero sender, checks disabled) and decodes the last return value of its last command,
+ * the gRPC replacement of the JSON-RPC `devInspectTransactionBlock`.
+ */
 export async function suiView<T extends TypeArgument>(
-  client: SuiJsonRpcClient,
+  client: SuiGrpcClient,
   tx: Transaction,
   reified: Reified<T, any>
 ): Promise<ToJSON<T>> {
-  const inspectionResult = await client.devInspectTransactionBlock({
-    sender: mockSender,
-    transactionBlock: tx,
+  tx.setSenderIfNotSet(mockSender);
+  tx.setGasPayment([]);
+  tx.setGasBudget(VIEW_GAS_BUDGET);
+  const bytes = await tx.build({ client });
+  const result = await client.core.simulateTransaction({
+    transaction: bytes,
+    include: { commandResults: true },
+    checksEnabled: false,
   });
-  if (inspectionResult.effects.status.status !== "success") {
-    throw new Error(`inspectionResult failed. ${JSON.stringify(inspectionResult, null, 2)}`);
+  if (result.$kind === "FailedTransaction") {
+    throw new Error(`Sui view failed. ${JSON.stringify(result.FailedTransaction.status, null, 2)}`);
   }
 
-  const returnValue = inspectionResult.results?.pop()?.returnValues?.pop();
+  const data = result.commandResults?.at(-1)?.returnValues?.at(-1)?.bcs;
 
-  if (!returnValue) {
-    throw new Error(`Something with inspectionResult went wrong. ${JSON.stringify(inspectionResult, null, 2)}`);
+  if (!data) {
+    throw new Error(`Something with Sui view went wrong. ${JSON.stringify(result, null, 2)}`);
   }
-
-  const [data, _type] = returnValue;
 
   if (typeof reified === "object") {
     return reified.fromBcs(Uint8Array.from(data)).toJSONField() as ToJSON<T>;

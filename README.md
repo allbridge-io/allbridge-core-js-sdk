@@ -72,6 +72,8 @@ const sdk = new AllbridgeCoreSdk({
 const rawTx = await sdk.bridge.rawTxBuilder.send(sendParams);
 ```
 
+> **SUI**: Sui full nodes no longer serve JSON-RPC, so the `SUI` url must be the gRPC-web (`sui.rpc.v2`) base url of a full node, e.g. `https://fullnode.mainnet.sui.io`.
+
 #### 2) Initialize SDK instance (using passed provider for blockchains connections)
 
 ```ts
