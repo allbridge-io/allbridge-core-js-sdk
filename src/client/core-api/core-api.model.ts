@@ -108,7 +108,8 @@ export interface NearIntentsDTO {
 export interface LifiIntentsDTO {
   /**
    * The LifiIntentsBridge contract on the token's chain (the spender to approve and the contract the order
-   * transaction calls). Absent on a chain that is only a LI.FI Intents destination.
+   * transaction calls; on Solana the `lifi-intents-bridge` program id, nothing to approve).
+   * Absent on a chain that is only a LI.FI Intents destination.
    */
   bridgeAddress?: string;
   /**
@@ -201,9 +202,10 @@ export enum Messenger {
   /**
    * LI.FI Intents (solver marketplace on the Open Intents Framework).
    * Route is supported when the source token has `lifiIntents.bridgeAddress` and lists the destination token in
-   * `lifiIntents.destinations`; EVM source chains only.
-   * The transfer is a call of the Allbridge `LifiIntentsBridge` contract built by the Core API: the source token
-   * is approved to `lifiIntents.bridgeAddress` (no approval for a native token), then the order transaction is signed.
+   * `lifiIntents.destinations`; EVM and Solana source chains.
+   * The transfer is a call of the Allbridge `LifiIntentsBridge` contract (the `lifi-intents-bridge` program on Solana)
+   * built by the Core API: on EVM the source token is approved to `lifiIntents.bridgeAddress` (no approval for a native
+   * token or on Solana), then the order transaction is signed.
    * Amounts are market-priced quotes from the Core API, see `AllbridgeCoreSdk.lifiIntents`.
    */
   LIFI_INTENTS = 8,
@@ -366,11 +368,14 @@ export interface LifiIntentsApprovalDTO {
 }
 
 export interface LifiIntentsTransferTxDTO {
-  /** The LifiIntentsBridge contract to call */
+  /** The LifiIntentsBridge contract to call (the `lifi-intents-bridge` program id on Solana) */
   contractAddress: string;
-  /** Integer native value to attach: `amountIn` for a native token, `"0"` otherwise */
+  /** Integer native value to attach: `amountIn` for a native token, `"0"` otherwise (always `"0"` on Solana) */
   value: string;
-  /** 0x-prefixed calldata of the `bridge` / `bridgeNative` call */
+  /**
+   * EVM: 0x-prefixed calldata of the `bridge` / `bridgeNative` call.
+   * Solana: base64 unsigned v0 transaction (fee payer = sender, a fresh blockhash)
+   */
   tx: string;
 }
 
@@ -381,7 +386,7 @@ export interface LifiIntentsOrderResponse extends LifiIntentsQuoteResponse {
   validUntil: number;
   /** Unix seconds: the order transaction reverts after this */
   fillDeadline: number;
-  /** The allowance the sender must have given before sending `tx`; absent for a native token */
+  /** The allowance the sender must have given before sending `tx`; absent for a native token and on a Solana source */
   approval?: LifiIntentsApprovalDTO;
   tx: LifiIntentsTransferTxDTO;
 }

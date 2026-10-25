@@ -1,3 +1,4 @@
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import nock, { cleanAll as nockCleanAll } from "nock";
 import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
 import { LifiIntentsOrderResponse, LifiIntentsQuoteResponse } from "../../../client/core-api/core-api.model";
@@ -587,6 +588,129 @@ describe("LI.FI Intents", () => {
       await expect(
         bridgeService.send({} as any, { ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_ABR })
       ).rejects.toBeInstanceOf(InvalidGasFeePaymentOptionError);
+      expect(lifiIntentsService.buildSendTransaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Solana source", () => {
+    const programId = "45BazLaS2aKiN5CKcxp4iSbvFJN8fE5aBSX3vhabVsNA";
+    const solSender = Keypair.generate().publicKey.toBase58();
+    const solUsdc = {
+      chainSymbol: ChainSymbol.SOL,
+      chainType: ChainType.SOLANA,
+      allbridgeChainId: 5,
+      decimals: 6,
+      symbol: "USDC",
+      tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      lifiIntents: { bridgeAddress: programId, destinations: { [ChainSymbol.ARB]: [destinationToken.tokenAddress] } },
+    } as TokenWithChainDetails;
+    const arbToSolSource = {
+      ...destinationToken,
+      lifiIntents: { bridgeAddress, destinations: { [ChainSymbol.SOL]: [solUsdc.tokenAddress] } },
+    } as TokenWithChainDetails;
+    const solTx = new VersionedTransaction(
+      new TransactionMessage({
+        payerKey: new PublicKey(solSender),
+        recentBlockhash: PublicKey.default.toBase58(),
+        instructions: [],
+      }).compileToV0Message()
+    );
+    const solTxBase64 = Buffer.from(solTx.serialize()).toString("base64");
+    const solOrderResponse: LifiIntentsOrderResponse = {
+      amountIn: "1500000",
+      amountOut: "1490000",
+      fee: "1500",
+      timeEstimate: 30,
+      orderId,
+      validUntil: 4070908800,
+      fillDeadline: 4070909400,
+      tx: { contractAddress: programId, value: "0", tx: solTxBase64 },
+    };
+    const sendParams = {
+      amount: "1.5",
+      fromAccountAddress: solSender,
+      toAccountAddress: recipient,
+      sourceToken: solUsdc,
+      destinationToken,
+    };
+
+    test("☀ isLifiIntentsRouteSupported: SOL -> EVM and EVM -> SOL, base58 compared exactly", () => {
+      expect(isLifiIntentsRouteSupported(solUsdc, destinationToken)).toBe(true);
+      expect(isLifiIntentsRouteSupported(arbToSolSource, solUsdc)).toBe(true);
+      expect(
+        isLifiIntentsRouteSupported(arbToSolSource, { ...solUsdc, tokenAddress: solUsdc.tokenAddress.toLowerCase() })
+      ).toBe(false);
+      expect(isLifiIntentsRouteSupported({ ...solUsdc, lifiIntents: {} }, destinationToken)).toBe(false);
+    });
+
+    test("☀ buildSendTransaction returns the deserialized VersionedTransaction without approval", async () => {
+      const api = { createLifiIntentsOrder: jest.fn().mockResolvedValue(solOrderResponse) };
+      const service = new DefaultLifiIntentsService(api as unknown as AllbridgeCoreClient);
+
+      const actual = await service.buildSendTransaction(sendParams);
+
+      expect(api.createLifiIntentsOrder).toHaveBeenCalledWith(
+        expect.objectContaining({ sourceChainId: 5, sourceToken: solUsdc.tokenAddress, sender: solSender, recipient })
+      );
+      expect(actual.rawTransaction).toBeInstanceOf(VersionedTransaction);
+      expect(Buffer.from((actual.rawTransaction as VersionedTransaction).serialize())).toEqual(
+        Buffer.from(solTx.serialize())
+      );
+      expect(actual.order.approval).toBeUndefined();
+      expect(actual.order.transaction).toEqual({ contractAddress: programId, value: "0", data: solTxBase64 });
+    });
+
+    test("☁ buildSendTransaction rejects a transaction that is not a Solana transaction", async () => {
+      const api = {
+        createLifiIntentsOrder: jest
+          .fn()
+          .mockResolvedValue({ ...solOrderResponse, tx: { ...solOrderResponse.tx, tx: "0xdeadbeef" } }),
+      };
+      const service = new DefaultLifiIntentsService(api as unknown as AllbridgeCoreClient);
+
+      const error = await service.buildSendTransaction(sendParams).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(SdkError);
+      expect(error).toMatchObject({ message: expect.stringContaining("not a Solana transaction") });
+    });
+
+    test("☀ no approval: checkAllowance is true, approve and getSpender throw", async () => {
+      const tokenService = {
+        checkAllowance: jest.fn(),
+        buildRawTransactionApprove: jest.fn(),
+      } as unknown as jest.Mocked<TokenService>;
+      const bridgeService = new DefaultBridgeService(
+        {} as AllbridgeCoreClient,
+        new NodeRpcUrlsConfig({}),
+        testConfig,
+        tokenService
+      );
+      const params = { token: solUsdc, owner: solSender, messenger: Messenger.LIFI_INTENTS };
+
+      expect(await bridgeService.checkAllowance({ ...params, amount: "1.5" })).toBe(true);
+      expect(tokenService.checkAllowance).not.toHaveBeenCalled();
+      await expect(bridgeService.rawTxBuilder.approve(params)).rejects.toThrow("need no approval");
+      expect(() => getSpender(solUsdc, Messenger.LIFI_INTENTS)).toThrow("need no approval");
+    });
+
+    test("☁ bridge.send (deprecated) points to rawTxBuilder.send without creating an order", async () => {
+      const lifiIntentsService = {
+        getQuote: jest.fn(),
+        createOrder: jest.fn(),
+        buildSendTransaction: jest.fn(),
+      } as jest.Mocked<LifiIntentsService>;
+      const bridgeService = new DefaultBridgeService(
+        {} as AllbridgeCoreClient,
+        new NodeRpcUrlsConfig({ SOL: "https://solana.example" }),
+        testConfig,
+        {} as TokenService,
+        undefined,
+        lifiIntentsService
+      );
+
+      await expect(bridgeService.send({} as any, { ...sendParams, messenger: Messenger.LIFI_INTENTS })).rejects.toThrow(
+        "bridge.send cannot send LI.FI Intents transfers from SOL: use bridge.rawTxBuilder.send and sign the transaction"
+      );
       expect(lifiIntentsService.buildSendTransaction).not.toHaveBeenCalled();
     });
   });

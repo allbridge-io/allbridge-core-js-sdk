@@ -1,4 +1,6 @@
+import { VersionedTransaction } from "@solana/web3.js";
 import { Big } from "big.js";
+import { ChainType } from "../../chains/chain.enums";
 import {
   LifiIntentsOrderResponse,
   LifiIntentsQuoteRequest,
@@ -8,7 +10,7 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { SdkError } from "../../exceptions";
 import { convertFloatAmountToInt, convertIntAmountToFloat } from "../../utils/calculation";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
-import { RawEvmTransaction } from "../models";
+import { RawBridgeSolanaTransaction, RawEvmTransaction, RawTransaction } from "../models";
 import {
   LifiIntentsCreateOrderParams,
   LifiIntentsOrder,
@@ -22,15 +24,17 @@ import { assertLifiIntentsRoute } from "./utils";
 /**
  * LI.FI Intents (`Messenger.LIFI_INTENTS`) quotes and orders.
  *
- * Send flow (EVM source chains only):
+ * Send flow (EVM and Solana source chains):
  * 1. {@link getQuote} (or `getAmountToBeReceived` / `getAmountToSend` with `Messenger.LIFI_INTENTS`)
  *    to show the expected amounts, the Allbridge fee and the ETA.
- * 2. `bridge.checkAllowance` / `bridge.rawTxBuilder.approve` with `Messenger.LIFI_INTENTS`: the spender is
- *    `sourceToken.lifiIntents.bridgeAddress`. A native source token needs no approval.
+ * 2. EVM: `bridge.checkAllowance` / `bridge.rawTxBuilder.approve` with `Messenger.LIFI_INTENTS`: the spender is
+ *    `sourceToken.lifiIntents.bridgeAddress`. A native source token and a Solana source need no approval.
  *    Approve before creating the order: the order is short-lived.
  * 3. {@link buildSendTransaction} (or `bridge.rawTxBuilder.send` with `Messenger.LIFI_INTENTS`):
- *    creates the order and returns the `LifiIntentsBridge` call to sign.
- * 4. Sign and send the transaction at once (see {@link LifiIntentsOrder.validUntil}), before `order.fillDeadline`.
+ *    creates the order and returns the transaction to sign: the `LifiIntentsBridge` call on EVM,
+ *    a `VersionedTransaction` of the `lifi-intents-bridge` program on Solana (the sender is the fee payer).
+ * 4. Sign and send the transaction at once (see {@link LifiIntentsOrder.validUntil}), before `order.fillDeadline`
+ *    (a Solana transaction also carries a fresh blockhash, valid for about a minute).
  * 5. `getTransferStatus(sourceChainSymbol, txId)` once the Core API has indexed the transfer.
  */
 export interface LifiIntentsService {
@@ -56,7 +60,8 @@ export interface LifiIntentsService {
   /**
    * Builds the transaction of a LI.FI Intents transfer:
    * uses `params.lifiIntentsOrder` or creates a new order (`EXACT_INPUT`),
-   * then returns its `LifiIntentsBridge` call as a raw EVM transaction.
+   * then returns its transaction: the `LifiIntentsBridge` call as a raw EVM transaction,
+   * or the unsigned `VersionedTransaction` of the Solana program ({@link RawBridgeSolanaTransaction}).
    * @param params See {@link LifiIntentsSendParams}
    * @returns {@link LifiIntentsSendTransaction}
    */
@@ -120,14 +125,28 @@ export class DefaultLifiIntentsService implements LifiIntentsService {
       throw new SdkError("LI.FI Intents order fill deadline has passed, create a new order");
     }
 
-    const rawTransaction: RawEvmTransaction = {
-      from: fromAccountAddress,
-      to: order.transaction.contractAddress,
-      value: order.transaction.value,
-      data: order.transaction.data,
-    };
-    return { rawTransaction, order };
+    return { rawTransaction: toRawTransaction(order, sourceToken.chainType, fromAccountAddress), order };
   }
+}
+
+function toRawTransaction(order: LifiIntentsOrder, chainType: ChainType, from: string): RawTransaction {
+  if (chainType === ChainType.SOLANA) {
+    try {
+      const transaction: RawBridgeSolanaTransaction = VersionedTransaction.deserialize(
+        Buffer.from(order.transaction.data, "base64")
+      );
+      return transaction;
+    } catch (e) {
+      throw new SdkError(`LI.FI Intents order transaction is not a Solana transaction: ${(e as Error).message}`);
+    }
+  }
+  const transaction: RawEvmTransaction = {
+    from,
+    to: order.transaction.contractAddress,
+    value: order.transaction.value,
+    data: order.transaction.data,
+  };
+  return transaction;
 }
 
 function sameAddress(a: string, b: string): boolean {

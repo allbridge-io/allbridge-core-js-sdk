@@ -55,16 +55,18 @@ export interface LifiIntentsQuote {
 export interface LifiIntentsCreateOrderParams extends LifiIntentsQuoteParams {
   /**
    * The account address the transfer is sent from: it signs the order transaction and gets the refund of an unfilled order.
+   * On Solana: the wallet pubkey, which also pays the transaction fee.
    */
   fromAccountAddress: string;
   /**
    * The account address on the destination chain to receive the tokens.
+   * On Solana: the wallet (owner) pubkey; the solver pays its associated token account.
    */
   toAccountAddress: string;
 }
 
 /**
- * The allowance a LI.FI Intents order needs before its transaction is sent
+ * The allowance a LI.FI Intents order needs before its transaction is sent (EVM only)
  */
 export interface LifiIntentsApproval {
   /**
@@ -82,19 +84,21 @@ export interface LifiIntentsApproval {
 }
 
 /**
- * The ready-to-sign `LifiIntentsBridge` call of a LI.FI Intents order
+ * The ready-to-sign transaction of a LI.FI Intents order, as served by the Core API
  */
 export interface LifiIntentsOrderTransaction {
   /**
-   * The `LifiIntentsBridge` contract address (the transaction `to`)
+   * EVM: the `LifiIntentsBridge` contract address (the transaction `to`). Solana: the `lifi-intents-bridge` program id
    */
   contractAddress: string;
   /**
    * Integer native value to attach: `amountIn` in the smallest units for a native source token, `"0"` otherwise
+   * (always `"0"` on Solana)
    */
   value: string;
   /**
-   * 0x-prefixed calldata of the `bridge` / `bridgeNative` call
+   * EVM: 0x-prefixed calldata of the `bridge` / `bridgeNative` call.
+   * Solana: base64 of the unsigned v0 `VersionedTransaction` (fee payer = sender, a fresh blockhash: sign at once)
    */
   data: string;
 }
@@ -142,11 +146,12 @@ export interface LifiIntentsOrder {
    */
   fillDeadline: Date;
   /**
-   * The allowance the sender must have given before sending the transaction. Optional: absent for a native source token
+   * The allowance the sender must have given before sending the transaction.
+   * Optional: absent for a native source token and for a Solana source
    */
   approval?: LifiIntentsApproval;
   /**
-   * The `LifiIntentsBridge` call to sign and send
+   * The transaction to sign and send, see {@link LifiIntentsOrderTransaction}
    */
   transaction: LifiIntentsOrderTransaction;
 }
@@ -189,7 +194,9 @@ export interface LifiIntentsSendParams {
  */
 export interface LifiIntentsSendTransaction {
   /**
-   * The `LifiIntentsBridge` call, to be signed and sent by `order.sender` before `order.fillDeadline`
+   * The transaction to be signed and sent by `order.sender` before `order.fillDeadline`:
+   * the `LifiIntentsBridge` call (`RawEvmTransaction`) on EVM, an unsigned `VersionedTransaction`
+   * (`RawBridgeSolanaTransaction`) on Solana
    */
   rawTransaction: RawTransaction;
   /**

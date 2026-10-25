@@ -122,7 +122,7 @@ The messenger is a required parameter of all route-dependent SDK methods:
 | `Messenger.CCTP_V2`   | Circle CCTP V2 | `cctpV2Address` is defined on both source and destination tokens                                       |
 | `Messenger.OFT`       | LayerZero OFT  | `oftId` is the same on source and destination tokens and `oftBridgeAddress` is defined on both chains  |
 | `Messenger.X_RESERVE` | xReserve       | `xReserve` is defined on both source and destination tokens                                            |
-| `Messenger.LIFI_INTENTS` | LI.FI Intents | source token has `lifiIntents.bridgeAddress` and lists the destination token in `lifiIntents.destinations` (EVM source chains only), see `isLifiIntentsRouteSupported` |
+| `Messenger.LIFI_INTENTS` | LI.FI Intents | source token has `lifiIntents.bridgeAddress` and lists the destination token in `lifiIntents.destinations` (EVM and Solana source chains), see `isLifiIntentsRouteSupported` |
 
 `Messenger.ALLBRIDGE` and `Messenger.WORMHOLE` are deprecated and must not be used.
 
@@ -233,8 +233,14 @@ const {rawTransaction, order} = await sdk.lifiIntents.buildSendTransaction({
 The gas fee is zero and extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zero limits.
 An unfilled order is refunded to the sender by LI.FI (`getTransferStatus` reports `refunded`); the Allbridge fee is not refunded.
 
+From Solana no approval is needed: `buildSendTransaction` returns an unsigned `VersionedTransaction`
+(`RawBridgeSolanaTransaction`) of the Allbridge `lifi-intents-bridge` program with the sender as the fee payer and a fresh
+blockhash, so sign and send it at once. The recipient on Solana is the wallet (owner) address: the solver pays its
+associated token account.
+
 Examples:
-[***EVM***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-lifi-intents.ts)
+[***EVM***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-lifi-intents.ts),
+[***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-lifi-intents.ts)
 
 ### 4.1 Approve the transfer of tokens (only for Evm, Tron)
 

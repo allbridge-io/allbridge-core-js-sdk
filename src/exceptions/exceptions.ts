@@ -165,7 +165,7 @@ export class NearIntentsQuoteError extends SdkRootError {
 
 /**
  * The route is not supported by `Messenger.LIFI_INTENTS`: the source token has no `lifiIntents.bridgeAddress`,
- * does not list the destination token in `lifiIntents.destinations`, the source chain is not EVM,
+ * does not list the destination token in `lifiIntents.destinations`, the source chain is neither EVM nor Solana,
  * or the Core API answered 404 (`PAIR_NOT_AVAILABLE`, or LI.FI Intents disabled).
  */
 export class LifiIntentsDoesNotSupportedError extends SdkRootError {

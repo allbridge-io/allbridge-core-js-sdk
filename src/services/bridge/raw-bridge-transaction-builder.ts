@@ -35,10 +35,11 @@ export interface RawBridgeTransactionBuilder {
    * (to get the deposit details as well, use `nearIntents.buildSendTransaction`).
    * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM, SOL, TRX, SRB (needs the deposit memo) and SUI.
    *
-   * For {@link Messenger.LIFI_INTENTS}: the transaction is the `LifiIntentsBridge` call of a LI.FI Intents order built
-   * by the Core API. {@link SendParams.lifiIntentsOrder} is used when defined, otherwise a new order is created
+   * For {@link Messenger.LIFI_INTENTS}: the transaction of a LI.FI Intents order built by the Core API: the
+   * `LifiIntentsBridge` call on EVM, an unsigned `VersionedTransaction` of the `lifi-intents-bridge` program on SOL.
+   * {@link SendParams.lifiIntentsOrder} is used when defined, otherwise a new order is created
    * (to get the order details as well, use `lifiIntents.buildSendTransaction`). Sign it at once: the order is short-lived.
-   * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM only.
+   * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM and SOL.
    * @param params
    * @param provider - will be used to access the network
    */

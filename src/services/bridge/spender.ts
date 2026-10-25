@@ -1,3 +1,4 @@
+import { ChainType } from "../../chains/chain.enums";
 import { Messenger } from "../../client/core-api/core-api.model";
 import {
   CCTPDoesNotSupportedError,
@@ -8,7 +9,7 @@ import {
 } from "../../exceptions";
 import { FeePaymentMethod } from "../../models";
 import { TokenWithChainDetails } from "../../tokens-info";
-import { lifiIntentsNativeNoApprovalError } from "../lifi-intents/utils";
+import { lifiIntentsNativeNoApprovalError, lifiIntentsSolanaNoApprovalError } from "../lifi-intents/utils";
 import { nearIntentsNoApprovalError } from "../near-intents/utils";
 
 export function resolveSpender(
@@ -25,6 +26,9 @@ export function resolveSpender(
     }
     if (token.isNative) {
       throw lifiIntentsNativeNoApprovalError();
+    }
+    if (token.chainType === ChainType.SOLANA) {
+      throw lifiIntentsSolanaNoApprovalError();
     }
     if (token.lifiIntents?.bridgeAddress) {
       return token.lifiIntents.bridgeAddress;

@@ -24,14 +24,42 @@ export function lifiIntentsNativeNoApprovalError(): SdkError {
 }
 
 /**
- * Whether the tokens form a {@link Messenger.LIFI_INTENTS} route: the source token is on an EVM chain,
+ * Thrown by allowance and approve calls for a Solana source token with `Messenger.LIFI_INTENTS`.
+ * @internal
+ */
+export function lifiIntentsSolanaNoApprovalError(): SdkError {
+  return new SdkError("LI.FI Intents transfers from Solana need no approval");
+}
+
+/**
+ * Thrown by the deprecated `bridge.send` for a LI.FI Intents transfer from a chain whose bridge service
+ * cannot sign and send a transaction itself (SOL).
+ * @internal
+ */
+export function lifiIntentsSendNotSupportedError(chainSymbol: string): SdkError {
+  return new SdkError(
+    `bridge.send cannot send LI.FI Intents transfers from ${chainSymbol}: use bridge.rawTxBuilder.send and sign the transaction`
+  );
+}
+
+/**
+ * Source chain types LI.FI Intents transfers can start from.
+ * @internal
+ */
+const LIFI_INTENTS_SOURCE_CHAIN_TYPES: readonly ChainType[] = [ChainType.EVM, ChainType.SOLANA];
+
+/**
+ * Whether the tokens form a {@link Messenger.LIFI_INTENTS} route: the source token is on an EVM or Solana chain,
  * has `lifiIntents.bridgeAddress` and lists the destination token in `lifiIntents.destinations`.
  */
 export function isLifiIntentsRouteSupported(
   sourceToken: TokenWithChainDetails,
   destinationToken: TokenWithChainDetails
 ): boolean {
-  if (sourceToken.chainType !== ChainType.EVM || sourceToken.chainSymbol === destinationToken.chainSymbol) {
+  if (
+    !LIFI_INTENTS_SOURCE_CHAIN_TYPES.includes(sourceToken.chainType) ||
+    sourceToken.chainSymbol === destinationToken.chainSymbol
+  ) {
     return false;
   }
   const lifiIntents = sourceToken.lifiIntents;
@@ -39,8 +67,11 @@ export function isLifiIntentsRouteSupported(
     return false;
   }
   const destinations = lifiIntents.destinations?.[destinationToken.chainSymbol] ?? [];
-  const destinationTokenAddress = destinationToken.tokenAddress.toLowerCase();
-  return destinations.some((tokenAddress) => tokenAddress.toLowerCase() === destinationTokenAddress);
+  // EVM addresses are case-insensitive, base58 (Solana) addresses are not
+  const normalize = (address: string) =>
+    destinationToken.chainType === ChainType.EVM ? address.toLowerCase() : address;
+  const destinationTokenAddress = normalize(destinationToken.tokenAddress);
+  return destinations.some((tokenAddress) => normalize(tokenAddress) === destinationTokenAddress);
 }
 
 /**

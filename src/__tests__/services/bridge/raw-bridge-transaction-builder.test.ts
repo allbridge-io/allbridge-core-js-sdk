@@ -1,3 +1,4 @@
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { Web3 } from "web3";
 import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
 import {
@@ -374,7 +375,42 @@ describe("RawTransactionBuilder", () => {
       expect(lifiApi.createLifiIntentsOrder).not.toHaveBeenCalled();
     });
 
-    test("throws for a non-EVM source chain", async () => {
+    test("returns the unsigned VersionedTransaction for a Solana source", async () => {
+      const solSender = Keypair.generate().publicKey.toBase58();
+      const solTx = new VersionedTransaction(
+        new TransactionMessage({
+          payerKey: new PublicKey(solSender),
+          recentBlockhash: PublicKey.default.toBase58(),
+          instructions: [],
+        }).compileToV0Message()
+      );
+      const programId = "45BazLaS2aKiN5CKcxp4iSbvFJN8fE5aBSX3vhabVsNA";
+      lifiApi.createLifiIntentsOrder.mockResolvedValue({
+        ...orderResponse,
+        approval: undefined,
+        tx: { contractAddress: programId, value: "0", tx: Buffer.from(solTx.serialize()).toString("base64") },
+      });
+
+      const actual = await builder.send({
+        ...sendParams,
+        fromAccountAddress: solSender,
+        sourceToken: {
+          ...sourceToken,
+          chainSymbol: ChainSymbol.SOL,
+          chainType: ChainType.SOLANA,
+          tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          lifiIntents: {
+            bridgeAddress: programId,
+            destinations: { [ChainSymbol.ARB]: [destinationToken.tokenAddress] },
+          },
+        },
+      });
+
+      expect(actual).toBeInstanceOf(VersionedTransaction);
+      expect(Buffer.from((actual as VersionedTransaction).serialize())).toEqual(Buffer.from(solTx.serialize()));
+    });
+
+    test("throws for a TRX source chain", async () => {
       await expect(
         builder.send({
           ...sendParams,

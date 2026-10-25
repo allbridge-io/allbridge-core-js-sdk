@@ -256,8 +256,8 @@ export interface NearIntentsTokenInfo {
 export interface LifiIntentsTokenInfo {
   /**
    * The Allbridge `LifiIntentsBridge` contract on the token's chain: the contract to approve and the contract
-   * the order transaction calls. Optional. Absent on a chain that is only a LI.FI Intents destination,
-   * so the token cannot be sent with LI.FI Intents.
+   * the order transaction calls (on Solana the `lifi-intents-bridge` program id, nothing to approve).
+   * Optional. Absent on a chain that is only a LI.FI Intents destination, so the token cannot be sent with LI.FI Intents.
    */
   bridgeAddress?: string;
   /**
