@@ -238,6 +238,15 @@ From Solana no approval is needed: `buildSendTransaction` returns an unsigned `V
 blockhash, so sign and send it at once. The recipient on Solana is the wallet (owner) address: the solver pays its
 associated token account.
 
+To Solana the solver does not create that account: an order to a recipient without it is not filled and is refunded.
+Check it before sending and ask the recipient to create the account first (a native SOL transfer needs none):
+
+```ts
+if (!(await sdk.utils.sol.hasTokenAccount(toAddress, destinationToken))) {
+  // warn: the recipient has no token account for destinationToken on Solana
+}
+```
+
 Examples:
 [***EVM***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/evm/evm-build-send-tx-lifi-intents.ts),
 [***Solana***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/solana/sol-build-send-tx-lifi-intents.ts)
