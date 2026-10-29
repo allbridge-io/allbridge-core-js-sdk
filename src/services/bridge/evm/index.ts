@@ -18,6 +18,7 @@ import {
 import { convertAmountPrecision } from "../../../utils/calculation";
 import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
+import { lifiIntentsNotABridgeContractError } from "../../lifi-intents/utils";
 import { RawTransaction } from "../../models";
 import Bridge from "../../models/abi/Bridge";
 import CctpBridge from "../../models/abi/CctpBridge";
@@ -149,6 +150,8 @@ export class EvmBridgeService extends ChainBridgeService {
       }
       case Messenger.NEAR_INTENTS:
         throw nearIntentsNotABridgeContractError();
+      case Messenger.LIFI_INTENTS:
+        throw lifiIntentsNotABridgeContractError();
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
         {

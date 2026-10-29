@@ -2,6 +2,7 @@ import { Big } from "big.js";
 import { Messenger } from "../../../client/core-api/core-api.model";
 import { AmountFormat, FeePaymentMethod, TokenCoreFields, TxFeeParams } from "../../../models";
 import { TokenWithChainDetails } from "../../../tokens-info";
+import { LifiIntentsOrder } from "../../lifi-intents/models";
 import { NearIntentsDeposit } from "../../near-intents/models";
 
 export interface ApproveParams {
@@ -157,6 +158,13 @@ export interface SendParams extends BaseSendParams {
    * with `recipient` = {@link toAccountAddress} and `refundTo` = {@link fromAccountAddress}.
    */
   nearIntentsDeposit?: NearIntentsDeposit;
+  /**
+   * A LI.FI Intents order created with `lifiIntents.createOrder`.<br/>
+   * Optional. Used only with {@link Messenger.LIFI_INTENTS}: when defined, its transaction is returned
+   * (its `amountIn`, `sender` and `recipient` must match {@link amount}, {@link fromAccountAddress} and
+   * {@link toAccountAddress}); otherwise a new order is created for {@link amount}.
+   */
+  lifiIntentsOrder?: LifiIntentsOrder;
 }
 
 export interface GetAllowanceParams {

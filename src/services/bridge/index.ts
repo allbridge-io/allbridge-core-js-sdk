@@ -10,6 +10,8 @@ import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions, ChainSymbol, ChainType, EssentialWeb3, FeePaymentMethod } from "../../index";
 import { TokenWithChainDetails } from "../../tokens-info";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
+import { DefaultLifiIntentsService, LifiIntentsService } from "../lifi-intents";
+import { assertLifiIntentsSendParams, lifiIntentsSendNotSupportedError } from "../lifi-intents/utils";
 import { Provider, TransactionResponse } from "../models";
 import { DefaultNearIntentsService, NearIntentsService } from "../near-intents";
 import { assertNearIntentsSendParams, nearIntentsSendNotSupportedError } from "../near-intents/utils";
@@ -49,7 +51,8 @@ export interface BridgeService {
    * @param provider - will be used to access the network
    * @param params See {@link CheckAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer;
-   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval
+   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval,
+   * and for a native or Solana source token with {@link Messenger.LIFI_INTENTS}
    */
   checkAllowance(provider: Provider, params: CheckAllowanceParams): Promise<boolean>;
 
@@ -57,7 +60,8 @@ export interface BridgeService {
    * Check if the amount of approved tokens is enough to make a transfer
    * @param params See {@link CheckAllowanceParams}
    * @returns true if the amount of approved tokens is enough to make a transfer;
-   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval
+   * always true for {@link Messenger.NEAR_INTENTS}, which needs no approval,
+   * and for a native or Solana source token with {@link Messenger.LIFI_INTENTS}
    */
   checkAllowance(params: CheckAllowanceParams): Promise<boolean>;
 
@@ -78,6 +82,8 @@ export interface BridgeService {
    *
    * For {@link Messenger.NEAR_INTENTS}: only chains whose provider signs the transaction (EVM, TRX);
    * for the other chains use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send}.
+   * For {@link Messenger.LIFI_INTENTS}: creates the order and sends its transaction with the EVM provider;
+   * from SOL use {@link rawTxBuilder}.{@link RawBridgeTransactionBuilder.send} and sign the transaction.
    * @param provider - will be used to access the network
    * @param params
    */
@@ -92,14 +98,16 @@ export class DefaultBridgeService implements BridgeService {
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService,
-    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params)
+    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params),
+    private lifiIntentsService: LifiIntentsService = new DefaultLifiIntentsService(api)
   ) {
     this.rawTxBuilder = new DefaultRawBridgeTransactionBuilder(
       api,
       nodeRpcUrlsConfig,
       params,
       tokenService,
-      nearIntentsService
+      nearIntentsService,
+      lifiIntentsService
     );
   }
 
@@ -126,6 +134,12 @@ export class DefaultBridgeService implements BridgeService {
       params = a as CheckAllowanceParams;
     }
     if (params.messenger === Messenger.NEAR_INTENTS) {
+      return true;
+    }
+    if (
+      params.messenger === Messenger.LIFI_INTENTS &&
+      (params.token.isNative || params.token.chainType === ChainType.SOLANA)
+    ) {
       return true;
     }
     const spender = resolveSpender(params.token, params.messenger, params.gasFeePaymentMethod);
@@ -160,6 +174,14 @@ export class DefaultBridgeService implements BridgeService {
         txId: response.txId,
       });
       return response;
+    }
+    if (params.messenger === Messenger.LIFI_INTENTS) {
+      if (!canSendRawTransaction(chainBridgeService)) {
+        throw lifiIntentsSendNotSupportedError(params.sourceToken.chainSymbol);
+      }
+      assertLifiIntentsSendParams(params);
+      const { rawTransaction } = await this.lifiIntentsService.buildSendTransaction(params);
+      return chainBridgeService.sendRawTransaction(rawTransaction);
     }
     return chainBridgeService.send(params);
   }

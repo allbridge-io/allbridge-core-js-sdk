@@ -18,6 +18,7 @@ import {
 import { SuiAddresses } from "../../../tokens-info";
 import { assertNever } from "../../../utils/utils";
 import { NodeRpcUrlsConfig } from "../../index";
+import { lifiIntentsNotABridgeContractError } from "../../lifi-intents/utils";
 import { setAddress } from "../../models/sui/bridge";
 import { swap, swapAndBridge, swapAndBridgeWormhole } from "../../models/sui/bridge/bridge-interface/functions";
 import { setAddress as setCctpAddress } from "../../models/sui/cctp-bridge";
@@ -157,6 +158,8 @@ export class SuiBridgeService extends ChainBridgeService {
         throw new OFTDoesNotSupportedError("Messenger OFT is not supported yet.");
       case Messenger.NEAR_INTENTS:
         throw nearIntentsNotABridgeContractError();
+      case Messenger.LIFI_INTENTS:
+        throw lifiIntentsNotABridgeContractError();
     }
   }
 

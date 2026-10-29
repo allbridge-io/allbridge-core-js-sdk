@@ -1,8 +1,13 @@
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { Web3 } from "web3";
 import { ChainSymbol, ChainType } from "../../../chains/chain.enums";
-import { Messenger, NearIntentsDepositResponse } from "../../../client/core-api/core-api.model";
+import {
+  LifiIntentsOrderResponse,
+  Messenger,
+  NearIntentsDepositResponse,
+} from "../../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
-import { InvalidGasFeePaymentOptionError, SdkError } from "../../../exceptions";
+import { InvalidGasFeePaymentOptionError, LifiIntentsDoesNotSupportedError, SdkError } from "../../../exceptions";
 import { FeePaymentMethod } from "../../../models";
 import { NodeRpcUrlsConfig } from "../../../services";
 import { ApproveParams, SendParams } from "../../../services/bridge/models";
@@ -216,6 +221,202 @@ describe("RawTransactionBuilder", () => {
           amount: "1.33",
         })
       ).rejects.toThrow("NEAR Intents transfers from STX are not supported yet");
+    });
+  });
+
+  describe("send with Messenger.LIFI_INTENTS", () => {
+    const from = "0x01237296aaF2ba01AC9a819813E260Bb4Ad6642d";
+    const recipient = "0x76b4c56085ED136a8744D52bE956396624a730E8";
+    const bridgeAddress = "0xc5F40962983d41c2551139181EF3B2f73a4168be";
+    const sourceTokenAddress = "0xc7dbc4a896b34b7a10dda2ef72052145a9122f43";
+    const destinationToken = {
+      chainSymbol: ChainSymbol.ARB,
+      chainType: ChainType.EVM,
+      allbridgeChainId: 6,
+      decimals: 6,
+      tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      lifiIntents: {},
+    } as TokenWithChainDetails;
+    const sourceToken = {
+      chainSymbol: "GRL" as ChainSymbol,
+      chainType: ChainType.EVM,
+      allbridgeChainId: 2,
+      decimals: 6,
+      tokenAddress: sourceTokenAddress,
+      lifiIntents: { bridgeAddress, destinations: { [ChainSymbol.ARB]: [destinationToken.tokenAddress] } },
+    } as TokenWithChainDetails;
+    const orderResponse: LifiIntentsOrderResponse = {
+      amountIn: "1330000",
+      amountOut: "1320000",
+      fee: "1330",
+      timeEstimate: 30,
+      orderId: "0x" + "ab".repeat(32),
+      validUntil: 4070908800,
+      fillDeadline: 4070909400,
+      approval: { token: sourceTokenAddress, spender: bridgeAddress, amount: "1330000" },
+      tx: { contractAddress: bridgeAddress, value: "0", tx: "0xdeadbeef" },
+    };
+
+    let lifiApi: { createLifiIntentsOrder: jest.Mock };
+    let builder: RawBridgeTransactionBuilder;
+    let sendParams: SendParams;
+
+    beforeEach(() => {
+      lifiApi = { createLifiIntentsOrder: jest.fn().mockResolvedValue(orderResponse) };
+      builder = new DefaultRawBridgeTransactionBuilder(
+        lifiApi as unknown as AllbridgeCoreClient,
+        new NodeRpcUrlsConfig({}),
+        solParams,
+        tokenService
+      );
+      sendParams = {
+        amount: "1.33",
+        fromAccountAddress: from,
+        toAccountAddress: recipient,
+        sourceToken,
+        destinationToken,
+        messenger: Messenger.LIFI_INTENTS,
+      };
+    });
+
+    test("creates an order when none is passed and returns its LifiIntentsBridge call", async () => {
+      const actual = await builder.send(sendParams);
+
+      expect(lifiApi.createLifiIntentsOrder).toHaveBeenCalledWith({
+        sourceChainId: 2,
+        sourceToken: sourceTokenAddress,
+        destinationChainId: 6,
+        destinationToken: destinationToken.tokenAddress,
+        amount: "1330000",
+        swapType: "EXACT_INPUT",
+        sender: from,
+        recipient,
+        app: "core",
+      });
+      expect(actual).toEqual({ from, to: bridgeAddress, value: "0", data: "0xdeadbeef" });
+    });
+
+    test("reuses the passed order", async () => {
+      const actual = await builder.send({
+        ...sendParams,
+        fee: "0",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_NATIVE_CURRENCY,
+        lifiIntentsOrder: {
+          orderId: orderResponse.orderId,
+          sender: from,
+          recipient,
+          amountIn: "1.33",
+          amountOut: "1.32",
+          fee: "0.00133",
+          timeEstimate: 30,
+          validUntil: new Date("2099-01-01T00:00:00.000Z"),
+          fillDeadline: new Date("2099-01-01T00:10:00.000Z"),
+          approval: { token: sourceTokenAddress, spender: bridgeAddress, amount: "1.33" },
+          transaction: { contractAddress: bridgeAddress, value: "0", data: "0xcafe" },
+        },
+      });
+
+      expect(lifiApi.createLifiIntentsOrder).not.toHaveBeenCalled();
+      expect(actual).toEqual({ from, to: bridgeAddress, value: "0", data: "0xcafe" });
+    });
+
+    test("attaches the value for a native source token", async () => {
+      lifiApi.createLifiIntentsOrder.mockResolvedValue({
+        ...orderResponse,
+        amountIn: "1330000000000000000",
+        approval: undefined,
+        tx: { contractAddress: bridgeAddress, value: "1330000000000000000", tx: "0xfeed" },
+      });
+      const actual = await builder.send({
+        ...sendParams,
+        sourceToken: {
+          ...sourceToken,
+          decimals: 18,
+          tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+          isNative: true,
+        },
+      });
+
+      expect(actual).toEqual({ from, to: bridgeAddress, value: "1330000000000000000", data: "0xfeed" });
+    });
+
+    test("accepts the zero stablecoin fee option", async () => {
+      const actual = await builder.send({
+        ...sendParams,
+        fee: "0",
+        gasFeePaymentMethod: FeePaymentMethod.WITH_STABLECOIN,
+      });
+
+      expect(actual).toEqual({ from, to: bridgeAddress, value: "0", data: "0xdeadbeef" });
+    });
+
+    test("rejects extra gas, a non-zero fee and paying with ABR", async () => {
+      await expect(builder.send({ ...sendParams, extraGas: "1000" })).rejects.toBeInstanceOf(
+        InvalidGasFeePaymentOptionError
+      );
+      await expect(builder.send({ ...sendParams, fee: "20000000000000000" })).rejects.toBeInstanceOf(
+        InvalidGasFeePaymentOptionError
+      );
+      await expect(
+        builder.send({ ...sendParams, gasFeePaymentMethod: FeePaymentMethod.WITH_ABR })
+      ).rejects.toBeInstanceOf(InvalidGasFeePaymentOptionError);
+      expect(lifiApi.createLifiIntentsOrder).not.toHaveBeenCalled();
+    });
+
+    test("rejects an order past its fill deadline", async () => {
+      lifiApi.createLifiIntentsOrder.mockResolvedValue({ ...orderResponse, fillDeadline: 946684800 });
+      await expect(builder.send(sendParams)).rejects.toThrow("fill deadline has passed");
+    });
+
+    test("throws for a route the source token does not list", async () => {
+      await expect(
+        builder.send({ ...sendParams, destinationToken: { ...destinationToken, chainSymbol: ChainSymbol.ETH } })
+      ).rejects.toBeInstanceOf(LifiIntentsDoesNotSupportedError);
+      expect(lifiApi.createLifiIntentsOrder).not.toHaveBeenCalled();
+    });
+
+    test("returns the unsigned VersionedTransaction for a Solana source", async () => {
+      const solSender = Keypair.generate().publicKey.toBase58();
+      const solTx = new VersionedTransaction(
+        new TransactionMessage({
+          payerKey: new PublicKey(solSender),
+          recentBlockhash: PublicKey.default.toBase58(),
+          instructions: [],
+        }).compileToV0Message()
+      );
+      const programId = "45BazLaS2aKiN5CKcxp4iSbvFJN8fE5aBSX3vhabVsNA";
+      lifiApi.createLifiIntentsOrder.mockResolvedValue({
+        ...orderResponse,
+        approval: undefined,
+        tx: { contractAddress: programId, value: "0", tx: Buffer.from(solTx.serialize()).toString("base64") },
+      });
+
+      const actual = await builder.send({
+        ...sendParams,
+        fromAccountAddress: solSender,
+        sourceToken: {
+          ...sourceToken,
+          chainSymbol: ChainSymbol.SOL,
+          chainType: ChainType.SOLANA,
+          tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          lifiIntents: {
+            bridgeAddress: programId,
+            destinations: { [ChainSymbol.ARB]: [destinationToken.tokenAddress] },
+          },
+        },
+      });
+
+      expect(actual).toBeInstanceOf(VersionedTransaction);
+      expect(Buffer.from((actual as VersionedTransaction).serialize())).toEqual(Buffer.from(solTx.serialize()));
+    });
+
+    test("throws for a TRX source chain", async () => {
+      await expect(
+        builder.send({
+          ...sendParams,
+          sourceToken: { ...sourceToken, chainSymbol: ChainSymbol.TRX, chainType: ChainType.TRX },
+        })
+      ).rejects.toThrow("Such route does not support LI.FI Intents protocol");
     });
   });
 });

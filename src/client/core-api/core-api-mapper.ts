@@ -94,6 +94,8 @@ export function mapMessengerKeyDtoToMessenger(dto: MessengerKeyDTO): Messenger |
       return Messenger.X_RESERVE;
     case MessengerKeyDTO.NEAR_INTENTS:
       return Messenger.NEAR_INTENTS;
+    case MessengerKeyDTO.LIFI_INTENTS:
+      return Messenger.LIFI_INTENTS;
   }
 }
 
@@ -167,7 +169,7 @@ function mapAbrPayerAvailabilityFromDto(dto: AbrPayerAvailabilityTypeDTO): AbrPa
   return out;
 }
 
-// Build mapping from dto key ("allbridge") to Messenger enum value (1..7).
+// Build mapping from dto key ("allbridge") to Messenger enum value (1..8).
 // Pairs the enums by key name: every MessengerKeyDTO key must exist in Messenger with the same spelling.
 export const dtoKeyToMessenger: Record<AbrPayerAvailabilityKeyDTO, Messenger> = Object.fromEntries(
   Object.entries(MessengerKeyDTO).map(([enumKey, dtoKey]) => {

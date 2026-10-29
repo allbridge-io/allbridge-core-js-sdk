@@ -5,6 +5,7 @@ import { AllbridgeCoreClient } from "../../../client/core-api/core-client-base";
 import { SdkError } from "../../../exceptions";
 import { FeePaymentMethod, Messenger, SwapParams, TransactionResponse } from "../../../models";
 import { assertNever } from "../../../utils/utils";
+import { lifiIntentsNotABridgeContractError } from "../../lifi-intents/utils";
 import { RawTransaction, SmartContractMethodParameter } from "../../models";
 import { nearIntentsNotABridgeContractError } from "../../near-intents/utils";
 import { sendRawTransaction } from "../../utils/trx";
@@ -189,6 +190,8 @@ export class TronBridgeService extends ChainBridgeService {
         throw new SdkError("Messenger xReserve is not supported for TRX bridge");
       case Messenger.NEAR_INTENTS:
         throw nearIntentsNotABridgeContractError();
+      case Messenger.LIFI_INTENTS:
+        throw lifiIntentsNotABridgeContractError();
       case Messenger.ALLBRIDGE:
       case Messenger.WORMHOLE:
         switch (gasFeePaymentMethod) {

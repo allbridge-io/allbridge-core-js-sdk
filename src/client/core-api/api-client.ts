@@ -1,6 +1,11 @@
 import { Axios, AxiosHeaders, create, isAxiosError } from "axios";
 import {
   InvalidMessengerOptionError,
+  LifiIntentsAmountTooHighError,
+  LifiIntentsAmountTooLowError,
+  LifiIntentsDoesNotSupportedError,
+  LifiIntentsNoQuoteError,
+  LifiIntentsQuoteError,
   NearIntentsAmountTooLowError,
   NearIntentsDoesNotSupportedError,
   NearIntentsNoLiquidityError,
@@ -12,6 +17,11 @@ import { mapChainDetailsResponseToChainDetailsMap, mapChainDetailsResponseToPool
 import {
   ChainDetailsResponse,
   GasBalanceResponse,
+  LifiIntentsErrorResponse,
+  LifiIntentsOrderRequest,
+  LifiIntentsOrderResponse,
+  LifiIntentsQuoteRequest,
+  LifiIntentsQuoteResponse,
   Messenger,
   NearIntentsDepositRequest,
   NearIntentsDepositResponse,
@@ -61,6 +71,16 @@ export interface ApiClient {
    * `POST /near-intents/deposit/submit`: notifies NEAR Intents about the deposit transaction.
    */
   submitNearIntentsDeposit(args: NearIntentsSubmitDepositRequest): Promise<void>;
+
+  /**
+   * `POST /lifi-intents/quote`: a LI.FI Intents quote, see {@link mapLifiIntentsError} for the thrown errors.
+   */
+  getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse>;
+
+  /**
+   * `POST /lifi-intents/order`: a LI.FI Intents order with the ready-to-sign `LifiIntentsBridge` transaction.
+   */
+  createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse>;
 }
 
 /**
@@ -98,6 +118,46 @@ export function mapNearIntentsError(error: unknown): unknown {
   }
   if (status === 502) {
     return new NearIntentsQuoteError(message ?? "NEAR Intents upstream error", "UPSTREAM_ERROR");
+  }
+  return error;
+}
+
+/**
+ * Maps an error of a Core API `/lifi-intents/*` call to a typed SDK error:
+ * - `PAIR_NOT_AVAILABLE` or a HTTP 404 without a code (LI.FI Intents disabled) -> {@link LifiIntentsDoesNotSupportedError}
+ * - `AMOUNT_TOO_LOW` -> {@link LifiIntentsAmountTooLowError} (with `minAmount` when known)
+ * - `AMOUNT_TOO_HIGH` -> {@link LifiIntentsAmountTooHighError} (with `maxAmount` when known)
+ * - `NO_QUOTE` -> {@link LifiIntentsNoQuoteError}
+ * - `INVALID_REQUEST`, `UPSTREAM_ERROR` or HTTP 502 -> {@link LifiIntentsQuoteError}
+ *
+ * Any other error is returned unchanged.
+ * @internal
+ */
+export function mapLifiIntentsError(error: unknown): unknown {
+  if (!isAxiosError(error) || !error.response) {
+    return error;
+  }
+  const status = error.response.status;
+  const body = (error.response.data ?? {}) as Partial<LifiIntentsErrorResponse>;
+  const message = typeof body.message === "string" ? body.message : undefined;
+  switch (body.code) {
+    case "PAIR_NOT_AVAILABLE":
+      return new LifiIntentsDoesNotSupportedError(message ?? "Such route does not support LI.FI Intents protocol");
+    case "AMOUNT_TOO_LOW":
+      return new LifiIntentsAmountTooLowError(message ?? "Amount is too low for LI.FI Intents route", body.minAmount);
+    case "AMOUNT_TOO_HIGH":
+      return new LifiIntentsAmountTooHighError(message ?? "Amount is too high for LI.FI Intents route", body.maxAmount);
+    case "NO_QUOTE":
+      return new LifiIntentsNoQuoteError(message ?? "No LI.FI Intents quote is available for this amount");
+    case "INVALID_REQUEST":
+    case "UPSTREAM_ERROR":
+      return new LifiIntentsQuoteError(message ?? "Failed to get LI.FI Intents quote", body.code);
+  }
+  if (status === 404) {
+    return new LifiIntentsDoesNotSupportedError(message ?? "Such route does not support LI.FI Intents protocol");
+  }
+  if (status === 502) {
+    return new LifiIntentsQuoteError(message ?? "LI.FI Intents upstream error", "UPSTREAM_ERROR");
   }
   return error;
 }
@@ -220,6 +280,28 @@ export class ApiClientImpl implements ApiClient {
       });
     } catch (e) {
       throw mapNearIntentsError(e);
+    }
+  }
+
+  async getLifiIntentsQuote(args: LifiIntentsQuoteRequest): Promise<LifiIntentsQuoteResponse> {
+    try {
+      const { data } = await this.api.post<LifiIntentsQuoteResponse>("/lifi-intents/quote", args, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return data;
+    } catch (e) {
+      throw mapLifiIntentsError(e);
+    }
+  }
+
+  async createLifiIntentsOrder(args: LifiIntentsOrderRequest): Promise<LifiIntentsOrderResponse> {
+    try {
+      const { data } = await this.api.post<LifiIntentsOrderResponse>("/lifi-intents/order", args, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return data;
+    } catch (e) {
+      throw mapLifiIntentsError(e);
     }
   }
 }

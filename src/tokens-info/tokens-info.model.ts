@@ -159,9 +159,15 @@ export interface Token {
    */
   nearIntents?: NearIntentsTokenInfo;
   /**
+   * LI.FI Intents route info of the token, see {@link LifiIntentsTokenInfo}.
+   * Optional. Defined if the token is on a {@link Messenger.LIFI_INTENTS} route (as a source or a destination);
+   * a route is supported when the source token has `bridgeAddress` and lists the destination token in `destinations`.
+   */
+  lifiIntents?: LifiIntentsTokenInfo;
+  /**
    * True when the token is the native gas token of the chain (e.g. ETH on Ethereum),
    * listed under a sentinel `tokenAddress`. Native tokens are transferred as a value transfer and need no approval.
-   * Currently only served for {@link Messenger.NEAR_INTENTS} routes.
+   * Currently only served for {@link Messenger.NEAR_INTENTS} and {@link Messenger.LIFI_INTENTS} routes.
    * Optional. `undefined` means a regular token contract.
    */
   isNative?: boolean;
@@ -242,6 +248,24 @@ export interface NearIntentsTokenInfo {
    * NEAR Intents (1Click) asset id, opaque (e.g. `nep141:eth-0xa0b8...eb48.omft.near`)
    */
   assetId: string;
+}
+
+/**
+ * LI.FI Intents route info of a token, see {@link Messenger.LIFI_INTENTS}
+ */
+export interface LifiIntentsTokenInfo {
+  /**
+   * The Allbridge `LifiIntentsBridge` contract on the token's chain: the contract to approve and the contract
+   * the order transaction calls (on Solana the `lifi-intents-bridge` program id, nothing to approve).
+   * Optional. Absent on a chain that is only a LI.FI Intents destination, so the token cannot be sent with LI.FI Intents.
+   */
+  bridgeAddress?: string;
+  /**
+   * Where the token can be sent with LI.FI Intents: destination {@link ChainSymbol} -> `tokenAddress` values
+   * of the destination tokens, exactly as listed on that chain (a native token by its sentinel address).
+   * Optional. Only on tokens with {@link bridgeAddress} that have at least one route; chains without a route are omitted.
+   */
+  destinations?: Record<string, string[]>;
 }
 
 export interface SuiAddresses {

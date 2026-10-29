@@ -4,6 +4,8 @@ import { Messenger } from "../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../client/core-api/core-client-base";
 import { AllbridgeCoreSdkOptions } from "../../index";
 import { validateAmountDecimals, validateAmountGtZero } from "../../utils/utils";
+import { DefaultLifiIntentsService, LifiIntentsService } from "../lifi-intents";
+import { assertLifiIntentsSendParams } from "../lifi-intents/utils";
 import { Provider, RawTransaction } from "../models";
 import { DefaultNearIntentsService, NearIntentsService } from "../near-intents";
 import { assertNearIntentsSendParams } from "../near-intents/utils";
@@ -32,6 +34,12 @@ export interface RawBridgeTransactionBuilder {
    * {@link SendParams.nearIntentsDeposit} is used when defined, otherwise a new deposit is created
    * (to get the deposit details as well, use `nearIntents.buildSendTransaction`).
    * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM, SOL, TRX, SRB (needs the deposit memo) and SUI.
+   *
+   * For {@link Messenger.LIFI_INTENTS}: the transaction of a LI.FI Intents order built by the Core API: the
+   * `LifiIntentsBridge` call on EVM, an unsigned `VersionedTransaction` of the `lifi-intents-bridge` program on SOL.
+   * {@link SendParams.lifiIntentsOrder} is used when defined, otherwise a new order is created
+   * (to get the order details as well, use `lifiIntents.buildSendTransaction`). Sign it at once: the order is short-lived.
+   * `extraGas` and a non-zero `fee` are rejected. Source chains: EVM and SOL.
    * @param params
    * @param provider - will be used to access the network
    */
@@ -47,7 +55,8 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
     private nodeRpcUrlsConfig: NodeRpcUrlsConfig,
     private params: AllbridgeCoreSdkOptions,
     private tokenService: TokenService,
-    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params)
+    private nearIntentsService: NearIntentsService = new DefaultNearIntentsService(api, nodeRpcUrlsConfig, params),
+    private lifiIntentsService: LifiIntentsService = new DefaultLifiIntentsService(api)
   ) {}
 
   async approve(a: Provider | ApproveParams, b?: ApproveParams): Promise<RawTransaction> {
@@ -80,6 +89,11 @@ export class DefaultRawBridgeTransactionBuilder implements RawBridgeTransactionB
       if (params.messenger === Messenger.NEAR_INTENTS) {
         assertNearIntentsSendParams(params);
         const { rawTransaction } = await this.nearIntentsService.buildSendTransaction(params, provider);
+        return rawTransaction;
+      }
+      if (params.messenger === Messenger.LIFI_INTENTS) {
+        assertLifiIntentsSendParams(params);
+        const { rawTransaction } = await this.lifiIntentsService.buildSendTransaction(params);
         return rawTransaction;
       }
       return getChainBridgeService(

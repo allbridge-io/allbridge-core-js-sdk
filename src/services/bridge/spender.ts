@@ -1,7 +1,15 @@
+import { ChainType } from "../../chains/chain.enums";
 import { Messenger } from "../../client/core-api/core-api.model";
-import { CCTPDoesNotSupportedError, OFTDoesNotSupportedError, SdkError } from "../../exceptions";
+import {
+  CCTPDoesNotSupportedError,
+  InvalidGasFeePaymentOptionError,
+  LifiIntentsDoesNotSupportedError,
+  OFTDoesNotSupportedError,
+  SdkError,
+} from "../../exceptions";
 import { FeePaymentMethod } from "../../models";
 import { TokenWithChainDetails } from "../../tokens-info";
+import { lifiIntentsNativeNoApprovalError, lifiIntentsSolanaNoApprovalError } from "../lifi-intents/utils";
 import { nearIntentsNoApprovalError } from "../near-intents/utils";
 
 export function resolveSpender(
@@ -11,6 +19,21 @@ export function resolveSpender(
 ): string {
   if (messenger === Messenger.NEAR_INTENTS) {
     throw nearIntentsNoApprovalError();
+  }
+  if (messenger === Messenger.LIFI_INTENTS) {
+    if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
+      throw new InvalidGasFeePaymentOptionError("LI.FI Intents transfers cannot pay the fee with ABR");
+    }
+    if (token.isNative) {
+      throw lifiIntentsNativeNoApprovalError();
+    }
+    if (token.chainType === ChainType.SOLANA) {
+      throw lifiIntentsSolanaNoApprovalError();
+    }
+    if (token.lifiIntents?.bridgeAddress) {
+      return token.lifiIntents.bridgeAddress;
+    }
+    throw new LifiIntentsDoesNotSupportedError("Such route does not support LI.FI Intents protocol");
   }
   if (gasFeePaymentMethod === FeePaymentMethod.WITH_ABR) {
     if (token.abrPayer) {
