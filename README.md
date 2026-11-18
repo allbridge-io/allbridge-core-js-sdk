@@ -25,6 +25,7 @@ Provides an easy integration with the Allbridge Core bridge for DApps in the bro
     - [CCTP and CCTP V2](#cctp-and-cctp-v2)
     - [OFT](#oft)
     - [X_RESERVE](#x_reserve)
+    - [NEAR_INTENTS](#near_intents)
     - [LIFI_INTENTS](#lifi_intents)
   - [4.1 Approve the transfer of tokens](#41-approve-the-transfer-of-tokens-only-for-evm-tron)
   - [4.2 Send Tokens](#42-send-tokens)
@@ -105,6 +106,7 @@ Every token is returned as a `TokenWithChainDetails` object. Besides the general
 | `cctpV2Address`, `cctpV2FeeShare` | token is supported by CCTP V2      | CCTP V2 bridge contract address (the approve spender) and CCTP V2 fee share      |
 | `oftId`, `oftBridgeAddress`       | token / chain is supported by OFT  | Id shared by the same token on different chains, OFT bridge contract address     |
 | `xReserve`                        | token is supported by xReserve     | xReserve bridge contract address (the approve spender), `feeShare` and `feeConst` |
+| `nearIntents`                     | token is supported by NEAR Intents | NEAR Intents (1Click) `assetId` of the token                                     |
 | `lifiIntents`                     | token is on a LI.FI Intents route  | `bridgeAddress` (the approve spender, source chains only) and `destinations`      |
 | `transferTime`                    | always                             | Average transfer time to other chains, per messenger                             |
 | `abrPayer`                        | chain supports paying fees in ABR  | ABR payer contract address and per-messenger availability                        |
@@ -122,6 +124,7 @@ The messenger is a required parameter of all route-dependent SDK methods:
 | `Messenger.CCTP_V2`   | Circle CCTP V2 | `cctpV2Address` is defined on both source and destination tokens                                       |
 | `Messenger.OFT`       | LayerZero OFT  | `oftId` is the same on source and destination tokens and `oftBridgeAddress` is defined on both chains  |
 | `Messenger.X_RESERVE` | xReserve       | `xReserve` is defined on both source and destination tokens                                            |
+| `Messenger.NEAR_INTENTS` | NEAR Intents | `nearIntents` is defined on both source and destination tokens (not available from Stacks) |
 | `Messenger.LIFI_INTENTS` | LI.FI Intents | source token has `lifiIntents.bridgeAddress` and lists the destination token in `lifiIntents.destinations` (EVM and Solana source chains), see `isLifiIntentsRouteSupported` |
 
 `Messenger.ALLBRIDGE` and `Messenger.WORMHOLE` are deprecated and must not be used.
@@ -148,6 +151,9 @@ function getAvailableMessengers(sourceToken: TokenWithChainDetails, destinationT
   if (sourceToken.xReserve && destinationToken.xReserve) {
     messengers.push(Messenger.X_RESERVE);
   }
+  if (sourceToken.nearIntents && destinationToken.nearIntents) {
+    messengers.push(Messenger.NEAR_INTENTS);
+  }
   if (isLifiIntentsRouteSupported(sourceToken, destinationToken)) {
     messengers.push(Messenger.LIFI_INTENTS);
   }
@@ -157,7 +163,7 @@ function getAvailableMessengers(sourceToken: TokenWithChainDetails, destinationT
 
 `getAverageTransferTime` returns `null` when the messenger is not available between the source and destination chains,
 so it can be used as an additional check. If a messenger is not supported for the chosen route, the SDK methods throw
-`CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError`, `LifiIntentsDoesNotSupportedError` or `SdkError` (for xReserve).
+`CCTPDoesNotSupportedError`, `OFTDoesNotSupportedError`, `NearIntentsDoesNotSupportedError`, `LifiIntentsDoesNotSupportedError` or `SdkError` (for xReserve).
 
 ***TIP:***
 For more details, see [***Example***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/get-available-messengers.ts)
@@ -197,6 +203,41 @@ Extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zer
 
 Examples:
 [***Stacks***](https://github.com/allbridge-io/allbridge-core-js-sdk/blob/main/examples/src/examples/bridge/stx/stx-build-send-tx.ts)
+
+#### NEAR_INTENTS
+
+Transfers through NEAR Intents (1Click): the sender transfers the source tokens to a one-time deposit address and a
+solver delivers the destination tokens to the recipient. Native tokens (e.g. ETH, SOL, TRX) can be sent and received,
+and the destination token can differ from the source token. Transfers can be sent from EVM chains, Solana, Tron,
+Stellar and Sui, not from Stacks.
+Amounts are market-priced quotes from the Allbridge Core API, not a deterministic fee:
+`getAmountToBeReceived` / `getAmountToSend` request a quote, `sdk.nearIntents.getQuote` returns it with
+`minAmountOut` (the amount guaranteed after slippage) and `timeEstimate`.
+The quote errors are typed: `NearIntentsAmountTooLowError`, `NearIntentsNoLiquidityError` and `NearIntentsQuoteError`.
+
+No approval is needed: `buildSendTransaction` creates a deposit and builds a plain transfer of the source tokens
+to its deposit address (a native currency transfer for a native token):
+
+```ts
+const {rawTransaction, deposit} = await sdk.nearIntents.buildSendTransaction({
+  amount,
+  fromAccountAddress: fromAddress,
+  toAccountAddress: toAddress,
+  sourceToken,
+  destinationToken,
+});
+// sign and send rawTransaction before deposit.deadline
+```
+
+`bridge.rawTxBuilder.send` with `Messenger.NEAR_INTENTS` does the same and returns only the raw transaction.
+The deposit must be sent before `deposit.deadline`: funds arriving later may be lost. On chains that need a memo,
+such as Stellar, the transfer carries `deposit.depositMemo`.
+Optionally, pass the deposit transaction to `sdk.nearIntents.submitDeposit({depositAddress, depositMemo, txId})`
+to speed up its processing.
+
+There is no relayer fee and extra gas is not supported by this messenger: `getExtraGasMaxLimits` returns zero limits.
+If the transfer cannot be completed, NEAR Intents refunds the deposit to `fromAccountAddress` minus a refund fee
+(`getTransferStatus` reports `refunded` with `refundTxId` and `refundedAmount`).
 
 #### LIFI_INTENTS
 
