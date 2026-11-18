@@ -35,7 +35,7 @@ export const nodeUrlsDefault: NodeUrlsConfig = {
 export const nodeRpcUrlsDefault: NodeRpcUrls = {
   SOL: "https://api.mainnet-beta.solana.com",
   TRX: "https://api.trongrid.io",
-  SRB: "https://rpc.stellar.org:443",
+  SRB: "https://soroban-rpc.mainnet.stellar.gateway.fm",
   STLR: "https://horizon.stellar.org",
   SUI: "https://fullnode.mainnet.sui.io",
   STX: "https://api.hiro.so",
