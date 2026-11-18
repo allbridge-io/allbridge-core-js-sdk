@@ -102,7 +102,7 @@ export class SrbBridgeService extends ChainBridgeService {
           },
           { fee: inclusionFee as unknown as string }
         )
-      ).toXDR();
+      ).toXdr();
     }
 
     const contract = this.getContract(BridgeContract, contractAddress, fromAccountAddress);
@@ -147,7 +147,7 @@ export class SrbBridgeService extends ChainBridgeService {
       }
     }
 
-    return tx.toXDR();
+    return tx.toXdr();
   }
 
   /**
@@ -181,7 +181,7 @@ export class SrbBridgeService extends ChainBridgeService {
       .addMemo(Memo.text(memo))
       .setTimeout(STELLAR_TRANSACTION_TIMEOUT)
       .build()
-      .toXDR();
+      .toXdr();
   }
 
   /** @deprecated Do not use. */
@@ -208,14 +208,14 @@ export class SrbBridgeService extends ChainBridgeService {
         {
           sender: fromAccountAddress,
           amount: BigInt(amount),
-          token: Address.contract(Buffer.from(fromTokenAddress)).toBuffer(),
+          token: Buffer.from(Address.contract(Buffer.from(fromTokenAddress)).toBuffer()),
           receive_token: Buffer.from(toTokenAddress),
           recipient: toAccountAddress,
           receive_amount_min: BigInt(minimumReceiveAmount),
         },
         { fee: inclusionFee }
       )
-    ).toXDR();
+    ).toXdr();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

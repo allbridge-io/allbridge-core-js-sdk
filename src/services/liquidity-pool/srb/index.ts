@@ -88,7 +88,7 @@ export class SrbPoolService extends ChainPoolService {
         },
         { fee: inclusionFee }
       )
-    ).toXDR();
+    ).toXdr();
   }
 
   async buildRawTransactionWithdraw(params: LiquidityPoolsParamsWithAmount): Promise<RawTransaction> {
@@ -102,7 +102,7 @@ export class SrbPoolService extends ChainPoolService {
         },
         { fee: inclusionFee }
       )
-    ).toXDR();
+    ).toXdr();
   }
 
   async buildRawTransactionClaimRewards(params: LiquidityPoolsParams): Promise<RawTransaction> {
@@ -115,7 +115,7 @@ export class SrbPoolService extends ChainPoolService {
         },
         { fee: inclusionFee }
       )
-    ).toXDR();
+    ).toXdr();
   }
 
   private getContract(address: string, sender?: string): PoolContract {
