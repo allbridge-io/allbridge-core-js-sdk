@@ -26,6 +26,7 @@ import {
   getCctpBridgeAccount,
   getCctpLockAccount,
   getCctpV2BridgeConfigAccount,
+  getCctpV2ChainBridgeAccount,
   getChainBridgeAccount,
   getConfigAccount,
   getGasUsageAccount,
@@ -454,7 +455,10 @@ export class PayerWithTokenService {
       cctpVersion === 1
         ? await getCctpBridgeAccount(mintAccount, cctpBridgeProgramId)
         : getCctpV2BridgeConfigAccount(mintAccount, cctpBridgeProgramId);
-    const chainBridgeAccount = await getChainBridgeAccount(toChainId, cctpBridgeProgramId);
+    const chainBridgeAccount =
+      cctpVersion === 1
+        ? await getChainBridgeAccount(toChainId, cctpBridgeProgramId)
+        : getCctpV2ChainBridgeAccount(toChainId, cctpBridgeConfigAccount, cctpBridgeProgramId);
     const cctpBridgeAuthorityAccount = await getCctpAuthorityAccount(cctpBridgeConfigAccount, cctpBridgeProgramId);
     const cctpBridgeTokenAccount = await getBridgeTokenAccount(mintAccount, cctpBridgeProgramId);
 
