@@ -146,10 +146,7 @@ export class DefaultSrbUtils implements SrbUtils {
 
   async submitTransactionStellar(xdrTx: string): Promise<Horizon.HorizonApi.SubmitTransactionResponse> {
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
-    const transaction = StellarTransactionBuilder.fromXdr(
-      xdrTx,
-      this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR)
-    );
+    const transaction = StellarTransactionBuilder.fromXdr(xdrTx, this.params.sorobanNetworkPassphrase);
     return await stellar.submitTransaction(transaction);
   }
 
