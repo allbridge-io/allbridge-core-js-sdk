@@ -14,7 +14,8 @@ export const mainnet: AllbridgeCoreSdkOptions = {
     cctpTokenMessengerMinter: "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
     cctpV2TransmitterProgramId: "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",
     cctpV2TokenMessengerMinter: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
-    cctpDomains: { ETH: 0, AVA: 1, OPT: 2, ARB: 3, SOL: 5, BAS: 6, POL: 7, SUI: 8 },
+    cctpV2GasOracleProgramId: "GasB9dNMfXGXysMeTjQnnAnN38RmbrphtH5dkkWnMMvQ",
+    cctpDomains: { ETH: 0, AVA: 1, OPT: 2, ARB: 3, SOL: 5, BAS: 6, POL: 7, SUI: 8, SRB: 27 },
   },
   cachePoolInfoChainSec: 20,
 };
@@ -34,7 +35,7 @@ export const nodeUrlsDefault: NodeUrlsConfig = {
 export const nodeRpcUrlsDefault: NodeRpcUrls = {
   SOL: "https://api.mainnet-beta.solana.com",
   TRX: "https://api.trongrid.io",
-  SRB: "https://rpc.stellar.org:443",
+  SRB: "https://soroban-rpc.mainnet.stellar.gateway.fm",
   STLR: "https://horizon.stellar.org",
   SUI: "https://fullnode.mainnet.sui.io",
   STX: "https://api.hiro.so",

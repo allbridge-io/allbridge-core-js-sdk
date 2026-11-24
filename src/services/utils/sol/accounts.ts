@@ -71,6 +71,22 @@ export async function getChainBridgeAccount(chainId: number, bridgeProgramId: Pu
   return chainBridgePda;
 }
 
+/**
+ * Route PDA of the CCTP v2 bridge: seeded with the config of the bridged mint, so each config owns its routes.
+ * The Allbridge Core and CCTP v1 programs seed it by chain id only, see {@link getChainBridgeAccount}.
+ */
+export function getCctpV2ChainBridgeAccount(
+  chainId: number,
+  configAccount: PublicKey,
+  cctpV2BridgeProgramId: PublicKey
+): PublicKey {
+  const [chainBridgePda] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("chain_bridge"), configAccount.toBytes(), Uint8Array.from([chainId])],
+    cctpV2BridgeProgramId
+  );
+  return chainBridgePda;
+}
+
 export async function getGasUsageAccount(chainId: number, messengerProgramId: PublicKey): Promise<PublicKey> {
   const [chainBridgePda] = await PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode("gas_usage"), Uint8Array.from([chainId])],

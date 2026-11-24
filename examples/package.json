@@ -48,7 +48,7 @@
     "@allbridge/bridge-core-sdk": "file:..",
     "@algorandfoundation/algokit-utils": "^9.1.2",
     "@solana/web3.js": "^1.78.5",
-    "@stellar/stellar-sdk": "^15.0.1",
+    "@stellar/stellar-sdk": "^17.4.0",
     "algosdk": "^3.5.0",
     "tronweb": "^4.4.0",
     "web3": "^1.9.0",

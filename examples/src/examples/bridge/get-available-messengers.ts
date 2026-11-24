@@ -39,6 +39,10 @@ function getAvailableMessengers(
   if (sourceToken.xReserve && destinationToken.xReserve) {
     messengers.push(Messenger.X_RESERVE);
   }
+  // NEAR Intents: both tokens must have nearIntents config
+  if (sourceToken.nearIntents && destinationToken.nearIntents) {
+    messengers.push(Messenger.NEAR_INTENTS);
+  }
   // LI.FI Intents: the source token has lifiIntents.bridgeAddress and lists the destination token in lifiIntents.destinations
   if (isLifiIntentsRouteSupported(sourceToken, destinationToken)) {
     messengers.push(Messenger.LIFI_INTENTS);

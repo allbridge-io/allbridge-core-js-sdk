@@ -116,7 +116,7 @@ export class DefaultSrbUtils implements SrbUtils {
       .addOperation(changeTrust)
       .setTimeout(SEND_TRANSACTION_TIMEOUT)
       .build()
-      .toXDR();
+      .toXdr();
   }
 
   async getBalanceLine(sender: string, tokenAddress: string): Promise<Horizon.HorizonApi.BalanceLineAsset | undefined> {
@@ -146,10 +146,7 @@ export class DefaultSrbUtils implements SrbUtils {
 
   async submitTransactionStellar(xdrTx: string): Promise<Horizon.HorizonApi.SubmitTransactionResponse> {
     const stellar = new Horizon.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR));
-    const transaction = StellarTransactionBuilder.fromXDR(
-      xdrTx,
-      this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.STLR)
-    );
+    const transaction = StellarTransactionBuilder.fromXdr(xdrTx, this.params.sorobanNetworkPassphrase);
     return await stellar.submitTransaction(transaction);
   }
 
@@ -157,7 +154,7 @@ export class DefaultSrbUtils implements SrbUtils {
     const rpcUrl = this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB);
     const server = new SorobanRpc.Server(rpcUrl);
     const account = await server.getAccount(sourceAccount);
-    const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
+    const transaction = TransactionBuilder.fromXdr(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
     const simulation = await server.simulateTransaction(transaction);
     if (SorobanRpc.Api.isSimulationRestore(simulation)) {
       const inclusionFee = await getSorobanInclusionFee(rpcUrl);
@@ -169,14 +166,14 @@ export class DefaultSrbUtils implements SrbUtils {
         .addOperation(Operation.restoreFootprint({}))
         .setTimeout(TimeoutInfinite)
         .build()
-        .toXDR();
+        .toXdr();
     }
     return undefined;
   }
 
   async sendTransactionSoroban(xdrTx: string): Promise<SorobanRpc.Api.SendTransactionResponse> {
     const server = new SorobanRpc.Server(this.nodeRpcUrlsConfig.getNodeRpcUrl(ChainSymbol.SRB));
-    const transaction = TransactionBuilder.fromXDR(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
+    const transaction = TransactionBuilder.fromXdr(xdrTx, this.params.sorobanNetworkPassphrase) as Transaction;
     return server.sendTransaction(transaction);
   }
 

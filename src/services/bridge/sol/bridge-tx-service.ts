@@ -26,6 +26,7 @@ import {
   getCctpBridgeTokenAccount,
   getCctpLockAccount,
   getCctpV2BridgeConfigAccount,
+  getCctpV2ChainBridgeAccount,
   getChainBridgeAccount,
   getConfigAccount,
   getGasUsageAccount,
@@ -735,6 +736,12 @@ export class BridgeTxService {
       throw new CCTPDoesNotSupportedError("The route does not support CCTPv2 protocol");
     }
     const CHAIN_ID = 4;
+    // The bridge is built against one gas oracle (gas_oracle::ID) and keeps no copy of it in its config
+    const gasOracleProgramIdAddress = this.params.cctpParams.cctpV2GasOracleProgramId;
+    if (!gasOracleProgramIdAddress) {
+      throw new SdkError("CCTPv2 gas oracle is not configured: set cctpParams.cctpV2GasOracleProgramId");
+    }
+    const gasOracleProgramId = new PublicKey(gasOracleProgramIdAddress);
 
     const account = fromAccountAddress;
     const receiveTokenAddress = toTokenAddress;
@@ -772,12 +779,16 @@ export class BridgeTxService {
     swapAndBridgeData.receiveToken = Array.from(receiveTokenAddress);
     swapAndBridgeData.hookData = hookData;
     swapAndBridgeData.userToken = getAssociatedAccount(userAccount, mint);
-    swapAndBridgeData.chainBridgeAccount = await getChainBridgeAccount(toChainId, cctpBridge.programId);
+    swapAndBridgeData.chainBridgeAccount = getCctpV2ChainBridgeAccount(
+      toChainId,
+      cctpBridgeConfigAccount,
+      cctpBridge.programId
+    );
     swapAndBridgeData.userAccount = userAccount;
     swapAndBridgeData.destinationChainId = toChainId;
     swapAndBridgeData.mint = mint;
-    swapAndBridgeData.gasPrice = await getPriceAccount(toChainId, configAccountInfo.gasOracleProgramId);
-    swapAndBridgeData.thisGasPrice = await getPriceAccount(CHAIN_ID, configAccountInfo.gasOracleProgramId);
+    swapAndBridgeData.gasPrice = await getPriceAccount(toChainId, gasOracleProgramId);
+    swapAndBridgeData.thisGasPrice = await getPriceAccount(CHAIN_ID, gasOracleProgramId);
     swapAndBridgeData.provider = provider;
 
     if (extraGas) {

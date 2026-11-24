@@ -61,7 +61,7 @@ describe("SrbBridgeService", () => {
       { sorobanNetworkPassphrase: "Test SDF Network ; September 2015" },
       {} as AllbridgeCoreClient
     );
-    const bridge = jest.fn().mockResolvedValue({ toXDR: jest.fn().mockReturnValue("cctp-xdr") });
+    const bridge = jest.fn().mockResolvedValue({ toXdr: jest.fn().mockReturnValue("cctp-xdr") });
     jest.mocked(getSorobanInclusionFee).mockResolvedValue(123);
     jest.spyOn(service, "getContract").mockReturnValue({ bridge });
     jest.mocked(getCctpSolTokenRecipientAddress).mockResolvedValue(solRecipientTokenAccount);
@@ -107,7 +107,7 @@ describe("SrbBridgeService", () => {
   });
 
   it("builds a CCTPv2 native-fee bridge transaction", async () => {
-    const bridge = jest.fn().mockResolvedValue({ toXDR: jest.fn().mockReturnValue("cctp-xdr") });
+    const bridge = jest.fn().mockResolvedValue({ toXdr: jest.fn().mockReturnValue("cctp-xdr") });
     const service = new SrbBridgeService(
       nodeRpcUrlsConfig,
       { sorobanNetworkPassphrase: "Test SDF Network ; September 2015" },
@@ -131,7 +131,7 @@ describe("SrbBridgeService", () => {
   });
 
   it("builds a CCTPv2 stablecoin-fee bridge transaction", async () => {
-    const bridge = jest.fn().mockResolvedValue({ toXDR: jest.fn().mockReturnValue("cctp-xdr") });
+    const bridge = jest.fn().mockResolvedValue({ toXdr: jest.fn().mockReturnValue("cctp-xdr") });
     const service = new SrbBridgeService(
       nodeRpcUrlsConfig,
       { sorobanNetworkPassphrase: "Test SDF Network ; September 2015" },
@@ -179,7 +179,7 @@ describe("SrbBridgeService", () => {
   });
 
   it("rejects unsupported CCTPv2 fee payment methods", async () => {
-    const bridge = jest.fn().mockResolvedValue({ toXDR: jest.fn().mockReturnValue("cctp-xdr") });
+    const bridge = jest.fn().mockResolvedValue({ toXdr: jest.fn().mockReturnValue("cctp-xdr") });
     const service = new SrbBridgeService(
       nodeRpcUrlsConfig,
       { sorobanNetworkPassphrase: "Test SDF Network ; September 2015" },
@@ -194,7 +194,7 @@ describe("SrbBridgeService", () => {
   });
 
   it("uses the legacy contract for an Allbridge native-fee transaction", async () => {
-    const swap_and_bridge = jest.fn().mockResolvedValue({ toXDR: jest.fn().mockReturnValue("legacy-xdr") });
+    const swap_and_bridge = jest.fn().mockResolvedValue({ toXdr: jest.fn().mockReturnValue("legacy-xdr") });
     const service = new SrbBridgeService(
       nodeRpcUrlsConfig,
       { sorobanNetworkPassphrase: "Test SDF Network ; September 2015" },
@@ -245,7 +245,7 @@ describe("SrbBridgeService", () => {
     });
 
     function decode(xdr: unknown): Transaction {
-      return TransactionBuilder.fromXDR(xdr as string, networkPassphrase) as Transaction;
+      return TransactionBuilder.fromXdr(xdr as string, networkPassphrase) as Transaction;
     }
 
     it("builds a payment of the classic asset with the deposit memo as text", async () => {
@@ -265,7 +265,8 @@ describe("SrbBridgeService", () => {
       expect(tx.sequence).toEqual("42");
       expect(tx.fee).toEqual("250");
       expect(tx.memo.type).toEqual(Memo.text("x").type);
-      expect(tx.memo.value?.toString()).toEqual("7730571183");
+      // stellar-sdk 17 decodes a text memo to its raw bytes
+      expect(Buffer.from(tx.memo.value as Uint8Array).toString("utf8")).toEqual("7730571183");
       expect(tx.operations).toHaveLength(1);
       const operation = tx.operations[0] as Operation.Payment;
       expect(operation.type).toEqual("payment");

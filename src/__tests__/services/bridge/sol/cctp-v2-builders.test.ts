@@ -1,14 +1,20 @@
-import { BN, Program } from "@coral-xyz/anchor";
+import { AccountClient, BN, Program } from "@coral-xyz/anchor";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { StrKey } from "@stellar/stellar-sdk";
 import { ChainType } from "../../../../chains/chain.enums";
 import { Messenger } from "../../../../client/core-api/core-api.model";
 import { AllbridgeCoreClient } from "../../../../client/core-api/core-client-base";
+import { SdkError } from "../../../../exceptions";
 import { encodeCctpHookForStellar } from "../../../../services/bridge/cctp-utils";
 import { BridgeTxService, SolanaBridgeParams } from "../../../../services/bridge/sol/bridge-tx-service";
 import { PayerWithTokenService } from "../../../../services/bridge/sol/payer-with-token-service";
 import { convertToVersionedTransaction } from "../../../../services/bridge/sol/utils";
 import { CctpV2Bridge } from "../../../../services/models/sol/types/cctp_v2_bridge";
+import {
+  getCctpV2BridgeConfigAccount,
+  getCctpV2ChainBridgeAccount,
+  getPriceAccount,
+} from "../../../../services/utils/sol/accounts";
 
 jest.mock("../../../../services/bridge/sol/utils", () => ({
   ...jest.requireActual("../../../../services/bridge/sol/utils"),
@@ -18,7 +24,22 @@ jest.mock("../../../../services/bridge/sol/utils", () => ({
 const PUBLIC_KEY = new PublicKey("11111111111111111111111111111111");
 const OTHER_BRIDGE = new PublicKey("SysvarC1ock11111111111111111111111111111111");
 const STELLAR_CCTP_CONTRACT = "CAYUCAP2ORC5PSASKC63MQGMB6X62YXDADCSPDBZNHHHG33GKNZUYROB"; // cSpell:disable-line
+// The post-audit devnet deployment: the route PDA below exists on chain, the one without the config seed does not
+const DEVNET_CCTP_V2_BRIDGE = "FxBkz15NLjPRdNmp41zZaEDy28skxDdMRadvjuxKHr4w"; // cSpell:disable-line
+const DEVNET_USDC = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"; // cSpell:disable-line
+const DEVNET_GAS_ORACLE = "GTwX3oTgMS4pLQS8SvgZFS9Vyhxdfw1N7fijAhaS88Ff"; // cSpell:disable-line
 const amount = new BN(1000);
+
+describe("getCctpV2ChainBridgeAccount", () => {
+  it("seeds the route with the config of the mint", () => {
+    const programId = new PublicKey(DEVNET_CCTP_V2_BRIDGE);
+    const config = getCctpV2BridgeConfigAccount(new PublicKey(DEVNET_USDC), programId);
+
+    expect(getCctpV2ChainBridgeAccount(7, config, programId).toBase58()).toEqual(
+      "6RH8fZd7YecaLRqAz61BGJSUsXG2VaBPRMe7X2NzmJpP" // cSpell:disable-line
+    );
+  });
+});
 const hookData = Buffer.from([0, 0, 0, 1, 65]);
 
 function createMethod() {
@@ -83,6 +104,66 @@ describe("BridgeTxService CCTPv2 native builder", () => {
       } as unknown as Parameters<BridgeTxService["buildSwapAndBridgeCctpV2Transaction"]>[1],
     };
   }
+
+  describe("prepared data", () => {
+    const sendParams = {
+      messenger: Messenger.CCTP_V2,
+      destinationToken: { chainSymbol: "ARB", chainType: ChainType.EVM },
+    };
+    const txSendParams = {
+      contractAddress: DEVNET_CCTP_V2_BRIDGE,
+      amount: "1000",
+      fromAccountAddress: PUBLIC_KEY.toBase58(),
+      fromTokenAddress: DEVNET_USDC,
+      toChainId: 6,
+      toAccountAddress: Buffer.alloc(32, 1),
+      toTokenAddress: Buffer.alloc(32, 2),
+    };
+
+    function prepare(serviceParams: SolanaBridgeParams) {
+      const preparingService = new BridgeTxService(
+        "https://solana.example",
+        serviceParams,
+        {} as AllbridgeCoreClient
+      ) as unknown as {
+        prepareSwapAndBridgeCctpV2Data: (
+          sendParams: unknown,
+          txSendParams: unknown
+        ) => Promise<Record<string, unknown>>;
+      };
+      return preparingService.prepareSwapAndBridgeCctpV2Data(sendParams, txSendParams);
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("derives the route from the config and the gas prices from the configured oracle", async () => {
+      jest.spyOn(AccountClient.prototype, "fetch").mockResolvedValue({ stellarChainId: 7 });
+
+      const prepared = await prepare({
+        ...params,
+        cctpParams: { ...params.cctpParams, cctpV2GasOracleProgramId: DEVNET_GAS_ORACLE },
+      });
+
+      expect(prepared.chainBridgeAccount).toEqual(
+        getCctpV2ChainBridgeAccount(
+          6,
+          getCctpV2BridgeConfigAccount(new PublicKey(DEVNET_USDC), new PublicKey(DEVNET_CCTP_V2_BRIDGE)),
+          new PublicKey(DEVNET_CCTP_V2_BRIDGE)
+        )
+      );
+      expect(prepared.gasPrice).toEqual(await getPriceAccount(6, new PublicKey(DEVNET_GAS_ORACLE)));
+      expect(prepared.thisGasPrice).toEqual(await getPriceAccount(4, new PublicKey(DEVNET_GAS_ORACLE)));
+    });
+
+    it("fails when the gas oracle is not configured", async () => {
+      const fetch = jest.spyOn(AccountClient.prototype, "fetch");
+
+      await expect(prepare(params)).rejects.toThrow(SdkError);
+      expect(fetch).not.toHaveBeenCalled();
+    });
+  });
 
   it("uses bridgeToStellar when prepared destination data contains a hook", async () => {
     const { bridge, bridgeToStellar, data } = createPreparedData(hookData);
@@ -232,11 +313,14 @@ describe("PayerWithTokenService CCTPv2 ABR builder", () => {
 
     const prepared = await prepareBridgeCctpData(sendParams, solTxSendParams);
 
+    const configAccount = getCctpV2BridgeConfigAccount(PUBLIC_KEY, PUBLIC_KEY);
     expect(prepared).toEqual(
       expect.objectContaining({
         recipient: destination.recipient,
         recipientToken: [2],
         hookData: encodeCctpHookForStellar(sendParams.toAccountAddress),
+        cctpBridgeConfigAccount: configAccount,
+        chainBridgeAccount: getCctpV2ChainBridgeAccount(7, configAccount, PUBLIC_KEY),
       })
     );
   });

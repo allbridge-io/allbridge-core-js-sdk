@@ -72,7 +72,7 @@ export function formatAddress(address: string, from: ChainType, to: ChainType): 
       break;
     }
     case ChainType.SRB: {
-      buffer = new Address(address).toBuffer();
+      buffer = Buffer.from(new Address(address).toBuffer());
       break;
     }
     case ChainType.SUI: {

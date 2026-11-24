@@ -39,6 +39,12 @@ export interface CctpParams {
   cctpTokenMessengerMinter: string;
   cctpV2TransmitterProgramId: string;
   cctpV2TokenMessengerMinter: string;
+  /**
+   * The gas oracle program the Solana CCTP V2 bridge is built against: the bridge derives the gas price
+   * PDAs from it and no longer stores it in its config.
+   * Optional. Required for {@link Messenger.CCTP_V2} transfers from Solana paid in the native token or USDC.
+   */
+  cctpV2GasOracleProgramId?: string;
   cctpDomains: CctpDomains;
 }
 

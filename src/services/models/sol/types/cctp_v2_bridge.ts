@@ -10,9 +10,55 @@ export type CctpV2Bridge = {
     "name": "cctpV2Bridge",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Created with Anchor"
+    "description": "Allbridge Core bridge on top of Circle CCTP V2"
   },
   "instructions": [
+    {
+      "name": "acceptAdmin",
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "newAdmin",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
     {
       "name": "bridge",
       "discriminator": [
@@ -471,7 +517,10 @@ export type CctpV2Bridge = {
                 "path": "mint"
               }
             ]
-          }
+          },
+          "relations": [
+            "lock"
+          ]
         },
         {
           "name": "lock",
@@ -502,6 +551,91 @@ export type CctpV2Bridge = {
           "name": "admin",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "upgradeAuthority",
+          "signer": true
+        },
+        {
+          "name": "programData",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  222,
+                  38,
+                  185,
+                  215,
+                  112,
+                  37,
+                  20,
+                  51,
+                  195,
+                  226,
+                  162,
+                  223,
+                  175,
+                  7,
+                  190,
+                  193,
+                  37,
+                  76,
+                  155,
+                  168,
+                  30,
+                  237,
+                  75,
+                  233,
+                  171,
+                  161,
+                  67,
+                  126,
+                  123,
+                  250,
+                  54,
+                  200
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                2,
+                168,
+                246,
+                145,
+                78,
+                136,
+                161,
+                176,
+                226,
+                16,
+                21,
+                62,
+                247,
+                99,
+                174,
+                43,
+                0,
+                194,
+                185,
+                61,
+                22,
+                193,
+                36,
+                210,
+                192,
+                83,
+                122,
+                16,
+                4,
+                128,
+                0,
+                0
+              ]
+            }
+          }
         },
         {
           "name": "mint"
@@ -967,57 +1101,6 @@ export type CctpV2Bridge = {
       ]
     },
     {
-      "name": "setGasOracleProgramId",
-      "discriminator": [
-        172,
-        152,
-        29,
-        206,
-        112,
-        239,
-        205,
-        83
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true
-        },
-        {
-          "name": "mint"
-        },
-        {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "mint"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "newProgramId",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
       "name": "setMaxFeeShare",
       "discriminator": [
         120,
@@ -1222,6 +1305,65 @@ export type CctpV2Bridge = {
       ]
     },
     {
+      "name": "unregisterChainBridge",
+      "discriminator": [
+        77,
+        123,
+        220,
+        173,
+        197,
+        207,
+        191,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "rentRecipient",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "chainBridge",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "unregisterChainBridgeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "updateChainBridge",
       "discriminator": [
         227,
@@ -1298,7 +1440,6 @@ export type CctpV2Bridge = {
         },
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1502,6 +1643,21 @@ export type CctpV2Bridge = {
       "code": 6004,
       "name": "stellarBridgeNotRegistered",
       "msg": "Stellar chain bridge address is not registered"
+    },
+    {
+      "code": 6005,
+      "name": "notUpgradeAuthority",
+      "msg": "Only the program upgrade authority can initialize a config"
+    },
+    {
+      "code": 6006,
+      "name": "insufficientWithdrawableBalance",
+      "msg": "Amount exceeds the balance above the config rent reserve"
+    },
+    {
+      "code": 6007,
+      "name": "mathOverflow",
+      "msg": "Arithmetic result is out of range"
     }
   ],
   "types": [
@@ -1593,6 +1749,10 @@ export type CctpV2Bridge = {
             "type": "pubkey"
           },
           {
+            "name": "pendingAdmin",
+            "type": "pubkey"
+          },
+          {
             "name": "tokenMessengerMinter",
             "type": "pubkey"
           },
@@ -1601,19 +1761,11 @@ export type CctpV2Bridge = {
             "type": "pubkey"
           },
           {
-            "name": "gasOracleProgramId",
-            "type": "pubkey"
-          },
-          {
             "name": "authorityBumpSeed",
             "type": "u8"
           },
           {
             "name": "adminFeeShareBp",
-            "type": "u64"
-          },
-          {
-            "name": "adminFeeAmount",
             "type": "u64"
           },
           {
@@ -1636,10 +1788,6 @@ export type CctpV2Bridge = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "gasOracleProgramId",
-            "type": "pubkey"
-          },
           {
             "name": "tokenMessengerMinter",
             "type": "pubkey"
@@ -1668,6 +1816,10 @@ export type CctpV2Bridge = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
           {
             "name": "sender",
             "type": "pubkey"
@@ -1776,6 +1928,22 @@ export type CctpV2Bridge = {
           },
           {
             "name": "otherBridge",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unregisterChainBridgeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chainId",
+            "type": "u8"
+          },
+          {
+            "name": "mint",
             "type": "pubkey"
           }
         ]
