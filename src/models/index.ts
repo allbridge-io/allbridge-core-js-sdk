@@ -37,6 +37,7 @@ export {
 } from "../services/near-intents/models";
 export { LifiIntentsService } from "../services/lifi-intents/index";
 export { isLifiIntentsRouteSupported } from "../services/lifi-intents/utils";
+export { isValidCctpStellarRecipient } from "../services/bridge/cctp-utils";
 export {
   LifiIntentsQuoteParams,
   LifiIntentsQuote,
