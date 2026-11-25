@@ -80,6 +80,11 @@ export enum ChainSymbol {
   LIN = "LIN",
 
   /**
+   * The Robinhood Chain network.
+   */
+  RBH = "RBH",
+
+  /**
    * The Algorand network.
    */
   ALG = "ALG",

@@ -82,6 +82,12 @@ const defaultProperties: Record<string, BasicChainProperties> = {
     name: "Linea",
     chainType: ChainType.EVM,
   },
+  [ChainSymbol.RBH]: {
+    chainSymbol: ChainSymbol.RBH,
+    chainId: "0x1237",
+    name: "Robinhood Chain",
+    chainType: ChainType.EVM,
+  },
   [ChainSymbol.SOL]: {
     chainSymbol: ChainSymbol.SOL,
     name: "Solana",
